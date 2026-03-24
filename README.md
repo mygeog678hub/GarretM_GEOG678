@@ -1,14 +1,13 @@
 # GarretM_GEOG678
 
+<html>
+  <body>
+    <h2>GEOG678 Assignments Table</h2>
+    <p>This repository should be used for submitting all lab assignemts</p>
+  </body>
+</html>
 
 
-This repository is for the purpose of submitting
-
-all lab assignments.
-
-
-
-Table
 
 
 
@@ -22,4 +21,6 @@ Table
 | [Week06](Homework/Week06) | [Week06](Lab/Week06) | |
 | [Week07](Homework/Week07) | [Week07](Lab/Week07) | |
 | [Week08](Homework/Week08) | [Week08](Lab/Week08) | |
+
+
 
