@@ -3,7 +3,7 @@
 <html>
   <body>
     <h2>GEOG678 Assignments Table</h2>
-    <p>This repository should be used for submitting all lab assignemts</p>
+    <p>This repository should be used for submitting all lab assignments</p>
   </body>
 </html>
 
