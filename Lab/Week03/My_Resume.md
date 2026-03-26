@@ -32,7 +32,7 @@
         </ul></li>
             <li>Master of Science in Forensic Psychology (Criminal Profiling Emphasis) — Walden University (2025)</li>
             <li>Bachelor of Science in Criminal Justice — Walden University (2024)</li>
-            <li>Associate of Arts — Houston Community College (2006</li>
+            <li>Associate of Arts — Houston Community College (2006)</li>
     </ul>
 </div>
     <!-- technical skills section -->
