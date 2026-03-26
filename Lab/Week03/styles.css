@@ -1,0 +1,43 @@
+P, li {
+  color:black; font-size:18px;
+}
+body {
+  /* Set a default margin for the entire page body */
+   margin: 200px; 
+}
+ 
+.heading-background {
+  background-color: lightblue;
+}
+#contact {
+  text-align: center;
+  background: lightgray
+  
+}
+#name {
+  font-size: 45px;
+  color: maroon;
+}
+h2 {
+  color: royalblue;
+  background: lightgray
+}
+#summary p {
+  line-height: 1.4em;
+  text-align: justify;
+    
+}
+#education li {
+  line-height: 1.5em;
+  text-align: justify;
+}
+#skills li {
+  line-height: 1.5em;
+}
+#experience li {
+  line-height: 1.5em;
+  text-align: justify;
+}
+#certifications li {
+  line-height: 1.5em
+}

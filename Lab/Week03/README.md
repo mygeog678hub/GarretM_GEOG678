@@ -3,9 +3,9 @@
   <body>
     <p>Completed the following lessons:</p>
       <ol>
-        <li>Introduction to HTML Lesson</li>
-        <li>HTML Document Standards Lesson</li>
-        <li>HTML Tables Lesson</li>
+        <li>Introduction to HTML</li>
+        <li>HTML Document Standards</li>
+        <li>HTML Tables</li>
         <li>CSS Setup and Syntax</li>
         <li>Selectors</li>
         <li>Visual Rules</li>
