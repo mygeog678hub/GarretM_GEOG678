@@ -12,7 +12,7 @@
       </ol>
     <p>Lab03 is complete. My resume can be displayed at the following site: </p>
     <a href="https://mygeog678hub.github.io/GarretM_GEOG678/">My Resume</a>
->
+
   </body>
 </html>
 
