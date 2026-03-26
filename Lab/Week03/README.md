@@ -10,7 +10,9 @@
         <li>Selectors</li>
         <li>Visual Rules</li>
       </ol>
-    <p>I completed the resume in HTML and created a .css file and linked it, but it did not work in github regardless of anything I tried. I took screenshots of the resume on codepen online where everything works just fine. All files uploaded to lab03 folder and lab03 is complete.</p>
+    <p>Lab03 is complete. My resume can be displayed at the following site: </p>
+    <a href="https://mygeog678hub.github.io/GarretM_GEOG678/">My Resume</a>
+>
   </body>
 </html>
 
