@@ -1,7 +1,6 @@
 <!DOCTYPE htlm>
 <html>
-<head>
-  <title>Martin Garret -Resume</title>
+<head>  
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
