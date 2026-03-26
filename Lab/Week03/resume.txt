@@ -7,8 +7,7 @@
 </head>
 <body>
   <!-- contact section -->
-  <div id="contact">
-    <img src="\IMG_4068.jpg" alt="picture of Martin Garret">
+  <div id="contact">    
     <h1 id="name">Martin Garret</h1> 
     <br> 
     <p>Missouri City, TX</p>
