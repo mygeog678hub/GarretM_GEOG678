@@ -2,8 +2,8 @@ P, li {
   color:black; font-size:18px;
 }
 body {
-  /* Set a default margin for the entire page body */
-   margin: 200px; 
+   /* Set a default margin for the entire page body */
+  margin: 200px; 
 }
  
 .heading-background {
@@ -11,7 +11,7 @@ body {
 }
 #contact {
   text-align: center;
-  background: lightgray
+  background: lightgray;
   
 }
 #name {
@@ -20,7 +20,7 @@ body {
 }
 h2 {
   color: royalblue;
-  background: lightgray
+  background: lightgray;
 }
 #summary p {
   line-height: 1.4em;
@@ -39,5 +39,5 @@ h2 {
   text-align: justify;
 }
 #certifications li {
-  line-height: 1.5em
+  line-height: 1.5em;
 }
