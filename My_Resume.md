@@ -54,10 +54,7 @@
            <li>I-10 Corridor expansion and private utility relocation (AutoCAD)</li>
            <li>METRORail private utility relocations (AutoCAD)</li>
          </ul>
-      </div>
-      <div>
-       
-     </div>
+      </div>      
      <!-- professional experience section -->
      <div id="experience">
        <h2>Professional Experience</h2>
