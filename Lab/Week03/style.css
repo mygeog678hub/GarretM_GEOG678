@@ -2,8 +2,10 @@ P, li {
   color:black; font-size:18px;
 }
 body {
-   /* Set a default margin for the entire page body */
-  margin: 100px; 
+  max-width: 1000px; /* or a value within the 900px-1200px range */
+  margin-left: auto;
+  margin-right: auto;
+  /* Add horizontal padding for small screens (see Margin section below) */
 }
  
 .heading-background {
