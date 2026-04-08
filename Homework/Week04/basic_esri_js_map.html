@@ -1,8 +1,20 @@
+<!DOCTYPE html>
 <html>
     <head>
         <link rel="stylesheet" href="https://js.arcgis.com/4.6/esri/css/main.css">
         <script src="https://js.arcgis.com/4.6/"></script>
         <script src="map.js"></script>
+        <script>
+        var locationPath = location.pathname.replace(/\/[^\/]+$/, "");
+        window.dojoConfig = {
+            packages: [
+                {
+                    name: "app",
+                    location: locationPath + "./Week04/**/*"                          
+                   }
+                    ]
+};
+</script>
         <style>
             html, body, #mapid {
             padding: 0;
@@ -11,9 +23,19 @@
             width: 100%;
             }
         </style>
+        <style>
+        .esri-hello-world {
+         font-family: "Helvetica Neue", sans-serif;
+        display: inline-block;
+        padding: 10px;}
+        .esri-hello-world--emphasis {
+        font-weight: bold;
+        }
+        </style>
     </head>
     <body>
         <div id="mapid"></div>
         <script>main();</script>
+       <!-- <div id="widgetDiv"></div> -->
     </body>
 </html>
