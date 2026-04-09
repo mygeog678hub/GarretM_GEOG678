@@ -55,3 +55,19 @@ var markers = [
 markers.forEach(function(marker) {
     marker.addTo(map);
 });
+function onMapClick(e) {
+    alert("You clicked the map at " + e.latlng);
+}
+
+map.on('click', onMapClick);
+
+var popup = L.popup();
+
+function onMapClick(e) {
+    popup
+        .setLatLng(e.latlng)
+        .setContent("You clicked the map at " + e.latlng.toString())
+        .openOn(map);
+}
+// Add an event listener to the map that triggers a function when the map is clicked
+map.on('click', onMapClick);
