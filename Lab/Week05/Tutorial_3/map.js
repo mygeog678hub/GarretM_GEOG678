@@ -1,13 +1,13 @@
-// 1️⃣ Create map
+//  Create map
 var map = L.map('map');
 
-// 2️⃣ Add OpenStreetMap tiles
+// Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-// 3️⃣ Define reusable LeafIcon class
+// Define reusable LeafIcon class
 var LeafIcon = L.Icon.extend({
     options: {
         shadowUrl: 'https://leafletjs.com/examples/custom-icons/leaf-shadow.png',
