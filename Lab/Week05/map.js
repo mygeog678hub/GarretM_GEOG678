@@ -23,7 +23,7 @@ function onLocationError(e) {
 map.on('locationerror', onLocationError);
 // Add a circle to the map at a specific location with a given radius and styling
 var circle = L.circle([30.60982, -96.34033], {
-    color: 'red',
+    color: 'blue',
     fillColor: '#500000',
     fillOpacity: 0.5,
     radius: 200
@@ -69,5 +69,3 @@ function onMapClick(e) {
         .setContent("You clicked the map at " + e.latlng.toString())
         .openOn(map);
 }
-// Add an event listener to the map that triggers a function when the map is clicked
-map.on('click', onMapClick);
