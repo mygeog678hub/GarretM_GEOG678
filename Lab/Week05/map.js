@@ -22,11 +22,11 @@ function onLocationError(e) {
 }
 map.on('locationerror', onLocationError);
 // Add a circle to the map at a specific location with a given radius and styling
-var circle = L.circle([30.6084, -96.3402], {
+var circle = L.circle([30.60982, -96.34033], {
     color: 'red',
-    fillColor: '#f03',
+    fillColor: '#500000',
     fillOpacity: 0.5,
-    radius: 500
+    radius: 200
 }).addTo(map);
 circle.bindPopup("Kyle Field; Home of the Texas A&M Aggies Football Team.");
 
