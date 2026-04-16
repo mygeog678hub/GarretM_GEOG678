@@ -1,7 +1,7 @@
 P, li {
   color:black; font-size:18px;
   line-height: 1.5em;
-  text-align: justify;
+  text-align: justify-left;
 }
 body {
   max-width: 1000px; /* or a value within the 900px-1200px range */
