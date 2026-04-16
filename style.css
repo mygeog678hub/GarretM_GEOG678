@@ -1,5 +1,7 @@
 P, li {
   color:black; font-size:18px;
+  line-height: 1.5em;
+  text-align: justify;
 }
 body {
   max-width: 1000px; /* or a value within the 900px-1200px range */
@@ -19,27 +21,13 @@ body {
 #name {
   font-size: 45px;
   color: maroon;
+  text-align: center;
+}
+#location, #phone {
+  font-size: 18px;
+  text-align: center;
 }
 h2 {
   color: royalblue;
   background: lightgray;
-}
-#summary p {
-  line-height: 1.4em;
-  text-align: justify;
-    
-}
-#education li {
-  line-height: 1.5em;
-  text-align: justify;
-}
-#skills li {
-  line-height: 1.5em;
-}
-#experience li {
-  line-height: 1.5em;
-  text-align: justify;
-}
-#certifications li {
-  line-height: 1.5em;
 }
