@@ -5,9 +5,9 @@ P, li {
 }
 body {
   max-width: 1000px; /* or a value within the 900px-1200px range */
-  margin-left: auto;
+  margin-left: auto; /* center the page horizontally */
   margin-right: auto;
-  /* Add horizontal padding for small screens (see Margin section below) */
+  padding: 0 16px; /* space on left & right */
 }
  
 .heading-background {
