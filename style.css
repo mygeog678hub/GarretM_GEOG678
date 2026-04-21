@@ -31,3 +31,39 @@ h2 {
   color: royalblue;
   background: lightgray;
 }
+#printBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 15px;
+  font-size: 14px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#printBtn:hover {
+  background-color: #555;
+}
+@media print {
+  #printBtn {
+    display: none;
+  }
+}
+@media print {
+  body {
+    margin: 0;
+    font-size: 12pt;
+  }
+
+  h1, h2 {
+    color: black;
+  }
+
+  a {
+    text-decoration: none;
+    color: black;
+  }
+}
