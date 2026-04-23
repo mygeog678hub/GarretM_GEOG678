@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <style>
+        .bar {
+            font: 12px sans-serif;
+            margin: 4px 0;
+            padding: 5px;
+            color: white;
+        }
+
+        .high {
+            background-color: steelblue;
+        }
+
+        .low {
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+
+<h3>Weekly Temperatures</h3>
+<div id="chart"></div>
+
+<script>
+var data = [
+    {day: "Sat", high: 82, low: 67},
+    {day: "Sun", high: 81, low: 59},
+    {day: "Mon", high: 81, low: 50},
+    {day: "Tue", high: 70, low: 47},
+    {day: "Wed", high: 77, low: 51},
+    {day: "Thu", high: 78, low: 60},
+    {day: "Fri", high: 79, low: 66},
+    {day: "Sat", high: 80, low: 66}
+];
+
+var container = d3.select("#chart");
+
+data.forEach(function(d) {
+
+    container.append("div")
+        .attr("class", "bar high")
+        .style("width", (d.high * 3) + "px")
+        .text(d.day + " High: " + d.high + "°F");
+
+    container.append("div")
+        .attr("class", "bar low")
+        .style("width", (d.low * 3) + "px")
+        .text("   Low: " + d.low + "°F");
+
+});
+</script>
+
+</body>
+</html>

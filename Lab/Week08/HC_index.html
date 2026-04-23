@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Temperature Range Chart</title>
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+
+    <style>
+        #container {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container"></div>
+
+<script>
+Highcharts.chart('container', {
+    chart: {
+        type: 'arearange'
+    },
+
+    title: {
+        text: 'Weekly Temperature Range'
+    },
+
+    xAxis: {
+        categories: ['Sat','Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+    },
+
+    yAxis: {
+        title: {
+            text: 'Temperature (°F)'
+        }
+    },
+
+    tooltip: {
+        shared: true,
+        valueSuffix: ' °F'
+    },
+
+    legend: {
+        enabled: false
+    },
+
+    series: [{
+        name: 'Temperature Range',
+        data: [
+            [67,82],
+            [59,81],
+            [50,81],
+            [47,70],
+            [51,77],
+            [60,78],
+            [66,79],
+            [66,80]
+        ]
+    }]
+});
+</script>
+
+</body>
+</html>
