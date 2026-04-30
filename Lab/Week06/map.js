@@ -13,7 +13,9 @@ fetch("https://services1.arcgis.com/qr14biwnHA6Vis6l/arcgis/rest/services/tamubu
   .then(response => response.json())
   .then(data => {
 
-    var buildingsLayer = L.geoJSON(data, {
+    console.log(data.features[0].properties);
+
+    buildingsLayer = L.geoJSON(data, {
   style: style,
   onEachFeature: onEachFeature
 }).addTo(map);
@@ -96,3 +98,22 @@ fetch("https://services1.arcgis.com/qr14biwnHA6Vis6l/arcgis/rest/services/tamubu
         map.invalidateSize();
     }, 300);
 });
+function searchBuilding() {
+  var input = document.getElementById("searchInput").value.toLowerCase();
+
+  var found = false;
+
+  buildingsLayer.eachLayer(function (layer) {
+    var name = layer.feature.properties.BldgName;
+
+    if (name && name.toLowerCase().includes(input)) {
+      map.fitBounds(layer.getBounds());
+      layer.openPopup();
+      found = true;
+    }
+  });
+
+  if (!found) {
+    alert("Building not found");
+  }
+}
