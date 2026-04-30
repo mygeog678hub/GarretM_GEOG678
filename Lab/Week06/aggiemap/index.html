@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--Title for internet page-->
+    <title>Martin Garret TAMU Map</title>
+<!--Link to local CSS-->
+    <link rel="stylesheet" href="style.css">  
+<!-- Outside link to Leaflet CSS -->  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">       
+<!-- Outside link to Leaflet JS -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>   
+</head>
+<body>
+<!-- Map container with heading-->
+    <h2>TAMU Campus Buildings Map</h2>
+    <h3>Interactive map of campus buildings with hover details and zoom functionality</h3git>
+<!-- Search box for building names -->
+    <div id="searchBox">
+  <input type="text" id="searchInput" placeholder="Search for a building..." />
+  <button onclick="searchBuilding()">Search</button>
+</div>
+    <div id="mapid"></div>  
+<!-- 2. Your GeoJSON -->
+  
+<!--Import local JavaScript -->
+  <script src="map.js"></script>
+</body>
+</html>
