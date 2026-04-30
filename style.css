@@ -1,7 +1,7 @@
 P, li {
   color:black; font-size:18px;
   line-height: 1.5em;
-  text-align: justify-left;
+  text-align: left;
 }
 body {
   max-width: 1000px; /* or a value within the 900px-1200px range */
@@ -66,4 +66,46 @@ h2 {
     text-decoration: none;
     color: black;
   }
+}
+/* INTRO SECTION */
+#intro {
+  text-align: center;
+  margin: 30px 0;
+}
+
+#intro p {
+  max-width: 700px;
+  margin: auto;
+}
+
+/* PROJECTS SECTION */
+#projects {
+  margin: 30px 0;
+}
+
+#projects div {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 15px;
+}
+
+/* BUTTON STYLE */
+.btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 15px;
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+}
+div {
+  margin-bottom: 20px;
 }
