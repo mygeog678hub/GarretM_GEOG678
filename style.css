@@ -109,3 +109,8 @@ h2 {
 div {
   margin-bottom: 20px;
 }
+#projects arcgis-embedded-map {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+}

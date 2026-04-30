@@ -2,7 +2,8 @@
 <html>
 <head>  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" type="text/css" href="style.css">    
+  <link rel="stylesheet" type="text/css" href="style.css">   
+  <script type="module" src="https://js.arcgis.com/5.0/embeddable-components/"></script> 
   </head>
 <body>
   <!-- contact section -->
@@ -36,6 +37,32 @@
       View TAMU Campus Map
     </a>
   </div>
+  <div>
+  <h3>Operational GIS Dashboard (ArcGIS Online)</h3>
+  <p>
+    Interactive dashboard for visualizing and analyzing spatial data using ArcGIS Online.
+  </p>
+
+  <a href="https://www.arcgis.com/apps/dashboards/6e065489301b452489e0335b50e5c38b" 
+     target="_blank" 
+     class="btn">
+    View Dashboard
+  </a>
+</div>
+  <div>
+  <h3>ArcGIS Web Map</h3>
+  <p>
+    Interactive GIS map built using ArcGIS Online, featuring an oil and gas data product for the state of Utah.
+  </p>
+
+  <arcgis-embedded-map
+    style="height:500px;width:100%;"
+    item-id="201bbdd54030490dac89cc8c2c08b92c"
+    theme="light"
+    portal-url="https://tamu.maps.arcgis.com">
+  </arcgis-embedded-map>
+</div>
+
 </div>
   <div id="summary">
     <h2>Professional Summary</h2>
