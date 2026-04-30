@@ -9,6 +9,17 @@
     maxZoom: 19
 }).addTo(map);
 
+fetch("https://services1.arcgis.com/qr14biwnHA6Vis6l/arcgis/rest/services/tamubuildings_garret/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=geojson")
+  .then(response => response.json())
+  .then(data => {
+
+    var buildingsLayer = L.geoJSON(data, {
+  style: style,
+  onEachFeature: onEachFeature
+}).addTo(map);
+
+  })
+  .catch(error => console.error("Error loading data:", error));
 
       // Create info control
       var info = L.control();
@@ -78,11 +89,7 @@
         });
       }
       
-      // Add GeoJSON layer with the styling and interactions
-      var buildingsLayer = L.geoJSON(tamu, {
-        style: style,
-        onEachFeature: onEachFeature
-      }).addTo(map);
+      
     // Invalidate size after a short delay to ensure proper rendering
     window.addEventListener("load", function () {
     setTimeout(() => {
