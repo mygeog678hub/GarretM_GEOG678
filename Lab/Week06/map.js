@@ -57,7 +57,7 @@ fetch("https://services1.arcgis.com/qr14biwnHA6Vis6l/arcgis/rest/services/tamubu
         
         layer.setStyle({
           weight: 3,
-          color: '#FBF719', // Bright yellow border
+          color: '#FFD700', // Bright yellow border
           dashArray: '',
           fillOpacity: 0.9
         });
