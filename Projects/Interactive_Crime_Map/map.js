@@ -1,4 +1,4 @@
-var map = L.map('mapid').setView([29.76, -95.37], 11);
+var map = L.map('mapid').setView([37.8, -96], 4);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
@@ -8,10 +8,10 @@ var clusterLayer = L.markerClusterGroup();
 var heatLayer;
 var crimePoints = [];
 
-// ✅ REAL DATASETS
+// WORKING TEST DATA
 var dataUrl = "https://raw.githubusercontent.com/glynnbird/usstatesgeojson/master/california.geojson";
 
-function loadCityData() {
+function loadData() {
 
   clusterLayer.clearLayers();
   crimePoints = [];
@@ -24,6 +24,9 @@ function loadCityData() {
 
       data.features.forEach(f => {
 
+        if (!f.geometry || !f.geometry.coordinates) return;
+
+        // get a point from polygon
         var coords = f.geometry.coordinates[0][0];
         var latlng = [coords[1], coords[0]];
 
@@ -43,45 +46,14 @@ function loadCityData() {
       });
 
       map.addLayer(clusterLayer);
-      buildHeat();
+
+      heatLayer = L.heatLayer(crimePoints, {
+        radius: 25,
+        blur: 15
+      });
 
     })
     .catch(err => console.error("FETCH ERROR:", err));
-
-}
-function getType(f) {
-  return f.attributes?.offense ||
-         f.attributes?.offense_type ||
-         f.attributes?.incident_type ||
-         f.attributes?.ucr_description ||
-         "Other";
-}
-
-function getDescription(f) {
-  return f.attributes?.offense_desc ||
-         f.attributes?.description ||
-         "No description";
-}
-
-function getColor(type) {
-  type = type.toLowerCase();
-
-  if (type.includes("assault") || type.includes("robbery")) return "red";
-  if (type.includes("theft") || type.includes("burglary")) return "orange";
-
-  return "blue";
-}
-
-// 🔥 HEATMAP
-function buildHeat() {
-  if (heatLayer) {
-    map.removeLayer(heatLayer);
-  }
-
-  heatLayer = L.heatLayer(crimePoints, {
-    radius: 25,
-    blur: 15
-  });
 }
 
 function toggleHeat() {
@@ -92,12 +64,5 @@ function toggleHeat() {
   }
 }
 
-function getCityCenter(city) {
-  switch(city) {
-    case "austin": return [30.27, -97.74];
-    default: return [29.76, -95.37];
-  }
-}
-
-// 🚀 INITIAL LOAD
-loadCityData();
+// LOAD
+loadData();
