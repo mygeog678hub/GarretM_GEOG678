@@ -23,61 +23,59 @@ function loadCityData() {
   crimePoints = [];
 
   fetch(url + "/query?where=1=1&outFields=*&outSR=4326&f=geojson")
-    .then(data => {
+  .then(res => res.json())   // ✅ THIS WAS MISSING
+  .then(data => {
+
     console.log("DATA:", data);
 
-    // ✅ INSERT RIGHT HERE
     if (!data.features || data.features.length === 0) {
-        console.error("No features returned from service");
-        return;
+      console.error("No features returned from service");
+      return;
     }
 
     data.features.forEach(f => {
 
-        if (!f.geometry) return;
+      if (!f.geometry) return;
 
-var latlng;
+      var latlng;
 
-// GeoJSON format
-if (f.geometry.coordinates) {
-  latlng = [f.geometry.coordinates[1], f.geometry.coordinates[0]];
-}
+      // GeoJSON
+      if (f.geometry.coordinates) {
+        latlng = [f.geometry.coordinates[1], f.geometry.coordinates[0]];
+      }
 
-// ArcGIS format
-else if (f.geometry.x && f.geometry.y) {
-  latlng = [f.geometry.y, f.geometry.x];
-}
+      // ArcGIS
+      else if (f.geometry.x && f.geometry.y) {
+        latlng = [f.geometry.y, f.geometry.x];
+      }
 
-else {
-  return; // skip bad features
-}
+      else {
+        return;
+      }
 
-        var type = getType(f);
+      var type = getType(f);
 
-        var marker = L.circleMarker(latlng, {
-          radius: 5,
-          fillColor: getColor(type),
-          color: "#000",
-          weight: 1,
-          fillOpacity: 0.8
-        });
-
-        marker.bindPopup(`<b>${type}</b><br>${getDescription(f)}`);
-
-        clusterLayer.addLayer(marker);
-
-        crimePoints.push(latlng);
-
+      var marker = L.circleMarker(latlng, {
+        radius: 5,
+        fillColor: getColor(type),
+        color: "#000",
+        weight: 1,
+        fillOpacity: 0.8
       });
 
-      map.addLayer(clusterLayer);
+      marker.bindPopup(`<b>${type}</b><br>${getDescription(f)}`);
 
-      map.setView(getCityCenter(city), 12);
+      clusterLayer.addLayer(marker);
+      crimePoints.push(latlng);
 
-      buildHeat();
+    });
 
-    })
-    .catch(err => console.error(err));
+    map.addLayer(clusterLayer);
+    map.setView(getCityCenter(city), 12);
+    buildHeat();
+
+  })
+  .catch(err => console.error("FETCH ERROR:", err));
 }
 
 function getType(f) {
