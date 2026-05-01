@@ -4,76 +4,71 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-var crimeLayer;
-var crimeData;
+var clusterLayer = L.markerClusterGroup();
+var heatLayer;
+var crimePoints = [];
 
-// 🔥 Replace with REAL ArcGIS crime layers
+// ✅ REAL DATASETS
 var cityServices = {
-  houston: "https://services.arcgis.com/EXAMPLE/FeatureServer/0",
-  austin: "https://services.arcgis.com/EXAMPLE2/FeatureServer/0"
+  houston: "https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services/Houston_Crime/FeatureServer/0",
+  austin: "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/Crime_Reports/FeatureServer/0"
 };
 
 function loadCityData() {
+
   var city = document.getElementById("citySelect").value;
   var url = cityServices[city];
+
+  clusterLayer.clearLayers();
+  crimePoints = [];
 
   fetch(url + "/query?where=1=1&outFields=*&outSR=4326&f=geojson")
     .then(res => res.json())
     .then(data => {
 
-      crimeData = data;
+      data.features.forEach(f => {
 
-      populateFilter(data);
-      drawData(data);
+        var coords = f.geometry.coordinates;
+        var latlng = [coords[1], coords[0]];
+
+        var type = getType(f);
+
+        var marker = L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: getColor(type),
+          color: "#000",
+          weight: 1,
+          fillOpacity: 0.8
+        });
+
+        marker.bindPopup(`<b>${type}</b><br>${getDescription(f)}`);
+
+        clusterLayer.addLayer(marker);
+
+        crimePoints.push(latlng);
+
+      });
+
+      map.addLayer(clusterLayer);
 
       map.setView(getCityCenter(city), 12);
+
+      buildHeat();
 
     })
     .catch(err => console.error(err));
 }
 
-function drawData(data) {
-
-  if (crimeLayer) crimeLayer.clearLayers();
-
-  crimeLayer = L.geoJSON(data, {
-
-    pointToLayer: function (feature, latlng) {
-
-      var type = getType(feature);
-
-      return L.circleMarker(latlng, {
-        radius: 6,
-        fillColor: getColor(type),
-        color: "#000",
-        weight: 1,
-        fillOpacity: 0.8
-      });
-    },
-
-    onEachFeature: function (feature, layer) {
-
-      var type = getType(feature);
-      var desc = getDescription(feature);
-
-      layer.bindPopup(
-        `<b>${type}</b><br>${desc}`
-      );
-    }
-
-  }).addTo(map);
-}
-
-function getType(feature) {
-  return feature.properties.type ||
-         feature.properties.offense ||
-         feature.properties.category ||
+function getType(f) {
+  return f.properties.offense ||
+         f.properties.crime_type ||
+         f.properties.category ||
          "Other";
 }
 
-function getDescription(feature) {
-  return feature.properties.description ||
-         feature.properties.offense_desc ||
+function getDescription(f) {
+  return f.properties.offense_desc ||
+         f.properties.description ||
          "No description";
 }
 
@@ -86,52 +81,24 @@ function getColor(type) {
   return "blue";
 }
 
-// 🔽 FILTER
-function filterCrime() {
-  var selected = document.getElementById("crimeFilter").value;
+// 🔥 HEATMAP
+function buildHeat() {
+  if (heatLayer) {
+    map.removeLayer(heatLayer);
+  }
 
-  var filtered = crimeData.features.filter(f => {
-    return selected === "all" || getType(f) === selected;
-  });
-
-  drawData({
-    type: "FeatureCollection",
-    features: filtered
+  heatLayer = L.heatLayer(crimePoints, {
+    radius: 25,
+    blur: 15
   });
 }
 
-// 🔽 SEARCH
-function searchCrime() {
-  var input = document.getElementById("searchInput").value.toLowerCase();
-
-  crimeLayer.eachLayer(function (layer) {
-
-    var props = layer.feature.properties;
-
-    var text = JSON.stringify(props).toLowerCase();
-
-    if (text.includes(input)) {
-      map.fitBounds(layer.getBounds());
-      layer.openPopup();
-    }
-  });
-}
-
-// 🔽 Populate filter dropdown dynamically
-function populateFilter(data) {
-  var types = new Set();
-
-  data.features.forEach(f => {
-    types.add(getType(f));
-  });
-
-  var select = document.getElementById("crimeFilter");
-
-  select.innerHTML = '<option value="all">All Crimes</option>';
-
-  types.forEach(t => {
-    select.innerHTML += `<option value="${t}">${t}</option>`;
-  });
+function toggleHeat() {
+  if (map.hasLayer(heatLayer)) {
+    map.removeLayer(heatLayer);
+  } else {
+    map.addLayer(heatLayer);
+  }
 }
 
 function getCityCenter(city) {
@@ -141,5 +108,5 @@ function getCityCenter(city) {
   }
 }
 
-// 🚀 Load default
+// 🚀 INITIAL LOAD
 loadCityData();

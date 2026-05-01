@@ -1,43 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <title>Multi-City Crime Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<title>Crime Dashboard Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Cluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<!-- Heatmap -->
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
 </head>
 
 <body>
 
-<h1>Crime Analysis Dashboard</h1>
+<h1>Multi-City Crime Dashboard</h1>
 
 <div id="controls">
-
   <select id="citySelect" onchange="loadCityData()">
     <option value="houston">Houston</option>
     <option value="austin">Austin</option>
   </select>
 
-  <select id="crimeFilter" onchange="filterCrime()">
-    <option value="all">All Crimes</option>
-  </select>
-
-  <input type="text" id="searchInput" placeholder="Search crime..." />
-  <button onclick="searchCrime()">Search</button>
-
+  <button onclick="toggleHeat()">Toggle Heatmap</button>
 </div>
 
 <div id="mapid"></div>
-
-<div id="legend">
-  <h4>Legend</h4>
-  <div><span style="background:red"></span> Violent</div>
-  <div><span style="background:orange"></span> Property</div>
-  <div><span style="background:blue"></span> Other</div>
-</div>
 
 <script src="map.js"></script>
 

@@ -15,20 +15,6 @@ h1 {
 }
 
 #mapid {
-  height: 500px;
+  height: 550px;
   width: 100%;
-}
-
-#legend {
-  background: white;
-  padding: 10px;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-}
-
-#legend span {
-  display: inline-block;
-  width: 15px;
-  height: 15px;
-  margin-right: 5px;
 }
