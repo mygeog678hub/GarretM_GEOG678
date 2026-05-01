@@ -10,8 +10,8 @@ var crimePoints = [];
 
 // ✅ REAL DATASETS
 var cityServices = {
-  houston: "https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services/Houston_Crime/FeatureServer/0",
-  austin: "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/Crime_Reports/FeatureServer/0"
+  houston: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Houston_Crime_Data/FeatureServer/0",
+  austin: "https://services.arcgis.com/0L95CJ0VTaxqcmED/arcgis/rest/services/Austin_Crime_Data/FeatureServer/0"
 };
 
 function loadCityData() {
@@ -23,13 +23,34 @@ function loadCityData() {
   crimePoints = [];
 
   fetch(url + "/query?where=1=1&outFields=*&outSR=4326&f=geojson")
-    .then(res => res.json())
     .then(data => {
+    console.log("DATA:", data);
 
-      data.features.forEach(f => {
+    // ✅ INSERT RIGHT HERE
+    if (!data.features || data.features.length === 0) {
+        console.error("No features returned from service");
+        return;
+    }
 
-        var coords = f.geometry.coordinates;
-        var latlng = [coords[1], coords[0]];
+    data.features.forEach(f => {
+
+        if (!f.geometry) return;
+
+var latlng;
+
+// GeoJSON format
+if (f.geometry.coordinates) {
+  latlng = [f.geometry.coordinates[1], f.geometry.coordinates[0]];
+}
+
+// ArcGIS format
+else if (f.geometry.x && f.geometry.y) {
+  latlng = [f.geometry.y, f.geometry.x];
+}
+
+else {
+  return; // skip bad features
+}
 
         var type = getType(f);
 
@@ -61,8 +82,9 @@ function loadCityData() {
 
 function getType(f) {
   return f.properties.offense ||
-         f.properties.crime_type ||
-         f.properties.category ||
+         f.properties.offense_type ||
+         f.properties.incident_type ||
+         f.properties.ucr_description ||
          "Other";
 }
 
