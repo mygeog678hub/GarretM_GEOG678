@@ -1,0 +1,46 @@
+body {
+  font-family: Arial;
+  max-width: 1000px;
+  margin: auto;
+  padding: 10px;
+}
+
+h1 {
+  text-align: center;
+}
+
+#controls {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#mapid {
+  height: 550px;
+  width: 100%;
+}
+#legend {
+  background: white;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+#legend h3 {
+  margin-top: 0;
+}
+
+#legend span {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.note {
+  font-size: 12px;
+  color: #555;
+  margin-top: 8px;
+}

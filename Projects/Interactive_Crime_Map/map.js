@@ -16,44 +16,39 @@ function loadData() {
   clusterLayer.clearLayers();
   crimePoints = [];
 
-  fetch(dataUrl)
-    .then(res => res.json())
-    .then(data => {
+  fetch("houston_crime.geojson")
+  .then(res => res.json())
+  .then(data => {
 
-      console.log("DATA:", data);
+    data.features.forEach(f => {
 
-      data.features.forEach(f => {
+      var coords = f.geometry.coordinates;
+      var latlng = [coords[1], coords[0]];
 
-        if (!f.geometry || !f.geometry.coordinates) return;
+      var type = f.properties.type;
 
-        // get a point from polygon
-        var coords = f.geometry.coordinates[0][0];
-        var latlng = [coords[1], coords[0]];
-
-        var marker = L.circleMarker(latlng, {
-          radius: 6,
-          fillColor: "blue",
-          color: "#000",
-          weight: 1,
-          fillOpacity: 0.8
-        });
-
-        marker.bindPopup("Test Feature");
-
-        clusterLayer.addLayer(marker);
-        crimePoints.push(latlng);
-
+      var marker = L.circleMarker(latlng, {
+        radius: 6,
+        fillColor: getColor(type),
+        color: "#000",
+        weight: 1,
+        fillOpacity: 0.8
       });
 
-      map.addLayer(clusterLayer);
+      marker.bindPopup(
+        `<b>${type}</b><br>${f.properties.date}<br>${f.properties.description}`
+      );
 
-      heatLayer = L.heatLayer(crimePoints, {
-        radius: 25,
-        blur: 15
-      });
+      clusterLayer.addLayer(marker);
+      crimePoints.push(latlng);
 
-    })
-    .catch(err => console.error("FETCH ERROR:", err));
+    });
+
+    map.addLayer(clusterLayer);
+    buildHeat();
+
+  })
+  .catch(err => console.error(err));
 }
 
 function toggleHeat() {

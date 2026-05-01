@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Geographic Profiling Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+</head>
+
+<body>
+
+    <input id="searchBox" type="text" placeholder="Enter city, state" />
+<button onclick="searchLocation()">Go</button>
+
+<h1>Geographic Offender Profiling Tool</h1>
+
+<div id="controls">
+  <button onclick="analyze()">Analyze Pattern</button>
+  <button onclick="clearPoints()">Clear Points</button>
+</div>
+
+<div id="mapid"></div>
+
+<div id="legend">
+  <h3>Probability Legend</h3>
+  <div><span style="background:red"></span> High probability (likely base)</div>
+  <div><span style="background:orange"></span> Moderate probability</div>
+  <div><span style="background:blue"></span> Low probability</div>
+  <p class="note">
+    Based on distance-decay and buffer zone modeling.  
+    Red areas indicate the most probable offender home base.
+  </p>
+</div>
+
+<script src="map.js"></script>
+
+</body>
+</html>

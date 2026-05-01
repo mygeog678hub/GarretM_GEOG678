@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Theft",
+        "date": "2026-04-01",
+        "description": "Vehicle break-in"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-95.3698, 29.7604]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Assault",
+        "date": "2026-04-02",
+        "description": "Aggravated assault"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-95.3584, 29.7499]
+      }
+    }
+  ]
+}
