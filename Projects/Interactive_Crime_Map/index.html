@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Crime Map Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+
+<h1>Crime Map Dashboard</h1>
+
+<div id="controls">
+  <select id="crimeFilter" onchange="filterCrime()">
+    <option value="all">All Crimes</option>
+    <option value="Theft">Theft</option>
+    <option value="Assault">Assault</option>
+    <option value="Burglary">Burglary</option>
+  </select>
+
+  <input type="text" id="searchInput" placeholder="Search crime..." />
+  <button onclick="searchCrime()">Search</button>
+</div>
+
+<div id="mapid"></div>
+
+<div id="legend">
+  <h4>Legend</h4>
+  <div><span style="background:orange"></span> Theft</div>
+  <div><span style="background:red"></span> Assault</div>
+  <div><span style="background:purple"></span> Burglary</div>
+</div>
+
+<script src="map.js"></script>
+
+</body>
+</html>

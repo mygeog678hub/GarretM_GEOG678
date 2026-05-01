@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Theft",
+        "date": "2026-04-01",
+        "description": "Vehicle break-in"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-96.34, 30.61]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Assault",
+        "date": "2026-04-02",
+        "description": "Physical altercation"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-96.33, 30.62]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "Burglary",
+        "date": "2026-04-03",
+        "description": "Home break-in"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-96.35, 30.60]
+      }
+    }
+  ]
+}
