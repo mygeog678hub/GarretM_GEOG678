@@ -4,10 +4,12 @@ P, li {
   text-align: left;
 }
 body {
-  max-width: 1000px; /* or a value within the 900px-1200px range */
-  margin-left: auto; /* center the page horizontally */
+  max-width: 1000px;
+  margin-left: auto;
   margin-right: auto;
-  padding: 0 16px; /* space on left & right */
+  padding: 0 16px;
+
+  background-color: #f4f6f8; /* light gray-blue */
 }
  
 .heading-background {
@@ -19,7 +21,7 @@ body {
   
 }
 #name {
-  font-size: 45px;
+  font-size: 35px;
   color: maroon;
   text-align: center;
 }
