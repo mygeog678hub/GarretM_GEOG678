@@ -148,7 +148,7 @@ function App() {
 
   return (
     <div style={{ padding: 20, background: "#f5f7fa" }}>
-      <h1>Workforce Dashboard</h1>
+      <h1>Workforce Dashboard <span style={{fontSize: 14}}>v3</span></h1>
 
       {/* 2x2 GRID */}
       <div style={{

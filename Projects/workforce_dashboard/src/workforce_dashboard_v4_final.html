@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workforce Dashboard v4</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body { font-family: Arial; margin:20px; background:#f4f6f8; }
+h2 { margin-top:25px; }
+input, select, button { margin:5px; padding:6px; }
+table { border-collapse: collapse; width:100%; margin-top:10px; }
+th, td { border:1px solid #ccc; padding:8px; }
+th { background:#eee; }
+</style>
+</head>
+
+<body>
+
+<h1>Workforce Dashboard v4</h1>
+
+<h2>Map View</h2>
+<div id="map" style="height:400px;"></div>
+
+<!-- EMPLOYEE -->
+<div id="employeeSection">
+<h2>Add Employee</h2>
+<input id="empName" placeholder="Name">
+<select id="empRole">
+<option>Worker</option>
+<option>Foreman</option>
+<option>Manager</option>
+</select>
+<button onclick="addEmployee()">Add</button>
+</div>
+
+<!-- SITE -->
+<div id="siteSection">
+<h2>Add Site</h2>
+<input id="siteName" placeholder="Site Name">
+<input id="siteCity" placeholder="City">
+<input id="siteState" placeholder="State">
+<button onclick="addSite()">Add</button>
+</div>
+
+<!-- ASSET -->
+<div id="assetSection">
+<h2>Add Asset</h2>
+<input id="assetId" placeholder="Asset ID">
+<input id="assetType" placeholder="Type">
+<input id="serialNumber" placeholder="Serial Number">
+<button onclick="addAsset()">Add</button>
+</div>
+
+<h2>Assign Asset</h2>
+<select id="assignAsset"></select>
+<select id="assignEmployee"></select>
+<select id="assignSite"></select>
+<button onclick="assignAsset()">Assign</button>
+
+<h2>Log Employee (No Asset)</h2>
+<select id="logEmployee"></select>
+<select id="logSite"></select>
+<button onclick="logWork()">Log</button>
+
+<h2>Maintenance</h2>
+<select id="maintAsset"></select>
+<input id="maintIssue" placeholder="Issue">
+<input id="maintLocation" placeholder="Location">
+<button onclick="reportMaintenance()">Report</button>
+
+<h2>Assets</h2>
+<table id="assetTable"></table>
+
+<h2>Daily Report</h2>
+<button onclick="exportCSV()">Download CSV</button>
+<table id="reportTable"></table>
+
+<script>
+
+// DATA
+let employees=[], sites=[], assets=[], assignments=[], workLogs=[];
+
+// MAP
+let map = L.map('map').setView([29.7604, -95.3698], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+ maxZoom:19
+}).addTo(map);
+
+let siteMarkers = {};
+
+// HELPERS
+const today=()=>new Date().toISOString().split('T')[0];
+
+function focusField(id){
+ const el=document.getElementById(id);
+ if(el) el.focus();
+}
+
+// GEOCODE
+async function geocode(city,state){
+ const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city},${state}`);
+ const data=await res.json();
+ if(!data.length) return null;
+ return {lat:+data[0].lat, lng:+data[0].lon};
+}
+
+// ICON
+function createIcon(color){
+ return new L.Icon({
+   iconUrl:`https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+   shadowUrl:'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+   iconSize:[25,41],
+   iconAnchor:[12,41]
+ });
+}
+
+// ADD EMPLOYEE
+function addEmployee(){
+ const name=empName.value.trim();
+ if(!name) return;
+
+ employees.push({id:"EMP-"+(employees.length+1), name});
+ empName.value="";
+ refresh();
+ focusField("empName");
+}
+
+// ADD SITE
+async function addSite(){
+ const name=siteName.value.trim();
+ if(!name) return;
+
+ const coords=await geocode(siteCity.value,siteState.value);
+ if(!coords){ alert("Location not found"); return;}
+
+ const site={id:"SITE-"+(sites.length+1),name,lat:coords.lat,lng:coords.lng};
+ sites.push(site);
+
+ const marker=L.marker([coords.lat,coords.lng],{icon:createIcon("blue")})
+   .addTo(map)
+   .bindPopup("Loading...");
+
+ siteMarkers[site.id]=marker;
+
+ siteName.value=siteCity.value=siteState.value="";
+ refresh();
+ focusField("siteName");
+}
+
+// ADD ASSET
+function addAsset(){
+ const id=assetId.value.trim();
+ if(!id) return;
+
+ assets.push({id,type:assetType.value,status:"Available"});
+ assetId.value=assetType.value=serialNumber.value="";
+ refresh();
+ focusField("assetId");
+}
+
+// ASSIGN
+function assignAsset(){
+
+  const assetIdVal = document.getElementById("assignAsset").value;
+  const empId = document.getElementById("assignEmployee").value;
+  const siteId = document.getElementById("assignSite").value;
+
+  const asset = assets.find(a=>a.id===assetIdVal);
+  if(!asset) return;
+
+  asset.status="Assigned";
+
+  assignments.push({
+    assetId: assetIdVal,
+    employeeId: empId,
+    siteId: siteId
+  });
+
+  refresh();
+}
+
+// LOG WORK
+function logWork(){
+
+  const empId = document.getElementById("logEmployee").value;
+  const siteId = document.getElementById("logSite").value;
+
+  if(!empId || !siteId){
+    alert("Select employee and site");
+    return;
+  }
+
+  // prevent duplicate if already assigned
+  const alreadyAssigned = assignments.some(a =>
+    a.employeeId === empId &&
+    a.siteId === siteId &&
+    !a.returnedAt
+  );
+
+  if(alreadyAssigned){
+    alert("Employee already assigned at this site");
+    return;
+  }
+
+  workLogs.push({
+    id: "LOG-" + (workLogs.length + 1),
+    employeeId: empId,
+    siteId: siteId,
+    date: today()
+  });
+
+  console.log("Work logs:", workLogs); // DEBUG
+
+  refresh();
+}
+
+// MAINTENANCE
+function reportMaintenance(){
+ const asset=assets.find(a=>a.id===maintAsset.value);
+ if(!asset) return;
+
+ asset.status="In Maintenance";
+ refresh();
+}
+
+// COLOR LOGIC
+function getSiteColor(siteId){
+
+ const hasMaintenance = assignments.some(a=>{
+   if(a.siteId!==siteId) return false;
+   const asset=assets.find(x=>x.id===a.assetId);
+   return asset && asset.status==="In Maintenance";
+ });
+
+ if(hasMaintenance) return "red";
+
+ const hasActivity =
+   assignments.some(a=>a.siteId===siteId) ||
+   workLogs.some(w=>w.siteId===siteId);
+
+ if(hasActivity) return "green";
+
+ return "blue";
+}
+
+// POPUP
+function updatePopup(siteId){
+ const marker=siteMarkers[siteId];
+ if(!marker) return;
+
+ const site=sites.find(s=>s.id===siteId);
+
+ const emps=[
+   ...assignments.filter(a=>a.siteId===siteId).map(a=>{
+     const e=employees.find(x=>x.id===a.employeeId);
+     return e?e.name:"";
+   }),
+   ...workLogs.filter(w=>w.siteId===siteId).map(w=>{
+     const e=employees.find(x=>x.id===w.employeeId);
+     return e?e.name:"";
+   })
+ ];
+
+ const assetsList=assignments
+   .filter(a=>a.siteId===siteId)
+   .map(a=>a.assetId);
+
+ marker.setPopupContent(`
+ <b>${site.name}</b><br>
+ <b>Employees:</b><br>${emps.join("<br>")||"None"}<br><br>
+ <b>Assets:</b><br>${assetsList.join("<br>")||"None"}
+ `);
+}
+
+// UPDATE MAP
+function updateMap(){
+ sites.forEach(s=>{
+   const m=siteMarkers[s.id];
+   if(!m) return;
+
+   m.setIcon(createIcon(getSiteColor(s.id)));
+   updatePopup(s.id);
+ });
+}
+
+// DROPDOWNS
+function refreshDropdowns(){
+
+  document.getElementById("assignAsset").innerHTML =
+    assets.map(a=>`<option value="${a.id}">${a.id}</option>`).join('');
+
+  document.getElementById("assignEmployee").innerHTML =
+    employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+
+  document.getElementById("assignSite").innerHTML =
+    sites.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+  document.getElementById("logEmployee").innerHTML =
+    employees.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+
+  document.getElementById("logSite").innerHTML =
+    sites.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+
+  document.getElementById("maintAsset").innerHTML =
+    assets.map(a=>`<option value="${a.id}">${a.id}</option>`).join('');
+}
+
+// TABLE
+function renderAssets(){
+  assetTable.innerHTML=`
+  <tr>
+    <th>ID</th>
+    <th>Status</th>
+    <th>Assigned To</th>
+    <th>Actions</th>
+  </tr>
+  ${
+    assets.map(a=>{
+      const emp = employees.find(e=>e.id===a.assignedToEmployeeId);
+
+      return `
+      <tr>
+        <td>${a.id}</td>
+        <td>${a.status}</td>
+        <td>${emp ? emp.name : "-"}</td>
+        <td>
+          ${
+            a.status === "Assigned"
+            ? `<button onclick="unassignAsset('${a.id}')">Unassign</button>`
+            : ""
+          }
+        </td>
+      </tr>
+      `;
+    }).join('')
+  }
+  `;
+}
+// UNASSIGN
+function unassignAsset(assetId){
+
+  const asset = assets.find(a=>a.id===assetId);
+  if(!asset) return;
+
+  // reset asset
+  asset.status = "Available";
+  asset.assignedToEmployeeId = null;
+  asset.currentSiteId = null;
+
+  // remove active assignment
+  assignments = assignments.filter(a=>a.assetId !== assetId);
+
+  refresh();
+}
+
+// REPORT
+function renderReport(){
+
+  let rows = [];
+
+  assignments.forEach(a=>{
+    const emp = employees.find(e=>e.id===a.employeeId);
+    const site = sites.find(s=>s.id===a.siteId);
+
+    rows.push({
+      date: today(),
+      site: site ? site.name : "",
+      employee: emp ? emp.name : "",
+      asset: a.assetId
+    });
+  });
+
+  workLogs.forEach(log=>{
+
+  const emp = employees.find(e=>e.id===log.employeeId);
+  const site = sites.find(s=>s.id===log.siteId);
+
+  rows.push({
+    date: today(),
+    site: site ? site.name : "",
+    employee: emp ? emp.name : "",
+    asset: "",
+    type: "",
+    status: "No Asset"
+  });
+});
+
+  reportTable.innerHTML = `
+    <tr><th>Date</th><th>Site</th><th>Employee</th><th>Asset</th></tr>
+    ${
+      rows.map(r=>`
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.site}</td>
+          <td>${r.employee}</td>
+          <td>${r.asset}</td>
+        </tr>
+      `).join('')
+    }
+  `;
+
+  return rows;
+}
+
+// CSV
+function exportCSV(){
+  const data = renderReport();
+  if(!data.length){ alert("No data"); return;}
+
+  let csv = "Date,Site,Employee,Asset\n";
+
+  data.forEach(r=>{
+    csv += `${r.date},${r.site},${r.employee},${r.asset}\n`;
+  });
+
+  const blob = new Blob([csv]);
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "report.csv";
+  a.click();
+}
+
+// ENTER KEY
+document.addEventListener("keydown",e=>{
+ if(e.key!=="Enter") return;
+ e.preventDefault();
+
+ const active=document.activeElement;
+
+ if(active.closest("#employeeSection")) addEmployee();
+ else if(active.closest("#siteSection")) addSite();
+ else if(active.closest("#assetSection")) addAsset();
+ else if(active.closest("#maintenanceSection")) reportMaintenance();
+});
+
+// REFRESH
+function refresh(){
+ refreshDropdowns();
+ renderAssets();
+ renderReport();
+ updateMap();
+}
+
+refresh();
+
+</script>
+</body>
+</html>
