@@ -521,8 +521,10 @@ function exportCSV(){
   let csv = "Date,Site,Employee,Asset\n";
 
   data.forEach(r=>{
-    csv += `${r.date},${r.site},${r.employee},${r.asset}\n`;
-  });
+  const dateTime = r.date; // already includes time
+
+  csv += `"${dateTime}","${r.site}","${r.employee}","${r.asset}"\n`;
+});
 
   const blob = new Blob([csv]);
   const url = URL.createObjectURL(blob);
