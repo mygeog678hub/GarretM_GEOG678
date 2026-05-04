@@ -7,6 +7,11 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+
+  <title>WorkForge</title>
+  <link rel="stylesheet" href="styles.css">
+
+
 <style>
 body { font-family: Arial; margin:20px; background:#f4f6f8; }
 h2 { margin-top:25px; }
@@ -14,10 +19,41 @@ input, select, button { margin:5px; padding:6px; }
 table { border-collapse: collapse; width:100%; margin-top:10px; }
 th, td { border:1px solid #ccc; padding:8px; }
 th { background:#eee; }
+
+.navbar {
+  height: 60px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 30px;
+  width: auto;
+}
+
+.app-name {
+  color: white;
+  margin-left: 10px;
+  font-weight: 600;
+}
 </style>
 </head>
 
 <body>
+
+  <div class="navbar">
+  <div class="brand">
+    <img src="workforge-logo.png" class="logo">
+    <span class="app-name">WorkForge</span>
+  </div>
+</div>
 
 <h1>Workforce Dashboard v4.0</h1>
 <p style="background:#222;color:#fff;padding:8px;">
@@ -89,6 +125,22 @@ let employees=[], sites=[], assets=[], assignments=[], workLogs=[];
 // MAP
 let map = L.map('map').setView([29.7604, -95.3698], 10);
 
+const homeControl = L.control({ position: 'topleft' });
+
+homeControl.onAdd = function () {
+  const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+  div.innerHTML = '<a href="#" title="Home">🏠</a>';
+
+  div.onclick = function (e) {
+    e.preventDefault();
+    map.flyTo([29.7604, -95.3698], 10);
+  };
+
+  return div;
+};
+
+homeControl.addTo(map);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
  maxZoom:19
 }).addTo(map);
@@ -97,6 +149,7 @@ let siteMarkers = {};
 
 // HELPERS
 const today=()=>new Date().toISOString().split('T')[0];
+const houston = [29.7604, -95.3698];
 
 function focusField(id){
  const el=document.getElementById(id);
@@ -451,6 +504,8 @@ function refresh(){
 }
 
 refresh();
+
+
 
 </script>
 <footer style="margin-top:40px;font-size:12px;color:#555;">
