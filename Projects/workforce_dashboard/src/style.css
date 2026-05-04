@@ -1,0 +1,44 @@
+/* Top bar */
+.navbar {
+  height: 60px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+}
+
+/* Brand container */
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo (THIS controls size) */
+.logo {
+  height: 30px;
+  width: auto;
+}
+
+/* App name */
+.app-name {
+  color: white;
+  margin-left: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+.home-btn {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  z-index: 1000;
+  padding: 8px 12px;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.home-btn:hover {
+  background: #1e293b;
+}
