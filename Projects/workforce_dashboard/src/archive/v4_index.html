@@ -2,15 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Workforce Dashboard v5</title>
+<title>Workforce Dashboard v4</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-
-  <title>WorkForge</title>
-  <link rel="stylesheet" href="styles.css">
-
 
 <style>
 body { font-family: Arial; margin:20px; background:#f4f6f8; }
@@ -19,45 +14,14 @@ input, select, button { margin:5px; padding:6px; }
 table { border-collapse: collapse; width:100%; margin-top:10px; }
 th, td { border:1px solid #ccc; padding:8px; }
 th { background:#eee; }
-
-.navbar {
-  height: 60px;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-}
-
-.logo {
-  height: 30px;
-  width: auto;
-}
-
-.app-name {
-  color: white;
-  margin-left: 10px;
-  font-weight: 600;
-}
 </style>
 </head>
 
 <body>
 
-  <div class="navbar">
-  <div class="brand">
-    <img src="workforge-logo.png" class="logo">
-    <span class="app-name">WorkForge</span>
-  </div>
-</div>
-
-<h1>Workforce Dashboard v5.0</h1>
+<h1>Workforce Dashboard v4.0</h1>
 <p style="background:#222;color:#fff;padding:8px;">
-  Welcome to the latest version of our Workforce Dashboard! We've added real-time asset assignment tracking, employee work logs, and a new maintenance reporting feature. The map now shows site activity with color-coded markers, and you can export detailed reports in CSV format. This update is designed to give you deeper insights into your workforce and asset utilization. Try it out and let us know what you think!
+  Demo Version — Workforce Dashboard v4 (Sample Data Only)
 </p>
 
 <h2>Map View</h2>
@@ -121,26 +85,9 @@ th { background:#eee; }
 
 // DATA
 let employees=[], sites=[], assets=[], assignments=[], workLogs=[];
+
 // MAP
 let map = L.map('map').setView([29.7604, -95.3698], 10);
-// Store maintenance logs separately for reporting and potential future features
-let maintenanceLogs = [];
-
-const homeControl = L.control({ position: 'topleft' });
-
-homeControl.onAdd = function () {
-  const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-  div.innerHTML = '<a href="#" title="Home">🏠</a>';
-
-  div.onclick = function (e) {
-    e.preventDefault();
-    map.flyTo([29.7604, -95.3698], 10);
-  };
-
-  return div;
-};
-
-homeControl.addTo(map);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
  maxZoom:19
@@ -150,7 +97,6 @@ let siteMarkers = {};
 
 // HELPERS
 const today=()=>new Date().toISOString().split('T')[0];
-const houston = [29.7604, -95.3698];
 
 function focusField(id){
  const el=document.getElementById(id);
@@ -190,13 +136,6 @@ function addEmployee(){
 async function addSite(){
  const name=siteName.value.trim();
  if(!name) return;
- // prevent duplicate site names
-const exists = sites.some(s => s.name.toLowerCase() === name.toLowerCase());
-
-if (exists) {
-  alert("Site already exists");
-  return;
-}
 
  const coords=await geocode(siteCity.value,siteState.value);
  if(!coords){ alert("Location not found"); return;}
@@ -236,28 +175,13 @@ function assignAsset(){
   const asset = assets.find(a=>a.id===assetIdVal);
   if(!asset) return;
 
-  // ✅ ADD THESE LINES
-  asset.status = "Assigned";
-  asset.assignedToEmployeeId = empId;
-  asset.currentSiteId = siteId;
+  asset.status="Assigned";
 
-  // close previous assignment for this asset
-const lastAssignment = [...assignments]
-  .reverse()
-  .find(a => a.assetId === assetIdVal && !a.endTime);
-
-if (lastAssignment) {
-  lastAssignment.endTime = new Date().toISOString();
-}
-
-// add new assignment with time
-assignments.push({
-  assetId: assetIdVal,
-  employeeId: empId,
-  siteId: siteId,
-  startTime: new Date().toISOString(),
-  endTime: null
-});
+  assignments.push({
+    assetId: assetIdVal,
+    employeeId: empId,
+    siteId: siteId
+  });
 
   refresh();
 }
@@ -272,23 +196,25 @@ function logWork(){
     alert("Select employee and site");
     return;
   }
-  // close previous active log for this employee
-const lastLog = [...workLogs]
-  .reverse()
-  .find(log => log.employeeId === empId && !log.endTime);
 
-if (lastLog) {
-  lastLog.endTime = new Date().toISOString();
-}
+  // prevent duplicate if already assigned
+  const alreadyAssigned = assignments.some(a =>
+    a.employeeId === empId &&
+    a.siteId === siteId &&
+    !a.returnedAt
+  );
 
-// add new log with time tracking
-workLogs.push({
-  id: "LOG-" + (workLogs.length + 1),
-  employeeId: empId,
-  siteId: siteId,
-  startTime: new Date().toISOString(),
-  endTime: null
-});
+  if(alreadyAssigned){
+    alert("Employee already assigned at this site");
+    return;
+  }
+
+  workLogs.push({
+    id: "LOG-" + (workLogs.length + 1),
+    employeeId: empId,
+    siteId: siteId,
+    date: today()
+  });
 
   console.log("Work logs:", workLogs); // DEBUG
 
@@ -297,23 +223,11 @@ workLogs.push({
 
 // MAINTENANCE
 function reportMaintenance(){
+ const asset=assets.find(a=>a.id===maintAsset.value);
+ if(!asset) return;
 
-  const asset = assets.find(a=>a.id===maintAsset.value);
-  if(!asset) return;
-
-  const issue = maintIssue.value;
-  const location = maintLocation.value;
-
-  asset.status = "In Maintenance";
-
-  maintenanceLogs.push({
-    assetId: asset.id,
-    issue: issue,
-    location: location,
-    time: new Date().toISOString()
-  });
-
-  refresh();
+ asset.status="In Maintenance";
+ refresh();
 }
 
 // COLOR LOGIC
@@ -435,39 +349,33 @@ function unassignAsset(assetId){
   const asset = assets.find(a=>a.id===assetId);
   if(!asset) return;
 
-  const now = new Date().toISOString();
-
-  // close active assignment (preserve history)
-  const active = assignments.find(a => a.assetId === assetId && !a.endTime);
-  if (active) {
-    active.endTime = now;
-  }
-
-  // reset asset (UI state only)
+  // reset asset
   asset.status = "Available";
   asset.assignedToEmployeeId = null;
   asset.currentSiteId = null;
 
+  // remove active assignment
+  assignments = assignments.filter(a=>a.assetId !== assetId);
+
   refresh();
 }
+
 // REPORT
 function renderReport(){
 
   let rows = [];
 
- assignments.forEach(a=>{
-  const emp = employees.find(e=>e.id===a.employeeId);
-  const site = sites.find(s=>s.id===a.siteId);
+  assignments.forEach(a=>{
+    const emp = employees.find(e=>e.id===a.employeeId);
+    const site = sites.find(s=>s.id===a.siteId);
 
-  rows.push({
-    date: a.startTime 
-      ? new Date(a.startTime).toLocaleString()
-      : today(),
-    site: site ? site.name : "",
-    employee: emp ? emp.name : "",
-    asset: a.assetId
+    rows.push({
+      date: today(),
+      site: site ? site.name : "",
+      employee: emp ? emp.name : "",
+      asset: a.assetId
+    });
   });
-});
 
   workLogs.forEach(log=>{
 
@@ -475,25 +383,13 @@ function renderReport(){
   const site = sites.find(s=>s.id===log.siteId);
 
   rows.push({
-    date: log.startTime 
-      ? new Date(log.startTime).toLocaleString()
-      : today(),
+    date: today(),
     site: site ? site.name : "",
     employee: emp ? emp.name : "",
-    asset: ""
+    asset: "",
+    type: "",
+    status: "No Asset"
   });
-});
-maintenanceLogs.forEach(m => {
-
-  const asset = m.assetId;
-  
-  rows.push({
-    date: new Date(m.time).toLocaleString(),
-    site: m.location || "Maintenance",
-    employee: "",
-    asset: asset + " (Maintenance)"
-  });
-
 });
 
   reportTable.innerHTML = `
@@ -556,11 +452,9 @@ function refresh(){
 
 refresh();
 
-
-
 </script>
 <footer style="margin-top:40px;font-size:12px;color:#555;">
-  © 2026 Martin Garret | Workforce Dashboard v5.0
+  © 2026 Martin Garret | Workforce Dashboard v4.0
 </footer>
 </body>
 </html>
