@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Workforce Dashboard v5.1</title>
+<title>Workforce Dashboard v5.2</title>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -10,19 +10,35 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body { font-family: Arial; margin:20px; background:#f4f6f8; }
+body {
+  font-family: Arial;
+  margin: 20px;
+  background: #0f172a;
+  color: #f1f5f9;
+}
 h2 { margin-top:25px; }
 input, select, button { margin:5px; padding:6px; }
-table { border-collapse: collapse; width:100%; margin-top:10px; }
-th, td { border:1px solid #ccc; padding:8px; }
-th { background:#eee; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+  background: #1e293b;
+}
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+}
+
+th {
+  background: #1e40af;
+  color: white;
+}
 
 .navbar {
   height: 60px;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
 }
 
 .brand {
@@ -40,6 +56,32 @@ th { background:#eee; }
   margin-left: 10px;
   font-weight: 600;
 }
+
+input, select {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 4px;
+}
+
+button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+h2 {
+  margin-top: 25px;
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 6px;
+}
 </style>
 </head>
 
@@ -47,13 +89,24 @@ th { background:#eee; }
   <div class="navbar">
   <div class="brand">
     <img src="workforge-logo.png" class="logo">
-    <span class="app-name">WorkForge</span>
+    <!--<span class="app-name">WorkForge</span>-->
   </div>
 </div>
 
+<h2>Login</h2>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+
+<p id="userStatus">Not logged in</p>
+
 <div style="display:flex; align-items:center; gap:10px;">
-  <h1 style="margin:0;">Workforge Dashboard</h1>
-  <h4 style="margin:0;">v5.1</h4>
+  <h1 style="margin:0;">Workforce Dashboard</h1>
+  <h4 style="margin:0;">v5.2</h4>
 </div>
 <h2>Map View</h2>
 
@@ -149,14 +202,101 @@ th { background:#eee; }
   <button type="submit">Submit</button>
 </form>
 
-<script>
+<script type="module">
+
+  function logout(){
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+  onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "login.html";
+  }
+});
+// FIREBASE (for future auth implementation)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
+  authDomain: "workforge-3b77f.firebaseapp.com",
+  projectId: "workforge-3b77f",
+  storageBucket: "workforge-3b77f.firebasestorage.app",
+  messagingSenderId: "906291779450",
+  appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+// AUTH FUNCTIONS
+function signup(){
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => alert("User created"))
+    .catch(err => alert(err.message));
+}
+// LOGIN
+function login(){
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Logged in"))
+    .catch(err => alert(err.message));
+}
+
+function logout(){
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+}
+// Listen for auth changes
+onAuthStateChanged(auth, user => {
+  const status = document.getElementById("userStatus");
+
+  if(user){
+    status.textContent = "Logged in: " + user.email;
+  } else {
+    status.textContent = "Not logged in";
+  }
+});
 
 // DATA
 let employees=[], sites=[], assets=[], vehicles=[], assignments=[];
 
 // MAP
 let map = L.map('map').setView([29.7604,-95.3698],10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+// BASEMAPS
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+});
+
+const lightGray = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CartoDB'
+});
+
+const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CartoDB'
+});
+
+// ADD DEFAULT
+osm.addTo(map);
+// LAYER CONTROL
+L.control.layers({
+  "Standard Map": osm,
+  "Light Gray Canvas": lightGray,
+  "Dark Map": darkMap
+}).addTo(map);
 let markers={};
 // HOME CONTROL
 const homeControl = L.control({ position: 'topleft' });
@@ -379,6 +519,10 @@ function addVehicle(){
 // ASSIGN
 function assign(){
 
+    if(!auth.currentUser){
+  alert("Please log in first");
+  return;
+}
   // 🚫 Prevent double assignment of employee
   const existing = assignments.find(a => 
     a.employeeId === assignEmployee.value && !a.endTime
