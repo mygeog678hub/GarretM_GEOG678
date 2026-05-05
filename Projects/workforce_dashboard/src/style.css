@@ -42,3 +42,11 @@
 .home-btn:hover {
   background: #1e293b;
 }
+body {
+  max-width: 100%;
+}
+
+input, select, button {
+  width: 100%;
+  font-size: 16px;
+}
