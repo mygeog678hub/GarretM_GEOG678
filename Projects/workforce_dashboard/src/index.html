@@ -109,44 +109,41 @@ th { background:#eee; }
 <table id="reportTable"></table>
 
 <h2>Report an Issue</h2>
+<form name="issue-report" method="POST" data-netlify="true">
+  <input type="hidden" name="form-name" value="issue-report">
+  <input name="email" placeholder="Email (required)" required>
+  <select name="module">
+    <option>Map View</option>
+    <option>Employee Management</option>
+    <option>Site Management</option>
+    <option>Asset Management</option>
+    <option>Vehicle Management</option>
+    <option>Assignments</option>
+    <option>Maintenance Module</option>
+    <option>Reporting / Excel</option>
+    <option>Other</option>
+  </select>
 
-<input id="issueEmail" placeholder="Email (required)" required>
+  <select name="issueType">
+    <option>Bug</option>
+    <option>Data Issue</option>
+    <option>UI Issue</option>
+    <option>Performance</option>
+    <option>Feature Request</option>
+  </select>
 
-<select id="issueModule">
-<option>Map View</option>
-<option>Employee Management</option>
-<option>Site Management</option>
-<option>Asset Management</option>
-<option>Vehicle Management</option>
-<option>Assignments</option>
-<option>Maintenance Module</option>
-<option>Reporting / Excel</option>
-<option>Other</option>
-</select>
+  <textarea name="description" placeholder="Describe the issue"></textarea>
+  <textarea name="expected" placeholder="What should have happened?"></textarea>
+  <textarea name="steps" placeholder="Steps to reproduce"></textarea>
 
-<select id="issueType">
-<option>Bug</option>
-<option>Data Issue</option>
-<option>UI Issue</option>
-<option>Performance</option>
-<option>Feature Request</option>
-</select>
+  <select name="severity">
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+    <option>Critical</option>
+  </select>
 
-<textarea id="issueDescription" placeholder="Describe the issue"></textarea>
-
-<textarea id="issueExpected" placeholder="What should have happened?"></textarea>
-
-<textarea id="issueSteps" placeholder="Steps to reproduce"></textarea>
-
-<select id="issueSeverity">
-<option>Low</option>
-<option>Medium</option>
-<option>High</option>
-<option>Critical</option>
-</select>
-
-<button>Submit</button>
-
+  <button type="submit">Submit</button>
 </form>
 
 <script>
@@ -553,22 +550,6 @@ function refresh(){
 
   updateMaintenanceDropdown(); // ✅ ADD THIS LINE RIGHT HERE
 }
-
-<form name="issue-report" method="POST" data-netlify="true">
-  <input type="hidden" name="form-name" value="issue-report">
-
-  <input name="email" placeholder="Email" required>
-
-  <select name="module">
-    <option>Assignments</option>
-    <option>Maintenance Module</option>
-    <option>Map View</option>
-  </select>
-
-  <textarea name="description" placeholder="Describe the issue"></textarea>
-
-  <button type="submit">Submit</button>
-</form>
 
 refresh();
 setTimeout(()=>map.invalidateSize(),300);
