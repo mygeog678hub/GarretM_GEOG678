@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workforce Dashboard v5.2</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 20px;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+h2 { margin-top:25px; }
+input, select, button { margin:5px; padding:6px; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+  background: #1e293b;
+}
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+}
+
+th {
+  background: #1e40af;
+  color: white;
+}
+
+.navbar {
+  height: 60px;
+  background: #020617;
+  border-bottom: 1px solid #1e293b;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 30px;
+  width: auto;
+}
+
+.app-name {
+  color: white;
+  margin-left: 10px;
+  font-weight: 600;
+}
+
+input, select {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 4px;
+}
+
+button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+h2 {
+  margin-top: 25px;
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 6px;
+}
+</style>
+</head>
+
+<body>
+  <div class="navbar">
+  <div class="brand">
+    <img src="workforge-logo.png" class="logo">
+    <!--<span class="app-name">WorkForge</span>-->
+  </div>
+</div>
+
+<h2>Login</h2>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+
+<p id="userStatus">Not logged in</p>
+
+<div style="display:flex; align-items:center; gap:10px;">
+  <h1 style="margin:0;">Workforce Dashboard</h1>
+  <h4 style="margin:0;">v5.2</h4>
+</div>
+<h2>Map View</h2>
+
+<div id="map" style="height:400px;"></div>
+
+<h2>Add Employee</h2>
+<form onsubmit="addEmployee(); return false;">
+<input id="empName" placeholder="Employee Name">
+<select id="empRole">
+<option>Worker</option>
+<option>Foreman</option>
+<option>Manager</option>
+</select>
+<button>Add</button>
+</form>
+
+<h2>Add Site</h2>
+<form onsubmit="addSite(); return false;">
+<input id="siteName" placeholder="Site Name">
+<input id="siteCity" placeholder="City">
+<input id="siteState" placeholder="State">
+<button>Add</button>
+</form>
+
+<h2>Add Asset (Equipment)</h2>
+<form onsubmit="addAsset(); return false;">
+  <input id="assetId" placeholder="Asset ID" required>
+  <input id="assetType" placeholder="Type" required>
+  <button type="submit">Add</button>
+</form>
+
+<h2>Add Vehicle</h2>
+<form onsubmit="addVehicle(); return false;">
+<input id="vehMake" placeholder="Make">
+<input id="vehModel" placeholder="Model">
+<input id="vehPlate" placeholder="Plate">
+<input id="vehUnit" placeholder="Unit">
+<button>Add</button>
+</form>
+
+<h2>Assign Resources</h2>
+<select id="assignEmployee"></select>
+<select id="assignSite"></select>
+<select id="assignAsset"></select>
+<select id="assignVehicle"></select>
+<button onclick="assign()">Assign</button>
+<!-- <button onclick="exportCSV()">Export CSV</button> -->
+<h2>Asset Maintenance</h2>
+<select id="maintenanceAssetSelect"></select>
+<button onclick="markMaintenance()">Set Maintenance</button>
+<button onclick="markActive()">Set Active</button>
+<input id="maintenanceLocation" placeholder="Maintenance Location (City, State)">
+
+<h2>Report</h2>
+<button onclick="exportExcel()">Export Excel</button>
+<table id="reportTable"></table>
+
+<h2>Report an Issue</h2>
+<form name="issue-report" method="POST" data-netlify="true">
+  <input type="hidden" name="form-name" value="issue-report">
+  <input name="email" placeholder="Email (required)" required>
+  <select name="module">
+    <option>Map View</option>
+    <option>Employee Management</option>
+    <option>Site Management</option>
+    <option>Asset Management</option>
+    <option>Vehicle Management</option>
+    <option>Assignments</option>
+    <option>Maintenance Module</option>
+    <option>Reporting / Excel</option>
+    <option>Other</option>
+  </select>
+
+  <select name="issueType">
+    <option>Bug</option>
+    <option>Data Issue</option>
+    <option>UI Issue</option>
+    <option>Performance</option>
+    <option>Feature Request</option>
+  </select>
+
+  <textarea name="description" placeholder="Describe the issue"></textarea>
+  <textarea name="expected" placeholder="What should have happened?"></textarea>
+  <textarea name="steps" placeholder="Steps to reproduce"></textarea>
+
+  <select name="severity">
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+    <option>Critical</option>
+  </select>
+
+  <button type="submit">Submit</button>
+</form>
+
+<script type="module">
+
+  function logout(){
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+  onAuthStateChanged(auth, user => {
+  if (!user) {
+    window.location.href = "login.html";
+  }
+});
+// FIREBASE (for future auth implementation)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
+  authDomain: "workforge-3b77f.firebaseapp.com",
+  projectId: "workforge-3b77f",
+  storageBucket: "workforge-3b77f.firebasestorage.app",
+  messagingSenderId: "906291779450",
+  appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+// AUTH FUNCTIONS
+function signup(){
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => alert("User created"))
+    .catch(err => alert(err.message));
+}
+// LOGIN
+function login(){
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => alert("Logged in"))
+    .catch(err => alert(err.message));
+}
+
+function logout(){
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+}
+// Listen for auth changes
+onAuthStateChanged(auth, user => {
+  const status = document.getElementById("userStatus");
+
+  if(user){
+    status.textContent = "Logged in: " + user.email;
+  } else {
+    status.textContent = "Not logged in";
+  }
+});
+
+// DATA
+let employees=[], sites=[], assets=[], vehicles=[], assignments=[];
+
+// MAP
+let map = L.map('map').setView([29.7604,-95.3698],10);
+// BASEMAPS
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+});
+
+const lightGray = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CartoDB'
+});
+
+const darkMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CartoDB'
+});
+
+// ADD DEFAULT
+osm.addTo(map);
+// LAYER CONTROL
+L.control.layers({
+  "Standard Map": osm,
+  "Light Gray Canvas": lightGray,
+  "Dark Map": darkMap
+}).addTo(map);
+let markers={};
+// HOME CONTROL
+const homeControl = L.control({ position: 'topleft' });
+
+homeControl.onAdd = function () {
+  const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+
+  div.innerHTML = '<button style="padding:5px;">🏠</button>';
+
+  div.onclick = function () {
+    map.setView([29.7604, -95.3698], 10);
+  };
+
+  return div;
+};
+
+homeControl.addTo(map);
+
+// ICONS
+const greenIcon = new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',shadowUrl:'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',iconSize:[25,41],iconAnchor:[12,41]});
+const redIcon = new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',shadowUrl:'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',iconSize:[25,41],iconAnchor:[12,41]});
+const greyIcon = new L.Icon({iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',shadowUrl:'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',iconSize:[25,41],iconAnchor:[12,41]});
+
+// GEOCODE
+async function geocode(city,state){
+ const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city},${state}`);
+ const d=await res.json();
+ if(!d.length) return null;
+ return {lat:+d[0].lat,lng:+d[0].lon};
+}
+
+// EMPLOYEE
+function addEmployee(){
+ if(!empName.value) return;
+ employees.push({id:"EMP-"+(employees.length+1),name:empName.value,designation:empRole.value});
+ empName.value="";
+ refresh();
+}
+
+// SITE
+async function addSite(){
+
+  const name = siteName.value.trim();
+  const city = siteCity.value.trim();
+  const state = siteState.value.trim();
+
+  if(!name || !city || !state){
+    alert("Please fill out Site Name, City, and State");
+    return;
+  }
+
+  // Normalize values for comparison
+  const normName = name.toLowerCase();
+  const normCity = city.toLowerCase();
+  const normState = state.toLowerCase();
+
+  // 🔒 DUPLICATE CHECK (name + location)
+  const exists = sites.some(s =>
+    s.name.toLowerCase() === normName &&
+    s.city.toLowerCase() === normCity &&
+    s.state.toLowerCase() === normState
+  );
+
+  if(exists){
+    alert("Site already exists");
+    return;
+  }
+
+  // Geocode AFTER validation
+  const coords = await geocode(city, state);
+  if(!coords){
+    alert("Location not found");
+    return;
+  }
+
+  const site = {
+  id: "SITE-" + Date.now(),  // ✅ comma added
+  name,
+  city,
+  state,
+  lat: coords.lat,
+  lng: coords.lng
+};
+
+  sites.push(site);
+
+  const marker = L.marker([coords.lat, coords.lng]).addTo(map);
+  markers[site.id] = marker;
+
+  // Reset + focus
+  siteName.value = "";
+  siteCity.value = "";
+  siteState.value = "";
+  siteName.focus();
+
+  refresh();
+}
+// ASSET
+function addAsset() {
+  const idInput = document.getElementById("assetId");
+  const typeInput = document.getElementById("assetType");
+
+  const id = idInput.value.trim();
+  const type = typeInput.value.trim();
+
+  // Prevent empty input
+  if (!id || !type) {
+    alert("Please enter both Asset ID and Type");
+    return;
+  }
+
+  // Prevent duplicates (use assets[], NOT state.assets)
+  const exists = assets.some(a => 
+    a.id.toLowerCase() === id.toLowerCase()
+  );
+
+  if (exists) {
+    alert("Asset already exists");
+    idInput.value = "";
+    idInput.focus();
+    return;
+  }
+
+  // Add asset
+  const newAsset = {
+  id,
+  type,
+  assignedTo: null,
+  status: "active" // "active" | "maintenance"
+};
+
+  assets.push(newAsset);
+
+  console.log("Asset added:", newAsset);
+
+  // Clear inputs + reset cursor
+  idInput.value = "";
+  typeInput.value = "";
+  idInput.focus();
+
+  // Refresh UI (important)
+  refresh();
+
+  updateMaintenanceDropdown();
+
+  if (typeof updateAssetDropdown === "function") {
+    updateAssetDropdown();
+  }
+}
+function updateMaintenanceDropdown() {
+  const dropdown = document.getElementById("maintenanceAssetSelect");
+  if (!dropdown) return;
+
+  dropdown.innerHTML = '<option value="">Select Asset</option>';
+
+  assets.forEach(asset => {
+    let label = `${asset.id} (${asset.type}) - ${asset.status}`;
+
+    if (asset.status === "maintenance") {
+      label += ` @ ${asset.maintenanceLocation || "Unknown"}`;
+    }
+
+    const option = document.createElement("option");
+    option.value = asset.id;
+    option.textContent = label;
+    dropdown.appendChild(option);
+  });
+}
+
+function markMaintenance() {
+  const id = document.getElementById("maintenanceAssetSelect").value;
+  const locationInput = document.getElementById("maintenanceLocation");
+
+  if (!id) {
+    alert("Select an asset");
+    return;
+  }
+
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
+
+  asset.status = "maintenance";
+  asset.maintenanceLocation = locationInput?.value || "Unknown";
+  asset.maintenanceDate = new Date().toLocaleString();
+
+  console.log("Maintenance set:", asset);
+
+  refresh();
+
+  if (locationInput) locationInput.value = "";
+}
+
+function markActive() {
+  const id = document.getElementById("maintenanceAssetSelect").value;
+
+  if (!id) {
+    alert("Select an asset");
+    return;
+  }
+
+  const asset = assets.find(a => a.id === id);
+  if (!asset) return;
+
+  asset.status = "active";
+  asset.maintenanceLocation = "";
+  asset.maintenanceDate = "";
+
+  console.log("Set active:", asset);
+
+  refresh();
+}
+// VEHICLE
+function addVehicle(){
+ vehicles.push({id:"VEH-"+(vehicles.length+1),make:vehMake.value,model:vehModel.value,plate:vehPlate.value,unit:vehUnit.value});
+ vehMake.value=vehModel.value=vehPlate.value=vehUnit.value="";
+ vehMake.focus();
+ refresh();
+}
+
+// ASSIGN
+function assign(){
+
+    if(!auth.currentUser){
+  alert("Please log in first");
+  return;
+}
+  // 🚫 Prevent double assignment of employee
+  const existing = assignments.find(a => 
+    a.employeeId === assignEmployee.value && !a.endTime
+  );
+
+  if (existing) {
+    alert("This employee is already assigned to a site. Unassign them first.");
+    return;
+  }
+
+  // 🚫 Prevent assigning maintenance assets
+  const selectedAssetId = assignAsset.value;
+  const asset = assets.find(a => a.id === selectedAssetId);
+
+  if (asset && asset.status === "maintenance") {
+    alert("This asset is currently under maintenance and cannot be assigned.");
+    return;
+  }
+
+  assignments.push({
+    employeeId: assignEmployee.value,
+    siteId: assignSite.value,
+    assetId: selectedAssetId || null,
+    vehicleId: assignVehicle.value || null,
+    startTime: new Date().toISOString(),
+    endTime: null
+  });
+
+  refresh();
+}
+
+// UNASSIGN
+function unassign(empId){
+ const a=assignments.find(x=>x.employeeId===empId && !x.endTime);
+ if(a) a.endTime=new Date().toISOString();
+ refresh();
+}
+
+// RENDER
+function render(){
+ let rows=[];
+
+ assignments.forEach(a=>{
+  const emp=employees.find(e=>e.id===a.employeeId);
+  const site=sites.find(s=>s.id===a.siteId);
+  const asset=assets.find(x=>x.id===a.assetId);
+  const vehicle=vehicles.find(x=>x.id===a.vehicleId);
+
+  const status=a.endTime?"Completed":"Active";
+
+  rows.push({
+   employeeId:emp.id,
+   start:new Date(a.startTime).toLocaleString(),
+   end:a.endTime?new Date(a.endTime).toLocaleString():"",
+   site:site.name,
+   employee:emp.name,
+   designation:emp.designation,
+   asset: asset
+  ? `${asset.id} (${asset.type})` +
+    (asset.status === "maintenance"
+      ? ` [MAINTENANCE @ ${asset.maintenanceLocation || "Unknown"}]`
+      : "")
+  : "",
+   vehicle:vehicle?`${vehicle.make} ${vehicle.model}`:"",
+   status
+  });
+ });
+
+ reportTable.innerHTML=`
+ <tr><th>Start</th><th>End</th><th>Site</th><th>Employee</th><th>Designation</th><th>Asset</th><th>Vehicle</th><th>Status</th><th>Action</th></tr>
+ ${rows.map(r=>`
+ <tr>
+ <td>${r.start}</td>
+ <td>${r.end}</td>
+ <td>${r.site}</td>
+ <td>${r.employee}</td>
+ <td>${r.designation}</td>
+ <td>${r.asset}</td>
+ <td>${r.vehicle}</td>
+ <td>${r.status}</td>
+ <td>${r.status==="Active"?`<button onclick="unassign('${r.employeeId}')">Unassign</button>`:""}</td>
+ </tr>`).join("")}
+ `;
+
+ updateMap();
+ return rows;
+}
+
+// MAP UPDATE
+function updateMap(){
+
+  sites.forEach(site => {
+
+    const marker = markers[site.id];
+
+    // Active assignments for this site
+    const active = assignments.filter(a =>
+      a.siteId === site.id && !a.endTime
+    );
+
+    // Determine marker color
+    let icon = greyIcon;
+    if(active.length) icon = greenIcon;
+
+    marker.setIcon(icon);
+
+    // Build popup content
+    let popup = `<b>${site.name}</b><br><br>`;
+
+    if(!active.length){
+      popup += "No active assignments";
+    } else {
+
+      popup += "<b>Employees:</b><br>";
+      active.forEach(a => {
+        const emp = employees.find(e => e.id === a.employeeId);
+        popup += `- ${emp?.name || ""}<br>`;
+      });
+
+      popup += "<br><b>Equipment:</b><br>";
+      active.forEach(a => {
+        const asset = assets.find(x => x.id === a.assetId);
+        if(asset){
+          popup += `- ${asset.id} (${asset.type})<br>`;
+        }
+      });
+
+      popup += "<br><b>Vehicles:</b><br>";
+      active.forEach(a => {
+        const v = vehicles.find(x => x.id === a.vehicleId);
+        if(v){
+          popup += `- ${v.make} ${v.model} (${v.plate || v.unit || ""})<br>`;
+        }
+      });
+    }
+
+    marker.bindPopup(popup);
+  });
+}
+
+// EXCEL
+function exportExcel(){
+ const data=render();
+ const ws=XLSX.utils.json_to_sheet(data);
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Report");
+ XLSX.writeFile(wb,"workforce_final.xlsx");
+}
+
+function refresh(){
+  assignEmployee.innerHTML = employees.map(e =>
+    `<option value="${e.id}">${e.name}</option>`
+  ).join('');
+
+  assignSite.innerHTML = sites.map(s =>
+    `<option value="${s.id}">${s.name}</option>`
+  ).join('');
+
+  assignAsset.innerHTML =
+    `<option value="">None</option>` +
+    assets.map(a =>
+      `<option value="${a.id}">${a.id}</option>`
+    ).join('');
+
+  assignVehicle.innerHTML =
+    `<option value="">None</option>` +
+    vehicles.map(v =>
+      `<option value="${v.id}">${v.make} ${v.model}</option>`
+    ).join('');
+
+  render();
+
+  updateMaintenanceDropdown(); // ✅ ADD THIS LINE RIGHT HERE
+}
+
+refresh();
+setTimeout(()=>map.invalidateSize(),300);
+
+</script>
+<footer style="margin-top:40px;font-size:12px;color:#555;">
+  © WorkForge, LLc. All rights reserved. | Developed by Garret M. 
+</footer>
+</body>
+</html>
