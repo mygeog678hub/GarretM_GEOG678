@@ -1,39 +1,187 @@
-import { db } from "./firebase-config.js";
-import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Workforce Dashboard v5.3</title>
 
-const empName = document.getElementById("empName");
-const empRole = document.getElementById("empRole");
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-const siteName = document.getElementById("siteName");
-const siteCity = document.getElementById("siteCity");
-const siteState = document.getElementById("siteState");
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="style.css">
 
-const vehMake = document.getElementById("vehMake");
-const vehModel = document.getElementById("vehModel");
-const vehPlate = document.getElementById("vehPlate");
-const vehUnit = document.getElementById("vehUnit");
 
-const assignEmployee = document.getElementById("assignEmployee");
-const assignSite = document.getElementById("assignSite");
-const assignAsset = document.getElementById("assignAsset");
-const assignVehicle = document.getElementById("assignVehicle");
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  .navbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .logo { height: 40px; }
+  input, select, button { padding: 5px; margin: 5px 0; }
+</style>
+</head>
 
-async function loadSitesFromDB() {
-  try {
-    const snapshot = await getDocs(collection(db, "sites"));
+<body>
+  <div class="navbar">
+  <div class="brand">
+    <img src="workforge-logo.png" class="logo">    
+  </div>
+</div>
 
-    sites = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+<div style="display:flex; align-items:center; gap:10px;">
+  <h1 style="margin:0;">Workforce Dashboard</h1>
+  <h4 style="margin:0;">v5.3</h4>
+</div>
+<h2>Map View</h2>
 
-    console.log("Sites loaded:", sites);
+<div id="map" style="height:500px;"></div>
 
-    refresh(); // redraw map
-  } catch (err) {
-    console.error("Error loading sites:", err);
-  }
-}
+<h2>Add Employee</h2>
+<form onsubmit="addEmployee(); return false;">
+<input id="empName" placeholder="Employee Name">
+<select id="empRole">
+<option>Worker</option>
+<option>Foreman</option>
+<option>Manager</option>
+</select>
+<button>Add</button>
+</form>
+
+<h2>Add Site</h2>
+<form onsubmit="addSite(); return false;">
+<input id="siteName" placeholder="Site Name">
+<input id="siteCity" placeholder="City">
+<select id="siteState">
+  <option value="">Select State</option>
+  <option value="AL">Alabama (AL)</option>
+  <option value="AK">Alaska (AK)</option>
+  <option value="AZ">Arizona (AZ)</option>
+  <option value="AR">Arkansas (AR)</option>
+  <option value="CA">California (CA)</option>
+  <option value="CO">Colorado (CO)</option>
+  <option value="CT">Connecticut (CT)</option>
+  <option value="DE">Delaware (DE)</option>
+  <option value="FL">Florida (FL)</option>
+  <option value="GA">Georgia (GA)</option>
+  <option value="HI">Hawaii (HI)</option>
+  <option value="ID">Idaho (ID)</option>
+  <option value="IL">Illinois (IL)</option>
+  <option value="IN">Indiana (IN)</option>
+  <option value="IA">Iowa (IA)</option>
+  <option value="KS">Kansas (KS)</option>
+  <option value="KY">Kentucky (KY)</option>
+  <option value="LA">Louisiana (LA)</option>
+  <option value="ME">Maine (ME)</option>
+  <option value="MD">Maryland (MD)</option>
+  <option value="MA">Massachusetts (MA)</option>
+  <option value="MI">Michigan (MI)</option>
+  <option value="MN">Minnesota (MN)</option>
+  <option value="MS">Mississippi (MS)</option>
+  <option value="MO">Missouri (MO)</option>
+  <option value="MT">Montana (MT)</option>
+  <option value="NE">Nebraska (NE)</option>
+  <option value="NV">Nevada (NV)</option>
+  <option value="NH">New Hampshire (NH)</option>
+  <option value="NJ">New Jersey (NJ)</option>
+  <option value="NM">New Mexico (NM)</option>
+  <option value="NY">New York (NY)</option>
+  <option value="NC">North Carolina (NC)</option>
+  <option value="ND">North Dakota (ND)</option>
+  <option value="OH">Ohio (OH)</option>
+  <option value="OK">Oklahoma (OK)</option>
+  <option value="OR">Oregon (OR)</option>
+  <option value="PA">Pennsylvania (PA)</option>
+  <option value="RI">Rhode Island (RI)</option>
+  <option value="SC">South Carolina (SC)</option>
+  <option value="SD">South Dakota (SD)</option>
+  <option value="TN">Tennessee (TN)</option>
+  <option value="TX">Texas (TX)</option>
+  <option value="UT">Utah (UT)</option>
+  <option value="VT">Vermont (VT)</option>
+  <option value="VA">Virginia (VA)</option>
+  <option value="WA">Washington (WA)</option>
+  <option value="WV">West Virginia (WV)</option>
+  <option value="WI">Wisconsin (WI)</option>
+  <option value="WY">Wyoming (WY)</option>
+</select>
+<button>Add</button>
+</form>
+
+<h2>Add Asset (Equipment)</h2>
+<form onsubmit="addAsset(); return false;">
+  <input id="assetId" placeholder="Asset ID" required>
+  <input id="assetType" placeholder="Type" required>
+  <button type="submit">Add</button>
+</form>
+
+<h2>Add Vehicle</h2>
+<form onsubmit="addVehicle(); return false;">
+<input id="vehMake" placeholder="Make">
+<input id="vehModel" placeholder="Model">
+<input id="vehPlate" placeholder="Plate">
+<input id="vehUnit" placeholder="Unit">
+<button>Add</button>
+</form>
+
+<h2>Assign Resources</h2>
+<select id="assignEmployee"></select>
+<select id="assignSite"></select>
+<select id="assignAsset"></select>
+<select id="assignVehicle"></select>
+<button onclick="assign()">Assign</button>
+<!-- <button onclick="exportCSV()">Export CSV</button> -->
+<h2>Asset Maintenance</h2>
+<select id="maintenanceAssetSelect"></select>
+<button onclick="markMaintenance()">Set Maintenance</button>
+<button onclick="markActive()">Set Active</button>
+<input id="maintenanceLocation" placeholder="Maintenance Location (City, State)">
+
+<h2>Report</h2>
+<button onclick="exportExcel()">Export Excel</button>
+<table id="reportTable"></table>
+
+<h2>Report Issue</h2>
+
+<form onsubmit="reportIssue(); return false;" style="display:flex; flex-wrap:wrap; gap:10px;">
+
+  <div>
+    <label>Module</label><br>
+    <select id="bugModule">
+      <option value="">Select Module</option>
+      <option value="Map">Map</option>
+      <option value="Employee">Employee</option>
+      <option value="Site">Site</option>
+      <option value="Asset">Asset</option>
+      <option value="Vehicle">Vehicle</option>
+      <option value="Assignments">Assignments</option>
+      <option value="Reports">Reports</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Description</label><br>
+    <input id="bugDescription" placeholder="Describe the issue">
+  </div>
+
+  <div>
+    <label>Your Email</label><br>
+    <input id="bugEmail" placeholder="name@email.com">
+  </div>
+
+  <div>
+    <label>Severity</label><br>
+    <select id="bugSeverity">
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+  </div>
+
+  <div style="align-self:end;">
+    <button type="submit">Submit</button>
+  </div>
+
+</form>
+
+<script>
 
 // DATA
 let employees=[], sites=[], assets=[], vehicles=[], assignments=[];
@@ -179,9 +327,22 @@ async function addSite(){
 
   refresh();
 }
-  
+// DELETE SITE (BONUS)
+function deleteSite(siteId){
+  const index = sites.findIndex(s => s.id === siteId);
+  if (index === -1) return;
+
+  // remove marker from map
+  if (markers[siteId]) {
+    map.removeLayer(markers[siteId]);
+    delete markers[siteId];
+  }
+
+  // remove site from array
+  sites.splice(index, 1);
+
   refresh();
-// }
+}
 // ASSET
 function addAsset() {
   const idInput = document.getElementById("assetId");
@@ -456,31 +617,46 @@ function updateMap(){
 
   sites.forEach(site => {
 
-    // create marker if missing
-    if (!markers[site.id]) {
-      markers[site.id] = L.marker([site.lat, site.lng]).addTo(map);
-    }
-
     const marker = markers[site.id];
 
+    // Active assignments for this site
     const active = assignments.filter(a =>
       a.siteId === site.id && !a.endTime
     );
 
+    // Determine marker color
     let icon = greyIcon;
     if(active.length) icon = greenIcon;
 
     marker.setIcon(icon);
 
+    // Build popup content
     let popup = `<b>${site.name}</b><br>${site.city}, ${site.state}<br><br>`;
 
     if(!active.length){
       popup += "No active assignments";
     } else {
+
       popup += "<b>Employees:</b><br>";
       active.forEach(a => {
         const emp = employees.find(e => e.id === a.employeeId);
         popup += `- ${emp?.name || ""}<br>`;
+      });
+
+      popup += "<br><b>Equipment:</b><br>";
+      active.forEach(a => {
+        const asset = assets.find(x => x.id === a.assetId);
+        if(asset){
+          popup += `- ${asset.id} (${asset.type})<br>`;
+        }
+      });
+
+      popup += "<br><b>Vehicles:</b><br>";
+      active.forEach(a => {
+        const v = vehicles.find(x => x.id === a.vehicleId);
+        if(v){
+          popup += `- ${v.make} ${v.model} (${v.plate || v.unit || ""})<br>`;
+        }
       });
     }
 
@@ -589,16 +765,12 @@ function reportIssue() {
   console.log("Issues:", issues);
 }
 
-loadSitesFromDB();
+refresh();
 setTimeout(()=>map.invalidateSize(),300);
 
-window.addEmployee = addEmployee;
-window.addSite = addSite;
-window.addAsset = addAsset;
-window.addVehicle = addVehicle;
-window.assign = assign;
-window.unassign = unassign;
-window.markMaintenance = markMaintenance;
-window.markActive = markActive;
-window.exportExcel = exportExcel;
-window.reportIssue = reportIssue;
+</script>
+<footer style="margin-top:40px;font-size:12px;color:#555;">
+  © WorkForge, LLc. All rights reserved. | Developed by Garret M. 
+</footer>
+</body>
+</html>
