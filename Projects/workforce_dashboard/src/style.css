@@ -1,50 +1,72 @@
-/* Top bar */
+body {
+  font-family: Arial;
+  margin: 20px;
+  background: #0f172a;
+  color: #f1f5f9;
+}
+h2 { margin-top:25px; }
+input, select, button { margin:5px; padding:6px; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+  background: #1e293b;
+}
+
+th, td {
+  border: 1px solid #334155;
+  padding: 8px;
+}
+
+th {
+  background: #1e40af;
+  color: white;
+}
+
 .navbar {
   height: 60px;
   background: #020617;
   border-bottom: 1px solid #1e293b;
 }
 
-/* Brand container */
 .brand {
   display: flex;
   align-items: center;
 }
 
-/* Logo (THIS controls size) */
 .logo {
   height: 30px;
   width: auto;
 }
 
-/* App name */
 .app-name {
   color: white;
   margin-left: 10px;
   font-weight: 600;
-  font-size: 16px;
 }
-.home-btn {
-  position: absolute;
-  top: 80px;
-  left: 20px;
-  z-index: 1000;
-  padding: 8px 12px;
-  background: #0f172a;
+
+input, select {
+  background: #1e293b;
+  color: #f1f5f9;
+  border: 1px solid #334155;
+  border-radius: 4px;
+}
+
+button {
+  background: #3b82f6;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
-.home-btn:hover {
-  background: #1e293b;
-}
-body {
-  max-width: 100%;
+button:hover {
+  background: #2563eb;
 }
 
-input, select, button {
-  width: 100%;
-  font-size: 16px;
+h2 {
+  margin-top: 25px;
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 6px;
 }
