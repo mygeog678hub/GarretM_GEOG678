@@ -32,7 +32,7 @@
 </div>
 <h2>Map View</h2>
 
-<div id="map" style="height:400px;"></div>
+<div id="map" style="height:500px;"></div>
 
 <h2>Add Employee</h2>
 <form onsubmit="addEmployee(); return false;">
@@ -49,7 +49,59 @@
 <form onsubmit="addSite(); return false;">
 <input id="siteName" placeholder="Site Name">
 <input id="siteCity" placeholder="City">
-<input id="siteState" placeholder="State">
+<select id="siteState">
+  <option value="">Select State</option>
+  <option value="AL">Alabama (AL)</option>
+  <option value="AK">Alaska (AK)</option>
+  <option value="AZ">Arizona (AZ)</option>
+  <option value="AR">Arkansas (AR)</option>
+  <option value="CA">California (CA)</option>
+  <option value="CO">Colorado (CO)</option>
+  <option value="CT">Connecticut (CT)</option>
+  <option value="DE">Delaware (DE)</option>
+  <option value="FL">Florida (FL)</option>
+  <option value="GA">Georgia (GA)</option>
+  <option value="HI">Hawaii (HI)</option>
+  <option value="ID">Idaho (ID)</option>
+  <option value="IL">Illinois (IL)</option>
+  <option value="IN">Indiana (IN)</option>
+  <option value="IA">Iowa (IA)</option>
+  <option value="KS">Kansas (KS)</option>
+  <option value="KY">Kentucky (KY)</option>
+  <option value="LA">Louisiana (LA)</option>
+  <option value="ME">Maine (ME)</option>
+  <option value="MD">Maryland (MD)</option>
+  <option value="MA">Massachusetts (MA)</option>
+  <option value="MI">Michigan (MI)</option>
+  <option value="MN">Minnesota (MN)</option>
+  <option value="MS">Mississippi (MS)</option>
+  <option value="MO">Missouri (MO)</option>
+  <option value="MT">Montana (MT)</option>
+  <option value="NE">Nebraska (NE)</option>
+  <option value="NV">Nevada (NV)</option>
+  <option value="NH">New Hampshire (NH)</option>
+  <option value="NJ">New Jersey (NJ)</option>
+  <option value="NM">New Mexico (NM)</option>
+  <option value="NY">New York (NY)</option>
+  <option value="NC">North Carolina (NC)</option>
+  <option value="ND">North Dakota (ND)</option>
+  <option value="OH">Ohio (OH)</option>
+  <option value="OK">Oklahoma (OK)</option>
+  <option value="OR">Oregon (OR)</option>
+  <option value="PA">Pennsylvania (PA)</option>
+  <option value="RI">Rhode Island (RI)</option>
+  <option value="SC">South Carolina (SC)</option>
+  <option value="SD">South Dakota (SD)</option>
+  <option value="TN">Tennessee (TN)</option>
+  <option value="TX">Texas (TX)</option>
+  <option value="UT">Utah (UT)</option>
+  <option value="VT">Vermont (VT)</option>
+  <option value="VA">Virginia (VA)</option>
+  <option value="WA">Washington (WA)</option>
+  <option value="WV">West Virginia (WV)</option>
+  <option value="WI">Wisconsin (WI)</option>
+  <option value="WY">Wyoming (WY)</option>
+</select>
 <button>Add</button>
 </form>
 
@@ -86,16 +138,96 @@
 <button onclick="exportExcel()">Export Excel</button>
 <table id="reportTable"></table>
 
+<h2>Report Issue</h2>
+
+<form onsubmit="reportIssue(); return false;" style="display:flex; flex-wrap:wrap; gap:10px;">
+
+  <div>
+    <label>Module</label><br>
+    <select id="bugModule">
+      <option value="">Select Module</option>
+      <option value="Map">Map</option>
+      <option value="Employee">Employee</option>
+      <option value="Site">Site</option>
+      <option value="Asset">Asset</option>
+      <option value="Vehicle">Vehicle</option>
+      <option value="Assignments">Assignments</option>
+      <option value="Reports">Reports</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Description</label><br>
+    <input id="bugDescription" placeholder="Describe the issue">
+  </div>
+
+  <div>
+    <label>Your Email</label><br>
+    <input id="bugEmail" placeholder="name@email.com">
+  </div>
+
+  <div>
+    <label>Severity</label><br>
+    <select id="bugSeverity">
+      <option value="Low">Low</option>
+      <option value="Medium">Medium</option>
+      <option value="High">High</option>
+    </select>
+  </div>
+
+  <div style="align-self:end;">
+    <button type="submit">Submit</button>
+  </div>
+
+</form>
+
 <script>
 
 // DATA
 let employees=[], sites=[], assets=[], vehicles=[], assignments=[];
+let markers = {};
+let malfunctions = [];
+
 
 // MAP
 let map = L.map('map').setView([29.7604,-95.3698],10);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-let markers={};
-// HOME CONTROL
+
+// 🗺️ OpenStreetMap (original)
+const osm = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {
+    attribution: '&copy; OpenStreetMap contributors'
+  }
+);
+
+// 🌫️ Light canvas
+const lightMap = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {
+    attribution: '&copy; OpenStreetMap &copy; CartoDB'
+  }
+);
+
+// 🌙 Dark map
+const darkMap = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  {
+    attribution: '&copy; OpenStreetMap &copy; CartoDB'
+  }
+);
+
+// 🔥 Set default map (OSM)
+osm.addTo(map);
+
+// 🎛️ Layer switcher
+const baseMaps = {
+  "Street Map": osm,
+  "Light Canvas": lightMap,
+  "Dark Mode": darkMap
+};
+
+L.control.layers(baseMaps).addTo(map);
+
 const homeControl = L.control({ position: 'topleft' });
 
 homeControl.onAdd = function () {
@@ -104,7 +236,7 @@ homeControl.onAdd = function () {
   div.innerHTML = '<button style="padding:5px;">🏠</button>';
 
   div.onclick = function () {
-    map.setView([29.7604, -95.3698], 10);
+    map.setView([29.7604, -95.3698], 10); // Houston
   };
 
   return div;
@@ -138,56 +270,76 @@ async function addSite(){
 
   const name = siteName.value.trim();
   const city = siteCity.value.trim();
-  const state = siteState.value.trim();
+  const state = siteState.value.trim().toUpperCase();
 
   if(!name || !city || !state){
     alert("Please fill out Site Name, City, and State");
     return;
   }
 
-  // Normalize values for comparison
-  const normName = name.toLowerCase();
-  const normCity = city.toLowerCase();
-  const normState = state.toLowerCase();
+  // 🔥 VALID STATE CHECK (US states only)
+  const validStates = [
+    "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+    "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+    "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+    "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+    "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
+  ];
 
-  // 🔒 DUPLICATE CHECK (name + location)
-  const exists = sites.some(s =>
-    s.name.toLowerCase() === normName &&
-    s.city.toLowerCase() === normCity &&
-    s.state.toLowerCase() === normState
-  );
-
-  if(exists){
-    alert("Site already exists");
+  if (!validStates.includes(state)) {
+    alert("Invalid state abbreviation (use TX, CA, NY, etc.)");
     return;
   }
 
-  // Geocode AFTER validation
+  // 🔥 Geocode
   const coords = await geocode(city, state);
-  if(!coords){
-    alert("Location not found");
+
+  // 🔥 STRICT VALIDATION
+  if(!coords || !coords.lat || !coords.lng){
+    alert("Location not found. Check city/state format.");
+    return;
+  }
+
+  // 🔥 OPTIONAL: block weird far-away results
+  if (coords.lat < 20 || coords.lat > 50 || coords.lng > -60 || coords.lng < -130) {
+    alert("Location looks invalid for US. Please check input.");
     return;
   }
 
   const site = {
-  id: "SITE-" + Date.now(),  // ✅ comma added
-  name,
-  city,
-  state,
-  lat: coords.lat,
-  lng: coords.lng
-};
+    id: "SITE-" + Date.now(),
+    name,
+    city,
+    state,
+    lat: coords.lat,
+    lng: coords.lng
+  };
 
   sites.push(site);
 
   const marker = L.marker([coords.lat, coords.lng]).addTo(map);
   markers[site.id] = marker;
 
-  // Reset + focus
   siteName.value = "";
   siteCity.value = "";
   siteState.value = "";
   siteName.focus();
+
+  refresh();
+}
+// DELETE SITE (BONUS)
+function deleteSite(siteId){
+  const index = sites.findIndex(s => s.id === siteId);
+  if (index === -1) return;
+
+  // remove marker from map
+  if (markers[siteId]) {
+    map.removeLayer(markers[siteId]);
+    delete markers[siteId];
+  }
+
+  // remove site from array
+  sites.splice(index, 1);
 
   refresh();
 }
@@ -277,6 +429,7 @@ function markMaintenance() {
 
   asset.status = "maintenance";
   asset.maintenanceLocation = location;
+  asset.maintenanceDate = new Date().toISOString(); // 🔥 ADD THIS
 
   refresh();
 }
@@ -351,30 +504,23 @@ function unassign(empId){
 function render() {
   let rows = [];
 
+  // 🔹 ASSIGNMENT ROWS
   assignments.forEach(a => {
     const emp = employees.find(e => e.id === a.employeeId);
     const site = sites.find(s => s.id === a.siteId);
-    const asset = assets.find(x => x.id === a.assetId);
     const vehicle = vehicles.find(v => v.id === a.vehicleId);
+    const asset = assets.find(x => x.id === a.assetId);
 
     const status = a.endTime ? "Completed" : "Active";
 
     let assetLabel = "";
+    if (asset) {
+      assetLabel = `${asset.id} (${asset.type})`;
 
-if (a.assetId) {
-  const asset = assets.find(x => x.id === a.assetId);
-console.log("ASSET IN RENDER:", asset);
-  if (asset) {
-    assetLabel = `${asset.id} (${asset.type})`;    
-
-    // 🔥 FORCE CHECK (no edge cases)
-    if (asset.status === "maintenance") {
-      assetLabel += ` [MAINTENANCE @ ${asset.maintenanceLocation || "Unknown"}]`;
+      if (asset.status === "maintenance") {
+        assetLabel += ` [MAINTENANCE @ ${asset.maintenanceLocation || "Unknown"}]`;
+      }
     }
-  } else {
-    assetLabel = a.assetId; // fallback so you see something
-  }
-}
 
     rows.push({
       employeeId: emp ? emp.id : "",
@@ -386,13 +532,60 @@ console.log("ASSET IN RENDER:", asset);
       asset: assetLabel,
       vehicle: vehicle ? `${vehicle.make} ${vehicle.model}` : "",
       status
+
+      
     });
   });
 
+  malfunctions.forEach(m => {
+  const asset = assets.find(a => a.id === m.assetId);
+
+  rows.push({
+    employeeId: "",
+    start: new Date(m.date).toLocaleString(),
+    end: "",
+    site: "Malfunction Report",
+    employee: "",
+    designation: "",
+    asset: asset
+      ? `${asset.id} (${asset.type}) [ISSUE: ${m.description}]`
+      : m.assetId,
+    vehicle: "",
+    status: "Malfunction"
+  });
+});
+
+  // 🔥 MAINTENANCE ROWS (NEW)
+  assets.forEach(asset => {
+    if (asset.status === "maintenance") {
+      rows.push({
+        employeeId: "",
+        start: asset.maintenanceDate
+          ? new Date(asset.maintenanceDate).toLocaleString()
+          : "",
+        end: "",
+        site: asset.maintenanceLocation || "Maintenance",
+        employee: "",
+        designation: "",
+        asset: `${asset.id} (${asset.type}) [MAINTENANCE]`,
+        vehicle: "",
+        status: "Maintenance"
+      });
+    }
+  });
+
+  // 🔹 RENDER TABLE
   document.getElementById("reportTable").innerHTML = `
     <tr>
-      <th>Start</th><th>End</th><th>Site</th><th>Employee</th>
-      <th>Designation</th><th>Asset</th><th>Vehicle</th><th>Status</th><th>Action</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Site</th>
+      <th>Employee</th>
+      <th>Designation</th>
+      <th>Asset</th>
+      <th>Vehicle</th>
+      <th>Status</th>
+      <th>Action</th>
     </tr>
     ${rows.map(r => `
       <tr>
@@ -404,13 +597,19 @@ console.log("ASSET IN RENDER:", asset);
         <td>${r.asset}</td>
         <td>${r.vehicle}</td>
         <td>${r.status}</td>
-        <td>${r.status === "Active" ? `<button onclick="unassign('${r.employeeId}')">Unassign</button>` : ""}</td>
+        <td>
+          ${r.status === "Active"
+            ? `<button onclick="unassign('${r.employeeId}')">Unassign</button>`
+            : ""
+          }
+        </td>
       </tr>
     `).join("")}
   `;
 
   updateMap();
-  return rows;
+
+  return rows; // 🔥 REQUIRED for Excel
 }
 
 // MAP UPDATE
@@ -432,7 +631,7 @@ function updateMap(){
     marker.setIcon(icon);
 
     // Build popup content
-    let popup = `<b>${site.name}</b><br><br>`;
+    let popup = `<b>${site.name}</b><br>${site.city}, ${site.state}<br><br>`;
 
     if(!active.length){
       popup += "No active assignments";
@@ -464,6 +663,24 @@ function updateMap(){
     marker.bindPopup(popup);
   });
 }
+  // 🔥 Remove site from array
+  
+  function deleteSite(siteId){
+
+  // remove marker
+  if (markers[siteId]) {
+    map.removeLayer(markers[siteId]);
+    delete markers[siteId];
+  }
+
+  // remove site
+  sites = sites.filter(s => s.id !== siteId);
+
+  // remove assignments
+  assignments = assignments.filter(a => a.siteId !== siteId);
+
+  refresh();
+}
 
 // EXCEL
 function exportExcel(){
@@ -475,6 +692,16 @@ function exportExcel(){
 }
 
 function refresh(){
+  const assignEmployee = document.getElementById("assignEmployee");
+  const assignSite = document.getElementById("assignSite");
+  const assignAsset = document.getElementById("assignAsset");
+  const assignVehicle = document.getElementById("assignVehicle");
+
+  if (!assignEmployee || !assignSite || !assignAsset || !assignVehicle) {
+    console.warn("Dropdowns not ready");
+    return;
+  }
+
   assignEmployee.innerHTML = employees.map(e =>
     `<option value="${e.id}">${e.name}</option>`
   ).join('');
@@ -495,9 +722,47 @@ function refresh(){
       `<option value="${v.id}">${v.make} ${v.model}</option>`
     ).join('');
 
-  updateMaintenanceDropdown();   // ✅ MUST be here
+  updateMaintenanceDropdown();
+  const malAssetSelect = document.getElementById("malAsset");
 
+if (malAssetSelect) {
+  malAssetSelect.innerHTML =
+    `<option value="">Select Asset</option>` +
+    assets.map(a =>
+      `<option value="${a.id}">${a.id} (${a.type})</option>`
+    ).join('');
+}
   render();
+}  
+
+let issues = [];
+
+function reportIssue() {
+  const module = document.getElementById("bugModule").value;
+  const description = document.getElementById("bugDescription").value.trim();
+  const email = document.getElementById("bugEmail").value.trim();
+  const severity = document.getElementById("bugSeverity").value;
+
+  if (!module || !description || !email) {
+    alert("Please complete all fields");
+    return;
+  }
+
+  issues.push({
+    module,
+    description,
+    email,
+    severity,
+    date: new Date().toISOString()
+  });
+
+  // Clear inputs
+  document.getElementById("bugDescription").value = "";
+  document.getElementById("bugEmail").value = "";
+
+  alert("Issue submitted successfully");
+
+  console.log("Issues:", issues);
 }
 
 refresh();

@@ -70,3 +70,18 @@ h2 {
   background: #1e293b;
   border-radius: 6px;
 }
+
+input, select {
+  width: 250px;   /* 🔥 consistent size */
+  padding: 10px;
+  margin: 10px 0;
+  background: #020617;
+  border: 1px solid #334155;
+  color: white;
+  border-radius: 5px;
+}
+#map {
+  height: 700px;   /* try 500–650 depending on preference */
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
