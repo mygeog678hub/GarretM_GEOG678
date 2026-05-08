@@ -764,7 +764,7 @@ function closeEmployeeModal() {
 function exportExcel() {
 
   let csv =
-    "empID,Start,End,Site,empName,designation,asset,assetStatus,vehicle,empStatus\n";
+    "empID,Start,End,Site,empName,designation,asset,assetStatus,vehicle,employeeStatus\n";
 
   assignments.forEach(a => {
 
