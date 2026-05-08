@@ -118,7 +118,12 @@ onSnapshot(collection(db, "sites"), snap => {
 });
 
 onSnapshot(collection(db, "assignments"), snap => {
-  assignments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  assignments = snap.docs
+  .map(d => ({
+    id: d.id,
+    ...d.data()
+  }))
+  .filter(a => !a.archived);
   refresh();
 });
 
@@ -312,7 +317,33 @@ async function unassign(empId) {
 
 // ================= DELETE =================
 async function deleteAssignment(id) {
-  await deleteDoc(doc(db, "assignments", id));
+
+  if (!confirm(
+    "Archive this assignment?"
+  )) return;
+
+  try {
+
+    await updateDoc(
+      doc(db, "assignments", id),
+      {
+        archived: true,
+        archivedAt:
+          new Date().toISOString()
+      }
+    );
+
+    alert("Assignment archived");
+
+  } catch (err) {
+
+    console.error(
+      "Archive Error:",
+      err
+    );
+
+    alert(err.message);
+  }
 }
 // ================= RENDER EMPLOYEES =================
 function renderEmployees(filteredList = employees) {
@@ -1104,5 +1135,4 @@ window.markMaintenance = markMaintenance;
 window.markActive = markActive;
 window.reportIssue = reportIssue;
 window.deleteSite = deleteSite;
-window.deleteSelectedSite =
-  deleteSelectedSite;
+window.deleteSelectedSite = deleteSelectedSite;

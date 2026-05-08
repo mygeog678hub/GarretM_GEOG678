@@ -1,11 +1,21 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   margin: 20px;
   background: #0f172a;
   color: #f1f5f9;
 }
-h2 { margin-top:25px; }
-input, select, button { margin:5px; padding:6px; }
+
+/* ================= HEADERS ================= */
+
+h2 {
+  margin-top: 25px;
+  padding: 10px;
+  background: #1e293b;
+  border-radius: 6px;
+}
+
+/* ================= TABLES ================= */
+
 table {
   border-collapse: collapse;
   width: 100%;
@@ -13,7 +23,8 @@ table {
   background: #1e293b;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #334155;
   padding: 8px;
 }
@@ -22,6 +33,8 @@ th {
   background: #1e40af;
   color: white;
 }
+
+/* ================= NAVBAR ================= */
 
 .navbar {
   height: 60px;
@@ -45,34 +58,11 @@ th {
   font-weight: 600;
 }
 
-input, select {
-  background: #1e293b;
-  color: #f1f5f9;
-  border: 1px solid #334155;
-  border-radius: 4px;
-}
+/* ================= INPUTS ================= */
 
-button {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #2563eb;
-}
-
-h2 {
-  margin-top: 25px;
-  padding: 10px;
-  background: #1e293b;
-  border-radius: 6px;
-}
-
-input, select {
-  width: 250px;   /* 🔥 consistent size */
+input,
+select {
+  width: 250px;
   padding: 10px;
   margin: 10px 0;
   background: #020617;
@@ -80,60 +70,43 @@ input, select {
   color: white;
   border-radius: 5px;
 }
-#map {
-  height: 700px;   /* try 500–650 depending on preference */
-  margin-bottom: 20px;
-  border-radius: 8px;
-}
+
+/* ================= BUTTONS ================= */
+
 button {
-  background-color: #007bff; /* default blue */
+  background: #3b82f6;
   color: white;
   border: none;
-  padding: 6px 10px;
+  border-radius: 5px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 
-/* Hover */
 button:hover {
-  background-color: #0056b3;
+  background: #2563eb;
 }
 
-/* Different states */
 button.active {
-  background-color: #28a745; /* green */
+  background: #28a745;
 }
 
 button.completed {
-  background-color: #6c757d; /* gray */
+  background: #6c757d;
 }
 
 button.danger {
-  background-color: #dc3545; /* red */
-}
-.status-active {
-  background-color: #28a745;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 5px;
+  background: #dc3545;
 }
 
-.status-completed {
-  background-color: #6c757d;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 5px;
+/* ================= MAP ================= */
+
+#map {
+  height: 700px;
+  margin-bottom: 20px;
+  border-radius: 8px;
 }
-select {
-  background-color: #f8f9fa;
-  color: black;
-}
-.status-maintenance {
-  background: orange;
-  color: black;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
-}
+
+/* ================= STATUS TAGS ================= */
 
 .status-active {
   background: green;
@@ -146,6 +119,14 @@ select {
 .status-completed {
   background: gray;
   color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.status-maintenance {
+  background: orange;
+  color: black;
   padding: 4px 8px;
   border-radius: 4px;
   font-weight: bold;
