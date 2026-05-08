@@ -21,7 +21,6 @@
       border-radius: 10px;
       width: 300px;
       text-align: center;
-      justify-content: center;
     }
 
     input {
@@ -37,26 +36,38 @@
     button {
       width: 100%;
       padding: 10px;
+      margin-top: 10px;
       background: #3b82f6;
       border: none;
       color: white;
       border-radius: 5px;
       cursor: pointer;
     }
+
+    label {
+      display: block;
+      text-align: left;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #cbd5f5;
+    }
   </style>
 </head>
 
 <body style="display:none;" id="body">
-<div class="login-wrapper">
+
 <div class="login-container">
   <h2>Login</h2>
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <!-- ✅ FIXED LABELS -->
+  <label for="email">Email</label>
+  <input id="email" type="email" placeholder="Enter your email">
+
+  <label for="password">Password</label>
+  <input id="password" type="password" placeholder="Enter your password">
 
   <button onclick="login()">Login</button>
   <button onclick="signup()">Sign Up</button>
-  </div>
 
   <p id="error" style="color:red;"></p>
 </div>
@@ -83,10 +94,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 onAuthStateChanged(auth, user => {
-  const body = document.getElementById("body");
-  body.style.display = "flex";   // 🔥 IMPORTANT
+  document.getElementById("body").style.display = "flex";
 
-  if (user) window.location.href = "app.html";
+  window.location.href = "app.html";
 });
 
 window.login = async function(){
@@ -96,7 +106,6 @@ window.login = async function(){
       email.value,
       password.value
     );
-    window.location.href = "app.html";
   } catch(e){
     error.textContent = e.message;
   }

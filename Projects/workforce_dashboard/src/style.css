@@ -85,3 +85,68 @@ input, select {
   margin-bottom: 20px;
   border-radius: 8px;
 }
+button {
+  background-color: #007bff; /* default blue */
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* Hover */
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Different states */
+button.active {
+  background-color: #28a745; /* green */
+}
+
+button.completed {
+  background-color: #6c757d; /* gray */
+}
+
+button.danger {
+  background-color: #dc3545; /* red */
+}
+.status-active {
+  background-color: #28a745;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+.status-completed {
+  background-color: #6c757d;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+select {
+  background-color: #f8f9fa;
+  color: black;
+}
+.status-maintenance {
+  background: orange;
+  color: black;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.status-active {
+  background: green;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.status-completed {
+  background: gray;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
