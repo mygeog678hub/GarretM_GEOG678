@@ -516,7 +516,7 @@ const vehicle = vehicles.find(
       <th>Asset</th>
       <th>Asset Status</th>
       <th>Vehicle</th>
-      <th>Status</th>
+      <th>Employee Status</th>
       <th>Action</th>
     </tr>
     ${rows}
