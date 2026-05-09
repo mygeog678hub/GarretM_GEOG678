@@ -131,3 +131,29 @@ button.danger {
   border-radius: 4px;
   font-weight: bold;
 }
+.page-container {
+  max-width: 900px;
+  margin: 120px auto;
+  padding: 40px;
+
+  background: rgba(15, 23, 42, 0.75);
+
+  border-radius: 20px;
+
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.page-container h1 {
+  margin-bottom: 30px;
+}
+
+.page-container section {
+  margin-bottom: 40px;
+}
+
+.page-container h2 {
+  color: #38bdf8;
+  margin-bottom: 10px;
+}
