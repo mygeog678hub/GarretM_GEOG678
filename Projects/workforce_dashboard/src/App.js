@@ -290,8 +290,23 @@ async function assign() {
     alert("Employee already assigned");
     return;
   }
-console.log("Asset Selected:", assignAsset.value);
-console.log("Vehicle Selected:", assignVehicle.value);
+  const selectedAsset =
+  assets.find(
+    a => a.id === assignAsset.value
+  );
+    console.log("Asset Selected:", assignAsset.value);
+    console.log("Vehicle Selected:", assignVehicle.value);
+if (
+  selectedAsset &&
+  selectedAsset.status === "maintenance"
+) {
+
+  alert(
+    "This asset is currently under maintenance"
+  );
+
+  return;
+}
   await addDoc(collection(db, "assignments"), {
     employeeId: assignEmployee.value,
     siteId: assignSite.value,
@@ -464,14 +479,14 @@ const vehicle = vehicles.find(
     </td>
 
     <td>
-      ${
-        a.endTime
-          ? new Date(a.endTime).toLocaleDateString() +
-            " " +
-            new Date(a.endTime).toLocaleTimeString()
-          : "ACTIVE"
-      }
-    </td>
+  ${
+    a.endTime
+      ? new Date(a.endTime).toLocaleDateString() +
+        " " +
+        new Date(a.endTime).toLocaleTimeString()
+      : ""
+  }
+</td>
 
     <td>
       ${emp ? emp.name : `❌ ${a.employeeId}`}
@@ -483,23 +498,7 @@ const vehicle = vehicles.find(
 
     <td>
       ${asset ? asset.id : ""}
-    </td>
-
-    <td>
-  ${
-    asset
-      ? `
-        <span class="${
-          asset.status === "maintenance"
-            ? "status-maintenance"
-            : "status-active"
-        }">
-          ${asset.status}
-        </span>
-      `
-      : "No Asset"
-  }
-</td>
+    </td>    
 
     <td>
       ${vehicle ? vehicle.id : ""}
@@ -540,16 +539,15 @@ const vehicle = vehicles.find(
 
   document.getElementById("reportTable").innerHTML = `
     <tr>
-      <th>Start</th>
-      <th>End</th>
-      <th>Employee</th>
-      <th>Site</th>
-      <th>Asset</th>
-      <th>Asset Status</th>
-      <th>Vehicle</th>
-      <th>Employee Status</th>
-      <th>Action</th>
-    </tr>
+  <th>Start</th>
+  <th>End</th>
+  <th>Employee</th>
+  <th>Site</th>
+  <th>Asset</th>
+  <th>Vehicle</th>
+  <th>Employee Status</th>
+  <th>Action</th>
+</tr>
     ${rows}
   `;
   renderEmployees();
@@ -600,9 +598,46 @@ if (!markers[site.id]) {
     } else {
       popup += "<b>Employees:</b><br>";
       active.forEach(a => {
-        const emp = employees.find(e => e.id === a.employeeId);
-        popup += `- ${emp?.name || "Unknown"}<br>`;
-      });
+
+  const emp =
+    employees.find(
+      e => e.id === a.employeeId
+    );
+
+  const asset =
+    assets.find(
+      x => x.id === a.assetId
+    );
+
+  const vehicle =
+    vehicles.find(
+      v => v.id === a.vehicleId
+    );
+
+  popup += `
+    <div style="margin-bottom:8px;">
+
+      <b>
+        ${emp?.name || "Unknown"}
+      </b><br>
+
+      Asset:
+      ${
+        asset
+          ? asset.id
+          : "None"
+      }<br>
+
+      Vehicle:
+      ${
+        vehicle
+          ? vehicle.id
+          : "None"
+      }
+
+    </div>
+  `;
+});
     }
 // 🔥 Show maintenance status
     if (site.maintenance) {
@@ -646,9 +681,21 @@ function refresh() {
   assignAsset.innerHTML =
     `<option value="">None</option>` +
     assets.map(a => `
-      <option value="${a.id}">
-        ${a.id} - ${a.type}
-      </option>
+     <option
+  value="${a.id}"
+  ${
+    a.status === "maintenance"
+      ? "disabled"
+      : ""
+  }
+>
+  ${a.id} - ${a.type}
+  ${
+    a.status === "maintenance"
+      ? "(MAINTENANCE)"
+      : "(ACTIVE)"
+  }
+</option>
     `).join("");
 
   assignAsset.value =
