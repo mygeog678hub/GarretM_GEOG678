@@ -1177,6 +1177,26 @@ async function deleteSelectedSite() {
   }
 }
 
+// ================= LOGOUT =================
+
+async function logout() {
+
+  try {
+
+    await signOut(auth);
+
+    window.location.href = "index.html";
+
+  } catch (err) {
+
+    console.error("Logout Error:", err);
+
+    alert(err.message);
+
+  }
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -1199,3 +1219,4 @@ window.markActive = markActive;
 window.reportIssue = reportIssue;
 window.deleteSite = deleteSite;
 window.deleteSelectedSite = deleteSelectedSite;
+window.logout = logout;
