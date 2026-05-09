@@ -19,7 +19,7 @@
       background: #1e293b;
       padding: 30px;
       border-radius: 10px;
-      width: 300px;
+      width: 360px;
       text-align: center;
     }
 
@@ -51,13 +51,26 @@
       font-size: 14px;
       color: #cbd5f5;
     }
+    .login-logo {
+  width: 140px;
+  height: auto;
+  display: block;
+  margin: 0 auto 15px auto;
+}
   </style>
 </head>
 
 <body style="display:none;" id="body">
 
 <div class="login-container">
-  <h2>Login</h2>
+  <img
+  src="workforge-logo.png"
+  alt="WorkForge Logo"
+  class="login-logo"
+/>
+  <p style="margin-top:-10px; color:#94a3b8;">
+  Workforce Operations Platform
+</p>
 
   <!-- ✅ FIXED LABELS -->
   <label for="email">Email</label>
@@ -71,6 +84,7 @@
 
   <p id="error" style="color:red;"></p>
 </div>
+
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
