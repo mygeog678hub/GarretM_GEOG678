@@ -10,6 +10,12 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
   authDomain: "workforge-3b77f.firebaseapp.com",
@@ -18,10 +24,20 @@ const firebaseConfig = {
   messagingSenderId: "906291779450",
   appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
 };
-
+//===================== INITIALIZE =================
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+// ================= AUTH =================
+onAuthStateChanged(auth, (user) => {
 
+  if (!user) {
+
+    window.location.href = "index.html";
+
+  }
+
+});
 // ================= DOM =================
 const empName = document.getElementById("empName");
 const empRole = document.getElementById("empRole");

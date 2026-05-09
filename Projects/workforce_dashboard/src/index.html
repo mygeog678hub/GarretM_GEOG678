@@ -94,9 +94,15 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 onAuthStateChanged(auth, user => {
+
   document.getElementById("body").style.display = "flex";
 
-  window.location.href = "app.html";
+  if (user) {
+
+    window.location.href = "app.html";
+
+  }
+
 });
 
 window.login = async function(){
