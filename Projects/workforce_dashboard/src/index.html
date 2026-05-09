@@ -21,6 +21,7 @@
       border-radius: 10px;
       width: 360px;
       text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     }
 
     input {
@@ -42,6 +43,7 @@
       color: white;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
 
     label {
@@ -52,7 +54,7 @@
       color: #cbd5f5;
     }
     .login-logo {
-  width: 140px;
+  width: 120px;
   height: auto;
   display: block;
   margin: 0 auto 15px auto;
@@ -80,8 +82,7 @@
   <input id="password" type="password" placeholder="Enter your password">
 
   <button onclick="login()">Login</button>
-  <button onclick="signup()">Sign Up</button>
-
+ 
   <p id="error" style="color:red;"></p>
 </div>
 
