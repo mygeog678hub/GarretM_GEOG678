@@ -1,13 +1,76 @@
-<form name="contact" method="POST" data-netlify="true">
+<!DOCTYPE html>
+<html lang="en">
 
-  <input type="hidden" name="form-name" value="contact">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <input type="text" name="name" placeholder="Your Name" required>
+  <title>Contact WorkForge</title>
 
-  <input type="email" name="email" placeholder="Your Email" required>
+  <link rel="stylesheet" href="style.css">
+</head>
 
-  <textarea name="message" placeholder="How can we help?"></textarea>
+<body>
 
-  <button type="submit">Send Message</button>
+  <nav class="top-nav">
+    <a href="index.html">Login</a>
+    <a href="about.html">About</a>
+    <a href="features.html">Features</a>
+  </nav>
 
-</form>
+  <div class="page-container">
+
+    <h1>Contact WorkForge</h1>
+
+    <p>
+      Interested in WorkForge for your organization?
+      Send us a message below.
+    </p>
+
+    <form
+      name="contact"
+      method="POST"
+      data-netlify="true"
+      class="contact-form"
+    >
+
+      <input type="hidden" name="form-name" value="contact">
+
+      <input
+        type="text"
+        name="name"
+        placeholder="Your Name"
+        required
+      >
+
+      <input
+        type="email"
+        name="email"
+        placeholder="Your Email"
+        required
+      >
+
+      <input
+        type="text"
+        name="company"
+        placeholder="Company Name"
+      >
+
+      <textarea
+        name="message"
+        rows="6"
+        placeholder="Tell us about your operational needs..."
+        required
+      ></textarea>
+
+      <button type="submit">
+        Send Message
+      </button>
+
+    </form>
+
+  </div>
+
+</body>
+
+</html>
