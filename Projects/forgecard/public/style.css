@@ -1,0 +1,368 @@
+/* =========================
+   GLOBAL
+========================= */
+
+body {
+  margin: 0;
+  padding: 0;
+
+  font-family: Arial, sans-serif;
+
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+header h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.hero h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  color: #cbd5e1;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.btn,
+button {
+  display: inline-block;
+
+  background: #3b82f6;
+  color: white;
+
+  padding: 15px 25px;
+
+  border: none;
+  border-radius: 10px;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  font-size: 1rem;
+
+  transition: 0.3s ease;
+}
+
+.btn:hover,
+button:hover {
+  background: #2563eb;
+}
+
+/* =========================
+   FEATURES
+========================= */
+
+.features {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px, 1fr));
+
+  gap: 20px;
+
+  padding: 40px;
+}
+
+.card {
+  background: #1e293b;
+
+  padding: 25px;
+
+  border-radius: 20px;
+
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+/* =========================
+   FORM CONTAINER
+========================= */
+
+.container {
+  max-width: 600px;
+
+  margin: 50px auto;
+
+  padding: 30px;
+
+  background: #1e293b;
+
+  border-radius: 20px;
+}
+
+/* =========================
+   FORM
+========================= */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input {
+  padding: 15px;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 1rem;
+}
+
+/* =========================
+   BUSINESS CARD
+========================= */
+
+/* =========================
+   BUSINESS CARD
+========================= */
+
+.business-card {
+
+  max-width: 420px;
+
+  margin: 60px auto 20px auto;
+
+  padding: 40px 30px;
+
+  background: linear-gradient(
+    145deg,
+    #1e293b,
+    #0f172a
+  );
+
+  border-radius: 24px;
+
+  text-align: center;
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.4);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.business-card h1 {
+
+  font-size: 2rem;
+
+  margin-bottom: 8px;
+
+  color: white;
+}
+
+.business-card h2 {
+
+  font-size: 1.1rem;
+
+  font-weight: 400;
+
+  color: #93c5fd;
+
+  margin-bottom: 10px;
+}
+
+.business-card p {
+
+  color: #cbd5e1;
+
+  margin-bottom: 20px;
+}
+
+.business-card a {
+
+  display: block;
+
+  margin: 12px 0;
+
+  padding: 14px;
+
+  background: rgba(255,255,255,0.05);
+
+  border-radius: 12px;
+
+  text-decoration: none;
+
+  color: #60a5fa;
+
+  transition: 0.3s ease;
+}
+
+.business-card a:hover {
+
+  background: rgba(255,255,255,0.10);
+}
+
+/* =========================
+   QR CODE
+========================= */
+
+#qrcode {
+
+  width: fit-content;
+
+  margin: 20px auto 60px auto;
+
+  padding: 20px;
+
+  background: white;
+
+  border-radius: 20px;
+}
+
+/* =========================
+   QR CODE
+========================= */
+
+#qrcode {
+  margin: 30px auto;
+
+  width: fit-content;
+
+  padding-bottom: 50px;
+}
+/* =========================
+   SAVE CONTACT BUTTON
+========================= */
+
+#saveContactBtn {
+
+  margin-top: 20px;
+
+  width: 100%;
+}
+/* =========================
+   PROFILE PHOTO
+========================= */
+
+.profile-photo {
+
+  width: 120px;
+  height: 120px;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+
+  margin-bottom: 20px;
+
+  border: 4px solid rgba(255,255,255,0.15);
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,0.4);
+}
+/* =========================
+   USERNAME
+========================= */
+
+.username {
+
+  color: #60a5fa;
+
+  font-size: 0.95rem;
+
+  margin-bottom: 20px;
+}
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(280px, 1fr));
+
+  gap: 25px;
+
+  padding: 40px;
+}
+
+.dashboard-card {
+
+  background: #1e293b;
+
+  border-radius: 20px;
+
+  padding: 25px;
+
+  text-align: center;
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,0.3);
+}
+
+.dashboard-photo {
+
+  width: 90px;
+  height: 90px;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+
+  margin-bottom: 15px;
+}
+/* =========================
+   DASHBOARD ACTIONS
+========================= */
+
+.dashboard-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  justify-content: center;
+
+  margin-top: 20px;
+}
+
+.dashboard-actions .btn {
+
+  flex: 1;
+}
+.header-actions {
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 15px;
+
+  margin-top: 25px;
+
+  flex-wrap: wrap;
+}
