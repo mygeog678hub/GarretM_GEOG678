@@ -248,3 +248,19 @@ button.danger {
 .feature-card p {
   line-height: 1.6;
 }
+.forgecard-link {
+  margin-top: 10px;
+  margin-bottom: 30px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.forgecard-link a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.forgecard-link a:hover {
+  text-decoration: underline;
+}

@@ -5,24 +5,21 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-  <input
-  type="text"
-  id="photo"
-  placeholder="Profile Image URL"
-/>
+    content="width=device-width, initial-scale=1.0"  
 
   <title>Create Your Card</title>
 
   <link rel="stylesheet" href="style.css" />
 </head>
 
+
 <body>
 
-  <div class="container">
+  <div class="create-container">
 
-    <h1>Create Your QR Business Card</h1>
+  <div class="form-panel">
+
+    <h2>Create Your Forgecard</h2>
 
     <form id="cardForm">
 
@@ -30,43 +27,54 @@
         type="text"
         id="name"
         placeholder="Full Name"
-        required
-      />
-      <input
-        type="text"
-        id="username"
-        placeholder="Custom Username"
-        required
-      />
-
-      <input
-        type="text"
-        id="company"
-        placeholder="Company"
-      />
-
+      >
       <input
         type="text"
         id="title"
         placeholder="Job Title"
-      />
-
+      >
+      <input
+        type="text"
+        id="company"
+        placeholder="Company"
+      >
       <input
         type="email"
         id="email"
-        placeholder="Email Address"
-      />
-
+        placeholder="Email"
+      >
       <input
         type="tel"
         id="phone"
         placeholder="Phone Number"
+      >  
+      <input
+        type="text"
+        id="username"
+        placeholder="Username"
       />
 
       <input
-        type="text"
+        type="url"
         id="website"
         placeholder="Website"
+      />
+
+      <select id="theme">
+
+  <option value="dark">
+    Dark Theme
+  </option>
+
+  <option value="blue">
+    Blue Theme
+  </option>
+
+</select>    
+      <input
+      type="file"
+      id="photo"
+      accept="image/*"
       />
 
       <button type="submit">
@@ -77,7 +85,112 @@
 
   </div>
 
+  <div class="preview-panel">
+
+    <div class="preview-card">
+
+      <h3 id="previewName">
+        Your Name
+      </h3>
+
+      <p id="previewTitle">
+        Job Title
+      </p>
+
+      <p id="previewCompany">
+        Company Name
+      </p>
+
+      <div class="preview-divider"></div>
+
+      <p id="previewEmail">
+        your@email.com
+      </p>
+
+      <p id="previewPhone">
+        (000) 000-0000
+      </p>
+
+      <div class="qr-placeholder">
+        QR CODE
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
   <script type="module" src="app.js"></script>
+  <script>
+
+const fields = [
+  "name",
+  "title",
+  "company",
+  "email",
+  "phone"
+];
+
+fields.forEach(field => {
+
+  document
+    .getElementById(field)
+    .addEventListener("input", e => {
+console.log("Generate Card clicked");
+      const previewId =
+        "preview" +
+        field.charAt(0).toUpperCase() +
+        field.slice(1);
+
+      document.getElementById(previewId)
+        .textContent = e.target.value || " ";
+
+    });
+
+});
+
+</script>
+<script>
+
+document
+  .getElementById("cardForm")
+  .addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+  });
+
+</script>
+<!-- Add Enter key navigation between inputs -->
+<script>
+
+const inputs = document.querySelectorAll(
+  "#cardForm input"
+);
+
+inputs.forEach((input, index) => {
+
+  input.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter") {
+
+      e.preventDefault();
+
+      const nextInput =
+        inputs[index + 1];
+
+      if (nextInput) {
+        nextInput.focus();
+      }
+
+    }
+
+  });
+
+});
+
+</script>
 
 </body>
 </html>

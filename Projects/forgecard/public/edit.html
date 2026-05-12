@@ -9,10 +9,9 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Edit Card</title>
+  <title>Edit ForgeCard</title>
 
   <link rel="stylesheet" href="style.css" />
-  
 
 </head>
 
@@ -20,20 +19,14 @@
 
   <div class="container">
 
-    <h1>Edit Your Card</h1>
+    <h1>Edit Card</h1>
 
     <form id="editForm">
 
       <input
         type="text"
         id="name"
-        placeholder="Full Name"
-      />
-
-      <input
-        type="text"
-        id="username"
-        placeholder="Username"
+        placeholder="Name"
       />
 
       <input
@@ -44,20 +37,20 @@
 
       <input
         type="text"
-        id="title"
-        placeholder="Job Title"
+        id="username"
+        placeholder="Username"
+      />
+
+      <input
+        type="text"
+        id="phone"
+        placeholder="Phone"
       />
 
       <input
         type="email"
         id="email"
         placeholder="Email"
-      />
-
-      <input
-        type="tel"
-        id="phone"
-        placeholder="Phone"
       />
 
       <input
@@ -69,8 +62,33 @@
       <input
         type="text"
         id="photo"
-        placeholder="Profile Image URL"
+        placeholder="Photo URL"
       />
+      <label>Select Theme</label>
+
+<select id="theme">
+
+  <option value="ocean">
+    Ocean Blue
+  </option>
+
+  <option value="midnight">
+    Midnight
+  </option>
+
+  <option value="emerald">
+    Emerald
+  </option>
+
+  <option value="sunset">
+    Sunset
+  </option>
+
+  <option value="minimal">
+    Minimal Light
+  </option>
+
+</select>
 
       <button type="submit">
         Save Changes

@@ -110,6 +110,37 @@ function generateQR() {
 
   });
 }
+const downloadBtn =
+  document.getElementById("downloadQRBtn");
+
+downloadBtn.addEventListener(
+  "click",
+  () => {
+
+    const qrCanvas =
+      document.querySelector("#qrcode canvas");
+
+    if (!qrCanvas) {
+
+      alert("QR code not ready");
+
+      return;
+    }
+
+    const image =
+      qrCanvas.toDataURL("image/png");
+
+    const link =
+      document.createElement("a");
+
+    link.href = image;
+
+    link.download =
+      "forgecard-qrcode.png";
+
+    link.click();
+  }
+);
 
 /* =========================
    SAVE CONTACT
@@ -162,3 +193,38 @@ END:VCARD`;
 ========================= */
 
 loadCard();
+// Check for unique username
+function applyTheme(theme) {
+
+  const body = document.body;
+
+  body.classList.remove(
+    "theme-ocean",
+    "theme-midnight",
+    "theme-emerald",
+    "theme-sunset",
+    "theme-minimal"
+  );
+
+  switch(theme) {
+
+    case "midnight":
+      body.classList.add("theme-midnight");
+      break;
+
+    case "emerald":
+      body.classList.add("theme-emerald");
+      break;
+
+    case "sunset":
+      body.classList.add("theme-sunset");
+      break;
+
+    case "minimal":
+      body.classList.add("theme-minimal");
+      break;
+
+    default:
+      body.classList.add("theme-ocean");
+  }
+}

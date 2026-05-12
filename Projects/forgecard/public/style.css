@@ -5,6 +5,7 @@
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 
   font-family: Arial, sans-serif;
 
@@ -38,6 +39,7 @@ header p {
 .hero {
   text-align: center;
   padding: 80px 20px;
+  padding-top: 70px;
 }
 
 .hero h2 {
@@ -240,18 +242,6 @@ input {
 
   border-radius: 20px;
 }
-
-/* =========================
-   QR CODE
-========================= */
-
-#qrcode {
-  margin: 30px auto;
-
-  width: fit-content;
-
-  padding-bottom: 50px;
-}
 /* =========================
    SAVE CONTACT BUTTON
 ========================= */
@@ -309,51 +299,9 @@ input {
 
   padding: 40px;
 }
-
-.dashboard-card {
-
-  background: #1e293b;
-
-  border-radius: 20px;
-
-  padding: 25px;
-
-  text-align: center;
-
-  box-shadow:
-    0 5px 20px rgba(0,0,0,0.3);
-}
-
-.dashboard-photo {
-
-  width: 90px;
-  height: 90px;
-
-  object-fit: cover;
-
-  border-radius: 50%;
-
-  margin-bottom: 15px;
-}
 /* =========================
    DASHBOARD ACTIONS
 ========================= */
-
-.dashboard-actions {
-
-  display: flex;
-
-  gap: 10px;
-
-  justify-content: center;
-
-  margin-top: 20px;
-}
-
-.dashboard-actions .btn {
-
-  flex: 1;
-}
 .header-actions {
 
   display: flex;
@@ -365,4 +313,525 @@ input {
   margin-top: 25px;
 
   flex-wrap: wrap;
+}
+/* =========================
+   DOWNLOAD QR BUTTON
+========================= */
+
+#downloadQRBtn {
+
+  display: block;
+
+  margin: 20px auto 60px auto;
+}
+/* =========================
+   OCEAN
+========================= */
+
+.theme-ocean {
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e3a8a
+  );
+
+  color: white;
+}
+
+/* =========================
+   MIDNIGHT
+========================= */
+
+.theme-midnight {
+  background: #020617;
+  color: #f8fafc;
+}
+
+/* =========================
+   EMERALD
+========================= */
+
+.theme-emerald {
+  background: linear-gradient(
+    135deg,
+    #064e3b,
+    #10b981
+  );
+
+  color: white;
+}
+
+/* =========================
+   SUNSET
+========================= */
+
+.theme-sunset {
+  background: linear-gradient(
+    135deg,
+    #7c2d12,
+    #f97316
+  );
+
+  color: white;
+}
+
+/* =========================
+   MINIMAL
+========================= */
+
+.theme-minimal {
+  background: #f8fafc;
+  color: #0f172a;
+}
+select {
+  width: 100%;
+  height: 48px;
+  padding: 10px 12px;
+  font-size: 16px;
+
+  border: 1px solid #ccc;
+  border-radius: 10px;
+
+  background: white;
+  color: #111;
+
+  margin-bottom: 15px;
+
+  box-sizing: border-box;
+}
+.dashboard-card {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #1e293b;
+  color: white;
+
+  padding: 20px;
+
+  border-radius: 16px;
+
+  margin-bottom: 20px;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.25);
+}
+
+.dashboard-photo {
+
+  width: 70px;
+  height: 70px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  margin-right: 20px;
+}
+
+.dashboard-info {
+
+  flex: 1;
+}
+
+.dashboard-actions {
+
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dashboard-actions button {
+
+  padding: 10px 14px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+.dashboard-card-top {
+
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  margin-bottom: 15px;
+}
+
+.dashboard-info {
+
+  flex: 1;
+}
+
+.theme-badge {
+
+  display: inline-block;
+
+  padding: 6px 12px;
+
+  border-radius: 20px;
+
+  background: #334155;
+
+  color: white;
+
+  font-size: 12px;
+
+  margin-top: 8px;
+}
+
+.dashboard-photo-placeholder {
+
+  width: 70px;
+  height: 70px;
+
+  border-radius: 50%;
+
+  background: #cbd5e1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 28px;
+}
+.profile-actions {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  margin-top: 25px;
+}
+
+.profile-nav-btn {
+
+  display: block;
+
+  text-align: center;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  background: #334155;
+
+  color: white;
+
+  text-decoration: none;
+
+  font-weight: bold;
+}
+.forgecard-header {
+  width: 100%;
+  background: linear-gradient(to right, #020617, #0f172a);
+  padding: 4px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+.forgecard-logo {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.forgecard-logo:hover {
+  transform: scale(1.01);
+}
+.pricing {
+  padding: 80px 20px;
+  background: #020617;
+  text-align: center;
+}
+
+.pricing h2 {
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: white;
+}
+
+.pricing-grid {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.price-card {
+  background: #0f172a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 40px 30px;
+  width: 320px;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+}
+
+.price-card h3 {
+  font-size: 1.8rem;
+  color: white;
+  margin-bottom: 20px;
+}
+
+.price {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #3b82f6;
+  margin-bottom: 30px;
+}
+
+.price span {
+  font-size: 1rem;
+  color: #94a3b8;
+}
+
+.price-card ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 30px;
+}
+
+.price-card li {
+  margin: 14px 0;
+  color: #cbd5e1;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.pricing-btn:hover {
+  transform: translateY(-2px);
+}
+
+.featured {
+  border: 2px solid #2563eb;
+  transform: scale(1.03);
+}
+
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: #2563eb;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.navbar {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(2, 6, 23, 0.95);
+  backdrop-filter: blur(10px);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 24px;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  color: #3b82f6;
+}
+
+.nav-btn {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  padding: 10px 18px;
+  border-radius: 10px;
+  color: white !important;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  transform: translateY(-1px);
+}
+.forgecard-logo {
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  display: block;
+}
+.site-footer {
+  background: #020617;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 60px 30px 30px;
+  margin-top: 80px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-brand h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.footer-brand p {
+  color: #94a3b8;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #3b82f6;
+}
+
+.footer-bottom {
+  margin-top: 40px;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+.create-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  padding: 60px 30px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.form-panel {
+  flex: 1;
+  min-width: 320px;
+  max-width: 450px;
+}
+
+.form-panel h2 {
+  color: white;
+  margin-bottom: 24px;
+}
+
+.form-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-panel input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #0f172a;
+  color: white;
+  font-size: 1rem;
+}
+
+.form-panel button {
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.preview-panel {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  justify-content: center;
+}
+
+.preview-card {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  border-radius: 20px;
+  padding: 30px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+
+.preview-card h3 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.preview-card p {
+  color: #cbd5e1;
+  margin: 6px 0;
+}
+
+.preview-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 20px 0;
+}
+
+.qr-placeholder {
+  margin-top: 30px;
+  height: 140px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: #64748b;
+  font-weight: bold;
 }

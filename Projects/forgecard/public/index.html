@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>ForgeCard</title>
+  <title>ForgeCard, Professional QR Business Cards</title>
 
   <link rel="stylesheet" href="style.css" />
 
@@ -17,26 +17,40 @@
 
 <body>
 
-  <header>
+  <header class="navbar">
 
-    <h1>ForgeCard</h1>
+  <div class="nav-left">
 
-    <p>
-      Professional QR Business Cards
-    </p>
+  <span class="brand-text">
+    Forgecard
+  </span>
 
-  </header>
+</div>
+
+  <nav class="nav-links">
+
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="login.html">Login</a>
+
+    <a href="create.html" class="nav-btn">
+      Create Card
+    </a>
+
+  </nav>
+
+</header>
 
   <section class="hero">
 
     <h2>
-      Create Your Digital Business Card
-    </h2>
+  Digital Identity for Modern Professionals
+</h2>
 
-    <p>
-      Share your contact information instantly
-      with a custom QR code.
-    </p>
+<p>
+  Create a professional QR profile you can
+  share instantly from any device.
+</p>
 
     <a href="create.html" class="btn">
       Create Your Card
@@ -44,7 +58,7 @@
 
   </section>
 
-  <section class="features">
+  <section class="features" id="features">
 
     <div class="card">
 
@@ -80,6 +94,103 @@
     </div>
 
   </section>
+  <section class="pricing" id="pricing">
+
+  <h2>Professional Plans</h2>
+
+  <div class="pricing-grid">
+
+    <div class="price-card">
+
+      <h3>Free</h3>
+
+      <div class="price">
+        $0
+      </div>
+
+      <ul>
+        <li>1 Digital QR Card</li>
+        <li>Public Profile</li>
+        <li>Contact Sharing</li>
+        <li>Standard Themes</li>
+      </ul>
+
+      <button class="pricing-btn">
+        Get Started
+      </button>
+
+    </div>
+
+    <div class="price-card featured">
+
+      <div class="popular-badge">
+        MOST POPULAR
+      </div>
+
+      <h3>Pro</h3>
+
+      <div class="price">
+        $7.99<span>/month</span>
+      </div>
+
+      <ul>
+  <li>Unlimited Profile Updates</li>
+  <li>Professional Photo Uploads</li>
+  <li>Resume & Portfolio Links</li>
+  <li>Premium Themes</li>
+  <li>Remove Forgecard Branding</li>
+  <li>Profile Analytics</li>
+  <li>Priority Support</li>
+</ul>
+
+      <button
+  class="pricing-btn"
+  id="upgradeBtn"
+>
+  Upgrade to Pro
+</button>
+
+    </div>
+
+  </div>
+
+</section>
+<footer class="site-footer">
+
+  <div class="footer-content">
+
+    <div class="footer-brand">
+      <h3>Forgecard</h3>
+
+      <p>
+        Digital identity for modern professionals.
+      </p>
+       <p>
+  Part of the
+  <a href="https://workforge-dashboard.com">
+    WorkForge Platform
+  </a>
+</p>
+    </div>
+
+    <div class="footer-links">
+
+  <a href="#features">Features</a>
+  <a href="#pricing">Pricing</a>
+  <a href="login.html">Login</a>
+  <a href="create.html">Create Card</a>
+
+</div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Forgecard by WorkForge. All rights reserved.
+  </div>
+ 
+
+</footer>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>

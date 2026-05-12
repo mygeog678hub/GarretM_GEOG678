@@ -12,7 +12,9 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where
+  where,
+  increment,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -22,6 +24,17 @@ import {
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// Note: Storage functions are imported in edit.js since they're only needed there
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 /* =========================
    FIREBASE CONFIG
@@ -45,6 +58,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const auth = getAuth(app);
+const storage = getStorage(app);
 
 /* =========================
    EXPORTS
@@ -53,6 +67,7 @@ const auth = getAuth(app);
 export {
   db,
   auth,
+  storage,
 
   collection,
   addDoc,
@@ -61,12 +76,15 @@ export {
   getDoc,
   updateDoc,
   deleteDoc,
-
+  increment,
   query,
   where,
-
+  ref,
+  uploadBytes,
+  getDownloadURL,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  onSnapshot
 };

@@ -5,120 +5,139 @@ import {
   updateDoc
 } from "./firebase.js";
 
+/* =========================
+   GET CARD ID
+========================= */
+
 const params =
   new URLSearchParams(window.location.search);
 
-const id = params.get("id");
-
-const form =
-  document.getElementById("editForm");
+const cardId = params.get("id");
 
 /* =========================
-   LOAD CARD
+   FORM ELEMENTS
+========================= */
+
+const editForm =
+  document.getElementById("editForm");
+
+const nameInput =
+  document.getElementById("name");
+
+const companyInput =
+  document.getElementById("company");
+
+const usernameInput =
+  document.getElementById("username");
+
+const phoneInput =
+  document.getElementById("phone");
+
+const emailInput =
+  document.getElementById("email");
+
+const websiteInput =
+  document.getElementById("website");
+
+const photoInput =
+  document.getElementById("photo");
+
+const themeInput =
+  document.getElementById("theme");
+
+/* =========================
+   LOAD CARD DATA
 ========================= */
 
 async function loadCard() {
 
   try {
 
-    const cardRef =
-      doc(db, "cards", id);
+    const docRef =
+      doc(db, "cards", cardId);
 
-    const snapshot =
-      await getDoc(cardRef);
+    const docSnap =
+      await getDoc(docRef);
 
-    if (!snapshot.exists()) {
-      alert("Card not found.");
+    if (!docSnap.exists()) {
+
+      alert("Card not found");
+
       return;
     }
 
-    const data = snapshot.data();
+    const data = docSnap.data();
 
-    document.getElementById("name").value =
+    nameInput.value =
       data.name || "";
 
-    document.getElementById("username").value =
-      data.username || "";
-
-    document.getElementById("company").value =
+    companyInput.value =
       data.company || "";
 
-    document.getElementById("title").value =
-      data.title || "";
+    usernameInput.value =
+      data.username || "";
 
-    document.getElementById("email").value =
-      data.email || "";
-
-    document.getElementById("phone").value =
+    phoneInput.value =
       data.phone || "";
 
-    document.getElementById("website").value =
+    emailInput.value =
+      data.email || "";
+
+    websiteInput.value =
       data.website || "";
 
-    document.getElementById("photo").value =
+    photoInput.value =
       data.photo || "";
+
+    themeInput.value =
+      data.theme || "ocean";
 
   } catch (error) {
 
     console.error(error);
 
-    alert("Failed to load card.");
   }
 }
+
+loadCard();
 
 /* =========================
    SAVE CHANGES
 ========================= */
 
-form.addEventListener("submit", async (e) => {
+editForm.addEventListener(
+  "submit",
+  async (e) => {
 
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
+    try {
 
-    const cardRef =
-      doc(db, "cards", id);
+      await updateDoc(
+        doc(db, "cards", cardId),
+        {
+          name: nameInput.value,
+          company: companyInput.value,
+          username: usernameInput.value,
+          phone: phoneInput.value,
+          email: emailInput.value,
+          website: websiteInput.value,
+          photo: photoInput.value,
+          theme: themeInput.value
+        }
+      );
 
-    await updateDoc(cardRef, {
+      alert("Card updated!");
 
-      name:
-        document.getElementById("name").value,
+      window.location.href =
+        "dashboard.html";
 
-      username:
-        document.getElementById("username").value,
+    } catch (error) {
 
-      company:
-        document.getElementById("company").value,
+      console.error(error);
 
-      title:
-        document.getElementById("title").value,
+      alert("Failed to update card");
 
-      email:
-        document.getElementById("email").value,
-
-      phone:
-        document.getElementById("phone").value,
-
-      website:
-        document.getElementById("website").value,
-
-      photo:
-        document.getElementById("photo").value
-
-    });
-
-    alert("Card updated successfully.");
-
-    window.location.href =
-      `card.html?id=${id}`;
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("Failed to update card.");
+    }
   }
-
-});
-
-loadCard();
+);

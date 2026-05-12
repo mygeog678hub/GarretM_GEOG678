@@ -41,44 +41,83 @@ snapshot.forEach((docSnap) => {
 
       card.innerHTML = `
 
-        ${data.photo ? `
-          <img
-            src="${data.photo}"
-            class="dashboard-photo"
-          />
-        ` : ""}
+  <div class="dashboard-card-top">
 
-        <h2>${data.name || ""}</h2>
+    ${data.photo ? `
+      <img
+        src="${data.photo}"
+        class="dashboard-photo"
+      />
+    ` : `
+      <div class="dashboard-photo-placeholder">
+        👤
+      </div>
+    `}
 
-        <p>${data.company || ""}</p>
+    <div class="dashboard-info">
 
-        <p>@${data.username || ""}</p>
+      <h2>${data.name || ""}</h2>
 
-        <div class="dashboard-actions">
+      <p>${data.company || ""}</p>
 
-  <a
-    href="card.html?id=${docSnap.id}"
-    class="btn"
-  >
-    View
-  </a>
+      <p class="username">
+        @${data.username || ""}
+      </p>
 
-  <a
-    href="edit.html?id=${docSnap.id}"
-    class="btn"
-  >
-    Edit
-  </a>
+      <p>
+        Scans: ${data.scans || 0}
+      </p>
 
-  <button
-    onclick="deleteCard('${docSnap.id}')"
-  >
-    Delete
-  </button>
+      <p>
+      Last Scan:
+      ${
+        data.lastScanned
+          ? new Date(
+              data.lastScanned.seconds * 1000
+            ).toLocaleDateString()
+          : "Never"
+    }
+      </p>
 
-</div>
+      <span class="theme-badge">
+        ${data.theme || "ocean"}
+      </span>
 
-      `;
+    </div>
+
+  </div>
+
+  <div class="dashboard-actions">
+
+    <a
+      href="profile.html?username=${data.username}"
+      class="btn"
+    >
+      View
+    </a>
+
+    <a
+      href="edit.html?id=${docSnap.id}"
+      class="btn"
+    >
+      Edit
+    </a>
+
+    <button
+      onclick="copyLink('${data.username}')"
+    >
+      Copy Link
+    </button>
+
+    <button
+      onclick="deleteCard('${docSnap.id}')"
+    >
+      Delete
+    </button>
+
+  </div>
+
+`;
 
       dashboardGrid.appendChild(card);
 
@@ -106,6 +145,8 @@ onAuthStateChanged(auth, (user) => {
   loadCards(user);
 
 });
+// Check for unique username
+
 window.deleteCard = async function(cardId) {
 
   const confirmDelete = confirm(
@@ -131,6 +172,16 @@ window.deleteCard = async function(cardId) {
     alert("Failed to delete card");
 
   }
+};
+// Check for unique username
+window.copyLink = function(username) {
+
+  const url =
+    `${window.location.origin}/profile.html?username=${username}`;
+
+  navigator.clipboard.writeText(url);
+
+  alert("Profile link copied!");
 };
 
 /* =========================
