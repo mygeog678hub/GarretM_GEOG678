@@ -85,72 +85,81 @@ await addDoc(
   }
 );
 console.log("Theme value:", data.theme);
-applyTheme(data.theme);
 
 console.log("Card data:", data);
 
-    cardContainer.innerHTML = `
+cardContainer.innerHTML = `
 
-      ${data.photo ? `
-        <img
-          src="${data.photo}"
-          alt="Profile Photo"
-          class="profile-photo"
-        />
-      ` : ""}
+  ${data.photo ? `
+    <img
+      src="${data.photo}"
+      alt="Profile Photo"
+      class="profile-photo"
+    />
+  ` : ""}
 
-      <h1>${data.name || ""}</h1>
+  <h1>${data.name || ""}</h1>
 
-      <h2>${data.title || ""}</h2>
+  <h2>${data.title || ""}</h2>
 
-      <p>${data.company || ""}</p>
+  <p>${data.company || ""}</p>
 
-      <p class="username">
-        @${data.username || ""}
-      </p>
+  <p class="username">
+    @${data.username || ""}
+  </p>
 
-      <a href="tel:${data.phone || ""}">
-        📞 ${data.phone || "No phone"}
-      </a>
+  <a href="tel:${data.phone || ""}">
+    📞 ${data.phone || "No phone"}
+  </a>
 
-      <a href="mailto:${data.email || ""}">
-        ✉️ ${data.email || "No email"}
-      </a>
-
-      <a
-        href="${data.website || "#"}"
-        target="_blank"
-      >
-        🌐 ${data.website || "No website"}
-      </a>
-
-      <div class="profile-actions">
-
-  <button id="saveContactBtn">
-    Save Contact
-  </button>
-
-  <button id="downloadQRBtn">
-    Download QR
-  </button>
-
-  <a
-    href="dashboard.html"
-    class="profile-nav-btn"
-  >
-    Dashboard
+  <a href="mailto:${data.email || ""}">
+    ✉️ ${data.email || "No email"}
   </a>
 
   <a
-    href="edit.html?id=${id}"
-    class="profile-nav-btn"
+    href="${data.website || "#"}"
+    target="_blank"
   >
-    Edit Card
+    🌐 ${data.website || "No website"}
   </a>
 
-</div>
+  <div class="profile-actions">
 
-    `;
+    <button id="saveContactBtn">
+      Save Contact
+    </button>
+
+    <button id="downloadQRBtn">
+      Download QR
+    </button>
+
+    <a
+      href="dashboard.html"
+      class="profile-nav-btn"
+    >
+      Dashboard
+    </a>
+
+    <a
+      href="edit.html?id=${id}"
+      class="profile-nav-btn"
+    >
+      Edit Card
+    </a>
+
+  </div>
+
+`;
+
+applyTheme(data.theme);
+
+console.log(document.body.className);
+
+generateQR();
+
+setupDownloadQR();
+
+setupSaveContact(data);
 
     generateQR();
 
@@ -242,21 +251,27 @@ function applyTheme(theme) {
   switch(theme) {
 
     case "midnight":
+    case "theme-midnight":
       body.classList.add("theme-midnight");
       break;
 
     case "emerald":
+    case "theme-emerald":
       body.classList.add("theme-emerald");
       break;
 
     case "sunset":
+    case "theme-sunset":
       body.classList.add("theme-sunset");
       break;
 
     case "minimal":
+    case "theme-minimal":
       body.classList.add("theme-minimal");
       break;
 
+    case "ocean":
+    case "theme-ocean":
     default:
       body.classList.add("theme-ocean");
   }

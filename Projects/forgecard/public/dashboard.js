@@ -58,7 +58,8 @@ if (cardCountElement) {
 
       const card = document.createElement("div");
 
-      card.className = "dashboard-card";
+      card.className =
+  `dashboard-card theme-${data.theme || "default"}`;
 
       card.innerHTML = `
   <div class="dashboard-card">

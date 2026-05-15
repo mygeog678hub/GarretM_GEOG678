@@ -93,10 +93,7 @@ async function loadCard() {
       data.email || "";
 
     websiteInput.value =
-      data.website || "";
-
-    photoInput.value =
-      data.photo || "";
+      data.website || "";    
 
     themeInput.value =
       data.theme || "ocean";
