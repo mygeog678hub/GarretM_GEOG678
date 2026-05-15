@@ -1,19 +1,31 @@
-const functions = require("firebase-functions");
-const express = require("express");
-const Stripe = require("stripe");
+const {
+  onRequest
+} = require("firebase-functions/v2/https");
+const { defineSecret } =
+  require("firebase-functions/params");
 
-const functions = require("firebase-functions");
+const stripeSecret =
+  defineSecret("STRIPE_SECRET_KEY");
 
-const stripe = require("stripe")(
-  functions.config().stripe.secret
-);
+const functions =
+  require("firebase-functions");
+
+const express =
+  require("express");
+
+const admin =
+  require("firebase-admin");
+
+admin.initializeApp();
 
 const app = express();
-
 app.post(
   "/stripeWebhook",
   express.raw({ type: "application/json" }),
   (req, res) => {
+    const stripe = require("stripe")(
+      stripeSecret.value()
+    );
     const sig = req.headers["stripe-signature"];
 
     try {
@@ -39,4 +51,9 @@ app.post(
   }
 );
 
-exports.api = functions.https.onRequest(app);
+exports.api = onRequest(
+  {
+    secrets: [stripeSecret]
+  },
+  app
+);
