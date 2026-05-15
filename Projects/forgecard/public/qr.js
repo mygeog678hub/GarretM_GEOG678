@@ -41,43 +41,61 @@ async function loadCard() {
 
     const data = snapshot.data();
 
+    applyTheme(data.theme || "theme-ocean");
+
     cardContainer.innerHTML = `
-    ${data.photo ? `
-  <img
-    src="${data.photo}"
-    alt="Profile Photo"
-    class="profile-photo"
-  />
-` : ""}
+
+      ${data.photo ? `
+        <img
+          src="${data.photo}"
+          alt="Profile Photo"
+          class="profile-photo"
+        />
+      ` : ""}
 
       <h1>${data.name || ""}</h1>
 
       <h2>${data.title || ""}</h2>
 
       <p>${data.company || ""}</p>
+
       <p class="username">
         @${data.username || ""}
       </p>
 
-      <a href="tel:${data.phone}">
+      <a href="tel:${data.phone || ""}">
         📞 ${data.phone || "No phone"}
       </a>
 
-      <a href="mailto:${data.email}">
+      <a href="mailto:${data.email || ""}">
         ✉️ ${data.email || "No email"}
       </a>
 
-      <a href="${data.website}" target="_blank">
+      <a
+        href="${data.website || "#"}"
+        target="_blank"
+      >
         🌐 ${data.website || "No website"}
       </a>
 
-      <button id="saveContactBtn">
-        Save Contact
-      </button>
+      <div class="profile-actions">
+
+        <button id="saveContactBtn">
+          Save Contact
+        </button>
+
+        <button id="downloadQRBtn">
+          Download QR
+        </button>
+
+      </div>
 
     `;
 
     generateQR();
+
+    setupDownloadQR();
+
     setupSaveContact(data);
 
   } catch (error) {
@@ -86,6 +104,7 @@ async function loadCard() {
 
     cardContainer.innerHTML = `
       <h2>Error loading card.</h2>
+      <p>${error.message}</p>
     `;
   }
 }
@@ -99,6 +118,8 @@ function generateQR() {
   const qrContainer =
     document.getElementById("qrcode");
 
+  if (!qrContainer) return;
+
   qrContainer.innerHTML = "";
 
   new QRCode(qrContainer, {
@@ -110,37 +131,47 @@ function generateQR() {
 
   });
 }
-const downloadBtn =
-  document.getElementById("downloadQRBtn");
 
-downloadBtn.addEventListener(
-  "click",
-  () => {
+/* =========================
+   DOWNLOAD QR
+========================= */
 
-    const qrCanvas =
-      document.querySelector("#qrcode canvas");
+function setupDownloadQR() {
 
-    if (!qrCanvas) {
+  const downloadBtn =
+    document.getElementById("downloadQRBtn");
 
-      alert("QR code not ready");
+  if (!downloadBtn) return;
 
-      return;
+  downloadBtn.addEventListener(
+    "click",
+    () => {
+
+      const qrCanvas =
+        document.querySelector("#qrcode canvas");
+
+      if (!qrCanvas) {
+
+        alert("QR code not ready");
+
+        return;
+      }
+
+      const image =
+        qrCanvas.toDataURL("image/png");
+
+      const link =
+        document.createElement("a");
+
+      link.href = image;
+
+      link.download =
+        "forgecard-qrcode.png";
+
+      link.click();
     }
-
-    const image =
-      qrCanvas.toDataURL("image/png");
-
-    const link =
-      document.createElement("a");
-
-    link.href = image;
-
-    link.download =
-      "forgecard-qrcode.png";
-
-    link.click();
-  }
-);
+  );
+}
 
 /* =========================
    SAVE CONTACT
@@ -189,16 +220,17 @@ END:VCARD`;
 }
 
 /* =========================
-   INIT
+   APPLY THEME
 ========================= */
 
-loadCard();
-// Check for unique username
 function applyTheme(theme) {
 
-  const body = document.body;
+  const card =
+    document.getElementById("businessCard");
 
-  body.classList.remove(
+  if (!card) return;
+
+  card.classList.remove(
     "theme-ocean",
     "theme-midnight",
     "theme-emerald",
@@ -206,25 +238,11 @@ function applyTheme(theme) {
     "theme-minimal"
   );
 
-  switch(theme) {
-
-    case "midnight":
-      body.classList.add("theme-midnight");
-      break;
-
-    case "emerald":
-      body.classList.add("theme-emerald");
-      break;
-
-    case "sunset":
-      body.classList.add("theme-sunset");
-      break;
-
-    case "minimal":
-      body.classList.add("theme-minimal");
-      break;
-
-    default:
-      body.classList.add("theme-ocean");
-  }
+  card.classList.add(theme);
 }
+
+/* =========================
+   INIT
+========================= */
+
+loadCard();

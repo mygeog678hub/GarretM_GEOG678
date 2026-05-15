@@ -1,37 +1,58 @@
 import {
-  db,
   auth,
+  db,
   collection,
-  getDocs,
   query,
   where,
-  onAuthStateChanged,
-  signOut,
+  getDocs,
+  getDoc,
+  doc,
   deleteDoc,
-  doc
+  onSnapshot,
+  addDoc,
+  signOut,
+  onAuthStateChanged
 } from "./firebase.js";
+console.log("dashboard.js loaded");
+
+import {
+  isPro
+} from "./permissions.js";
+import {
+  canUseAnalytics
+} from "./permissions.js";
 
 const dashboardGrid =
-  document.getElementById("dashboardGrid");
+  document.getElementById("dashboardGrid");  
 
 /* =========================
    LOAD CARDS
 ========================= */
 
 async function loadCards(user) {
-
+console.log("Loading cards...");
   try {
 
     const q = query(
-  collection(db, "cards"),
-  where("userId", "==", user.uid)
-);
+      collection(db, "cards"),
+      where("userId", "==", user.uid)
+    );
 
-const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q);
+    const cardCountElement =
+  document.getElementById("cardCount");
 
-dashboardGrid.innerHTML = "";
+if (cardCountElement) {
 
-snapshot.forEach((docSnap) => {
+  cardCountElement.textContent =
+    snapshot.size;
+}
+
+    dashboardGrid.innerHTML = "";
+    const loadingMessage =
+  document.getElementById("loadingMessage");
+
+    snapshot.forEach((docSnap) => {
 
       const data = docSnap.data();
 
@@ -40,88 +61,105 @@ snapshot.forEach((docSnap) => {
       card.className = "dashboard-card";
 
       card.innerHTML = `
+  <div class="dashboard-card">
 
-  <div class="dashboard-card-top">
+    <div class="card-top">
 
-    ${data.photo ? `
       <img
-        src="${data.photo}"
-        class="dashboard-photo"
-      />
-    ` : `
-      <div class="dashboard-photo-placeholder">
-        👤
+        class="card-avatar"
+        src="${data.photo || 'default-avatar.png'}"
+      >
+
+      <div class="card-info">
+
+        <h2>${data.name || 'No Name'}</h2>
+
+        <p class="card-company">
+          ${data.company || ''}
+        </p>
+
+        <p class="card-username">
+          @${data.username || 'user'}
+        </p>
+
+        <div class="card-stats">
+          <p>Scans: ${data.scans || 0}</p>
+          <p>Last Scan: ${data.lastScan || 'N/A'}</p>
+        </div>
+
       </div>
-    `}
 
-    <div class="dashboard-info">
+    </div>
 
-      <h2>${data.name || ""}</h2>
+    <div class="card-actions">
 
-      <p>${data.company || ""}</p>
+      <a
+  href="profile.html?id=${docSnap.id}"
+  class="btn card-btn"
+>
+  View Profile
+</a>
 
-      <p class="username">
-        @${data.username || ""}
-      </p>
+      <div class="card-actions-row">
 
-      <p>
-        Scans: ${data.scans || 0}
-      </p>
+  <button
+    class="btn card-btn"
+    onclick="window.location.href='edit.html?id=${docSnap.id}'"
+  >
+    Edit
+  </button>
 
-      <p>
-      Last Scan:
-      ${
-        data.lastScanned
-          ? new Date(
-              data.lastScanned.seconds * 1000
-            ).toLocaleDateString()
-          : "Never"
-    }
-      </p>
+  <button
+    class="btn card-btn delete-btn"
+    data-id="${docSnap.id}"
+  >
+    Delete
+  </button>
 
-      <span class="theme-badge">
-        ${data.theme || "ocean"}
-      </span>
+</div>
 
     </div>
 
   </div>
-
-  <div class="dashboard-actions">
-
-    <a
-      href="profile.html?username=${data.username}"
-      class="btn"
-    >
-      View
-    </a>
-
-    <a
-      href="edit.html?id=${docSnap.id}"
-      class="btn"
-    >
-      Edit
-    </a>
-
-    <button
-      onclick="copyLink('${data.username}')"
-    >
-      Copy Link
-    </button>
-
-    <button
-      onclick="deleteCard('${docSnap.id}')"
-    >
-      Delete
-    </button>
-
-  </div>
-
 `;
-
+console.log("Appending card:", data.name);
       dashboardGrid.appendChild(card);
+      const deleteBtn =
+  card.querySelector(".delete-btn");
+
+deleteBtn.addEventListener(
+  "click",
+  async () => {
+
+    const confirmed = confirm(
+      "Delete this card?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+      await deleteDoc(
+        doc(db, "cards", docSnap.id)
+      );
+
+      card.remove();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Failed to delete card.");
+
+    }
+
+  }
+);
 
     });
+    if (loadingMessage) {
+  loadingMessage.style.display = "none";
+}
 
   } catch (error) {
 
@@ -131,8 +169,11 @@ snapshot.forEach((docSnap) => {
       "<h2>Failed to load cards.</h2>";
   }
 }
+/* =========================
+   AUTH STATE
+========================= */
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
   if (!user) {
 
@@ -144,61 +185,118 @@ onAuthStateChanged(auth, (user) => {
 
   loadCards(user);
 
+  //loadAnalytics(user);
+
 });
-// Check for unique username
+/* =========================
+   UPGRADE TO PRO
+========================= */
 
-window.deleteCard = async function(cardId) {
-
-  const confirmDelete = confirm(
-    "Delete this card?"
+const dashboardUpgradeBtn =
+  document.getElementById(
+    "dashboardUpgradeBtn"
   );
 
-  if (!confirmDelete) return;
+if (dashboardUpgradeBtn) {
 
-  try {
+  dashboardUpgradeBtn.addEventListener(
+    "click",
+    async () => {
 
-    await deleteDoc(
-      doc(db, "cards", cardId)
-    );
+      const user = auth.currentUser;
 
-    const user = auth.currentUser;
+      if (!user) {
 
-    loadCards(user);
+        window.location.href =
+          "login.html";
 
-  } catch (error) {
+        return;
+      }
 
-    console.error(error);
+      try {
 
-    alert("Failed to delete card");
+        const checkoutSessionRef =
+          await addDoc(
+            collection(
+              db,
+              "customers",
+              user.uid,
+              "checkout_sessions"
+            ),
+            {
+              price:
+                "price_1TWiiJLLpp0pEqIbA3FexgpR",
 
-  }
-};
-// Check for unique username
-window.copyLink = function(username) {
+              success_url:
+                window.location.origin +
+                "/dashboard.html",
 
-  const url =
-    `${window.location.origin}/profile.html?username=${username}`;
+              cancel_url:
+                window.location.origin +
+                "/dashboard.html"
+            }
+          );
 
-  navigator.clipboard.writeText(url);
+        onSnapshot(
+          checkoutSessionRef,
+          (snap) => {
 
-  alert("Profile link copied!");
-};
+            const data = snap.data();
 
+            if (data?.url) {
+
+              window.location.assign(
+                data.url
+              );
+            }
+
+          }
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Failed to start checkout."
+        );
+      }
+
+    }
+  );
+}
 /* =========================
    LOGOUT
 ========================= */
 
 const logoutBtn =
-  document.getElementById("logoutBtn");
+  document.getElementById(
+    "logoutBtn"
+  );
 
-logoutBtn.addEventListener(
-  "click",
-  async () => {
+if (logoutBtn) {
 
-    await signOut(auth);
+  logoutBtn.addEventListener(
+    "click",
+    async (e) => {
 
-    window.location.href =
-      "login.html";
+      e.preventDefault();
 
-  }
-);
+      try {
+
+        await signOut(auth);
+
+        window.location.href =
+          "login.html";
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert("Logout failed.");
+
+      }
+
+    }
+  );
+}

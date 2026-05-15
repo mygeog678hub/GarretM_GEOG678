@@ -1,666 +1,99 @@
-/* =========================
-   GLOBAL
-========================= */
+/* ======================================================
+   GLOBAL RESET
+====================================================== */
 
-body {
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
   overflow-x: hidden;
 
   font-family: Arial, sans-serif;
 
-  background: #0f172a;
-  color: #f1f5f9;
-}
-
-/* =========================
-   HEADER
-========================= */
-
-header {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-header h1 {
-  font-size: 3rem;
-  margin-bottom: 10px;
-}
-
-header p {
-  font-size: 1.2rem;
-  color: #cbd5e1;
-}
-
-/* =========================
-   HERO
-========================= */
-
-.hero {
-  text-align: center;
-  padding: 80px 20px;
-  padding-top: 70px;
-}
-
-.hero h2 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-}
-
-.hero p {
-  font-size: 1.1rem;
-  margin-bottom: 30px;
-  color: #cbd5e1;
-}
-
-/* =========================
-   BUTTONS
-========================= */
-
-.btn,
-button {
-  display: inline-block;
-
-  background: #3b82f6;
-  color: white;
-
-  padding: 15px 25px;
-
-  border: none;
-  border-radius: 10px;
-
-  text-decoration: none;
-
-  cursor: pointer;
-
-  font-size: 1rem;
-
-  transition: 0.3s ease;
-}
-
-.btn:hover,
-button:hover {
-  background: #2563eb;
-}
-
-/* =========================
-   FEATURES
-========================= */
-
-.features {
-  display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(250px, 1fr));
-
-  gap: 20px;
-
-  padding: 40px;
-}
-
-.card {
-  background: #1e293b;
-
-  padding: 25px;
-
-  border-radius: 20px;
-
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-/* =========================
-   FORM CONTAINER
-========================= */
-
-.container {
-  max-width: 600px;
-
-  margin: 50px auto;
-
-  padding: 30px;
-
-  background: #1e293b;
-
-  border-radius: 20px;
-}
-
-/* =========================
-   FORM
-========================= */
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-input {
-  padding: 15px;
-
-  border: none;
-  border-radius: 10px;
-
-  font-size: 1rem;
-}
-
-/* =========================
-   BUSINESS CARD
-========================= */
-
-/* =========================
-   BUSINESS CARD
-========================= */
-
-.business-card {
-
-  max-width: 420px;
-
-  margin: 60px auto 20px auto;
-
-  padding: 40px 30px;
-
-  background: linear-gradient(
-    145deg,
-    #1e293b,
-    #0f172a
-  );
-
-  border-radius: 24px;
-
-  text-align: center;
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.4);
-
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.business-card h1 {
-
-  font-size: 2rem;
-
-  margin-bottom: 8px;
-
-  color: white;
-}
-
-.business-card h2 {
-
-  font-size: 1.1rem;
-
-  font-weight: 400;
-
-  color: #93c5fd;
-
-  margin-bottom: 10px;
-}
-
-.business-card p {
-
-  color: #cbd5e1;
-
-  margin-bottom: 20px;
-}
-
-.business-card a {
-
-  display: block;
-
-  margin: 12px 0;
-
-  padding: 14px;
-
-  background: rgba(255,255,255,0.05);
-
-  border-radius: 12px;
-
-  text-decoration: none;
-
-  color: #60a5fa;
-
-  transition: 0.3s ease;
-}
-
-.business-card a:hover {
-
-  background: rgba(255,255,255,0.10);
-}
-
-/* =========================
-   QR CODE
-========================= */
-
-#qrcode {
-
-  width: fit-content;
-
-  margin: 20px auto 60px auto;
-
-  padding: 20px;
-
-  background: white;
-
-  border-radius: 20px;
-}
-/* =========================
-   SAVE CONTACT BUTTON
-========================= */
-
-#saveContactBtn {
-
-  margin-top: 20px;
-
-  width: 100%;
-}
-/* =========================
-   PROFILE PHOTO
-========================= */
-
-.profile-photo {
-
-  width: 120px;
-  height: 120px;
-
-  object-fit: cover;
-
-  border-radius: 50%;
-
-  margin-bottom: 20px;
-
-  border: 4px solid rgba(255,255,255,0.15);
-
-  box-shadow:
-    0 5px 20px rgba(0,0,0,0.4);
-}
-/* =========================
-   USERNAME
-========================= */
-
-.username {
-
-  color: #60a5fa;
-
-  font-size: 0.95rem;
-
-  margin-bottom: 20px;
-}
-/* =========================
-   DASHBOARD
-========================= */
-
-.dashboard-grid {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(280px, 1fr));
-
-  gap: 25px;
-
-  padding: 40px;
-}
-/* =========================
-   DASHBOARD ACTIONS
-========================= */
-.header-actions {
-
-  display: flex;
-
-  justify-content: center;
-
-  gap: 15px;
-
-  margin-top: 25px;
-
-  flex-wrap: wrap;
-}
-/* =========================
-   DOWNLOAD QR BUTTON
-========================= */
-
-#downloadQRBtn {
-
-  display: block;
-
-  margin: 20px auto 60px auto;
-}
-/* =========================
-   OCEAN
-========================= */
-
-.theme-ocean {
-  background: linear-gradient(
-    135deg,
-    #0f172a,
-    #1e3a8a
-  );
-
-  color: white;
-}
-
-/* =========================
-   MIDNIGHT
-========================= */
-
-.theme-midnight {
-  background: #020617;
+  background: #020f2d;
   color: #f8fafc;
 }
 
-/* =========================
-   EMERALD
-========================= */
+body {
+  min-height: 100vh;
+}
 
-.theme-emerald {
-  background: linear-gradient(
-    135deg,
-    #064e3b,
-    #10b981
-  );
+/* ======================================================
+   LINKS
+====================================================== */
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+
+.btn,
+button,
+.pricing-btn
+{
+  background: #3b82f6;
   color: white;
-}
-
-/* =========================
-   SUNSET
-========================= */
-
-.theme-sunset {
-  background: linear-gradient(
-    135deg,
-    #7c2d12,
-    #f97316
-  );
-
-  color: white;
-}
-
-/* =========================
-   MINIMAL
-========================= */
-
-.theme-minimal {
-  background: #f8fafc;
-  color: #0f172a;
-}
-select {
-  width: 100%;
-  height: 48px;
-  padding: 10px 12px;
-  font-size: 16px;
-
-  border: 1px solid #ccc;
-  border-radius: 10px;
-
-  background: white;
-  color: #111;
-
-  margin-bottom: 15px;
-
-  box-sizing: border-box;
-}
-.dashboard-card {
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  background: #1e293b;
-  color: white;
-
-  padding: 20px;
-
-  border-radius: 16px;
-
-  margin-bottom: 20px;
-
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.25);
-}
-
-.dashboard-photo {
-
-  width: 70px;
-  height: 70px;
-
-  border-radius: 50%;
-
-  object-fit: cover;
-
-  margin-right: 20px;
-}
-
-.dashboard-info {
-
-  flex: 1;
-}
-
-.dashboard-actions {
-
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.dashboard-actions button {
-
-  padding: 10px 14px;
 
   border: none;
+  border-radius: 12px;
 
-  border-radius: 10px;
+  padding: 14px 22px;
 
   cursor: pointer;
-}
-.dashboard-card-top {
 
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  font-size: 1rem;
+  font-weight: 600;
 
-  margin-bottom: 15px;
-}
-
-.dashboard-info {
-
-  flex: 1;
-}
-
-.theme-badge {
+  transition: 0.2s ease;
 
   display: inline-block;
 
-  padding: 6px 12px;
-
-  border-radius: 20px;
-
-  background: #334155;
-
-  color: white;
-
-  font-size: 12px;
-
-  margin-top: 8px;
+  width: auto;
 }
 
-.dashboard-photo-placeholder {
-
-  width: 70px;
-  height: 70px;
-
-  border-radius: 50%;
-
-  background: #cbd5e1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 28px;
-}
-.profile-actions {
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 12px;
-
-  margin-top: 25px;
-}
-
-.profile-nav-btn {
-
-  display: block;
-
-  text-align: center;
-
-  padding: 12px;
-
-  border-radius: 10px;
-
-  background: #334155;
-
-  color: white;
-
-  text-decoration: none;
-
-  font-weight: bold;
-}
-.forgecard-header {
-  width: 100%;
-  background: linear-gradient(to right, #020617, #0f172a);
-  padding: 4px 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-}
-
-.forgecard-logo {
-  width: 100%;
-  max-width: 700px;
-  height: auto;
-  object-fit: contain;
-  display: block;
-}
-
-.forgecard-logo:hover {
-  transform: scale(1.01);
-}
-.pricing {
-  padding: 80px 20px;
-  background: #020617;
-  text-align: center;
-}
-
-.pricing h2 {
-  font-size: 2.5rem;
-  margin-bottom: 50px;
-  color: white;
-}
-
-.pricing-grid {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-
-.price-card {
-  background: #0f172a;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 40px 30px;
-  width: 320px;
-  position: relative;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-}
-
-.price-card h3 {
-  font-size: 1.8rem;
-  color: white;
-  margin-bottom: 20px;
-}
-
-.price {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #3b82f6;
-  margin-bottom: 30px;
-}
-
-.price span {
-  font-size: 1rem;
-  color: #94a3b8;
-}
-
-.price-card ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 30px;
-}
-
-.price-card li {
-  margin: 14px 0;
-  color: #cbd5e1;
-}
-
-.pricing-btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.pricing-btn:hover {
-  transform: translateY(-2px);
-}
-
-.featured {
-  border: 2px solid #2563eb;
-  transform: scale(1.03);
-}
-
-.popular-badge {
-  position: absolute;
-  top: -12px;
-  right: 20px;
+.btn:hover,
+button:hover,
+.pricing-btn:hover,
+.card-btn:hover {
   background: #2563eb;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: bold;
 }
+
+/* ======================================================
+   NAVBAR
+====================================================== */
+
 .navbar {
   width: 100%;
-  box-sizing: border-box;
-  background: rgba(2, 6, 23, 0.95);
-  backdrop-filter: blur(10px);
 
   display: flex;
   justify-content: space-between;
   align-items: center;
 
-  padding: 10px 24px;
+  padding: 18px 30px;
+
+  background: rgba(2, 6, 23, 0.95);
+
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 
   position: sticky;
   top: 0;
   z-index: 1000;
-
-  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.brand-text {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .nav-links {
@@ -672,54 +105,448 @@ select {
 
 .nav-links a {
   color: #e2e8f0;
-  text-decoration: none;
-  font-weight: 500;
 }
 
 .nav-links a:hover {
-  color: #3b82f6;
+  color: #60a5fa;
 }
 
 .nav-btn {
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  padding: 10px 18px;
+  background: linear-gradient(
+    to right,
+    #2563eb,
+    #1d4ed8
+  );
+
   border-radius: 10px;
-  color: white !important;
-  font-weight: bold;
-  white-space: nowrap;
+  padding: 10px 18px;
 }
 
-.nav-btn:hover {
-  transform: translateY(-1px);
+/* ======================================================
+   HERO
+====================================================== */
+
+.hero {
+  text-align: center;
+  padding: 100px 24px 80px;
 }
-.forgecard-logo {
-  width: 100%;
+
+.hero h2 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+
+  margin-bottom: 20px;
+}
+
+.hero p {
   max-width: 700px;
-  height: auto;
-  display: block;
-}
-.site-footer {
-  background: #020617;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding: 60px 30px 30px;
-  margin-top: 80px;
+
+  margin: 0 auto 30px;
+
+  font-size: 1.1rem;
+
+  color: #cbd5e1;
+
+  line-height: 1.7;
 }
 
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+/* ======================================================
+   FEATURES
+====================================================== */
+
+.features {
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding: 40px 24px 80px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(260px, 1fr));
+
+  gap: 24px;
+}
+
+.card {
+  background: #1e293b;
+
+  padding: 30px;
+
+  border-radius: 22px;
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* ======================================================
+   PRICING
+====================================================== */
+
+.pricing {
+  padding: 80px 24px;
+
+  text-align: center;
+}
+
+.pricing-grid {
+  max-width: 1200px;
+
+  margin: 50px auto 0;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(300px, 1fr));
+
+  gap: 28px;
+}
+
+.price-card {
+  position: relative;
+
+  background: #1e293b;
+
+  padding: 40px 30px;
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.price-card.featured {
+  border: 2px solid #3b82f6;
+}
+
+.popular-badge {
+  position: absolute;
+
+  top: -14px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: #3b82f6;
+
+  padding: 8px 16px;
+
+  border-radius: 999px;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.price {
+  font-size: 3rem;
+  font-weight: bold;
+
+  margin: 20px 0;
+}
+
+.price span {
+  font-size: 1rem;
+}
+
+.price-card ul {
+  list-style: none;
+
+  margin: 30px 0;
+}
+
+.price-card li {
+  margin-bottom: 14px;
+
+  color: #cbd5e1;
+}
+
+/* ======================================================
+   CREATE PAGE
+====================================================== */
+
+.create-container {
+  max-width: 1400px;
+
+  margin: 50px auto;
+
+  padding: 0 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
   gap: 40px;
 }
 
-.footer-brand h3 {
-  color: white;
-  font-size: 1.5rem;
-  margin-bottom: 10px;
+.form-panel,
+.preview-panel {
+  background: #1e293b;
+
+  padding: 35px;
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.footer-brand p {
+form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+
+  padding: 15px;
+
+  border-radius: 12px;
+
+  border: 1px solid #334155;
+
+  background: #0f172a;
+
+  color: white;
+
+  font-size: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.preview-card {
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e3a8a
+  );
+
+  border-radius: 24px;
+
+  padding: 40px;
+
+  min-height: 500px;
+}
+
+.preview-divider {
+  height: 1px;
+
+  background: rgba(255,255,255,0.1);
+
+  margin: 20px 0;
+}
+
+.qr-placeholder {
+  margin-top: 40px;
+
+  height: 180px;
+
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.08);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ======================================================
+   LOGIN / AUTH
+====================================================== */
+
+.auth-container,
+.login-container {
+  max-width: 220px;
+
+  margin: 80px auto;
+
+  padding: 40px 30px;
+
+  background: #1e293b;
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.35);
+}
+
+.auth-container form,
+.login-container form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.auth-container button,
+.login-container button,
+.auth-container .btn,
+.login-container .btn,
+form button {
+  width: auto !important;
+
+  min-width: 160px;
+
+  align-self: center;
+}
+
+/* ======================================================
+   BUSINESS CARD
+====================================================== */
+
+.business-card {
+  max-width: 430px;
+
+  margin: 60px auto;
+
+  padding: 40px 30px;
+
+  border-radius: 28px;
+
+  text-align: center;
+
+  background: linear-gradient(
+    135deg,
+    #0f172a,
+    #1e3a8a
+  );
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  box-shadow:
+    0 15px 35px rgba(0,0,0,0.35);
+}
+
+.business-card img,
+.profile-photo {
+  width: 120px;
+  height: 120px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  margin-bottom: 20px;
+
+  background: #334155;
+}
+
+.business-card a {
+  display: block;
+
+  margin-top: 12px;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,0.08);
+
+  color: white;
+}
+
+.username {
+  opacity: 0.85;
+}
+
+/* ======================================================
+   QR CODE
+====================================================== */
+
+#qrcode {
+  width: fit-content;
+
+  margin: 25px auto;
+
+  padding: 20px;
+
+  background: white;
+
+  border-radius: 20px;
+}
+
+/* ======================================================
+   DASHBOARD
+====================================================== */
+
+header {
+  padding: 40px 24px 10px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  margin-top: 20px;
+}
+
+
+
+.card-info h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 18px;
+  margin-bottom: 12px;
+  line-height: 1.1;
+}
+
+.card-company {
+  color: #dbeafe;
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.card-username {
   color: #94a3b8;
+  font-size: 0.95rem;
+  margin-bottom: 18px;
+}
+
+.card-stats {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+
+/* ======================================================
+   FOOTER
+====================================================== */
+
+.site-footer {
+  margin-top: 80px;
+
+  padding: 60px 24px 30px;
+
+  background: #020617;
+
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.footer-content {
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  display: flex;
+  justify-content: space-between;
+
+  gap: 40px;
+
+  flex-wrap: wrap;
 }
 
 .footer-links {
@@ -730,108 +557,400 @@ select {
 
 .footer-links a {
   color: #cbd5e1;
-  text-decoration: none;
-  transition: 0.2s ease;
 }
 
 .footer-links a:hover {
-  color: #3b82f6;
+  color: #60a5fa;
 }
 
 .footer-bottom {
   margin-top: 40px;
+
+  text-align: center;
+
   color: #64748b;
-  font-size: 0.9rem;
+}
+
+/* ======================================================
+   MOBILE
+====================================================== */
+
+@media (max-width: 900px) {
+
+  .create-container {
+    grid-template-columns: 1fr;
+  }  
+
+  .navbar {
+    flex-direction: column;
+
+    gap: 20px;
+  }
+
+  .nav-links {
+    justify-content: center;
+  }
+
+  .auth-container,
+  .login-container {
+    margin: 40px 16px;
+  }
+}
+/* =========================================
+   LOGIN PAGE
+========================================= */
+
+.login-container {
+  max-width: 420px;
+
+  margin: 80px auto;
+
+  padding: 40px 30px;
+
+  background: #1e293b;
+
+  border-radius: 24px;
+
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.login-container form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  align-items: center;
+}
+
+.login-container input {
+  width: 100%;
+}
+
+.login-container button {
+  width: 180px !important;
+
+  display: block;
+
+  margin: 0 auto;
+}
+/* =========================================
+   STABLE DASHBOARD
+========================================= */
+
+.cards-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(320px, 320px));
+
+  gap: 24px;
+
+  padding: 24px;
+}
+
+.dashboard-card {
+
+  background: #1e293b;
+
+  border-radius: 28px;
+
+  padding: 36px 30px;
+
+  width: 100%;
+
+  max-width: 360px;
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25);
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  transition: all 0.25s ease;
+}
+.dashboard-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.35);
+}
+
+.card-top {
+
   text-align: center;
 }
-.create-container {
+
+.card-avatar {
+
+  width: 100px;
+  height: 100px;
+
+  object-fit: cover;
+
+  border-radius: 20px;
+
+  background: #334155;
+
+  margin-bottom: 16px;
+}
+.card-info {
   display: flex;
-  flex-wrap: wrap;
-  gap: 40px;
-  padding: 60px 30px;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  padding-top: 12px;
 }
 
-.form-panel {
-  flex: 1;
-  min-width: 320px;
-  max-width: 450px;
-}
+.card-avatar {
+  width: 100px;
+  height: 100px;
 
-.form-panel h2 {
-  color: white;
+  object-fit: cover;
+
+  border-radius: 50%;
+
+  background: #334155;
+
   margin-bottom: 24px;
 }
 
-.form-panel form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
+.theme-badge {
 
-.form-panel input {
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08);
+  display: inline-block;
+
+  margin-top: 16px;
+
+  padding: 10px 16px;
+
+  border-radius: 999px;
+
   background: #0f172a;
-  color: white;
-  font-size: 1rem;
+
+  color: #38bdf8;
+
+  font-weight: 700;
 }
 
-.form-panel button {
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+.card-actions {
 
-.preview-panel {
-  flex: 1;
-  min-width: 320px;
+  margin-top: 24px;
+
   display: flex;
-  justify-content: center;
+
+  flex-direction: column;
+
+  gap: 12px;
 }
 
-.preview-card {
+.card-actions-row {
+
+  display: flex;
+
+  gap: 12px;
+}
+
+.card-btn {
+
   width: 100%;
-  max-width: 360px;
-  background: linear-gradient(to bottom right, #0f172a, #1e293b);
-  border-radius: 20px;
-  padding: 30px;
-  color: white;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
 }
-
-.preview-card h3 {
-  font-size: 1.8rem;
-  margin-bottom: 8px;
-}
-
-.preview-card p {
-  color: #cbd5e1;
-  margin: 6px 0;
-}
-
-.preview-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.08);
-  margin: 20px 0;
-}
-
-.qr-placeholder {
+#loadingMessage{
   margin-top: 30px;
-  height: 140px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+}
+
+.account-plan,
+#analyticsSection,
+.premium-lock,
+.stats-card{
+  margin-top: 25px;
+}
+.dashboard-container{
+  width:100%;
+  max-width:1600px;
+  margin:0 auto;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+#loadingMessage{
+  margin-top:30px;
+  margin-bottom:20px;
+  color:#cbd5e1;
+  font-size:18px;
+}
+
+.account-plan,
+#analyticsSection,
+.premium-lock,
+.stats-card{
+  margin-top:30px;
+}
+
+.stats-card{
+  max-width:300px;
+}
+.container{
+  width:100%;
+  max-width:800px;
+  margin:40px auto;
+  padding:30px;
+  background:#1e293b;
+  border-radius:24px;
+  box-sizing:border-box;
+}
+
+#editForm{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+#editForm input,
+#editForm select,
+#editForm textarea{
+  width:100%;
+  padding:14px 16px;
+  border-radius:14px;
+  border:none;
+  box-sizing:border-box;
+  font-size:16px;
+}
+
+.edit-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:10px;
+}
+.account-plan,
+#analyticsSection,
+.premium-lock,
+.stats-card{
+  max-width:800px;
+  margin:30px auto;
+  text-align:center;
+}
+
+#analyticsSection{
+  background:#1e293b;
+  padding:30px;
+  border-radius:24px;
+}
+
+.premium-lock{
+  background:#1e293b;
+  padding:30px;
+  border-radius:24px;
+}
+
+.stats-card{
+  background:#1e293b;
+  padding:30px;
+  border-radius:24px;
+}
+
+.account-plan{
+  margin-top:50px;
+}
+
+#loadingMessage{
+  text-align:center;
+  margin-top:40px;
+  color:#cbd5e1;
+}
+.dashboard-container{
+  width:100%;
+  max-width:1600px;
+  margin:0 auto;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.cards-grid{
+  display:grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(340px, 340px));
+
+  justify-content: center;
+
+  gap: 40px;
+
+  margin-top: 50px;
+
+  padding: 20px;
+}
+
+#loadingMessage{
+  text-align:center;
+  margin-top:40px;
+  color:#cbd5e1;
+  font-size:18px;
+}
+
+.account-plan,
+#analyticsSection,
+.premium-lock,
+.stats-card{
+  max-width:800px;
+  margin:30px auto;
+  text-align:center;
+}
+
+#analyticsSection,
+.premium-lock,
+.stats-card{
+  background:#1e293b;
+  padding:30px;
+  border-radius:24px;
+}
+
+.account-plan{
+  margin-top:50px;
+}
+
+#planBadge{
+  display:inline-block;
+  background:#2563eb;
+  color:white;
+  padding:12px 24px;
+  border-radius:999px;
+  font-weight:700;
+}
+.card-btn {
+  width: 100%;
 
   display: flex;
-  justify-content: center;
+
   align-items: center;
 
-  color: #64748b;
-  font-weight: bold;
+  justify-content: center;
+
+  text-align: center;
+}
+.card,
+.price-card {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.card:hover,
+.price-card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.35);
+
+  border-color:
+    rgba(96,165,250,0.35);
 }

@@ -1,8 +1,11 @@
+
 import {
   db,
   auth,
   collection,
+  doc,
   addDoc,
+  getDoc,
   getDocs,
   storage,
   ref,
@@ -15,14 +18,31 @@ import {
 
 } from "./firebase.js";
 
+const protectedPages = [
+  "create.html"
+];
+
+const currentPage =
+  window.location.pathname
+    .split("/")
+    .pop();
+
 onAuthStateChanged(auth, (user) => {
 
-  if (!user) {
+  if (
+    !user &&
+    protectedPages.includes(currentPage)
+  ) {
 
-    window.location.href = "login.html";
+    window.location.href =
+      "login.html";
   }
 
 });
+
+import {
+  canCreateCard
+} from "./permissions.js";
 
 const form = document.getElementById("cardForm");
 /* =========================
@@ -89,6 +109,48 @@ if (!usernameSnapshot.empty) {
   return;
 }
 
+const user = auth.currentUser;
+
+// Load user document
+const userRef = doc(
+  db,
+  "users",
+  user.uid
+);
+
+const userSnap =
+  await getDoc(userRef);
+
+const userData =
+  userSnap.data();
+
+// Count existing cards
+const cardsQuery = query(
+  collection(db, "cards"),
+  where("userId", "==", user.uid)
+);
+
+const cardsSnapshot =
+  await getDocs(cardsQuery);
+
+const totalCards =
+  cardsSnapshot.size;
+
+// Check permissions
+if (
+  !canCreateCard(
+    userData,
+    totalCards
+  )
+) {
+
+  alert(
+    "Free accounts can only create 1 card. Upgrade to Pro."
+  );
+
+  return;
+}
+
     const cardData = {
 
   userId: auth.currentUser.uid,
@@ -144,7 +206,6 @@ if (!usernameSnapshot.empty) {
   });
 
 }
-
 /* =========================
    STRIPE CHECKOUT
 ========================= */
@@ -189,7 +250,7 @@ if (upgradeBtn) {
             ),
             {
               price:
-                "price_1TWHl4L4HqGdfeeqcfYxY0CZ",
+                "price_1TWiiJLLpp0pEqIbA3FexgpR",
 
               success_url:
                 window.location.origin,

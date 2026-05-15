@@ -1,16 +1,19 @@
 import {
   db,
   collection,
-  getDocs,
+  getDoc,
   query,
-  where
+  where,
+  doc,
+  updateDoc,
+  increment,
+  addDoc
 } from "./firebase.js";
 
 const params =
   new URLSearchParams(window.location.search);
 
-const username =
-  params.get("username");
+const id = params.get("id");
 
 const cardContainer =
   document.getElementById("businessCard");
@@ -21,31 +24,22 @@ const cardContainer =
 
 async function loadCard() {
 
-  if (!username) {
+  if (!id) {
 
-    cardContainer.innerHTML =
-      "<h2>No username found.</h2>";
+  cardContainer.innerHTML =
+    "<h2>No card ID found.</h2>";
 
-    return;
-  }
+  return;
+}
+  try {  
 
-  try {
+  const cardRef =
+  doc(db, "cards", id);
 
-  console.log("Username from URL:", username);
+const snapshot =
+  await getDoc(cardRef);  
 
-  const q = query(
-    collection(db, "cards"),
-    where("username", "==", username)
-  );
-
-  console.log("Running Firestore query...");
-
-  const snapshot =
-    await getDocs(q);
-
-  console.log("Documents found:", snapshot.size);
-
-  if (snapshot.empty) {
+  if (!snapshot.exists()) {
 
     console.log("No matching card found.");
 
@@ -55,9 +49,42 @@ async function loadCard() {
     return;
   }
 
-  const data =
-  snapshot.docs[0].data();
+ const data = snapshot.data();
 
+// Increment scan analytics
+await updateDoc(
+  doc(db, "cards", id),
+  {
+    scans: increment(1),
+
+    lastScanned: new Date()
+  }
+);
+
+await addDoc(
+  collection(
+    db,
+    "cards",
+    id,
+    "scanLogs"
+  ),
+  {
+    timestamp: new Date(),
+
+    userAgent:
+      navigator.userAgent,
+
+    language:
+      navigator.language,
+
+    platform:
+      navigator.platform,
+
+    referrer:
+      document.referrer || "Direct"
+  }
+);
+console.log("Theme value:", data.theme);
 applyTheme(data.theme);
 
 console.log("Card data:", data);
@@ -115,7 +142,7 @@ console.log("Card data:", data);
   </a>
 
   <a
-    href="edit.html?id=${snapshot.docs[0].id}"
+    href="edit.html?id=${id}"
     class="profile-nav-btn"
   >
     Edit Card

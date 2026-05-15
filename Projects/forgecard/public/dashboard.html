@@ -9,13 +9,15 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>ForgeCard Dashboard</title>
+  <title>ForgeCard, Professional QR Business Cards</title>
 
   <link rel="stylesheet" href="style.css" />
 
 </head>
 
 <body>
+
+<div class="dashboard-container">
 
   <header>
 
@@ -38,11 +40,54 @@
 
   </header>
 
-  <div class="dashboard-grid" id="dashboardGrid">
+  <div id="dashboardGrid" class="cards-grid"></div>
 
-    Loading cards...
+<p id="loadingMessage">
+  Loading cards...
+</p>
+  <div class="account-plan">
 
-  </div>
+  <span id="planBadge">
+    FREE ACCOUNT
+  </span>
+
+</div>
+<div id="analyticsSection">
+
+  <h2>Analytics</h2>
+
+  <div id="analyticsContent">
+
+  <p>
+    Analytics temporarily unavailable.
+  </p>
+
+</div>
+
+</div>
+<div class="premium-lock">
+
+  <p>
+    Upgrade to Pro to unlock analytics.
+  </p>
+
+  <button
+    id="dashboardUpgradeBtn"
+    class="btn"
+  >
+    Upgrade to Pro
+  </button>
+
+</div>
+
+<div class="stats-card">
+
+  <h3>Total Cards</h3>
+
+  <span id="cardCount">0</span>
+
+</div>
+</div>
 
   <script type="module" src="dashboard.js"></script>
 

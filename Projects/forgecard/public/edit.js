@@ -2,8 +2,13 @@ import {
   db,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL
 } from "./firebase.js";
+let existingPhotoURL = "";
 
 /* =========================
    GET CARD ID
@@ -13,6 +18,7 @@ const params =
   new URLSearchParams(window.location.search);
 
 const cardId = params.get("id");
+console.log("Card ID:", cardId);
 
 /* =========================
    FORM ELEMENTS
@@ -68,6 +74,9 @@ async function loadCard() {
 
     const data = docSnap.data();
 
+    existingPhotoURL =
+      data.photo || "";
+
     nameInput.value =
       data.name || "";
 
@@ -112,6 +121,27 @@ editForm.addEventListener(
     e.preventDefault();
 
     try {
+      const photoFile =
+  photoInput.files[0];
+
+let photoURL =
+  existingPhotoURL;
+
+if (photoFile) {
+
+  const storageRef = ref(
+    storage,
+    `profilePhotos/${Date.now()}_${photoFile.name}`
+  );
+
+  await uploadBytes(
+    storageRef,
+    photoFile
+  );
+
+  photoURL =
+    await getDownloadURL(storageRef);
+}
 
       await updateDoc(
         doc(db, "cards", cardId),
@@ -122,7 +152,7 @@ editForm.addEventListener(
           phone: phoneInput.value,
           email: emailInput.value,
           website: websiteInput.value,
-          photo: photoInput.value,
+          photo: photoURL,
           theme: themeInput.value
         }
       );
@@ -141,3 +171,29 @@ editForm.addEventListener(
     }
   }
 );
+
+const cancelEditBtn =
+  document.getElementById(
+    "cancelEditBtn"
+  );
+
+if (cancelEditBtn) {
+
+  cancelEditBtn.addEventListener(
+    "click",
+    () => {
+
+      const confirmCancel =
+        confirm(
+          "Discard changes?"
+        );
+
+      if (confirmCancel) {
+
+        window.history.back();
+      }
+
+    }
+  );
+
+}
