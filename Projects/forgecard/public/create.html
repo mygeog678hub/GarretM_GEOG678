@@ -5,7 +5,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"  
+    content="width=device-width, initial-scale=1.0" /> 
 
   <title>ForgeCard, Professional QR Business Cards</title>
 
@@ -62,15 +62,27 @@
 
       <select id="theme">
 
-  <option value="dark">
-    Dark Theme
+  <option value="theme-ocean">
+    Ocean Blue
   </option>
 
-  <option value="blue">
-    Blue Theme
+  <option value="theme-midnight">
+    Midnight
   </option>
 
-</select>    
+  <option value="theme-emerald">
+    Emerald
+  </option>
+
+  <option value="theme-sunset">
+    Sunset
+  </option>
+
+  <option value="theme-minimal-light">
+    Minimal Light
+  </option>
+
+</select>
       <input
       type="file"
       id="photo"
@@ -87,7 +99,7 @@
 
   <div class="preview-panel">
 
-    <div class="preview-card">
+    <div class="preview-card theme-ocean">
 
       <h3 id="previewName">
         Your Name
@@ -137,7 +149,7 @@ fields.forEach(field => {
   document
     .getElementById(field)
     .addEventListener("input", e => {
-console.log("Generate Card clicked");
+
       const previewId =
         "preview" +
         field.charAt(0).toUpperCase() +
@@ -149,26 +161,27 @@ console.log("Generate Card clicked");
     });
 
 });
-
-</script>
-<script>
-
+<!-- Theme selection logic -->
 document
-  .getElementById("cardForm")
-  .addEventListener("submit", function(e) {
+  .getElementById("theme")
+  .addEventListener("change", (e) => {
 
-    e.preventDefault();
+    const previewCard =
+      document.querySelector(".preview-card");
+
+    previewCard.className =
+      "preview-card " + e.target.value;
 
   });
 
 </script>
+
 <!-- Add Enter key navigation between inputs -->
 <script>
 
 const inputs = document.querySelectorAll(
-  "#cardForm input"
+  "#cardForm input, #cardForm select"
 );
-
 inputs.forEach((input, index) => {
 
   input.addEventListener("keydown", function(e) {

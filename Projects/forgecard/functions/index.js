@@ -57,3 +57,57 @@ exports.api = onRequest(
   },
   app
 );
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const { Resend } = require("resend");
+
+admin.initializeApp();
+
+const resend = new Resend(
+  functions.config().resend.key
+);
+
+exports.notifyContactSubmission =
+  functions.firestore
+    .document("contactMessages/{docId}")
+    .onCreate(async (snap) => {
+
+      const data = snap.data();
+
+      try {
+
+        await resend.emails.send({
+
+          from:
+            "Forgecard <onboarding@resend.dev>",
+
+          to:
+            "YOUR_EMAIL@gmail.com",
+
+          subject:
+            `New Forgecard Contact: ${data.subject}`,
+
+          html: `
+            <h2>New Contact Submission</h2>
+
+            <p><strong>Name:</strong> ${data.name}</p>
+
+            <p><strong>Email:</strong> ${data.email}</p>
+
+            <p><strong>Subject:</strong> ${data.subject}</p>
+
+            <p><strong>Message:</strong></p>
+
+            <p>${data.message}</p>
+          `
+        });
+
+        console.log("Email sent");
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    });

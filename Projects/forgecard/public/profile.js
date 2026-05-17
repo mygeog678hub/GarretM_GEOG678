@@ -26,69 +26,80 @@ async function loadCard() {
 
   if (!id) {
 
-  cardContainer.innerHTML =
-    "<h2>No card ID found.</h2>";
-
-  return;
-}
-  try {  
-
-  const cardRef =
-  doc(db, "cards", id);
-
-const snapshot =
-  await getDoc(cardRef);  
-
-  if (!snapshot.exists()) {
-
-    console.log("No matching card found.");
-
     cardContainer.innerHTML =
-      "<h2>Card not found.</h2>";
+      "<h2>No card ID found.</h2>";
 
     return;
   }
 
- const data = snapshot.data();
+  try {
 
-// Increment scan analytics
-await updateDoc(
-  doc(db, "cards", id),
-  {
-    scans: increment(1),
+    const cardRef =
+      doc(db, "cards", id);
 
-    lastScanned: new Date()
-  }
-);
+    const snapshot =
+      await getDoc(cardRef);
 
-await addDoc(
-  collection(
-    db,
-    "cards",
-    id,
-    "scanLogs"
-  ),
-  {
-    timestamp: new Date(),
+    if (!snapshot.exists()) {
 
-    userAgent:
-      navigator.userAgent,
+      console.log("No matching card found.");
 
-    language:
-      navigator.language,
+      cardContainer.innerHTML =
+        "<h2>Card not found.</h2>";
 
-    platform:
-      navigator.platform,
+      return;
+    }
 
-    referrer:
-      document.referrer || "Direct"
-  }
-);
-console.log("Theme value:", data.theme);
+    const data = snapshot.data();
 
-console.log("Card data:", data);
+    // Increment scan analytics
+    await updateDoc(
+      doc(db, "cards", id),
+      {
+        scans: increment(1),
 
-cardContainer.innerHTML = `
+        lastScanned: new Date()
+      }
+    );
+
+    // Save scan log
+    await addDoc(
+      collection(
+        db,
+        "cards",
+        id,
+        "scanLogs"
+      ),
+      {
+        timestamp: new Date(),
+
+        userAgent:
+          navigator.userAgent,
+
+        language:
+          navigator.language,
+
+        platform:
+          navigator.platform,
+
+        referrer:
+          document.referrer || "Direct"
+      }
+    );
+
+    console.log(
+      "Theme value:",
+      data.theme
+    );
+
+    console.log(
+      "Card data:",
+      data
+    );
+
+    cardContainer.innerHTML = `
+
+<div class="business-card ${data.theme || 'theme-ocean'}">
 
   ${data.photo ? `
     <img
@@ -117,11 +128,13 @@ cardContainer.innerHTML = `
   </a>
 
   <a
-    href="${data.website || "#"}"
+    href="${data.website || '#'}"
     target="_blank"
   >
     🌐 ${data.website || "No website"}
   </a>
+
+  <div id="qrcode"></div>
 
   <div class="profile-actions">
 
@@ -149,33 +162,25 @@ cardContainer.innerHTML = `
 
   </div>
 
+</div>
+
 `;
-
-applyTheme(data.theme);
-
-console.log(document.body.className);
-
-generateQR();
-
-setupDownloadQR();
-
-setupSaveContact(data);
 
     generateQR();
 
-setupDownloadQR();
+    setupDownloadQR();
 
-setupSaveContact(data);
+    setupSaveContact(data);
 
   } catch (error) {
 
-  console.error(error);
+    console.error(error);
 
-  cardContainer.innerHTML = `
-    <h2>Error loading card.</h2>
-    <p>${error.message}</p>
-  `;
-}
+    cardContainer.innerHTML = `
+      <h2>Error loading card.</h2>
+      <p>${error.message}</p>
+    `;
+  }
 }
 
 /* =========================
@@ -183,22 +188,42 @@ setupSaveContact(data);
 ========================= */
 
 function generateQR() {
-  
+
   const qrContainer =
     document.getElementById("qrcode");
 
+  if (!qrContainer) return;
+
+  // FULL RESET
   qrContainer.innerHTML = "";
+
+  while (qrContainer.firstChild) {
+    qrContainer.removeChild(
+      qrContainer.firstChild
+    );
+  }
 
   new QRCode(qrContainer, {
 
     text: window.location.href,
 
     width: 220,
-    height: 220
 
+    height: 220,
+
+    colorDark: "#000000",
+
+    colorLight: "#ffffff",
+
+    correctLevel:
+      QRCode.CorrectLevel.H
   });
 }
-// Download QR code as image
+
+/* =========================
+   DOWNLOAD QR
+========================= */
+
 function setupDownloadQR() {
 
   const downloadBtn =
@@ -211,7 +236,9 @@ function setupDownloadQR() {
     () => {
 
       const qrCanvas =
-        document.querySelector("#qrcode canvas");
+        document.querySelector(
+          "#qrcode canvas"
+        );
 
       if (!qrCanvas) {
 
@@ -221,7 +248,9 @@ function setupDownloadQR() {
       }
 
       const image =
-        qrCanvas.toDataURL("image/png");
+        qrCanvas.toDataURL(
+          "image/png"
+        );
 
       const link =
         document.createElement("a");
@@ -236,46 +265,6 @@ function setupDownloadQR() {
   );
 }
 
-function applyTheme(theme) {
-
-  const body = document.body;
-
-  body.classList.remove(
-    "theme-ocean",
-    "theme-midnight",
-    "theme-emerald",
-    "theme-sunset",
-    "theme-minimal"
-  );
-
-  switch(theme) {
-
-    case "midnight":
-    case "theme-midnight":
-      body.classList.add("theme-midnight");
-      break;
-
-    case "emerald":
-    case "theme-emerald":
-      body.classList.add("theme-emerald");
-      break;
-
-    case "sunset":
-    case "theme-sunset":
-      body.classList.add("theme-sunset");
-      break;
-
-    case "minimal":
-    case "theme-minimal":
-      body.classList.add("theme-minimal");
-      break;
-
-    case "ocean":
-    case "theme-ocean":
-    default:
-      body.classList.add("theme-ocean");
-  }
-}
 /* =========================
    SAVE CONTACT
 ========================= */
@@ -283,13 +272,17 @@ function applyTheme(theme) {
 function setupSaveContact(data) {
 
   const btn =
-    document.getElementById("saveContactBtn");
+    document.getElementById(
+      "saveContactBtn"
+    );
 
   if (!btn) return;
 
-  btn.addEventListener("click", () => {
+  btn.addEventListener(
+    "click",
+    () => {
 
-    const vcard = `BEGIN:VCARD
+      const vcard = `BEGIN:VCARD
 VERSION:3.0
 FN:${data.name || ""}
 ORG:${data.company || ""}
@@ -299,26 +292,30 @@ EMAIL:${data.email || ""}
 URL:${data.website || ""}
 END:VCARD`;
 
-    const blob = new Blob(
-      [vcard],
-      { type: "text/vcard" }
-    );
+      const blob =
+        new Blob(
+          [vcard],
+          {
+            type: "text/vcard"
+          }
+        );
 
-    const url =
-      URL.createObjectURL(blob);
+      const url =
+        URL.createObjectURL(blob);
 
-    const a =
-      document.createElement("a");
+      const a =
+        document.createElement("a");
 
-    a.href = url;
+      a.href = url;
 
-    a.download =
-      `${data.name || "contact"}.vcf`;
+      a.download =
+        `${data.name || "contact"}.vcf`;
 
-    a.click();
+      a.click();
 
-    URL.revokeObjectURL(url);
-  });
+      URL.revokeObjectURL(url);
+    }
+  );
 }
 
 /* =========================

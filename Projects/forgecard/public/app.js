@@ -53,27 +53,9 @@ if (form) {
 
   form.addEventListener("submit", async (e) => {
 
-    e.preventDefault();   
-    const photoFile =
-  document.getElementById("photo").files[0];
+   e.preventDefault();
 
-let photoURL = "";
-
-if (photoFile) {
-
-  const storageRef = ref(
-    storage,
-    `profilePhotos/${Date.now()}_${photoFile.name}`
-  );
-
-  await uploadBytes(
-    storageRef,
-    photoFile
-  );
-
-  photoURL =
-    await getDownloadURL(storageRef);
-} 
+console.log("Generate Card clicked");
 
 const username =
   document
@@ -92,6 +74,27 @@ if (!usernameRegex.test(username)) {
   );
 
   return;
+}
+
+const photoFile =
+  document.getElementById("photo").files[0];
+
+let photoURL = "";
+
+if (photoFile) {
+
+  const storageRef = ref(
+    storage,
+    `profilePhotos/${Date.now()}_${photoFile.name}`
+  );
+
+  await uploadBytes(
+    storageRef,
+    photoFile
+  );
+
+  photoURL =
+    await getDownloadURL(storageRef);
 }
 
 const usernameQuery = query(
@@ -193,7 +196,7 @@ if (
       ========================= */
 
       window.location.href =
-  `profile.html?username=${username}`;
+  `profile.html?id=${docRef.id}`;
 
     } catch (error) {
 

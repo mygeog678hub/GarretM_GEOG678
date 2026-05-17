@@ -23,10 +23,10 @@ export function canCreateCard(
     return true;
   }
 
-  // Pro users unlimited
-  if (isPro(userData)) {
-    return true;
-  }
+  // Pro users max 10 cards
+if (isPro(userData)) {
+  return totalCards < 10;
+}
 
   // Free plan limit
   return totalCards < 1;

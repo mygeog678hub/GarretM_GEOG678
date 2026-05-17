@@ -334,11 +334,6 @@ textarea:focus {
 }
 
 .preview-card {
-  background: linear-gradient(
-    135deg,
-    #0f172a,
-    #1e3a8a
-  );
 
   border-radius: 24px;
 
@@ -478,7 +473,7 @@ form button {
 
   padding: 20px;
 
-  background: white;
+  background: rgba(255,255,255,0.08);
 
   border-radius: 20px;
 }
@@ -658,8 +653,6 @@ header {
 }
 
 .dashboard-card {
-
-  background: #1e293b;
 
   border-radius: 28px;
 
@@ -963,101 +956,271 @@ header {
 }
 
 /* =========================================
-   THEME SYSTEM
+   UNIVERSAL THEME SYSTEM
 ========================================= */
 
-/* =========================================
-   THEME SYSTEM
-========================================= */
+/* ========================================
+   BASE BUSINESS CARD
+======================================== */
 
-/* OCEAN */
-body.theme-ocean {
-  background: linear-gradient(
-    135deg,
-    #0f172a,
-    #1e3a8a
-  );
+.business-card {
+  border-radius: 24px;
+  padding: 24px;
+  color: white;
+  overflow: hidden;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.25);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
 }
 
-body.theme-ocean .business-card {
-  background: #102348;
+.business-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.35);
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.card-btn {
+  border: none;
+
+  border-radius: 12px;
+
+  padding: 10px 16px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
+
+  text-decoration: none;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.card-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   OCEAN
+======================================== */
+
+.theme-ocean {
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #1e3a8a
+    );
+}
+
+.theme-ocean .card-btn {
+  background:
+    rgba(255,255,255,0.10);
+
   color: white;
 }
 
-/* MIDNIGHT */
-body.theme-midnight {
-  background: linear-gradient(
-    135deg,
-    #000000,
-    #111111
-  );
+/* ========================================
+   MIDNIGHT
+======================================== */
+
+.theme-midnight {
+  background:
+    linear-gradient(
+      135deg,
+      #000000,
+      #111111
+    );
 }
 
-body.theme-midnight .business-card {
-  background: #1a1a1a;
-  color: #f5f5f5;
-}
+.theme-midnight .card-btn {
+  background:
+    rgba(255,255,255,0.08);
 
-/* EMERALD */
-body.theme-emerald {
-  background: linear-gradient(
-    135deg,
-    #022c22,
-    #065f46
-  );
-}
-
-body.theme-emerald .business-card {
-  background: #064e3b;
-  color: #ecfdf5;
-}
-
-/* SUNSET */
-body.theme-sunset {
-  background: linear-gradient(
-    135deg,
-    #7c2d12,
-    #ea580c
-  );
-}
-
-body.theme-sunset .business-card {
-  background: #9a3412;
   color: white;
 }
 
-/* MINIMAL */
-body.theme-minimal {
+/* ========================================
+   EMERALD
+======================================== */
+
+.theme-emerald {
+  background:
+    linear-gradient(
+      135deg,
+      #022c22,
+      #065f46
+    );
+}
+
+.theme-emerald .card-btn {
+  background:
+    rgba(255,255,255,0.10);
+
+  color: white;
+}
+
+/* ========================================
+   SUNSET
+======================================== */
+
+.theme-sunset {
+  background:
+    linear-gradient(
+      135deg,
+      #7c2d12,
+      #ea580c
+    );
+}
+
+.theme-sunset .card-btn {
+  background:
+    rgba(255,255,255,0.10);
+
+  color: white;
+}
+
+/* ========================================
+   MINIMAL LIGHT
+======================================== */
+
+.theme-minimal-light {
+  background: #ffffff;
+
+  color: #111827;
+
+  border:
+    1px solid #d1d5db;
+}
+
+.theme-minimal-light .card-btn {
   background: #f3f4f6;
+
+  color: #111827;
 }
 
-body.theme-minimal .business-card {
+/* ========================================
+   CARD TEXT
+======================================== */
+
+.card-company {
+  opacity: 0.9;
+}
+
+.card-username {
+  opacity: 0.75;
+}
+
+.card-stats {
+  margin-top: 12px;
+
+  font-size: 0.9rem;
+
+  opacity: 0.85;
+}
+/* =========================================
+   CONTACT PAGE
+========================================= */
+
+.container h1 {
+  margin-bottom: 10px;
+}
+
+#contactForm {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  margin-top: 30px;
+}
+
+#contactForm textarea {
+  resize: vertical;
+
+  min-height: 160px;
+}
+
+#successMessage {
+  font-weight: 600;
+
+  text-align: center;
+}
+/* TEMP BACKWARD COMPATIBILITY */
+
+.ocean {
+  background:
+    linear-gradient(
+      135deg,
+      #0f172a,
+      #1e3a8a
+    );
+}
+
+.midnight {
+  background:
+    linear-gradient(
+      135deg,
+      #000000,
+      #111111
+    );
+}
+
+.emerald {
+  background:
+    linear-gradient(
+      135deg,
+      #022c22,
+      #065f46
+    );
+}
+
+.sunset {
+  background:
+    linear-gradient(
+      135deg,
+      #7c2d12,
+      #ea580c
+    );
+}
+
+.minimal {
   background: white;
   color: #111827;
 }
+#qrcode {
+  margin-top: 28px;
 
-/* CARD LINKS */
-body.theme-ocean .business-card a {
-  background: rgba(255,255,255,0.08);
-  color: white;
+  display: flex;
+
+  justify-content: center;
 }
 
-body.theme-midnight .business-card a {
-  background: #1f1f1f;
-  color: white;
-}
+#qrcode canvas,
+#qrcode img {
+  background: white;
 
-body.theme-emerald .business-card a {
-  background: rgba(255,255,255,0.08);
-  color: #ecfdf5;
-}
+  padding: 18px;
 
-body.theme-sunset .business-card a {
-  background: rgba(255,255,255,0.08);
-  color: white;
-}
+  border-radius: 24px;
 
-body.theme-minimal .business-card a {
-  background: #f3f4f6;
-  color: #111827;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.25);
 }

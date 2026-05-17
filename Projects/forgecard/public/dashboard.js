@@ -58,11 +58,11 @@ if (cardCountElement) {
 
       const card = document.createElement("div");
 
-      card.className =
-  `dashboard-card theme-${data.theme || "default"}`;
+card.className =
+  "dashboard-card";
 
       card.innerHTML = `
-  <div class="dashboard-card">
+ <div class="business-card ${data.theme || 'theme-ocean'}">
 
     <div class="card-top">
 

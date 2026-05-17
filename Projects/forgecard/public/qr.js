@@ -231,14 +231,15 @@ function applyTheme(theme) {
   if (!card) return;
 
   card.classList.remove(
-    "theme-ocean",
-    "theme-midnight",
-    "theme-emerald",
-    "theme-sunset",
-    "theme-minimal"
-  );
+  "theme-ocean",
+  "theme-midnight",
+  "theme-emerald",
+  "theme-sunset",
+  "theme-minimal-light"
+);
 
-  card.classList.add(theme);
+ card.className =
+  `business-card ${theme}`;
 }
 
 /* =========================
