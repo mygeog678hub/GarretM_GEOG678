@@ -176,9 +176,21 @@ if (
     document.getElementById("phone").value,
 
   website:
-    document.getElementById("website").value,
+  document.getElementById("website").value,
 
-  photo: photoURL,
+facebook:
+  document.getElementById("facebook").value,
+
+instagram:
+  document.getElementById("instagram").value,
+
+linkedin:
+  document.getElementById("linkedin").value,
+
+twitter:
+  document.getElementById("twitter").value,
+
+photo: photoURL,
   theme: document.getElementById("theme").value,
 
   createdAt: new Date()

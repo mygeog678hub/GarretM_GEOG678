@@ -1,28 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ForgeCard</title>
 
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <!-- PRIMARY SEO -->
+  <title>
+    ForgeCard Digital Business Card
+  </title>
+
+  <meta
+    name="description"
+    content="Professional digital business card powered by ForgeCard."
+  />
+
+  <meta
+    name="robots"
+    content="index, follow"
+  />
+
+  <!-- OPEN GRAPH -->
+  <meta
+    property="og:title"
+    content="ForgeCard Digital Business Card"
+  />
+
+  <meta
+    property="og:description"
+    content="Professional digital business card powered by ForgeCard."
+  />
+
+  <meta
+    property="og:image"
+    content="https://getforgecard.com/preview.png"
+  />
+
+  <meta
+    property="og:type"
+    content="profile"
+  />
+
+  <!-- TWITTER -->
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="ForgeCard Digital Business Card"
+  />
+
+  <meta
+    name="twitter:description"
+    content="Professional digital business card powered by ForgeCard."
+  />
+
+  <!-- STYLES -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
 </head>
 
 <body>
 
-  <div
-  id="businessCard"
-  class="business-card"
->
-  Loading card...
-</div>
+  <!-- DYNAMICALLY RENDERED CARD -->
+  <div id="businessCard">
+    Loading card...
+  </div>
 
-  <div id="qrcode"></div>
-
-  <!-- QR Code Library -->
+  <!-- QR CODE LIBRARY -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Your JS -->
+  <!-- PROFILE JS -->
   <script
     type="module"
     src="profile.js"

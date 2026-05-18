@@ -45,6 +45,18 @@ const emailInput =
 const websiteInput =
   document.getElementById("website");
 
+  const facebookInput =
+  document.getElementById("facebook");
+
+const instagramInput =
+  document.getElementById("instagram");
+
+const linkedinInput =
+  document.getElementById("linkedin");
+
+const twitterInput =
+  document.getElementById("twitter");
+
 const photoInput =
   document.getElementById("photo");
 
@@ -94,6 +106,18 @@ async function loadCard() {
 
     websiteInput.value =
       data.website || "";    
+
+      facebookInput.value =
+  data.facebook || "";
+
+instagramInput.value =
+  data.instagram || "";
+
+linkedinInput.value =
+  data.linkedin || "";
+
+twitterInput.value =
+  data.twitter || "";
 
     themeInput.value =
       data.theme || "ocean";
@@ -147,8 +171,13 @@ if (photoFile) {
           company: companyInput.value,
           username: usernameInput.value,
           phone: phoneInput.value,
+          
           email: emailInput.value,
           website: websiteInput.value,
+          facebook: facebookInput.value,
+          instagram: instagramInput.value,
+          linkedin: linkedinInput.value,
+          twitter: twitterInput.value,
           photo: photoURL,
           theme: themeInput.value
         }

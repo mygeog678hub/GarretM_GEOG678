@@ -16,6 +16,8 @@ const express =
 const admin =
   require("firebase-admin");
 
+  const { Resend } = require("resend");
+
 admin.initializeApp();
 
 const app = express();
@@ -57,15 +59,12 @@ exports.api = onRequest(
   },
   app
 );
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const { Resend } = require("resend");
 
-admin.initializeApp();
+const resendKey =
+  defineSecret("RESEND_API_KEY");
 
-const resend = new Resend(
-  functions.config().resend.key
-);
+const resend =
+  new Resend(resendKey.value());
 
 exports.notifyContactSubmission =
   functions.firestore

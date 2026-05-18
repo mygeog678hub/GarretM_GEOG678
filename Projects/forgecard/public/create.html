@@ -7,7 +7,9 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0" /> 
 
-  <title>ForgeCard, Professional QR Business Cards</title>
+ <title>
+    ForgeCard | Digital Business Cards with QR Codes
+  </title>
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -48,17 +50,53 @@
         id="phone"
         placeholder="Phone Number"
       >  
+
+      <div class="form-group">
+  <label>Facebook URL</label>
+  <input
+    type="url"
+    id="facebook"
+    placeholder="https://facebook.com/username"
+  />
+</div>
+
+<div class="form-group">
+  <label>Instagram URL</label>
+  <input
+    type="url"
+    id="instagram"
+    placeholder="https://instagram.com/username"
+  />
+</div>
+
+<div class="form-group">
+  <label>LinkedIn URL</label>
+  <input
+    type="url"
+    id="linkedin"
+    placeholder="https://linkedin.com/in/username"
+  />
+</div>
+
+<div class="form-group">
+  <label>X / Twitter URL</label>
+  <input
+    type="url"
+    id="twitter"
+    placeholder="https://x.com/username"
+  />
+</div>
       <input
         type="text"
         id="username"
-        placeholder="Username"
+        placeholder="Social Media Username (e.g. @username)"
       />
 
       <input
         type="url"
         id="website"
         placeholder="Website"
-      />
+      />      
 
       <select id="theme">
 
@@ -161,7 +199,7 @@ fields.forEach(field => {
     });
 
 });
-<!-- Theme selection logic -->
+//================== Theme selection logic===================
 document
   .getElementById("theme")
   .addEventListener("change", (e) => {

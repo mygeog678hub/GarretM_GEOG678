@@ -52,6 +52,61 @@ async function loadCard() {
 
     const data = snapshot.data();
 
+    /* =========================
+   SEO META TAGS
+========================= */
+
+document.title =
+  `${data.name} | ForgeCard`;
+
+const description =
+  `${data.name} - ${data.title || "Professional"} at ${data.company || "ForgeCard"}. Connect instantly with ForgeCard digital business cards.`;
+
+document
+  .querySelector(
+    'meta[name="description"]'
+  )
+  ?.setAttribute(
+    "content",
+    description
+  );
+
+document
+  .querySelector(
+    'meta[property="og:title"]'
+  )
+  ?.setAttribute(
+    "content",
+    `${data.name} | ForgeCard`
+  );
+
+document
+  .querySelector(
+    'meta[property="og:description"]'
+  )
+  ?.setAttribute(
+    "content",
+    description
+  );
+
+document
+  .querySelector(
+    'meta[name="twitter:title"]'
+  )
+  ?.setAttribute(
+    "content",
+    `${data.name} | ForgeCard`
+  );
+
+document
+  .querySelector(
+    'meta[name="twitter:description"]'
+  )
+  ?.setAttribute(
+    "content",
+    description
+  );
+
     // Increment scan analytics
     await updateDoc(
       doc(db, "cards", id),
@@ -99,7 +154,10 @@ async function loadCard() {
 
     cardContainer.innerHTML = `
 
-<div class="business-card ${data.theme || 'theme-ocean'}">
+<div class="profile-wrapper">
+
+  <!-- BUSINESS CARD -->
+  <div class="business-card ${data.theme || 'theme-ocean'}">
 
   ${data.photo ? `
     <img
@@ -116,8 +174,8 @@ async function loadCard() {
   <p>${data.company || ""}</p>
 
   <p class="username">
-    @${data.username || ""}
-  </p>
+  @${data.username || ""}
+</p>
 
   <a href="tel:${data.phone || ""}">
     📞 ${data.phone || "No phone"}
@@ -134,43 +192,68 @@ async function loadCard() {
     🌐 ${data.website || "No website"}
   </a>
 
-  <div id="qrcode"></div>
+<!-- SOCIAL ICONS -->
+<div class="social-icons">
 
-  <div class="profile-actions">
-
-    <button id="saveContactBtn">
-      Save Contact
-    </button>
-
-    <button id="downloadQRBtn">
-      Download QR
-    </button>
-
+  ${data.facebook ? `
     <a
-      href="dashboard.html"
-      class="profile-nav-btn"
+      href="${data.facebook}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn facebook"
     >
-      Dashboard
+      <i class="fab fa-facebook-f"></i>
     </a>
+  ` : ""}
 
+  ${data.instagram ? `
     <a
-      href="edit.html?id=${id}"
-      class="profile-nav-btn"
+      href="${data.instagram}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn instagram"
     >
-      Edit Card
+      <i class="fab fa-instagram"></i>
     </a>
+  ` : ""}
 
-  </div>
+  ${data.linkedin ? `
+    <a
+      href="${data.linkedin}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn linkedin"
+    >
+      <i class="fab fa-linkedin-in"></i>
+    </a>
+  ` : ""}
+
+  ${data.twitter ? `
+    <a
+      href="${data.twitter}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="social-btn x"
+    >
+      <i class="fab fa-x-twitter"></i>
+    </a>
+  ` : ""}
+
+</div>
+
+<div class="profile-actions">
+
+  <button id="saveContactBtn">
+    Import Contact
+  </button>
+
+</div>
 
 </div>
 
 `;
 
-    generateQR();
-
-    setupDownloadQR();
-
-    setupSaveContact(data);
+      setupSaveContact(data);
 
   } catch (error) {
 
@@ -181,88 +264,6 @@ async function loadCard() {
       <p>${error.message}</p>
     `;
   }
-}
-
-/* =========================
-   QR GENERATION
-========================= */
-
-function generateQR() {
-
-  const qrContainer =
-    document.getElementById("qrcode");
-
-  if (!qrContainer) return;
-
-  // FULL RESET
-  qrContainer.innerHTML = "";
-
-  while (qrContainer.firstChild) {
-    qrContainer.removeChild(
-      qrContainer.firstChild
-    );
-  }
-
-  new QRCode(qrContainer, {
-
-    text: window.location.href,
-
-    width: 220,
-
-    height: 220,
-
-    colorDark: "#000000",
-
-    colorLight: "#ffffff",
-
-    correctLevel:
-      QRCode.CorrectLevel.H
-  });
-}
-
-/* =========================
-   DOWNLOAD QR
-========================= */
-
-function setupDownloadQR() {
-
-  const downloadBtn =
-    document.getElementById("downloadQRBtn");
-
-  if (!downloadBtn) return;
-
-  downloadBtn.addEventListener(
-    "click",
-    () => {
-
-      const qrCanvas =
-        document.querySelector(
-          "#qrcode canvas"
-        );
-
-      if (!qrCanvas) {
-
-        alert("QR code not ready");
-
-        return;
-      }
-
-      const image =
-        qrCanvas.toDataURL(
-          "image/png"
-        );
-
-      const link =
-        document.createElement("a");
-
-      link.href = image;
-
-      link.download =
-        "forgecard-qrcode.png";
-
-      link.click();
-    }
-  );
 }
 
 /* =========================

@@ -117,6 +117,10 @@ card.className =
     Delete
   </button>
 
+  <div class="qr-section">
+  <div id="qrcode-${docSnap.id}"></div>
+</div>
+
 </div>
 
     </div>
@@ -125,6 +129,7 @@ card.className =
 `;
 console.log("Appending card:", data.name);
       dashboardGrid.appendChild(card);
+      generateQR(docSnap.id);
       const deleteBtn =
   card.querySelector(".delete-btn");
 
@@ -185,10 +190,120 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   loadCards(user);
-
-  //loadAnalytics(user);
-
+loadAnalytics(user);
 });
+
+async function loadAnalytics(user) {
+
+  try {
+
+    const analyticsContent =
+      document.getElementById(
+        "analyticsContent"
+      );
+
+    const q = query(
+      collection(db, "cards"),
+      where("userId", "==", user.uid)
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    let totalScans = 0;
+
+    let totalCards = 0;
+
+    let lastScanned = "N/A";
+
+    snapshot.forEach((docSnap) => {
+
+      const data = docSnap.data();
+
+      totalCards++;
+
+      totalScans +=
+        data.scans || 0;
+
+      if (data.lastScanned) {
+
+        lastScanned =
+          new Date(
+            data.lastScanned.seconds
+              ? data.lastScanned.seconds * 1000
+              : data.lastScanned
+          ).toLocaleDateString();
+
+      }
+
+    });
+
+    analyticsContent.innerHTML = `
+
+      <div class="analytics-grid">
+
+        <div class="stats-card">
+          <h3>Total Scans</h3>
+          <span>${totalScans}</span>
+        </div>
+
+        <div class="stats-card">
+          <h3>Total Cards</h3>
+          <span>${totalCards}</span>
+        </div>
+
+        <div class="stats-card">
+          <h3>Last Scan</h3>
+          <span>${lastScanned}</span>
+        </div>
+
+      </div>
+
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "Analytics error:",
+      error
+    );
+
+  }
+
+}
+
+/* =========================
+   QR GENERATION
+========================= */
+
+function generateQR(cardId) {
+
+  const qrContainer =
+    document.getElementById(`qrcode-${cardId}`);
+
+  if (!qrContainer) return;
+
+  qrContainer.innerHTML = "";
+
+  const profileURL =
+    `${window.location.origin}/profile.html?id=${cardId}`;
+
+  new QRCode(qrContainer, {
+
+    text: profileURL,
+
+    width: 180,
+
+    height: 180,
+
+    colorDark: "#000000",
+
+    colorLight: "#ffffff",
+
+    correctLevel:
+      QRCode.CorrectLevel.H
+  });
+}
 /* =========================
    UPGRADE TO PRO
 ========================= */

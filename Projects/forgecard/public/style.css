@@ -10,8 +10,7 @@
 
 html,
 body {
-  width: 100%;
-  overflow-x: hidden;
+  width: 100%; 
 
   font-family: Arial, sans-serif;
 
@@ -462,21 +461,6 @@ form button {
   opacity: 0.85;
 }
 
-/* ======================================================
-   QR CODE
-====================================================== */
-
-#qrcode {
-  width: fit-content;
-
-  margin: 25px auto;
-
-  padding: 20px;
-
-  background: rgba(255,255,255,0.08);
-
-  border-radius: 20px;
-}
 
 /* ======================================================
    DASHBOARD
@@ -653,27 +637,13 @@ header {
 }
 
 .dashboard-card {
-
-  border-radius: 28px;
-
-  padding: 36px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   width: 100%;
 
-  max-width: 360px;
-
-  border: 1px solid rgba(255,255,255,0.05);
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.25);
-
-  display: flex;
-
-  flex-direction: column;
-
-  justify-content: space-between;
-
-  transition: all 0.25s ease;
+  padding: 20px;
 }
 .dashboard-card:hover {
   transform: translateY(-4px);
@@ -955,36 +925,6 @@ header {
     rgba(96,165,250,0.35);
 }
 
-/* =========================================
-   UNIVERSAL THEME SYSTEM
-========================================= */
-
-/* ========================================
-   BASE BUSINESS CARD
-======================================== */
-
-.business-card {
-  border-radius: 24px;
-  padding: 24px;
-  color: white;
-  overflow: hidden;
-
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.25);
-
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    background 0.25s ease;
-}
-
-.business-card:hover {
-  transform: translateY(-4px);
-
-  box-shadow:
-    0 18px 40px rgba(0,0,0,0.35);
-}
-
 /* ========================================
    BUTTONS
 ======================================== */
@@ -1205,24 +1145,49 @@ header {
   background: white;
   color: #111827;
 }
-#qrcode {
-  margin-top: 28px;
+.qr-section {
+  width: 100%;
 
   display: flex;
-
   justify-content: center;
+  align-items: center;
+
+  margin-top: 24px;
+
+  overflow: visible !important;
 }
 
-#qrcode canvas,
-#qrcode img {
-  background: white;
+[id^="qrcode"] {
+  width: 180px !important;
+  height: 180px !important;
 
-  padding: 18px;
+  background: #ffffff !important;
 
-  border-radius: 24px;
+  padding: 14px !important;
 
-  box-shadow:
-    0 10px 25px rgba(0,0,0,0.25);
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+[id^="qrcode"] canvas,
+[id^="qrcode"] img {
+  width: 180px !important;
+  height: 180px !important;
+
+  border-radius: 0 !important;
+
+  background: white !important;
+
+  image-rendering: pixelated;
+
+  transform: none !important;
+
+  filter: none !important;
 }
 .dashboard-actions {
   display: flex;
@@ -1238,4 +1203,151 @@ header {
 
 .dashboard-btn {
   min-width: 150px;
+}
+.analytics-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 18px;
+
+  margin-top: 20px;
+}
+/* =========================
+   SOCIAL MEDIA ICONS
+========================= */
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 14px;
+
+  width: 100%;
+
+  margin-bottom: 22px;
+}
+
+.social-btn {
+  position: relative;
+
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  text-decoration: none;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.social-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+}
+
+.social-btn svg {
+  width: 24px;
+  height: 24px;
+
+  fill: currentColor;
+}
+
+/* Glow Layer */
+.social-btn::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  border-radius: inherit;
+
+  background: currentColor;
+
+  filter: blur(18px);
+
+  opacity: 0;
+
+  z-index: -1;
+
+  transition: opacity 0.3s ease;
+}
+
+.social-btn:hover::before {
+  opacity: 0.22;
+}
+
+/* Platform Colors */
+
+.facebook {
+  color: #1877f2;
+}
+
+.facebook:hover {
+  box-shadow: 0 0 18px rgba(24,119,242,0.6);
+}
+
+.instagram {
+  color: #e1306c;
+}
+
+.instagram:hover {
+  box-shadow: 0 0 18px rgba(225,48,108,0.6);
+}
+
+.linkedin {
+  color: #0a66c2;
+}
+
+.linkedin:hover {
+  box-shadow: 0 0 18px rgba(10,102,194,0.6);
+}
+
+.x {
+  color: #ffffff;
+}
+
+.x:hover {
+  box-shadow: 0 0 18px rgba(255,255,255,0.45);
+}
+.social-btn i {
+  font-size: 24px;
+}
+.seo-section {
+  max-width: 900px;
+
+  margin: 80px auto;
+
+  padding: 0 24px;
+
+  text-align: center;
+}
+
+.seo-section h2 {
+  margin-top: 50px;
+
+  font-size: 2rem;
+}
+
+.seo-section p {
+  margin-top: 14px;
+
+  line-height: 1.8;
+
+  opacity: 0.9;
 }
