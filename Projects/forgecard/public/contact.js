@@ -4,6 +4,19 @@ import {
   addDoc
 } from "./firebase.js";
 
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+const functions = getFunctions();
+
+const contactForgecard =
+  httpsCallable(
+    functions,
+    "contactForgecard"
+  );
+
 const form =
   document.getElementById("contactForm");
 
@@ -44,6 +57,7 @@ if (form) {
 
       try {
 
+        // Save to Firestore
         await addDoc(
           collection(db, "contactMessages"),
           {
@@ -55,6 +69,14 @@ if (form) {
           }
         );
 
+        // Send email through Resend
+        await contactForgecard({
+          name,
+          email,
+          subject,
+          message
+        });
+
         form.reset();
 
         successMessage.style.display =
@@ -62,14 +84,14 @@ if (form) {
 
       } catch (error) {
 
-  console.error(
-    "Contact form error:",
-    error
-  );
+        console.error(
+          "Contact form error:",
+          error
+        );
 
-  alert(error.message);
+        alert(error.message);
 
-}
+      }
 
     }
   );

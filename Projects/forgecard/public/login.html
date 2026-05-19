@@ -3,6 +3,16 @@
 <head>
 
   <meta charset="UTF-8" />
+  <link
+  rel="icon"
+  type="image/png"
+  href="images/favicon.png"
+/>
+
+<link
+  rel="apple-touch-icon"
+  href="images/favicon.png"
+/>
 
   <meta
     name="viewport"
@@ -21,17 +31,36 @@
 
   <div class="login-container">
 
-    <h1>ForgeCard Login</h1>
+    <div class="login-branding">
+
+      <img
+        src="images/forgecard_logo.png"
+        alt="ForgeCard Logo"
+        class="login-logo"
+      />
+
+      <h1>ForgeCard</h1>
+
+      <p>
+        Professional Digital Business Cards
+      </p>
+
+    </div>
+
+    <h2>Welcome Back</h2>
 
     <form id="loginForm">
-
+ 
+  </div>
+  <div class="login-container">
+    
+    <form id="loginForm">
       <input
         type="email"
         id="email"
         placeholder="Email"
         required
       />
-
       <input
         type="password"
         id="password"
@@ -46,18 +75,36 @@
       <button type="submit">
         Login
       </button>
+     <button id="googleLoginBtn">
 
+  <img
+    src="images/google-icon.svg"
+    alt="Google"
+    class="google-icon"
+  />
+
+  Continue with Google
+
+</button>
     </form>
-
     <br />
-
     <button id="signupBtn">
       Create Account
     </button>
-
+     <p class="security-note">
+    Secure login powered by Firebase Authentication.
+</p>
   </div>
-
   <script type="module" src="auth.js"></script>
+  <footer class="login-footer">
+  <a href="about.html">About</a>
+
+  <a href="privacy.html">Privacy Policy</a>
+
+  <a href="terms.html">Terms</a>
+
+  <a href="contact.html">Contact</a>
+</footer>
 
 </body>
 </html>

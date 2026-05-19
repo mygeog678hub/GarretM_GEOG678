@@ -367,24 +367,29 @@ textarea:focus {
    LOGIN / AUTH
 ====================================================== */
 
-.auth-container,
-.login-container {
-  max-width: 220px;
+.auth-container input,
+.login-container input {
 
-  margin: 80px auto;
+  width: 100%;
 
-  padding: 40px 30px;
+  padding: 14px 16px;
 
-  background: #1e293b;
+  margin-bottom: 16px;
 
-  border-radius: 24px;
+  border-radius: 12px;
 
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
 
-  box-shadow:
-    0 10px 30px rgba(0,0,0,0.35);
+  background: #0f172a;
+
+  color: white;
+
+  font-size: 1rem;
+
+  outline: none;
+
+  box-sizing: border-box;
 }
-
 .auth-container form,
 .login-container form {
   display: flex;
@@ -398,11 +403,125 @@ textarea:focus {
 .auth-container .btn,
 .login-container .btn,
 form button {
-  width: auto !important;
+  width: 100%;
 
-  min-width: 160px;
+  max-width: 260px;
 
   align-self: center;
+}
+.login-logo {
+
+  width: 140px;
+
+  height: auto;
+
+  display: block;
+
+  margin: 0 auto 20px;
+}
+.login-branding {
+
+  text-align: center;
+
+  margin-bottom: 28px;
+}
+
+.login-branding h1 {
+
+  color: white;
+
+  margin-bottom: 8px;
+
+  font-size: 2rem;
+}
+
+.login-branding p {
+
+  color: #cbd5e1;
+
+  font-size: 0.95rem;
+}
+.login-container h2 {
+
+  text-align: center;
+
+  color: white;
+
+  margin-bottom: 24px;
+
+  font-size: 1.5rem;
+}
+#googleLoginBtn {
+
+  margin-top: 8px;
+}
+
+#signupBtn {
+
+  margin-top: 18px;
+}
+.auth-container input,
+.login-container input {
+
+  width: 100%;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  border: 1px solid rgba(255,255,255,0.1);
+
+  background: #0f172a;
+
+  color: white;
+
+  font-size: 1rem;
+
+  outline: none;
+}
+.auth-container input:focus,
+.login-container input:focus {
+
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59,130,246,0.2);
+}
+.security-note {
+
+  margin-top: 20px;
+
+  color: #94a3b8;
+
+  font-size: 0.85rem;
+
+  line-height: 1.4;
+}
+.login-footer {
+
+  margin-top: 28px;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 18px;
+
+  flex-wrap: wrap;
+}
+
+.login-footer a {
+
+  color: #94a3b8;
+
+  text-decoration: none;
+
+  font-size: 0.9rem;
+}
+
+.login-footer a:hover {
+
+  color: white;
 }
 
 /* ======================================================
@@ -1350,4 +1469,72 @@ header {
   line-height: 1.8;
 
   opacity: 0.9;
+}
+#googleLoginBtn {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  background: white;
+
+  color: #111827;
+
+  font-weight: 600;
+}
+
+.google-icon {
+
+  width: 18px;
+
+  height: 18px;
+}
+.legal-container {
+
+  width: 100%;
+
+  max-width: 900px;
+
+  margin: 80px auto;
+
+  padding: 40px;
+
+  background: #1e293b;
+
+  border-radius: 24px;
+
+  color: white;
+
+  line-height: 1.8;
+}
+
+.legal-container h1 {
+
+  margin-bottom: 20px;
+
+  font-size: 2.5rem;
+}
+
+.legal-container h2 {
+
+  margin-top: 36px;
+
+  margin-bottom: 12px;
+
+  color: #60a5fa;
+}
+
+.legal-container p,
+.legal-container li {
+
+  color: #cbd5e1;
+}
+
+.legal-container ul {
+
+  padding-left: 20px;
 }
