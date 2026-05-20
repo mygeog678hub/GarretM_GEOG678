@@ -73,18 +73,21 @@ exports.notifyContactSubmission =
 
       const data = snap.data();
 
+      const resend =
+        new Resend(resendKey.value());
+
       try {
 
         await resend.emails.send({
 
           from:
-            "Forgecard <onboarding@resend.dev>",
+            "ForgeCard <hello@forgecard.net>",
 
           to:
-            "YOUR_EMAIL@gmail.com",
+            "YOUR_REAL_EMAIL@gmail.com",
 
           subject:
-            `New Forgecard Contact: ${data.subject}`,
+            `New ForgeCard Contact: ${data.subject}`,
 
           html: `
             <h2>New Contact Submission</h2>
