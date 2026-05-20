@@ -66,50 +66,81 @@ const resendKey =
 const resend =
   new Resend(resendKey.value());
 
-exports.notifyContactSubmission =
-  functions.firestore
-    .document("contactMessages/{docId}")
-    .onCreate(async (snap) => {
+const { onDocumentCreated } =
+  require("firebase-functions/v2/firestore");
 
-      const data = snap.data();
+exports.notifyContactSubmission =
+  onDocumentCreated(
+    {
+      document:
+        "contactMessages/{docId}",
+
+      secrets: [resendKey]
+    },
+
+    async (event) => {
+
+      const data =
+        event.data.data();
 
       const resend =
-        new Resend(resendKey.value());
+        new Resend(
+          resendKey.value()
+        );
 
       try {
 
-        await resend.emails.send({
+        const response =
+          await resend.emails.send({
 
-          from:
-            "ForgeCard <hello@forgecard.net>",
+            from:
+              "ForgeCard <hello@getforgecard.com>",
 
-          to:
-            "YOUR_REAL_EMAIL@gmail.com",
+            to:
+              "mgarret27@gmail.com",
 
-          subject:
-            `New ForgeCard Contact: ${data.subject}`,
+            subject:
+              `New ForgeCard Contact: ${data.subject}`,
 
-          html: `
-            <h2>New Contact Submission</h2>
+            html: `
+              <h2>New Contact Submission</h2>
 
-            <p><strong>Name:</strong> ${data.name}</p>
+              <p>
+                <strong>Name:</strong>
+                ${data.name}
+              </p>
 
-            <p><strong>Email:</strong> ${data.email}</p>
+              <p>
+                <strong>Email:</strong>
+                ${data.email}
+              </p>
 
-            <p><strong>Subject:</strong> ${data.subject}</p>
+              <p>
+                <strong>Subject:</strong>
+                ${data.subject}
+              </p>
 
-            <p><strong>Message:</strong></p>
+              <p>
+                <strong>Message:</strong>
+              </p>
 
-            <p>${data.message}</p>
-          `
-        });
+              <p>${data.message}</p>
+            `
+          });
 
-        console.log("Email sent");
+        console.log(
+          "Email sent:",
+          response
+        );
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          "Resend error:",
+          error
+        );
 
       }
 
-    });
+    }
+  );

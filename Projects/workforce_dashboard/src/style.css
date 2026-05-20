@@ -264,3 +264,101 @@ button.danger {
 .forgecard-link a:hover {
   text-decoration: underline;
 }
+/* Legal Pages Styling */
+
+.legal-page {
+  margin: 0;
+  padding: 0;
+  line-height: 1.7;
+}
+
+.container {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 40px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+h2 {
+  margin-top: 35px;
+  font-size: 1.4rem;
+  color: #2563eb;
+}
+
+p {
+  margin: 15px 0;
+  font-size: 1rem;
+}
+
+ul {
+  margin-top: 10px;
+  padding-left: 24px;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.last-updated {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 30px;
+}
+
+.footer-note {
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 25px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+}
+/* LEGAL PAGE TEXT FIXES */
+
+.legal-page .container {
+  color: #1f2937;
+}
+
+.legal-page p,
+.legal-page li {
+  color: #374151;
+}
+
+.legal-page h1 {
+  color: #111827;
+}
+
+.legal-page h2 {
+  color: #2563eb;
+}
