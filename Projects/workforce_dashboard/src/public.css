@@ -15,25 +15,48 @@ body {
 /* ================= NAVIGATION ================= */
 
 .top-nav {
+
   position: fixed;
+
   top: 20px;
   right: 30px;
 
   display: flex;
+
   gap: 20px;
 
+  padding: 12px 20px;
+
+  background:
+    rgba(15,23,42,0.6);
+
+  border-radius: 14px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(10px);
+
   z-index: 1000;
+
 }
 
 .top-nav a {
-  color: #f1f5f9;
+
+  color: white;
+
   text-decoration: none;
-  font-weight: bold;
-  font-size: 15px;
+
+  font-weight: 600;
+
+  transition: 0.2s ease;
+
 }
 
 .top-nav a:hover {
+
   color: #38bdf8;
+
 }
 
 /* ================= PAGE WRAPPER ================= */
@@ -115,14 +138,14 @@ body {
 .google-btn {
   margin-top: 12px;
 
-  background: white !important;
+  
   color: #111827 !important;
 
   font-weight: 600;
 }
 
 .google-btn:hover {
-  background: #e5e7eb !important;
+ 
 }
 
 /* ================= RESET LINK ================= */
@@ -144,17 +167,26 @@ body {
 /* ================= PAGE CONTAINER ================= */
 
 .page-container {
-  max-width: 900px;
-  margin: 120px auto;
-  padding: 40px;
 
-  background: rgba(15, 23, 42, 0.75);
+  max-width: 1000px;
 
-  border-radius: 20px;
+  margin: 120px auto 60px auto;
 
-  backdrop-filter: blur(10px);
+  padding: 60px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    rgba(15, 23, 42, 0.78);
+
+  border-radius: 24px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.35);
+
 }
 
 .page-container h1 {
@@ -258,54 +290,55 @@ body {
   opacity: 0.9;
 }
 
-/* ================= LEGAL ================= */
+/* ================= LEGAL / PUBLIC PAGE POLISH ================= */
 
 .legal-page {
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
-.container {
-  max-width: 900px;
+.page-container h1 {
 
-  margin: 60px auto;
+  font-size: 48px;
 
-  padding: 40px;
+  margin-bottom: 40px;
 
-  background: #ffffff;
+  color: white;
 
-  border-radius: 14px;
-
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
 }
 
-.legal-page .container {
-  color: #1f2937;
+.page-container h2 {
+
+  font-size: 28px;
+
+  margin-top: 40px;
+
+  margin-bottom: 15px;
+
+  color: #38bdf8;
+
 }
 
-.legal-page h1 {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  color: #111827;
+.page-container p,
+.page-container li {
+
+  font-size: 18px;
+
+  line-height: 1.8;
+
+  color: #dbe4ee;
+
 }
 
-.legal-page h2 {
-  margin-top: 35px;
-  font-size: 1.4rem;
-  color: #2563eb;
-}
+.page-container ul {
 
-.legal-page p,
-.legal-page li {
-  color: #374151;
-}
-
-.legal-page ul {
-  margin-top: 10px;
   padding-left: 24px;
+
 }
 
-.legal-page li {
-  margin-bottom: 10px;
+.page-container li {
+
+  margin-bottom: 12px;
+
 }
 
 /* ================= FOOTER ================= */
