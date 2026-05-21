@@ -1,8 +1,13 @@
 body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
+  font-family: Arial;
+  margin: 0;
   background: #0f172a;
   color: #f1f5f9;
+
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* ================= HEADERS ================= */
@@ -386,10 +391,43 @@ a:hover {
 }
 
 .footer-links a {
-  color: #38bdf8;
+  color: #eff2f4;
   text-decoration: none;
 }
 
 .footer-links a:hover {
+  text-decoration: underline;
+}
+.page-wrapper {
+  flex: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.google-btn {
+  margin-top: 12px;
+
+  background: white;
+  color: #111827;
+
+  font-weight: 600;
+}
+
+.google-btn:hover {
+  background: #e5e7eb;
+}
+
+.reset-link {
+  margin-top: 16px;
+}
+
+.reset-link a {
+  color: #38bdf8;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.reset-link a:hover {
   text-decoration: underline;
 }

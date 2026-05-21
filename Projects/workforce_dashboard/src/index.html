@@ -3,6 +3,7 @@
 <head>
   <!-- Primary Meta Tags -->
 <title>WorkForge Dashboard | Workforce Management & Digital Identity Platform</title>
+<link rel="stylesheet" href="style.css">
 <link
   rel="icon"
   type="image/png"
@@ -102,17 +103,6 @@
 />
 
   <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      background: #0f172a;
-      color: #f1f5f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
     .login-container {
       background: #1e293b;
       padding: 30px;
@@ -158,9 +148,15 @@
   margin: 0 auto 15px auto;
 }
 body {
+  font-family: Arial;
   margin: 0;
+  background: #0f172a;
+  color: #f1f5f9;
+
   min-height: 100vh;
-  position: relative;
+
+  display: flex;
+  flex-direction: column;
 }
 .top-nav {
   position: fixed;
@@ -171,6 +167,15 @@ body {
   gap: 20px;
 
   z-index: 1000;
+}
+.page-wrapper {
+  flex: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 20px;
 }
 
 .top-nav a {
@@ -191,8 +196,9 @@ body {
   <a href="about.html">About</a>
   <a href="contact.html">Contact Us</a>
 </nav>
+<div class="page-wrapper">
 
-<div class="login-container">
+  <div class="login-container">
   <img
   src="workforge-logo.png"
   alt="WorkForge Logo"
@@ -210,8 +216,18 @@ body {
   <input id="password" type="password" placeholder="Enter your password">
 
   <button onclick="login()">Login</button>
+  <button onclick="googleLogin()" class="google-btn">
+  Continue with Google
+</button>
+
+<p class="reset-link">
+  <a href="#" onclick="resetPassword()">
+    Forgot Password?
+  </a>
+</p>
  
   <p id="error" style="color:red;"></p>
+</div>
 </div>
 
 
@@ -221,7 +237,10 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
@@ -235,6 +254,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
 onAuthStateChanged(auth, user => {
 
@@ -258,6 +278,53 @@ window.login = async function(){
   } catch(e){
     error.textContent = e.message;
   }
+};
+
+window.googleLogin = async function() {
+
+  try {
+
+    await signInWithPopup(
+      auth,
+      provider
+    );
+
+  } catch(e) {
+
+    error.textContent = e.message;
+
+  }
+
+};
+
+window.resetPassword = async function() {
+
+  if (!email.value) {
+
+    error.textContent =
+      "Please enter your email address first.";
+
+    return;
+
+  }
+
+  try {
+
+    await sendPasswordResetEmail(
+      auth,
+      email.value
+    );
+
+    alert(
+      "Password reset email sent."
+    );
+
+  } catch(e){
+
+    error.textContent = e.message;
+
+  }
+
 };
 
 window.signup = async function(){
