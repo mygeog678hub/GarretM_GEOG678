@@ -81,45 +81,92 @@ let assignments = [];
 let markers = {};
 
 // ================= MAP =================
-let map;
+
 document.addEventListener("DOMContentLoaded", () => {
-  map = L.map('map').setView([29.7604, -95.3698], 10);
+
+  // Create global map
+  window.map = L.map("map").setView(
+    [29.7604, -95.3698],
+    10
+  );
+
+  // ================= TILE LAYERS =================
 
   const osm = L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  { attribution: '&copy; OpenStreetMap contributors' }
-);
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution:
+        "&copy; OpenStreetMap contributors"
+    }
+  );
 
-const lightMap = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  { attribution: '&copy; OpenStreetMap &copy; CartoDB' }
-);
+  const lightMap = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution:
+        "&copy; OpenStreetMap &copy; CartoDB"
+    }
+  );
 
-const darkMap = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  { attribution: '&copy; OpenStreetMap &copy; CartoDB' }
-);
+  const darkMap = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution:
+        "&copy; OpenStreetMap &copy; CartoDB"
+    }
+  );
 
-// default layer
-osm.addTo(map);
+  // ================= DEFAULT MAP =================
 
-// layer switcher
-L.control.layers({
-  "Street Map": osm,
-  "Light Canvas": lightMap,
-  "Dark Mode": darkMap
-}).addTo(map);
-//===================== home button ======================
-const homeControl = L.control({ position: 'topleft' });
-homeControl.onAdd = function () {
-  const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-  div.innerHTML = '<button style="padding:5px;">🏠</button>';
-  div.onclick = function () {
-    map.setView([29.7604, -95.3698], 10); // Houston reset
+  osm.addTo(window.map);
+
+  // ================= LAYER SWITCHER =================
+
+  L.control.layers({
+    "Street Map": osm,
+    "Light Canvas": lightMap,
+    "Dark Mode": darkMap
+  }).addTo(window.map);
+
+  // ================= HOME BUTTON =================
+
+  const homeControl = L.control({
+    position: "topleft"
+  });
+
+  homeControl.onAdd = function () {
+
+    const div = L.DomUtil.create(
+      "div",
+      "leaflet-bar leaflet-control"
+    );
+
+    div.innerHTML =
+      '<button style="padding:5px;">🏠</button>';
+
+    div.onclick = function () {
+
+      window.map.setView(
+        [29.7604, -95.3698],
+        10
+      );
+
+    };
+
+    return div;
+
   };
-  return div;
-};
-homeControl.addTo(map);
+
+  homeControl.addTo(window.map);
+
+  // ================= FORCE RESIZE =================
+
+  setTimeout(() => {
+
+    window.map.invalidateSize();
+
+  }, 500);
+
 });
 
 // ================= LOAD =================
@@ -243,8 +290,7 @@ async function deleteEmployee(id) {
   if (!confirm("Delete this employee?")) return;
 
   try {
-    await deleteDoc(doc(db, "employees", id));
-    await loadEmployees();
+    await deleteDoc(doc(db, "employees", id));    
   } catch (err) {
     console.error("Delete failed:", err);
   }
@@ -569,98 +615,119 @@ const vehicle = vehicles.find(
   renderEmployees();
 }
 // ================= UPDATE MAP =================
-function updateMap() {
-  if (!map) return;
+// ================= UPDATE MAP =================
 
-  // remove markers that no longer exist
+function updateMap() {
+
+  if (!window.map) return;
+
+  // remove deleted markers
   Object.keys(markers).forEach(id => {
+
     if (!sites.find(s => s.id === id)) {
-      map.removeLayer(markers[id]);
+
+      window.map.removeLayer(markers[id]);
+
       delete markers[id];
+
     }
+
   });
 
   sites.forEach(site => {
+
     if (!site.lat || !site.lng) return;
+
     const active = assignments.filter(a =>
-  a.siteId === site.id && !a.endTime
-);
+      a.siteId === site.id && !a.endTime
+    );
 
-// default = no workers
-let icon = redIcon;
+    let icon = redIcon;
 
-// active workers
-if (active.length > 0) {
-  icon = greenIcon;
-}
+    if (active.length > 0) {
+      icon = greenIcon;
+    }
 
-// 🔥 OPTIONAL (maintenance override)
-if (site.maintenance) {
-  icon = yellowIcon;
-}
+    if (site.maintenance) {
+      icon = yellowIcon;
+    }
 
-// create or update marker
-if (!markers[site.id]) {
-  markers[site.id] = L.marker([site.lat, site.lng], { icon }).addTo(map);
-} else {
-  markers[site.id].setIcon(icon);
-}// update popup
-    const marker = markers[site.id];    
+    // create marker
+    if (!markers[site.id]) {
 
-    let popup = `<b>${site.name}</b><br>${site.city}, ${site.state}<br><br>`;
-// 🔥 Show assigned employees
-    if (!active.length) {
-      popup += "No active assignments";
+      markers[site.id] = L.marker(
+        [site.lat, site.lng],
+        { icon }
+      ).addTo(window.map);
+
     } else {
+
+      markers[site.id].setIcon(icon);
+
+    }
+
+    const marker = markers[site.id];
+
+    let popup =
+      `<b>${site.name}</b><br>` +
+      `${site.city}, ${site.state}<br><br>`;
+
+    if (!active.length) {
+
+      popup += "No active assignments";
+
+    } else {
+
       popup += "<b>Employees:</b><br>";
+
       active.forEach(a => {
 
-  const emp =
-    employees.find(
-      e => e.id === a.employeeId
-    );
+        const emp =
+          employees.find(
+            e => e.id === a.employeeId
+          );
 
-  const asset =
-    assets.find(
-      x => x.id === a.assetId
-    );
+        const asset =
+          assets.find(
+            x => x.id === a.assetId
+          );
 
-  const vehicle =
-    vehicles.find(
-      v => v.id === a.vehicleId
-    );
+        const vehicle =
+          vehicles.find(
+            v => v.id === a.vehicleId
+          );
 
-  popup += `
-    <div style="margin-bottom:8px;">
+        popup += `
+          <div style="margin-bottom:8px;">
 
-      <b>
-        ${emp?.name || "Unknown"}
-      </b><br>
+            <b>
+              ${emp?.name || "Unknown"}
+            </b><br>
 
-      Asset:
-      ${
-        asset
-          ? asset.id
-          : "None"
-      }<br>
+            Asset:
+            ${asset ? asset.id : "None"}<br>
 
-      Vehicle:
-      ${
-        vehicle
-          ? vehicle.id
-          : "None"
-      }
+            Vehicle:
+            ${vehicle ? vehicle.id : "None"}
 
-    </div>
-  `;
-});
+          </div>
+        `;
+
+      });
+
     }
-// 🔥 Show maintenance status
+
     if (site.maintenance) {
-      popup += "<br><b>Maintenance Required</b>";
+
+      popup +=
+        "<br><b>Maintenance Required</b>";
+
     }
+
     marker.bindPopup(popup);
-  });  
+
+  });
+
 }
 
 // ================= REFRESH =================
