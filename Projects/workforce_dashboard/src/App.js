@@ -852,6 +852,19 @@ function refresh() {
     deleteSiteSelect.value =
       selectedSite;
   }
+  document.getElementById("employeeCount").textContent =
+  employees.length;
+
+document.getElementById("assignmentCount").textContent =
+  assignments.filter(a => !a.endTime).length;
+
+document.getElementById("siteCount").textContent =
+  sites.length;
+
+document.getElementById("maintenanceCount").textContent =
+  assets.filter(
+    a => a.status === "maintenance"
+  ).length;
 
   render();
 
