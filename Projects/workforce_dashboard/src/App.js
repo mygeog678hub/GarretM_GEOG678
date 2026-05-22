@@ -811,16 +811,16 @@ function refresh() {
       maintenanceAssetSelect.value;
 
     maintenanceAssetSelect.innerHTML =
-      `
-        <option value="">
-          -- Select Asset For Maintenance --
-        </option>
-      ` +
-      assets.map(a => `
-        <option value="${a.id}">
-          ${a.id} - ${a.type}
-        </option>
-      `).join("");
+  `
+    <option value="">
+      -- Select Asset For Maintenance --
+    </option>
+  ` +
+  assets.map(a => `
+    <option value="${a.id}">
+      ${a.id} - ${a.type || "Unknown Type"}
+    </option>
+  `).join("");
 
     maintenanceAssetSelect.value =
       selectedMaintenanceAsset;

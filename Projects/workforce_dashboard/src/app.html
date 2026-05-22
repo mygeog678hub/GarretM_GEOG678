@@ -331,6 +331,11 @@
 
   </select>
 
+  <input
+    id="maintenanceLocation"
+    placeholder="Maintenance Location (City, State)"
+  >
+
   <button onclick="markMaintenance()">
     Set Maintenance
   </button>
@@ -340,18 +345,6 @@
   </button>
 
 </div>
-</div>
-
-<input
-  id="maintenanceLocation"
-  placeholder="Maintenance Location (City, State)"
-  style="
-    padding:8px;
-    min-width:300px;
-    border-radius:6px;
-    margin-left:10px;
-  "
->
 <h2>Report</h2>
 <button onclick="exportExcel()">Export Excel</button>
 <div class="table-wrapper">
