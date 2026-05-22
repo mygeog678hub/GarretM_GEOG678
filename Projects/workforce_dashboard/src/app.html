@@ -119,23 +119,52 @@
 </head>
 
 <body>
-  <div class="navbar">
-  <div class="brand">
-    <img src="workforge-logo.png" class="logo">    
+
+<div class="dashboard-container">
+
+  <!-- HEADER -->
+
+  <header class="dashboard-header">
+
+    <div class="header-left">
+
+      <img
+        src="workforge-logo.png"
+        class="logo"
+      >
+
+      <div>
+        <h1>WorkForce Dashboard</h1>
+        <span class="version-tag">
+          v5.4
+        </span>
+      </div>
+
+    </div>
+
+    <div class="header-right">
+
+      <button
+        onclick="logout()"
+        class="logoutBtn"
+      >
+        Logout
+      </button>
+
+    </div>
+
+  </header>
+
+  <!-- MAP CARD -->
+
+  <div class="dashboard-card map-card">
+
+    <h2>Operations Map</h2>
+
+    <div id="map"></div>
+
   </div>
-</div>
-
-<div style="display:flex; align-items:center; gap:10px;">
-  <h1 style="margin:0;">Workforce Dashboard</h1>
-  <h4 style="margin:0;">v5.4</h4>
-</div>
-<button onclick="logout()" class="logoutBtn">
-  Logout
-</button>
-<h2>Map View</h2>
-
-<div id="map" style="height:500px;"></div>
-
+  <div class="dashboard-card">
 <h2>Add Employee</h2>
 <form onsubmit="addEmployee(); return false;">
 <input id="empName" placeholder="Employee Name">
@@ -149,7 +178,9 @@
 <button onclick="openEmployeeModal()" style="margin-top:10px;">
   View Employees
 </button>
+</div>
 
+<div class="dashboard-card">
 <h2>Add Site</h2>
 <form onsubmit="addSite(); return false;">
 <input id="siteName" placeholder="Site Name">
@@ -209,6 +240,8 @@
 </select>
 <button>Add</button>
 </form>
+</div>
+<div class="dashboard-card">
 <h3>Manage Sites</h3>
 
 <select id="deleteSiteSelect"></select>
@@ -217,14 +250,16 @@
         onclick="deleteSelectedSite()">
   Delete Site
 </button>
-
+</div>
+<div class="dashboard-card">
 <h2>Add Asset (Equipment)</h2>
 <form onsubmit="addAsset(); return false;">
   <input id="assetId" placeholder="Asset ID" required>
   <input id="assetType" placeholder="Type" required>
   <button type="submit">Add</button>
 </form>
-
+</div>
+<div class="dashboard-card">
 <h2>Add Vehicle</h2>
 <form onsubmit="addVehicle(); return false;">
 <input id="vehMake" placeholder="Make">
@@ -233,23 +268,18 @@
 <input id="vehUnit" placeholder="Unit">
 <button>Add</button>
 </form>
-
+</div>
+<div class="dashboard-card">
 <h2>Assign Resources</h2>
 <select id="assignEmployee"></select>
 <select id="assignSite"></select>
 <select id="assignAsset"></select>
 <select id="assignVehicle"></select>
 <button onclick="assign()">Assign Resources</button>
+</div>
 <!-- <button onclick="exportCSV()">Export CSV</button> -->
+ <div class="dashboard-card">
 <h2>Asset Maintenance</h2>
-
-<select id="maintenanceAssetSelect"
-        style="
-          padding:8px;
-          min-width:280px;
-          border-radius:6px;
-          margin-right:10px;
-        ">
 
   <option value="" disabled selected>
     -- Select Asset For Maintenance --
@@ -264,6 +294,7 @@
 <button onclick="markActive()">
   Set Active
 </button>
+</div>
 
 <input
   id="maintenanceLocation"
