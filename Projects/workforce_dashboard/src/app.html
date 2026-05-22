@@ -311,38 +311,57 @@
 </form>
 </div>
 <div class="dashboard-card">
-<h2>Assign Resources</h2>
-<select id="assignEmployee"></select>
-<select id="assignSite"></select>
-<select id="assignAsset"></select>
-<select id="assignVehicle"></select>
-<button onclick="assign()">Assign Resources</button>
+
+  <h2>Assign Resources</h2>
+
+  <div class="assign-grid">
+
+    <select id="assignEmployee"></select>
+
+    <select id="assignSite"></select>
+
+    <select id="assignAsset"></select>
+
+    <select id="assignVehicle"></select>
+
+    <button onclick="assign()">
+      Assign Resources
+    </button>
+
+  </div>
+
 </div>
 <!-- <button onclick="exportCSV()">Export CSV</button> -->
- <div class="dashboard-card">
+<div class="dashboard-card">
 
   <h2>Asset Maintenance</h2>
 
-  <select id="maintenanceAssetSelect">
+  <div class="maintenance-grid">
 
-    <option value="" disabled selected>
-      -- Select Asset For Maintenance --
-    </option>
+    <select id="maintenanceAssetSelect">
 
-  </select>
+      <option value="" disabled selected>
+        -- Select Asset For Maintenance --
+      </option>
 
-  <input
-    id="maintenanceLocation"
-    placeholder="Maintenance Location (City, State)"
-  >
+    </select>
 
-  <button onclick="markMaintenance()">
-    Set Maintenance
-  </button>
+    <input
+      id="maintenanceLocation"
+      placeholder="Maintenance Location (City, State)"
+    >
 
-  <button onclick="markActive()">
-    Set Active
-  </button>
+    <button onclick="markMaintenance()">
+      Set Maintenance
+    </button>
+
+    <button onclick="markActive()">
+      Set Active
+    </button>
+
+  </div>
+
+  <div id="maintenanceList"></div>
 
 </div>
 <h2>Report</h2>

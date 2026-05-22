@@ -493,3 +493,27 @@ tr:hover {
 .dashboard-card button {
   align-self: flex-start;
 }
+.assign-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 16px;
+
+  align-items: end;
+}
+.maintenance-grid {
+  display: grid;
+
+  grid-template-columns:
+    2fr 2fr auto auto;
+
+  gap: 16px;
+
+  align-items: end;
+}
+
+#maintenanceList {
+  margin-top: 24px;
+}
