@@ -80,7 +80,7 @@ td {
 /* ================= HEADER LOGO ================= */
 
 .logo {
-  width: 90px;
+  width: 150px;
 
   height: auto;
 
@@ -329,11 +329,6 @@ button:hover {
 
   font-weight: 600;
 }
-
-.logo {
-  height: 48px;
-}
-
 /* ================= LOGOUT BUTTON ================= */
 
 .logoutBtn {
