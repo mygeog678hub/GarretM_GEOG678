@@ -392,3 +392,58 @@ button:hover {
 
   color: white;
 }
+/* ================= REPORT TABLE ================= */
+
+.table-wrapper {
+  overflow-x: auto;
+
+  border-radius: 18px;
+
+  margin-top: 18px;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  background:
+    rgba(15,23,42,0.75);
+
+  overflow: hidden;
+
+  border-radius: 18px;
+}
+
+th {
+  background:
+    rgba(30,41,59,0.95);
+
+  color: #38bdf8;
+
+  text-align: left;
+
+  padding: 16px;
+
+  font-size: 14px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+
+  position: sticky;
+
+  top: 0;
+}
+
+td {
+  padding: 16px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.05);
+}
+
+tr:hover {
+  background:
+    rgba(255,255,255,0.03);
+}
