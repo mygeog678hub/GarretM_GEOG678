@@ -65,9 +65,26 @@ td {
   align-items: center;
 }
 
+/* ================= SIDEBAR LOGO ================= */
+
+.sidebar-logo {
+  width: 60px;
+
+  height: auto;
+
+  display: block;
+
+  margin-bottom: 12px;
+}
+
+/* ================= HEADER LOGO ================= */
+
 .logo {
-  height: 30px;
-  width: auto;
+  width: 90px;
+
+  height: auto;
+
+  object-fit: contain;
 }
 
 .app-name {
@@ -127,6 +144,13 @@ button {
   color: white;
 
   border: none;
+  width: auto;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
 
   border-radius: 12px;
 
@@ -161,6 +185,7 @@ button:hover {
 
   box-shadow:
     0 10px 30px rgba(0,0,0,0.25);
+    margin-bottom: 28px;
 }
 
 /* ================= STATUS TAGS ================= */
@@ -446,4 +471,30 @@ td {
 tr:hover {
   background:
     rgba(255,255,255,0.03);
+}
+.dashboard-card {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+}
+.dashboard-card h2,
+.dashboard-card h3 {
+  font-size: 32px;
+
+  font-weight: 700;
+
+  color: #38bdf8;
+
+  margin-bottom: 12px;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.35);
+}
+.dashboard-card button {
+  align-self: flex-start;
 }

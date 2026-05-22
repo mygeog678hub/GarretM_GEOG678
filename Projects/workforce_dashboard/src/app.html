@@ -110,17 +110,22 @@
 <link rel="stylesheet" href="style.css">
 <script type="module" src="app.js"></script>
 
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .navbar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-  .logo { height: 40px; }
-  input, select, button { padding: 5px; margin: 5px 0; }
-</style>
+
 </head>
 
 <body>
 
-<div class="dashboard-container">
+<div class="app-layout">
+
+  <!-- SIDEBAR -->  
+
+  </aside>
+
+  <!-- MAIN CONTENT -->
+
+  <main class="main-content">
+
+    <div class="dashboard-container">
 
   <!-- HEADER -->
 
@@ -192,7 +197,7 @@
 </div>
 
   <!-- MAP CARD -->
-
+   
   <div class="dashboard-card map-card">
 
     <h2>Operations Map</h2>
@@ -315,21 +320,26 @@
 </div>
 <!-- <button onclick="exportCSV()">Export CSV</button> -->
  <div class="dashboard-card">
-<h2>Asset Maintenance</h2>
 
-  <option value="" disabled selected>
-    -- Select Asset For Maintenance --
-  </option>
+  <h2>Asset Maintenance</h2>
 
-</select>
+  <select id="maintenanceAssetSelect">
 
-<button onclick="markMaintenance()">
-  Set Maintenance
-</button>
+    <option value="" disabled selected>
+      -- Select Asset For Maintenance --
+    </option>
 
-<button onclick="markActive()">
-  Set Active
-</button>
+  </select>
+
+  <button onclick="markMaintenance()">
+    Set Maintenance
+  </button>
+
+  <button onclick="markActive()">
+    Set Active
+  </button>
+
+</div>
 </div>
 
 <input
@@ -453,6 +463,11 @@
     target ="_blank">Privacy</a>
   </div>
 </footer>
+    </div>
+
+  </main>
+
+</div>
 
 </body>
 </html>
