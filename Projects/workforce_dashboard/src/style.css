@@ -517,3 +517,16 @@ tr:hover {
 #maintenanceList {
   margin-top: 24px;
 }
+.manage-site-row {
+  display: flex;
+
+  gap: 14px;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+}
+
+.manage-site-row select {
+  flex: 1;
+}
