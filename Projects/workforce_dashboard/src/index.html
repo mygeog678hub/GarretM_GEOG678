@@ -3,12 +3,27 @@
 <head>
   <!-- Primary Meta Tags -->
 <title>WorkForge Dashboard | Workforce Management & Digital Identity Platform</title>
-<link rel="stylesheet" href="public.css">
+<link rel="stylesheet" href="style.css">
 <link
   rel="icon"
   type="image/png"
   href="/assets/favicon.png"
 />
+<link
+  rel="preconnect"
+  href="https://fonts.googleapis.com"
+>
+
+<link
+  rel="preconnect"
+  href="https://fonts.gstatic.com"
+  crossorigin
+>
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+>
 <meta
   property="og:image"
   content="https://workforge-dashboard.com/assets/logo.png"
@@ -100,107 +115,70 @@
   rel="icon"
   type="image/png"
   href="/assets/favicon.png"
-/>
-
-  <style>
-    .login-container {
-      background: #1e293b;
-      padding: 30px;
-      border-radius: 10px;
-      width: 360px;
-      text-align: center;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      background: #020617;
-      border: 1px solid #334155;
-      color: white;
-      border-radius: 5px;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      background: #3b82f6;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    label {
-      display: block;
-      text-align: left;
-      margin-top: 10px;
-      font-size: 14px;
-      color: #cbd5f5;
-    }
-    .login-logo {
-  width: 120px;
-  height: auto;
-  display: block;
-  margin: 0 auto 15px auto;
-}
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #0f172a;
-  color: #f1f5f9;
-
-  min-height: 100vh;
-
-  display: flex;
-  flex-direction: column;
-}
-.top-nav {
-  position: fixed;
-  top: 20px;
-  right: 30px;
-
-  display: flex;
-  gap: 20px;
-
-  z-index: 1000;
-}
-.page-wrapper {
-  flex: 1;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding: 20px;
-}
-
-.top-nav a {
-  color: #f1f5f9;
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 15px;
-}
-
-.top-nav a:hover {
-  color: #38bdf8;
-}
-  </style>
+/>  
 </head>
 
 <body style="display:none;" id="body">
   <nav class="top-nav">
-  <a href="about.html"
-  target ="_blank">About</a>
-  <a href="contact.html"
-  target ="_blank">Contact Us</a>
-</nav>
-<div class="page-wrapper">
 
-  <div class="login-container">
+  <a href="about.html"
+    target ="_blank">About</a>
+    <a href="contact.html"
+    target ="_blank">Contact</a>
+    <a href="terms.html"
+    target ="_blank">Terms</a>
+    <a href="policy.html"
+    target ="_blank">Privacy</a>
+
+</nav>
+<div class="login-layout">
+
+  <!-- LEFT PANEL -->
+
+  <div class="login-left">
+
+    <img
+      src="workforge-logo.png"
+      class="hero-logo"
+    >
+
+    <h1>
+      Workforce Operations Platform
+    </h1>
+
+    <p class="hero-text">
+      Manage employees, assignments,
+      vehicles, assets, maintenance,
+      and operations in real time.
+    </p>
+
+    <div class="feature-list">
+
+      <div class="feature-pill">
+        Real-Time Workforce Tracking
+      </div>
+
+      <div class="feature-pill">
+        Asset Maintenance Monitoring
+      </div>
+
+      <div class="feature-pill">
+        Assignment Management
+      </div>
+
+      <div class="feature-pill">
+        Operations Mapping
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+
+  <div class="login-right">
+
+    <div class="login-container">
   <img
   src="workforge-logo.png"
   alt="WorkForge Logo"
@@ -228,11 +206,13 @@ body {
   </a>
 </p>
  
-  <p id="error" style="color:red;"></p>
-</div>
-</div>
+   <p id="error" style="color:red;"></p>
 
+    </div>
 
+  </div>
+
+</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
@@ -345,18 +325,7 @@ window.signup = async function(){
 <footer class="site-footer">
   <p>
     © WorkForge, LLc. All rights reserved. | Developed by Garret M.
-  </p>
-
-  <div class="footer-links">
-    <a href="about.html"
-    target ="_blank">About</a>
-    <a href="contact.html"
-    target ="_blank">Contact</a>
-    <a href="terms.html"
-    target ="_blank">Terms</a>
-    <a href="policy.html"
-    target ="_blank">Privacy</a>
-  </div>
+  </p>  
 </footer>
 
 </body>
