@@ -283,14 +283,23 @@
 </form>
 </div>
 <div class="dashboard-card">
-<h3>Manage Sites</h3>
 
-<select id="deleteSiteSelect"></select>
+  <h3>Manage Sites</h3>
 
-<button type="button"
-        onclick="deleteSelectedSite()">
-  Delete Site
-</button>
+  <div class="manage-site-row">
+
+    <select id="deleteSiteSelect"></select>
+
+    <button
+      type="button"
+      onclick="deleteSelectedSite()"
+      class="danger"
+    >
+      Delete Site
+    </button>
+
+  </div>
+
 </div>
 <div class="dashboard-card">
 <h2>Add Asset (Equipment)</h2>
