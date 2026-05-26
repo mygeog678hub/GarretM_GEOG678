@@ -29,72 +29,85 @@
 
 <body>
 
-  <div class="login-container">
+<div class="login-container">
 
-    <div class="login-branding">
+  <div class="login-branding">
 
-      <img
-        src="images/forgecard_logo.png"
-        alt="ForgeCard Logo"
-        class="login-logo"
-      />
+    <img
+      src="images/forgecard_logo.png"
+      alt="ForgeCard Logo"
+      class="login-logo"
+    />
 
-      <h1>ForgeCard</h1>
+    <h1>ForgeCard</h1>
 
-      <p>
-        Professional Digital Business Cards
-      </p>
+    <p>
+      Professional Digital Business Cards
+    </p>
 
-    </div>
-
-    <h2>Welcome Back</h2>
-
-    <form id="loginForm">
- 
   </div>
-  <div class="login-container">
-    
-    <form id="loginForm">
-      <input
-        type="email"
-        id="email"
-        placeholder="Email"
-        required
-      />
-      <input
-        type="password"
-        id="password"
-        placeholder="Password"
-        required
-      />
-<p>
-  <a href="#" id="forgotPassword">
-    Forgot Password?
-  </a>
-</p>
+
+  <h2>Welcome Back</h2>
+
+  <form id="loginForm">
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+      required
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      required
+    />
+
+    <p class="forgot-link">
+      <a href="#" id="forgotPassword">
+        Forgot Password?
+      </a>
+    </p>
+
+    <div class="auth-buttons">
+
       <button type="submit">
         Login
       </button>
-     <button id="googleLoginBtn">
 
-  <img
-    src="images/google-icon.svg"
-    alt="Google"
-    class="google-icon"
-  />
+      <button
+        id="googleLoginBtn"
+        type="button"
+      >
 
-  Continue with Google
+        <img
+          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+          alt="Google"
+          class="google-icon"
+        />
 
-</button>
-    </form>
-    <br />
-    <button id="signupBtn">
-      Create Account
-    </button>
-     <p class="security-note">
+        Continue with Google
+
+      </button>
+
+      <button
+        id="signupBtn"
+        type="button"
+      >
+        Create Account
+      </button>
+
+    </div>
+
+  </form>
+
+  <p class="security-note">
     Secure login powered by Firebase Authentication.
-</p>
-  </div>
+  </p>
+
+</div>
   <script type="module" src="auth.js"></script>
   <footer class="login-footer">
   <a

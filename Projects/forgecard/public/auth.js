@@ -3,8 +3,10 @@ console.log("AUTH JS LOADED");
 import {
 
   auth,
+  provider,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
   sendPasswordResetEmail
 
 } from "./firebase.js";
@@ -102,6 +104,41 @@ signupBtn.addEventListener(
     }
 
   }
+);
+
+/* =========================
+   GOOGLE LOGIN
+========================= */
+
+document
+  .getElementById("googleLoginBtn")
+  .addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await signInWithPopup(
+          auth,
+          provider
+        );
+
+        alert(
+          "Google login successful."
+        );
+
+        window.location.href =
+          "dashboard.html";
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(error.message);
+
+      }
+
+    }
 );
 
 /* =========================

@@ -1470,29 +1470,7 @@ header {
 
   opacity: 0.9;
 }
-#googleLoginBtn {
 
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 10px;
-
-  background: white;
-
-  color: #111827;
-
-  font-weight: 600;
-}
-
-.google-icon {
-
-  width: 18px;
-
-  height: 18px;
-}
 .legal-container {
 
   width: 100%;
@@ -1537,4 +1515,102 @@ header {
 .legal-container ul {
 
   padding-left: 20px;
+}
+/* ================= AUTH BUTTONS ================= */
+
+.auth-buttons {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+
+  margin-top: 20px;
+}
+
+.auth-buttons button {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 14px;
+
+  border: none;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.auth-buttons button:hover {
+  transform: translateY(-1px);
+}
+/* ================= GOOGLE BUTTON ================= */
+
+#googleLoginBtn {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 14px;
+
+  border: none;
+
+  background: white;
+
+  color: #111827;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#googleLoginBtn:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 10px 20px rgba(0,0,0,0.18);
+}
+
+.google-icon {
+  width: 20px;
+
+  height: 20px;
+}
+/* ================= FORGOT PASSWORD ================= */
+
+.forgot-link {
+  margin-top: 14px;
+
+  text-align: left;
+}
+
+.forgot-link a {
+  color: #38bdf8;
+
+  text-decoration: none;
+}
+
+.forgot-link a:hover {
+  text-decoration: underline;
 }

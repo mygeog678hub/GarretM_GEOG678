@@ -23,7 +23,9 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 // Note: Storage functions are imported in edit.js since they're only needed there
 
@@ -60,6 +62,8 @@ const db = getFirestore(app);
 
 const auth = getAuth(app);
 const storage = getStorage(app);
+const provider =
+  new GoogleAuthProvider();
 
 /* =========================
    EXPORTS
@@ -88,5 +92,7 @@ export {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
-  onSnapshot
+  onSnapshot,
+  provider,
+  signInWithPopup
 };
