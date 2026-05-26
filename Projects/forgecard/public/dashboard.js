@@ -39,6 +39,59 @@ console.log("Loading cards...");
     );
 
     const snapshot = await getDocs(q);
+    const userRef = doc(
+  db,
+  "users",
+  user.uid
+);
+
+const userSnap =
+  await getDoc(userRef);
+
+const userData =
+  userSnap.data();
+
+const currentPlan =
+  userData?.subscription || "free";
+
+let cardLimit = 1;
+
+if (currentPlan === "pro") {
+
+  cardLimit = 10;
+
+}
+
+if (currentPlan === "teams") {
+
+  cardLimit = 25;
+
+}
+
+const currentPlanElement =
+  document.getElementById(
+    "currentPlan"
+  );
+
+const cardUsageElement =
+  document.getElementById(
+    "cardUsage"
+  );
+
+if (currentPlanElement) {
+
+  currentPlanElement.textContent =
+    currentPlan.charAt(0).toUpperCase() +
+    currentPlan.slice(1);
+
+}
+
+if (cardUsageElement) {
+
+  cardUsageElement.textContent =
+    `${snapshot.size} / ${cardLimit}`;
+
+}
     const cardCountElement =
   document.getElementById("cardCount");
 
