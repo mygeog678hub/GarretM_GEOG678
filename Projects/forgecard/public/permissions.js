@@ -18,17 +18,25 @@ export function canCreateCard(
   totalCards
 ) {
 
-  // Admin bypass
-  if (isAdmin(userData)) {
-    return true;
+  // Teams
+  if (
+    userData?.subscription === "teams"
+  ) {
+
+    return totalCards < 25;
+
   }
 
-  // Pro users max 10 cards
-if (isPro(userData)) {
-  return totalCards < 10;
-}
+  // Pro
+  if (
+    userData?.subscription === "pro"
+  ) {
 
-  // Free plan limit
+    return totalCards < 10;
+
+  }
+
+  // Free
   return totalCards < 1;
 
 }

@@ -1614,3 +1614,57 @@ header {
 .forgot-link a:hover {
   text-decoration: underline;
 }
+.featured {
+
+  position: relative;
+
+  border:
+    2px solid #c8a95b;
+
+  transform:
+    scale(1.03);
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,0.28);
+
+}
+
+.teams-card {
+
+  position: relative;
+
+  border:
+    2px solid #c8a95b;
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,0.28);
+
+}
+
+.plan-badge {
+
+  position: absolute;
+
+  top: -14px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: #c8a95b;
+
+  color: #081018;
+
+  padding: 7px 16px;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+
+  font-weight: 700;
+
+  letter-spacing: 0.5px;
+
+  white-space: nowrap;
+
+}

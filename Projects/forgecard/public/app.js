@@ -221,29 +221,42 @@ photo: photoURL,
   });
 
 }
+
 /* =========================
    STRIPE CHECKOUT
 ========================= */
 
-const upgradeBtn =
-  document.getElementById("upgradeBtn");
+const pricingButtons =
+  document.querySelectorAll(
+    ".pricing-btn"
+  );
 
-if (upgradeBtn) {
+const STRIPE_PRICES = {
 
-  upgradeBtn.addEventListener(
+  pro:
+    "price_1TWiiJLLpp0pEqIbA3FexgpR",
+
+  teams:
+    "price_1TbBkVLLpp0pEqIbKJyrAKKy"
+
+};
+
+pricingButtons.forEach((button) => {
+
+  button.addEventListener(
     "click",
     async () => {
 
-      console.log("Upgrade clicked");
+      const selectedPlan =
+        button.dataset.plan;
+
+      const priceId =
+        STRIPE_PRICES[selectedPlan];
 
       const user =
         auth.currentUser;
 
-      console.log("Current user:", user);
-
       if (!user) {
-
-        console.log("No authenticated user");
 
         window.location.href =
           "login.html";
@@ -252,8 +265,6 @@ if (upgradeBtn) {
       }
 
       try {
-
-        console.log("Creating checkout session...");
 
         const checkoutSessionRef =
           await addDoc(
@@ -264,8 +275,7 @@ if (upgradeBtn) {
               "checkout_sessions"
             ),
             {
-              price:
-                "price_1TWiiJLLpp0pEqIbA3FexgpR",
+              price: priceId,
 
               success_url:
                 window.location.origin,
@@ -275,28 +285,14 @@ if (upgradeBtn) {
             }
           );
 
-        console.log(
-          "Checkout session created:",
-          checkoutSessionRef.id
-        );
-
         onSnapshot(
           checkoutSessionRef,
           (snap) => {
-
-            console.log(
-              "Snapshot received:",
-              snap.data()
-            );
 
             const data =
               snap.data();
 
             if (data?.url) {
-
-              console.log(
-                "Redirecting to Stripe"
-              );
 
               window.location.assign(
                 data.url
@@ -320,4 +316,4 @@ if (upgradeBtn) {
     }
   );
 
-}
+});
