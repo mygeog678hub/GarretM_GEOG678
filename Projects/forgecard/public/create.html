@@ -1,257 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <link
-  rel="icon"
-  type="image/png"
-  href="images/favicon.png"
-/>
 
-<link
-  rel="apple-touch-icon"
-  href="images/favicon.png"
-/>
+<head>
+
+  <meta charset="UTF-8" />
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="images/favicon.png"
+  />
+
+  <link
+    rel="apple-touch-icon"
+    href="images/favicon.png"
+  />
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0" /> 
+    content="width=device-width, initial-scale=1.0"
+  />
 
- <title>
+  <title>
     ForgeCard | Digital Business Cards with QR Codes
   </title>
 
   <link rel="stylesheet" href="style.css" />
-</head>
 
+</head>
 
 <body>
 
   <div class="create-container">
 
-  <div class="form-panel">
+    <!-- =========================
+         FORM PANEL
+    ========================== -->
 
-    <h2>Create Your Forgecard</h2>
+    <div class="form-panel">
 
-    <form id="cardForm">
+      <h2>Create Your Forgecard</h2>
 
-      <input
-        type="text"
-        id="name"
-        placeholder="Full Name"
-      >
-      <input
-        type="text"
-        id="title"
-        placeholder="Job Title"
-      >
-      <input
-        type="text"
-        id="company"
-        placeholder="Company"
-      >
-      <input
-        type="email"
-        id="email"
-        placeholder="Email"
-      >
-      <input
-        type="tel"
-        id="phone"
-        placeholder="Phone Number"
-      >  
+      <form id="cardForm">
 
-      <div class="form-group">
-  <label>Facebook URL</label>
-  <input
-    type="url"
-    id="facebook"
-    placeholder="https://facebook.com/username"
-  />
-</div>
+        <input
+          type="text"
+          id="name"
+          placeholder="Full Name"
+        />
 
-<div class="form-group">
-  <label>Instagram URL</label>
-  <input
-    type="url"
-    id="instagram"
-    placeholder="https://instagram.com/username"
-  />
-</div>
+        <input
+          type="text"
+          id="title"
+          placeholder="Job Title"
+        />
 
-<div class="form-group">
-  <label>LinkedIn URL</label>
-  <input
-    type="url"
-    id="linkedin"
-    placeholder="https://linkedin.com/in/username"
-  />
-</div>
+        <input
+          type="text"
+          id="company"
+          placeholder="Company"
+        />
 
-<div class="form-group">
-  <label>X / Twitter URL</label>
-  <input
-    type="url"
-    id="twitter"
-    placeholder="https://x.com/username"
-  />
-</div>
-      <input
-        type="text"
-        id="username"
-        placeholder="Social Media Username (e.g. @username)"
-      />
+        <input
+          type="email"
+          id="email"
+          placeholder="Email"
+        />
 
-      <input
-        type="url"
-        id="website"
-        placeholder="Website"
-      />      
+        <input
+          type="tel"
+          id="phone"
+          placeholder="Phone Number"
+        />
 
-      <select id="theme">
+        <!-- SOCIALS -->
 
-  <option value="theme-ocean">
-    Ocean Blue
-  </option>
+        <div class="form-group">
 
-  <option value="theme-midnight">
-    Midnight
-  </option>
+          <label>Facebook URL</label>
 
-  <option value="theme-emerald">
-    Emerald
-  </option>
+          <input
+            type="url"
+            id="facebook"
+            placeholder="https://facebook.com/username"
+          />
 
-  <option value="theme-sunset">
-    Sunset
-  </option>
+        </div>
 
-  <option value="theme-minimal-light">
-    Minimal Light
-  </option>
+        <div class="form-group">
 
-</select>
-      <input
-      type="file"
-      id="photo"
-      accept="image/*"
-      />
+          <label>Instagram URL</label>
 
-      <button type="submit">
-        Generate Card
-      </button>
+          <input
+            type="url"
+            id="instagram"
+            placeholder="https://instagram.com/username"
+          />
 
-    </form>
+        </div>
 
-  </div>
+        <div class="form-group">
 
-  <div class="preview-panel">
+          <label>LinkedIn URL</label>
 
-    <div class="preview-card theme-ocean">
+          <input
+            type="url"
+            id="linkedin"
+            placeholder="https://linkedin.com/in/username"
+          />
 
-      <h3 id="previewName">
-        Your Name
-      </h3>
+        </div>
 
-      <p id="previewTitle">
-        Job Title
-      </p>
+        <div class="form-group">
 
-      <p id="previewCompany">
-        Company Name
-      </p>
+          <label>X / Twitter URL</label>
 
-      <div class="preview-divider"></div>
+          <input
+            type="url"
+            id="twitter"
+            placeholder="https://x.com/username"
+          />
 
-      <p id="previewEmail">
-        your@email.com
-      </p>
+        </div>
 
-      <p id="previewPhone">
-        (000) 000-0000
-      </p>
+        <input
+          type="text"
+          id="username"
+          placeholder="Social Media Username (e.g. @username)"
+        />
 
-      <div class="qr-placeholder">
-        QR CODE
+        <input
+          type="url"
+          id="website"
+          placeholder="Website"
+        />
+
+        <!-- THEME SELECT -->
+
+        <select id="theme">
+
+          <option value="theme-ocean">
+            Ocean Blue
+          </option>
+
+          <option value="theme-midnight">
+            Midnight
+          </option>
+
+          <option value="theme-emerald">
+            Emerald
+          </option>
+
+          <option value="theme-sunset">
+            Sunset
+          </option>
+
+          <option value="theme-minimal-light">
+            Minimal Light
+          </option>
+
+          <option value="fbc_pct3">
+            Fort Bend PCT3
+          </option>
+
+        </select>
+
+        <!-- PHOTO -->
+
+        <input
+          type="file"
+          id="photo"
+          accept="image/*"
+        />
+
+        <button type="submit">
+          Generate Card
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- =========================
+         PREVIEW PANEL
+    ========================== -->
+
+    <div class="preview-panel">
+
+      <div class="preview-card theme-ocean">
+
+        <div id="previewTop"></div>
+
+        <div class="card-info">
+
+          <h3 id="previewName">
+            Your Name
+          </h3>
+
+          <p id="previewTitle">
+            Job Title
+          </p>
+
+          <p id="previewCompany">
+            Company Name
+          </p>
+
+        </div>
+
+        <div class="preview-divider"></div>
+
+        <p id="previewEmail">
+          your@email.com
+        </p>
+
+        <p id="previewPhone">
+          (000) 000-0000
+        </p>
+
+        <div class="qr-placeholder">
+          QR CODE
+        </div>
+
       </div>
 
     </div>
 
   </div>
 
-</div>
+  <!-- =========================
+       APP JS
+  ========================== -->
 
-  <script type="module" src="app.js"></script>
+  <script
+    type="module"
+    src="app.js"
+  ></script>
+
+  <!-- =========================
+       PREVIEW LOGIC
+  ========================== -->
+
   <script>
 
-const fields = [
-  "name",
-  "title",
-  "company",
-  "email",
-  "phone"
-];
+    /* =========================
+       LIVE TEXT PREVIEW
+    ========================== */
 
-fields.forEach(field => {
+    const fields = [
+      "name",
+      "title",
+      "company",
+      "email",
+      "phone"
+    ];
 
-  document
-    .getElementById(field)
-    .addEventListener("input", e => {
+    fields.forEach(field => {
 
-      const previewId =
-        "preview" +
-        field.charAt(0).toUpperCase() +
-        field.slice(1);
+      document
+        .getElementById(field)
+        .addEventListener("input", e => {
 
-      document.getElementById(previewId)
-        .textContent = e.target.value || " ";
+          const previewId =
+            "preview" +
+            field.charAt(0).toUpperCase() +
+            field.slice(1);
+
+          document
+            .getElementById(previewId)
+            .textContent =
+            e.target.value || " ";
+
+        });
 
     });
 
-});
-//================== Theme selection logic===================
-document
-  .getElementById("theme")
-  .addEventListener("change", (e) => {
+    /* =========================
+       PREVIEW HEADER
+    ========================== */
 
-    const previewCard =
-      document.querySelector(".preview-card");
+    const previewTop =
+      document.getElementById(
+        "previewTop"
+      );
 
-    previewCard.className =
-      "preview-card " + e.target.value;
+    function renderPreviewHeader(theme) {
 
-  });
+      if (theme === "fbc_pct3") {
 
-</script>
+        previewTop.innerHTML = `
 
-<!-- Add Enter key navigation between inputs -->
-<script>
+          <div class="fbc-header">
 
-const inputs = document.querySelectorAll(
-  "#cardForm input, #cardForm select"
-);
-inputs.forEach((input, index) => {
+            <img
+              class="fbc-patch"
+              src="pct3/assets/pct3-patch.png"
+            >
 
-  input.addEventListener("keydown", function(e) {
+            <img
+              class="fbc-headshot"
+              id="previewPhoto"
+              src="pct3/assets/default-avatar.png"
+            >
 
-    if (e.key === "Enter") {
+            <img
+              class="fbc-badge"
+              src="pct3/assets/pct3-badge.png"
+            >
 
-      e.preventDefault();
+          </div>
 
-      const nextInput =
-        inputs[index + 1];
+          <div class="fbc-actions">
 
-      if (nextInput) {
-        nextInput.focus();
+            <button>
+              Vacation Watch
+            </button>
+
+            <button>
+              Submit Tip
+            </button>
+
+            <button>
+              Contact Dispatch
+            </button>
+
+          </div>
+
+        `;
+
+      } else {
+
+        previewTop.innerHTML = `
+
+          <img
+            class="card-avatar"
+            id="previewPhoto"
+            src="pct3/assets/default-avatar.png"
+          >
+
+        `;
+
       }
 
     }
 
-  });
+    /* =========================
+       THEME SWITCHING
+    ========================== */
 
-});
+    document
+      .getElementById("theme")
+      .addEventListener(
+        "change",
+        (e) => {
 
-</script>
+          const previewCard =
+            document.querySelector(
+              ".preview-card"
+            );
+
+          previewCard.className =
+            "preview-card " +
+            e.target.value;
+
+          renderPreviewHeader(
+            e.target.value
+          );
+
+        }
+      );
+
+    /* =========================
+       PHOTO PREVIEW
+    ========================== */
+
+    document
+      .getElementById("photo")
+      .addEventListener(
+        "change",
+        function (e) {
+
+          const file =
+            e.target.files[0];
+
+          if (file) {
+
+            const reader =
+              new FileReader();
+
+            reader.onload =
+              function (event) {
+
+                const previewPhoto =
+                  document.getElementById(
+                    "previewPhoto"
+                  );
+
+                if (previewPhoto) {
+
+                  previewPhoto.src =
+                    event.target.result;
+
+                }
+
+              };
+
+            reader.readAsDataURL(
+              file
+            );
+
+          }
+
+        }
+      );
+
+    /* =========================
+       INITIAL RENDER
+    ========================== */
+
+    renderPreviewHeader(
+      "theme-ocean"
+    );
+
+  </script>
+
+  <!-- =========================
+       ENTER KEY NAVIGATION
+  ========================== -->
+
+  <script>
+
+    const inputs =
+      document.querySelectorAll(
+        "#cardForm input, #cardForm select"
+      );
+
+    inputs.forEach((input, index) => {
+
+      input.addEventListener(
+        "keydown",
+        function (e) {
+
+          if (e.key === "Enter") {
+
+            e.preventDefault();
+
+            const nextInput =
+              inputs[index + 1];
+
+            if (nextInput) {
+
+              nextInput.focus();
+
+            }
+
+          }
+
+        }
+      );
+
+    });
+
+  </script>
 
 </body>
+
 </html>

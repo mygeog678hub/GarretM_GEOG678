@@ -1,0 +1,62 @@
+:root {
+
+  --fbc-bg:
+    #0f0f0f;
+
+  --fbc-surface:
+    #1a1a1a;
+
+  --fbc-gold:
+    #c8a45b;
+
+  --fbc-gold-light:
+    #e1c07a;
+
+  --fbc-text:
+    #f5f5f5;
+
+  --fbc-border:
+    rgba(200,164,91,0.35);
+
+}
+.fbc-pct3-theme {
+
+  background:
+    linear-gradient(
+      180deg,
+      #101010,
+      #1a1a1a
+    );
+
+  color:
+    var(--fbc-text);
+
+  border:
+    1px solid var(--fbc-border);
+
+  border-radius:
+    24px;
+
+  overflow:
+    hidden;
+
+}
+.fbc_pct3 {
+
+  background:
+    linear-gradient(
+      180deg,
+      #0a0f1f,
+      #111111
+    );
+
+  border:
+    1px solid rgba(200,164,91,.35);
+
+  color:
+    #f5f5f5;
+
+  box-shadow:
+    0 0 35px rgba(0,0,0,.55);
+
+}

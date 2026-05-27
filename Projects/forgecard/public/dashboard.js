@@ -119,12 +119,48 @@ card.className =
 
     <div class="card-top">
 
+  ${
+    data.theme === "fbc_pct3"
+
+    ?
+
+    `
+
+    <div class="fbc-header">
+
       <img
-        class="card-avatar"
+        class="fbc-patch"
+        src="images/fbc-patch.png"
+      >
+
+      <img
+        class="fbc-headshot"
         src="${data.photo || 'default-avatar.png'}"
       >
 
-      <div class="card-info">
+      <img
+        class="fbc-badge"
+        src="images/fbc-badge.png"
+      >
+
+    </div>
+
+    `
+
+    :
+
+    `
+
+    <img
+      class="card-avatar"
+      src="${data.photo || 'default-avatar.png'}"
+    >
+
+    `
+
+  }
+
+  <div class="card-info">
 
         <h2>${data.name || 'No Name'}</h2>
 
