@@ -880,12 +880,6 @@ justify-content: center;
   color: #cbd5e1;
 }
 
-.account-plan,
-#analyticsSection,
-.premium-lock,
-.stats-card{
-  margin-top: 25px;
-}
 .dashboard-container{
   width:100%;
   max-width:1600px;
@@ -970,37 +964,8 @@ justify-content: center;
   padding:30px;
   border-radius:24px;
 }
-
 .account-plan{
   margin-top:50px;
-}
-
-#loadingMessage{
-  text-align:center;
-  margin-top:40px;
-  color:#cbd5e1;
-}
-.dashboard-container{
-  width:100%;
-  max-width:1600px;
-  margin:0 auto;
-  padding:20px;
-  box-sizing:border-box;
-}
-
-.cards-grid{
-  display:grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(420px, 420px));
-
-  justify-content: center;
-
-  gap: 40px;
-
-  margin-top: 50px;
-
-  padding: 20px;
 }
 
 #loadingMessage{
@@ -1143,20 +1108,6 @@ box-shadow:
   0 0 30px rgba(0,0,0,.55);
 
 position: relative;
-
-}
-
-.fbc-header {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 20px;
-
-  margin-bottom: 20px;
 
 }
 
@@ -1416,7 +1367,7 @@ position: relative;
 
   padding: 14px !important;
 
-  border-radius: 0 !important;
+  border-radius: 12px !important;
 
   overflow: visible !important;
 
@@ -1432,7 +1383,7 @@ position: relative;
 
   height: 140px !important;
 
-  border-radius: 0 !important;
+  border-radius: 12px !important;
 
   background: white !important;
 
@@ -1594,7 +1545,7 @@ position: relative;
 .seo-section h2 {
   margin-top: 50px;
 
-  font-size: 2rem;
+  font-size: clamp(2rem, 4vw, 3rem);
 }
 
 .seo-section p {
@@ -2043,18 +1994,6 @@ position: relative;
     #e1c07a;
 
 }
-.fbc-actions {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 12px;
-
-  margin-top: 24px;
-
-}
 
 .fbc-actions button {
 
@@ -2207,4 +2146,24 @@ position: relative;
   background:
     rgba(255,255,255,0.14);
 
+}
+.qr-wrapper {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 14px;
+  border-radius: 18px;
+  width: fit-content;
+  margin: 24px auto 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.qr-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.qr-section canvas,
+.qr-section img {
+  border-radius: 10px;
 }

@@ -229,8 +229,11 @@ card.className =
     Delete
   </button>
 
+  <div class="qr-wrapper">
   <div class="qr-section">
-  <div id="qrcode-${docSnap.id}"></div>
+    <div id="qrcode-${docSnap.id}"></div>
+  </div>
+</div>
 </div>
 
 </div>
