@@ -22,6 +22,10 @@ import {
   canUseAnalytics
 } from "./permissions.js";
 
+import {
+  updatePassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 const dashboardGrid =
   document.getElementById("dashboardGrid");  
 
@@ -126,24 +130,27 @@ card.className =
 
     `
 
-    <div class="fbc-header">
+<div class="fbc-header">
 
-      <img
-        class="fbc-patch"
-        src="images/fbc-patch.png"
-      >
+  <img
+    class="fbc-patch"
+    src="pct3/assets/pct3-patch.png"
+  >
 
-      <img
-        class="fbc-headshot"
-        src="${data.photo || 'default-avatar.png'}"
-      >
+  <img
+    class="fbc-headshot"
+    src="${
+      data.photo ||
+      'pct3/assets/default-avatar.png'
+    }"
+  >
 
-      <img
-        class="fbc-badge"
-        src="images/fbc-badge.png"
-      >
+  <img
+    class="fbc-badge"
+    src="pct3/assets/pct3-badge.png"
+  >
 
-    </div>
+</div>
 
     `
 
@@ -174,7 +181,23 @@ card.className =
 
         <div class="card-stats">
           <p>Scans: ${data.scans || 0}</p>
-          <p>Last Scan: ${data.lastScan || 'N/A'}</p>
+          <p>
+  Last Scan:
+  ${
+    data.lastScanned
+      ?
+
+      new Date(
+        data.lastScanned.seconds
+          ? data.lastScanned.seconds * 1000
+          : data.lastScanned
+      ).toLocaleDateString()
+
+      :
+
+      'N/A'
+  }
+</p>
         </div>
 
       </div>
@@ -504,4 +527,58 @@ if (logoutBtn) {
 
     }
   );
+}
+
+const changePasswordBtn =
+  document.getElementById(
+    "changePasswordBtn"
+  );
+
+if (changePasswordBtn) {
+
+  changePasswordBtn.addEventListener(
+    "click",
+    async () => {
+
+      const newPassword =
+        prompt(
+          "Enter your new password:"
+        );
+
+      if (
+        !newPassword ||
+        newPassword.length < 6
+      ) {
+
+        alert(
+          "Password must be at least 6 characters."
+        );
+
+        return;
+      }
+
+      try {
+
+        await updatePassword(
+          auth.currentUser,
+          newPassword
+        );
+
+        alert(
+          "Password updated successfully."
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          error.message
+        );
+
+      }
+
+    }
+  );
+
 }

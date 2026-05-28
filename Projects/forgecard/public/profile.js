@@ -107,8 +107,61 @@ document
     description
   );
 
-    // Increment scan analytics
-    await updateDoc(
+/* =========================
+   SAVE CONTACT
+========================= */
+
+function setupSaveContact(data) {
+
+  const btn =
+    document.getElementById(
+      "saveContactBtn"
+    );
+
+  if (!btn) return;
+
+  btn.addEventListener(
+    "click",
+    () => {
+
+      const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${data.name || ""}
+ORG:${data.company || ""}
+TITLE:${data.title || ""}
+TEL:${data.phone || ""}
+EMAIL:${data.email || ""}
+URL:${data.website || ""}
+END:VCARD`;
+
+      const blob =
+        new Blob(
+          [vcard],
+          {
+            type: "text/vcard"
+          }
+        );
+
+      const url =
+        URL.createObjectURL(blob);
+
+      const a =
+        document.createElement("a");
+
+      a.href = url;
+
+      a.download =
+        `${data.name || "contact"}.vcf`;
+
+      a.click();
+
+      URL.revokeObjectURL(url);
+    }
+  );
+}
+
+   // Increment scan analytics
+     updateDoc(
       doc(db, "cards", id),
       {
         scans: increment(1),
@@ -118,7 +171,7 @@ document
     );
 
     // Save scan log
-    await addDoc(
+     addDoc(
       collection(
         db,
         "cards",
@@ -159,13 +212,61 @@ document
   <!-- BUSINESS CARD -->
   <div class="business-card ${data.theme || 'theme-ocean'}">
 
-  ${data.photo ? `
+  ${
+  data.theme === "fbc_pct3"
+
+  ?
+
+  `
+
+  <div class="fbc-header">
+
     <img
-      src="${data.photo}"
-      alt="Profile Photo"
-      class="profile-photo"
-    />
-  ` : ""}
+      class="fbc-patch"
+      src="pct3/assets/pct3-patch.png"
+    >
+
+    <img
+      class="fbc-headshot"
+      src="${
+        data.photo ||
+        'pct3/assets/default-avatar.png'
+      }"
+    >
+
+    <img
+      class="fbc-badge"
+      src="pct3/assets/pct3-badge.png"
+    >
+
+  </div>
+
+  `
+
+  :
+
+  `
+
+  ${
+    data.photo
+      ?
+
+      `
+      <img
+        src="${data.photo}"
+        alt="Profile Photo"
+        class="profile-photo"
+      />
+      `
+
+      :
+
+      ""
+  }
+
+  `
+
+}
 
   <h1>${data.name || ""}</h1>
 
@@ -249,6 +350,37 @@ document
 
 </div>
 
+${
+  data.theme === "fbc_pct3"
+
+  ?
+
+  `
+
+  <div class="fbc-actions">
+
+    <button>
+      Vacation Watch
+    </button>
+
+    <button>
+      Submit Tip
+    </button>
+
+    <button>
+      Contact Dispatch
+    </button>
+
+  </div>
+
+  `
+
+  :
+
+  ``
+
+}
+
 </div>
 
 `;
@@ -264,59 +396,6 @@ document
       <p>${error.message}</p>
     `;
   }
-}
-
-/* =========================
-   SAVE CONTACT
-========================= */
-
-function setupSaveContact(data) {
-
-  const btn =
-    document.getElementById(
-      "saveContactBtn"
-    );
-
-  if (!btn) return;
-
-  btn.addEventListener(
-    "click",
-    () => {
-
-      const vcard = `BEGIN:VCARD
-VERSION:3.0
-FN:${data.name || ""}
-ORG:${data.company || ""}
-TITLE:${data.title || ""}
-TEL:${data.phone || ""}
-EMAIL:${data.email || ""}
-URL:${data.website || ""}
-END:VCARD`;
-
-      const blob =
-        new Blob(
-          [vcard],
-          {
-            type: "text/vcard"
-          }
-        );
-
-      const url =
-        URL.createObjectURL(blob);
-
-      const a =
-        document.createElement("a");
-
-      a.href = url;
-
-      a.download =
-        `${data.name || "contact"}.vcf`;
-
-      a.click();
-
-      URL.revokeObjectURL(url);
-    }
-  );
 }
 
 /* =========================

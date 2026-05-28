@@ -28,7 +28,10 @@ const editForm =
   document.getElementById("editForm");
 
 const nameInput =
-  document.getElementById("name");
+  document.getElementById("name");  
+
+const titleInput =
+  document.getElementById("title");
 
 const companyInput =
   document.getElementById("company");
@@ -91,6 +94,9 @@ async function loadCard() {
 
     nameInput.value =
       data.name || "";
+
+      titleInput.value =
+        data.title || "";
 
     companyInput.value =
       data.company || "";
@@ -168,6 +174,7 @@ if (photoFile) {
         doc(db, "cards", cardId),
         {
           name: nameInput.value,
+          title: titleInput.value,
           company: companyInput.value,
           username: usernameInput.value,
           phone: phoneInput.value,

@@ -5,13 +5,13 @@
   <meta charset="UTF-8" />
   <link
   rel="icon"
-  type="image/png"
-  href="images/favicon.png"
+  type="pct3/assets/pct3-badge.png"
+  href="pct3/assets/favicon.png"
 />
 
 <link
   rel="apple-touch-icon"
-  href="images/favicon.png"
+  href="assets/favicon.png"
 />
 
   <meta
@@ -24,6 +24,7 @@
   </title>
 
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/fbc-pct3.css" />
 
 </head>
 
@@ -52,13 +53,13 @@
 
   </header>
 
-  <section class="account-status">
+  <section class="dashboard-section">
 
-  <h3>
+  <h2>
     Subscription Status
-  </h3>
+  </h2>
 
-  <div class="status-card">
+  <div class="dashboard-card">
 
     <p>
       <strong>Current Plan:</strong>
@@ -81,10 +82,26 @@
 
     <a
       href="index.html#pricing"
-      class="plan-btn"
+      class="dashboard-link-btn"
     >
       Manage Plan
     </a>
+
+  </div>
+
+</section>
+
+<section class="dashboard-section">
+
+  <h2>
+    Account Settings
+  </h2>
+
+  <div class="dashboard-card account-settings-card">
+
+    <button id="changePasswordBtn">
+      Change Password
+    </button>
 
   </div>
 
