@@ -1,10 +1,42 @@
 {
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
+  "hosting": [
+
+    {
+      "target": "main",
+
+      "public": "public",
+
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+
+      "redirects": [
+  {
+    "source": "/pct3",
+    "destination": "https://publicsafety.getforgecard.com/",
+    "type": 301
+  },
+  {
+    "source": "/pct3/**",
+    "destination": "https://publicsafety.getforgecard.com/",
+    "type": 301
   }
+]
+    },
+
+    {
+      "target": "publicsafety",
+
+      "public": "publicsafety",
+
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    }
+
+  ]
 }

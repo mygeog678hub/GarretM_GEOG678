@@ -223,20 +223,20 @@ END:VCARD`;
 
     <img
       class="fbc-patch"
-      src="pct3/assets/pct3-patch.png"
+      src="/assets/pct3-patch.png"
     >
 
     <img
       class="fbc-headshot"
       src="${
         data.photo ||
-        'pct3/assets/default-avatar.png'
+        '/assets/default-avatar.png'
       }"
     >
 
     <img
       class="fbc-badge"
-      src="pct3/assets/pct3-badge.png"
+      src="/assets/pct3-badge.png"
     >
 
   </div>

@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "workforge-3b77f"
-  }
+  },
+  "targets": {
+    "workforge-3b77f": {
+      "hosting": {
+        "main": [
+          "workforge-3b77f"
+        ],
+        "publicsafety": [
+          "public-safety-getforgecard"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
