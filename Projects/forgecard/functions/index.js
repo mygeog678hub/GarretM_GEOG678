@@ -1,100 +1,56 @@
-const {
-  onRequest
-} = require("firebase-functions/v2/https");
-const { defineSecret } =
-  require("firebase-functions/params");
+const { onDocumentCreated } = require(
+  "firebase-functions/v2/firestore"
+);
 
-const stripeSecret =
-  defineSecret("STRIPE_SECRET_KEY");
+const { defineSecret } = require(
+  "firebase-functions/params"
+);
 
-const functions =
-  require("firebase-functions");
+const admin = require("firebase-admin");
 
-const express =
-  require("express");
-
-const admin =
-  require("firebase-admin");
-
-  const { Resend } = require("resend");
+const { Resend } = require("resend");
 
 admin.initializeApp();
 
-const app = express();
-app.post(
-  "/stripeWebhook",
-  express.raw({ type: "application/json" }),
-  (req, res) => {
-    const stripe = require("stripe")(
-      stripeSecret.value()
-    );
-    const sig = req.headers["stripe-signature"];
-
-    try {
-      const event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        "whsec_NKU9AL4kGcEsmsM5nsVb4tnMq95P5HQ3"
-      );
-
-      if (event.type === "checkout.session.completed") {
-        const session = event.data.object;
-
-        console.log("Checkout completed:", session.id);
-
-        // future subscription/account activation logic goes here
-      }
-
-      res.json({ received: true });
-    } catch (err) {
-      console.error("Webhook error:", err.message);
-      res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-  }
-);
-
-exports.api = onRequest(
-  {
-    secrets: [stripeSecret]
-  },
-  app
-);
-
-const resendKey =
+const RESEND_API_KEY =
   defineSecret("RESEND_API_KEY");
 
-const resend =
-  new Resend(resendKey.value());
-
-const { onDocumentCreated } =
-  require("firebase-functions/v2/firestore");
-
-exports.notifyContactSubmission =
+exports.sendContactNotification =
   onDocumentCreated(
     {
       document:
         "contactMessages/{docId}",
 
-      secrets: [resendKey]
+      secrets:
+        [RESEND_API_KEY]
     },
 
     async (event) => {
 
-      const data =
-        event.data.data();
-
-      const resend =
-        new Resend(
-          resendKey.value()
-        );
+      console.log(
+        "FUNCTION STARTED"
+      );
 
       try {
+
+        const data =
+          event.data.data();
+
+        console.log(
+          "DATA:",
+          data
+        );
+
+        const resend =
+          new Resend(
+            RESEND_API_KEY.value()
+          );
 
         const response =
           await resend.emails.send({
 
             from:
-              "ForgeCard <hello@getforgecard.com>",
+              "ForgeCard <noreply@getforgecard.com>",
 
             to:
               "mgarret27@gmail.com",
@@ -102,41 +58,19 @@ exports.notifyContactSubmission =
             subject:
               `New ForgeCard Contact: ${data.subject}`,
 
-            html: `
-              <h2>New Contact Submission</h2>
-
-              <p>
-                <strong>Name:</strong>
-                ${data.name}
-              </p>
-
-              <p>
-                <strong>Email:</strong>
-                ${data.email}
-              </p>
-
-              <p>
-                <strong>Subject:</strong>
-                ${data.subject}
-              </p>
-
-              <p>
-                <strong>Message:</strong>
-              </p>
-
-              <p>${data.message}</p>
-            `
+            html:
+              `<p>${data.message}</p>`
           });
 
         console.log(
-          "Email sent:",
+          "RESEND RESPONSE:",
           response
         );
 
       } catch (error) {
 
         console.error(
-          "Resend error:",
+          "FULL ERROR:",
           error
         );
 
