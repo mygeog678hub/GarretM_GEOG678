@@ -656,15 +656,58 @@ function updateMap() {
     if (!markers[site.id]) {
 
       markers[site.id] = L.marker(
-        [site.lat, site.lng],
-        { icon }
-      ).addTo(window.map);
+  [site.lat, site.lng],
+  {
+    icon,
+    draggable: true
+  }
+).addTo(window.map);
 
-    } else {
+// SAVE NEW POSITION
+markers[site.id].on("dragend", async (e) => {
 
-      markers[site.id].setIcon(icon);
+  const marker = e.target;
 
-    }
+  const position = marker.getLatLng();
+
+  try {
+
+    await updateDoc(
+      doc(db, "sites", site.id),
+      {
+        lat: position.lat,
+        lng: position.lng
+      }
+    );
+
+    console.log(
+      `Updated ${site.name}:`,
+      position
+    );
+
+  } catch (err) {
+
+    console.error(
+      "Marker update failed:",
+      err
+    );
+
+    alert("Failed to save location");
+
+  }
+
+});
+
+  } else {
+
+  markers[site.id].setIcon(icon);
+
+  markers[site.id].setLatLng([
+    site.lat,
+    site.lng
+  ]);
+
+}
 
     const marker = markers[site.id];
 
