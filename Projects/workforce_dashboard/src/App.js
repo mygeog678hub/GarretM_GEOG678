@@ -578,6 +578,58 @@ async function deleteSelectedEmployees() {
   alert("Selected employees deleted");
 }
 
+function renderSites(filteredSites = sites) {
+
+  const rows = filteredSites.map(s => `
+
+    <tr>
+
+      <td>
+        <input
+          type="checkbox"
+          class="siteCheckbox"
+          value="${s.id}"
+        >
+      </td>
+
+      <td>${s.name || ""}</td>
+
+      <td>${s.address || ""}</td>
+
+      <td>${s.city || ""}</td>
+
+      <td>${s.state || ""}</td>
+
+      <td>${s.zip || ""}</td>
+
+    </tr>
+
+  `).join("");
+
+  document.getElementById("siteTable").innerHTML = `
+
+    <tr>
+
+      <th>
+        <input
+          type="checkbox"
+          onclick="toggleAllSites(this)"
+        >
+      </th>
+
+      <th>Name</th>
+      <th>Address</th>
+      <th>City</th>
+      <th>State</th>
+      <th>ZIP</th>
+
+    </tr>
+
+    ${rows}
+
+  `;
+}
+
 // ================= RENDER =================
 function render() {
   const rows = assignments.map(a => {
@@ -1383,6 +1435,169 @@ async function logout() {
 
 }
 
+function searchSite() {
+
+  const query =
+    document.getElementById("siteSearch")
+      .value
+      .toLowerCase();
+
+  const match = sites.find(s =>
+
+    s.name.toLowerCase().includes(query)
+
+  );
+
+  if (!match) return;
+
+  window.map.flyTo(
+    [match.lat, match.lng],
+    16
+  );
+
+  const marker = markers[match.id];
+
+  if (marker) {
+
+    marker.openPopup();
+
+  }
+
+}
+
+function openSiteModal() {
+
+  renderSites();
+
+  document.getElementById(
+    "siteModal"
+  ).style.display = "block";
+
+}
+
+function closeSiteModal() {
+
+  document.getElementById(
+    "siteModal"
+  ).style.display = "none";
+
+}
+
+function outsideSiteModalClick(event) {
+
+  const content =
+    document.getElementById(
+      "siteModalContent"
+    );
+
+  if (!content.contains(event.target)) {
+
+    closeSiteModal();
+
+  }
+
+}
+
+function filterSites() {
+
+  const query =
+    document.getElementById(
+      "siteSearchModal"
+    )
+    .value
+    .toLowerCase();
+
+  const filtered = sites.filter(s =>
+
+    (s.name || "")
+      .toLowerCase()
+      .includes(query)
+
+    ||
+
+    (s.address || "")
+      .toLowerCase()
+      .includes(query)
+
+    ||
+
+    (s.city || "")
+      .toLowerCase()
+      .includes(query)
+
+  );
+
+  renderSites(filtered);
+
+}
+
+function toggleAllSites(source) {
+
+  const checkboxes =
+    document.querySelectorAll(
+      ".siteCheckbox"
+    );
+
+  checkboxes.forEach(cb => {
+
+    cb.checked = source.checked;
+
+  });
+
+}
+
+async function deleteSelectedSites() {
+
+  const checked =
+    document.querySelectorAll(
+      ".siteCheckbox:checked"
+    );
+
+  if (!checked.length) {
+
+    alert("No sites selected");
+
+    return;
+
+  }
+
+  if (!confirm(
+    `Delete ${checked.length} sites?`
+  )) return;
+
+  for (const cb of checked) {
+
+    const siteId = cb.value;
+
+    const activeAssignments =
+      assignments.some(a =>
+
+        a.siteId === siteId &&
+        !a.endTime
+
+      );
+
+    if (activeAssignments) {
+
+      console.log(
+        "Skipping active site:",
+        siteId
+      );
+
+      continue;
+
+    }
+
+    await deleteDoc(
+      doc(db, "sites", siteId)
+    );
+
+  }
+
+  alert("Selected sites deleted");
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -1406,3 +1621,10 @@ window.reportIssue = reportIssue;
 window.deleteSite = deleteSite;
 window.deleteSelectedSite = deleteSelectedSite;
 window.logout = logout;
+window.searchSite = searchSite;
+window.openSiteModal = openSiteModal;
+window.closeSiteModal = closeSiteModal;
+window.filterSites = filterSites;
+window.toggleAllSites = toggleAllSites;
+window.deleteSelectedSites = deleteSelectedSites;
+window.outsideSiteModalClick = outsideSiteModalClick;

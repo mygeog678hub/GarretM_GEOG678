@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 
 <!-- Primary Meta Tags -->
-<title>WorkForge Dashboard v5.4 | Workforce Management & Digital Identity Platform</title>
+<title>WorkForge Dashboard v5.5 | Workforce Management & Digital Identity Platform</title>
 <link
   rel="icon"
   type="image/png"
@@ -141,7 +141,7 @@
       <div>
         <h1>WorkForce Dashboard</h1>
         <span class="version-tag">
-          v5.4
+          v5.5
         </span>
       </div>
 
@@ -201,6 +201,12 @@
   <div class="dashboard-card map-card">
 
     <h2>Operations Map</h2>
+
+    <input
+  id="siteSearch"
+  placeholder="Search site..."
+  oninput="searchSite()"
+/>
 
     <div id="map"></div>
 
@@ -294,6 +300,13 @@
 />
 <button>Add</button>
 </form>
+
+<button
+  onclick="openSiteModal()"
+  style="margin-top:10px;"
+>
+  View Sites
+</button>
 </div>
 <div class="dashboard-card">
 
@@ -480,6 +493,61 @@
     </button>
 
   </div>
+</div>
+
+<div id="siteModal"
+     onclick="outsideSiteModalClick(event)"
+     style="
+       display:none;
+       position:fixed;
+       z-index:9999;
+       left:0;
+       top:0;
+       width:100%;
+       height:100%;
+       background-color:rgba(0,0,0,0.45);
+     ">
+
+  <div id="siteModalContent"
+       style="
+         background:rgb(244, 242, 242);
+         margin:5% auto;
+         padding:20px;
+         width:80%;
+         max-width:800px;
+         border-radius:8px;
+         max-height:80vh;
+         overflow:auto;
+       ">
+
+    <h2>Sites</h2>
+
+    <input
+      type="text"
+      id="siteSearchModal"
+      placeholder="Search sites..."
+      onkeyup="filterSites()"
+      style="
+        width:100%;
+        padding:8px;
+        margin-bottom:10px;
+      "
+    >
+
+    <button onclick="deleteSelectedSites()">
+      Delete Selected
+    </button>
+
+    <table id="siteTable"></table>
+
+    <br>
+
+    <button onclick="closeSiteModal()">
+      Close
+    </button>
+
+  </div>
+
 </div>
 <footer class="site-footer">
   <p>
