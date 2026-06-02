@@ -42,8 +42,10 @@ onAuthStateChanged(auth, (user) => {
 const empName = document.getElementById("empName");
 const empRole = document.getElementById("empRole");
 const siteName = document.getElementById("siteName");
+const siteAddress = document.getElementById("siteAddress");
 const siteCity = document.getElementById("siteCity");
 const siteState = document.getElementById("siteState");
+const siteZip = document.getElementById("siteZip");
 
 const vehMake = document.getElementById("vehMake");
 const vehModel = document.getElementById("vehModel");
@@ -209,11 +211,20 @@ onSnapshot(collection(db, "vehicles"), snap => {
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
   const name = siteName.value.trim();
-  const city = siteCity.value.trim();
-  const state = siteState.value.trim().toUpperCase();
+  const address =
+  siteAddress.value.trim();
 
-  if (!name || !city || !state) {
-    alert("Enter site name, city, and state");
+const city =
+  siteCity.value.trim();
+
+const state =
+  siteState.value.trim().toUpperCase();
+
+  const zip =
+  siteZip.value.trim();
+
+ if (!name || !address || !city || !state || !zip) {
+    alert("Enter site name, address, city, state, and ZIP");
     return;
   }
 
@@ -228,27 +239,79 @@ async function addSite() {
     alert("Site already exists");
     return;
   }
-  siteName.value = "";
-  siteCity.value = "";
-  siteState.value = "";
-  const coords = await fetch(
-    `https://nominatim.openstreetmap.org/search?format=json&q=${city},${state}`
-  ).then(r => r.json());
+  
+try {
 
-  if (!coords.length) {
-    alert("Location not found");
-    return;
-  }
-  await addDoc(collection(db, "sites"), {
-    name,
-    city,
-    state,
-    lat: +coords[0].lat,
-    lng: +coords[0].lon
-  });  
+ let coords = [];
+
+// FIRST ATTEMPT
+const fullQuery = encodeURIComponent(
+  `${address}, ${city}, ${state} ${zip}, USA`
+);
+
+console.log("Primary Query:", fullQuery);
+
+let response = await fetch(
+  `https://nominatim.openstreetmap.org/search?q=${fullQuery}&format=json&limit=1`
+);
+
+coords = await response.json();
+
+// FALLBACK ATTEMPT
+if (!coords.length) {
+
+  const fallbackQuery = encodeURIComponent(
+    `${address}, ${city}, ${state}, USA`
+  );
+
+  console.log("Fallback Query:", fallbackQuery);
+
+  response = await fetch(
+    `https://nominatim.openstreetmap.org/search?q=${fallbackQuery}&format=json&limit=1`
+  );
+
+  coords = await response.json();
+
 }
 
+console.log("Geocode Result:", coords);
 
+if (!coords.length) {
+
+  alert(
+    "Location not found. Try another address."
+  );
+
+  return;
+
+}
+
+  await addDoc(collection(db, "sites"), {
+
+    name,
+    address,
+    city,
+    state,
+
+    lat: +coords[0].lat,
+    lng: +coords[0].lon
+
+  });
+
+  siteName.value = "";
+  siteAddress.value = "";
+  siteCity.value = "";
+  siteState.value = "";
+  siteZip.value = "";
+
+} catch (err) {
+
+  console.error("Geocoding Error:", err);
+
+  alert("Geocoding failed");
+
+} 
+}
 // ================= ADD EMPLOYEE=================
 async function addEmployee() {
   const name = empName.value.trim();

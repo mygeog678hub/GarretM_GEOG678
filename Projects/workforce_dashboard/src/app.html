@@ -223,8 +223,16 @@
 
 <div class="dashboard-card">
 <h2>Add Site</h2>
+
 <form onsubmit="addSite(); return false;">
+
 <input id="siteName" placeholder="Site Name">
+
+<input
+  id="siteAddress"
+  placeholder="Street Address"
+>
+
 <input id="siteCity" placeholder="City">
 <select id="siteState">
   <option value="">Select State</option>
@@ -279,6 +287,11 @@
   <option value="WI">Wisconsin (WI)</option>
   <option value="WY">Wyoming (WY)</option>
 </select>
+
+<input
+  id="siteZip"
+  placeholder="ZIP Code"
+/>
 <button>Add</button>
 </form>
 </div>
