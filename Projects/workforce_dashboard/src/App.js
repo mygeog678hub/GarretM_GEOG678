@@ -999,33 +999,7 @@ function refresh() {
     maintenanceAssetSelect.value =
       selectedMaintenanceAsset;
   }
-
-  // ================= DELETE SITE DROPDOWN =================
-  const deleteSiteSelect =
-    document.getElementById(
-      "deleteSiteSelect"
-    );
-
-  if (deleteSiteSelect) {
-
-    const selectedSite =
-      deleteSiteSelect.value;
-
-    deleteSiteSelect.innerHTML =
-      `
-        <option value="">
-          Select Site
-        </option>
-      ` +
-      sites.map(s => `
-        <option value="${s.id}">
-          ${s.name}
-        </option>
-      `).join("");
-
-    deleteSiteSelect.value =
-      selectedSite;
-  }
+ 
   document.getElementById("employeeCount").textContent =
   employees.length;
 
@@ -1348,53 +1322,6 @@ async function reportIssue() {
 }
 
 async function deleteSite(siteId) {
-
-  const activeAssignments =
-    assignments.some(a =>
-      a.siteId === siteId &&
-      !a.endTime
-    );
-
-  if (activeAssignments) {
-    alert(
-      "Cannot delete site with active assignments"
-    );
-    return;
-  }
-
-  if (!confirm("Delete this site?"))
-    return;
-
-  try {
-
-    await deleteDoc(
-      doc(db, "sites", siteId)
-    );
-
-    alert("Site deleted");
-
-  } catch (err) {
-
-    console.error(
-      "Delete Site Error:",
-      err
-    );
-
-    alert(err.message);
-  }
-}
-
-async function deleteSelectedSite() {
-
-  const siteId =
-    document.getElementById(
-      "deleteSiteSelect"
-    ).value;
-
-  if (!siteId) {
-    alert("Select a site");
-    return;
-  }
 
   const activeAssignments =
     assignments.some(a =>
@@ -1885,7 +1812,6 @@ window.markMaintenance = markMaintenance;
 window.markActive = markActive;
 window.reportIssue = reportIssue;
 window.deleteSite = deleteSite;
-window.deleteSelectedSite = deleteSelectedSite;
 window.logout = logout;
 window.searchSite = searchSite;
 window.openSiteModal = openSiteModal;
