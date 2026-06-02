@@ -294,6 +294,7 @@ if (!coords.length) {
     address,
     city,
     state,
+    zip,
 
     lat: +coords[0].lat,
     lng: +coords[0].lon
