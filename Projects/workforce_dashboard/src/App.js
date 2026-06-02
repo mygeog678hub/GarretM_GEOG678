@@ -81,6 +81,8 @@ let assets = [];
 let vehicles = [];
 let assignments = [];
 let markers = {};
+let editingEmployeeId = null;
+let editingSiteId = null;
 
 // ================= MAP =================
 
@@ -503,6 +505,10 @@ function renderEmployees(filteredList = employees) {
       <td>${e.designation || ""}</td>
 
       <td>
+        <button onclick="editEmployee('${e.id}')">
+          Edit
+        </button>
+
         <button onclick="deleteEmployee('${e.id}')">
           Delete
         </button>
@@ -602,6 +608,14 @@ function renderSites(filteredSites = sites) {
 
       <td>${s.zip || ""}</td>
 
+      <td>
+
+      <button onclick="editSite('${s.id}')">
+        Edit
+      </button>
+
+      </td>
+
     </tr>
 
   `).join("");
@@ -622,6 +636,7 @@ function renderSites(filteredSites = sites) {
       <th>City</th>
       <th>State</th>
       <th>ZIP</th>
+      <th>Action</th>
 
     </tr>
 
@@ -1598,6 +1613,256 @@ async function deleteSelectedSites() {
 
 }
 
+function editEmployee(id) {
+
+  const emp =
+    employees.find(e => e.id === id);
+
+  if (!emp) return;
+
+  editingEmployeeId = id;
+
+  document.getElementById(
+    "editEmpName"
+  ).value = emp.name || "";
+
+  document.getElementById(
+    "editEmpRole"
+  ).value = emp.designation || "Worker";
+
+  document.getElementById(
+    "editEmployeeModal"
+  ).style.display = "block";
+
+}
+
+async function saveEmployeeEdit() {
+
+  if (!editingEmployeeId) return;
+
+  const name =
+    document.getElementById(
+      "editEmpName"
+    ).value.trim();
+
+  const designation =
+    document.getElementById(
+      "editEmpRole"
+    ).value.trim();
+
+  if (!name) {
+
+    alert("Enter employee name");
+
+    return;
+
+  }
+
+  try {
+
+    await updateDoc(
+      doc(
+        db,
+        "employees",
+        editingEmployeeId
+      ),
+      {
+        name,
+        designation
+      }
+    );
+
+    closeEditEmployeeModal();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Failed to update employee");
+
+  }
+
+}
+
+function closeEditEmployeeModal() {
+
+  document.getElementById(
+    "editEmployeeModal"
+  ).style.display = "none";
+
+  editingEmployeeId = null;
+
+}
+
+function editSite(id) {
+
+  const site =
+    sites.find(s => s.id === id);
+
+  if (!site) return;
+
+  editingSiteId = id;
+
+  document.getElementById(
+    "editSiteName"
+  ).value = site.name || "";
+
+  document.getElementById(
+    "editSiteAddress"
+  ).value = site.address || "";
+
+  document.getElementById(
+    "editSiteCity"
+  ).value = site.city || "";
+
+  document.getElementById(
+    "editSiteState"
+  ).value = site.state || "";
+
+  document.getElementById(
+    "editSiteZip"
+  ).value = site.zip || "";
+
+  document.getElementById(
+    "editSiteModal"
+  ).style.display = "block";
+
+}
+
+function closeEditSiteModal() {
+
+  document.getElementById(
+    "editSiteModal"
+  ).style.display = "none";
+
+  editingSiteId = null;
+
+}
+
+async function saveSiteEdit() {
+
+  if (!editingSiteId) return;
+
+  const name =
+    document.getElementById(
+      "editSiteName"
+    ).value.trim();
+
+  const address =
+    document.getElementById(
+      "editSiteAddress"
+    ).value.trim();
+
+  const city =
+    document.getElementById(
+      "editSiteCity"
+    ).value.trim();
+
+  const state =
+    document.getElementById(
+      "editSiteState"
+    ).value.trim();
+
+  const zip =
+    document.getElementById(
+      "editSiteZip"
+    ).value.trim();
+
+  if (
+    !name ||
+    !address ||
+    !city ||
+    !state ||
+    !zip
+  ) {
+
+    alert(
+      "Complete all site fields"
+    );
+
+    return;
+
+  }
+
+  try {
+
+    // ================= GEOCODE =================
+
+    let coords = [];
+
+    const query =
+      encodeURIComponent(
+        `${address}, ${city}, ${state} ${zip}, USA`
+      );
+
+    let response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`
+    );
+
+    coords = await response.json();
+
+    // fallback
+    if (!coords.length) {
+
+      const fallback =
+        encodeURIComponent(
+          `${address}, ${city}, ${state}, USA`
+        );
+
+      response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${fallback}&format=json&limit=1`
+      );
+
+      coords = await response.json();
+
+    }
+
+    if (!coords.length) {
+
+      alert(
+        "Location not found"
+      );
+
+      return;
+
+    }
+
+    // ================= UPDATE =================
+
+    await updateDoc(
+      doc(
+        db,
+        "sites",
+        editingSiteId
+      ),
+      {
+
+        name,
+        address,
+        city,
+        state,
+        zip,
+
+        lat: +coords[0].lat,
+        lng: +coords[0].lon
+
+      }
+    );
+
+    closeEditSiteModal();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to update site"
+    );
+
+  }
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -1628,3 +1893,9 @@ window.filterSites = filterSites;
 window.toggleAllSites = toggleAllSites;
 window.deleteSelectedSites = deleteSelectedSites;
 window.outsideSiteModalClick = outsideSiteModalClick;
+window.editEmployee = editEmployee;
+window.saveEmployeeEdit = saveEmployeeEdit;
+window.closeEditEmployeeModal = closeEditEmployeeModal;
+window.editSite = editSite;
+window.closeEditSiteModal = closeEditSiteModal;
+window.saveSiteEdit = saveSiteEdit;
