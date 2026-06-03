@@ -318,7 +318,10 @@
   id="siteZip"
   placeholder="ZIP Code"
 />
-<select id="siteCategory">
+<select
+  id="siteCategory"
+  onchange="updateSubtypeOptions()"
+>
 
   <option value="school">
     School

@@ -62,7 +62,11 @@ const siteCategory = document.getElementById("siteCategory");
 const siteSubtype = document.getElementById("siteSubtype");
 
 // ================= ICONS =================
-function createSiteIcon(label, color) {
+function createSiteIcon(
+  label,
+  color,
+  symbol
+) {
 
   return L.divIcon({
 
@@ -85,7 +89,20 @@ function createSiteIcon(label, color) {
           box-shadow:0 0 10px rgba(0,0,0,0.35);
         "
       >
-        ${label}
+        <div style="
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1;
+">
+  <span style="font-size:16px;">
+    ${symbol}
+  </span>
+
+  <span style="font-size:11px;">
+    ${label}
+  </span>
+</div>
       </div>
     `,
 
@@ -890,37 +907,126 @@ function updateMap() {
       a.siteId === site.id && !a.endTime
     );
 
-   let color = "#6b7280";
-let label = "SITE";
+   let label = "SITE";
+let color = "#6b7280";
+let symbol = "📍";
 
-// STATUS COLORS
+// ACTIVE STATUS
 if (active.length > 0) {
   color = "#16a34a";
 }
 
+// MAINTENANCE
 if (site.maintenance) {
   color = "#eab308";
 }
 
-// SCHOOL LABELS
-if (site.siteSubtype === "elementary") {
-  label = "ES";
+// ================= SCHOOLS =================
+if (site.siteCategory === "school") {
+  symbol = "🏫";
+
+  if (site.siteSubtype === "elementary") {
+    label = "ES";
+  }
+
+  else if (site.siteSubtype === "middle") {
+    label = "MS";
+  }
+
+  else if (site.siteSubtype === "high") {
+    label = "HS";
+  }
+
+  else if (site.siteSubtype === "admin") {
+    label = "ADM";
+  }
+
 }
 
-else if (site.siteSubtype === "middle") {
-  label = "MS";
+// ================= CONSTRUCTION =================
+else if (
+  site.siteCategory === "construction"
+) {
+  symbol = "🚧";
+
+  label = "CON";
+
 }
 
-else if (site.siteSubtype === "high") {
-  label = "HS";
+// ================= WAREHOUSE =================
+else if (
+  site.siteCategory === "warehouse"
+) {
+  symbol = "🏭";
+
+  label = "WH";
+
 }
 
-else if (site.siteSubtype === "admin") {
-  label = "ADM";
+// ================= GOVERNMENT =================
+else if (
+  site.siteCategory === "government"
+) {
+  symbol = "🏛️";
+
+  label = "GOV";
+
+}
+
+// ================= SCHOOLS =================
+if (site.siteCategory === "school") {
+
+  if (site.siteSubtype === "elementary") {
+    label = "ES";
+  }
+
+  else if (site.siteSubtype === "middle") {
+    label = "MS";
+  }
+
+  else if (site.siteSubtype === "high") {
+    label = "HS";
+  }
+
+  else if (site.siteSubtype === "admin") {
+    label = "ADM";
+  }
+
+}
+
+// ================= CONSTRUCTION =================
+else if (
+  site.siteCategory === "construction"
+) {
+
+  label = "CON";
+
+}
+
+// ================= WAREHOUSE =================
+else if (
+  site.siteCategory === "warehouse"
+) {
+
+  label = "WH";
+
+}
+
+// ================= GOVERNMENT =================
+else if (
+  site.siteCategory === "government"
+) {
+
+  label = "GOV";
+
 }
 
 const icon =
-  createSiteIcon(label, color);
+  createSiteIcon(
+  label,
+  color,
+  symbol
+);
 
     // create marker
     if (!markers[site.id]) {
@@ -973,25 +1079,45 @@ markers[site.id].on("dragend", async (e) => {
   if (markers[site.id]._icon) {
 
     markers[site.id]._icon.innerHTML = `
-      <div
-        style="
-          width:42px;
-          height:42px;
-          border-radius:50%;
-          background:${color};
-          color:white;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-weight:700;
-          font-size:14px;
-          border:3px solid white;
-          box-shadow:0 0 10px rgba(0,0,0,0.35);
-        "
-      >
+  <div
+    style="
+      width:42px;
+      height:42px;
+      border-radius:50%;
+      background:${color};
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:3px solid white;
+      box-shadow:0 0 10px rgba(0,0,0,0.35);
+      font-weight:700;
+    "
+  >
+
+    <div style="
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      line-height:1;
+    ">
+
+      <span style="
+        font-size:16px;
+      ">
+        ${symbol}
+      </span>
+
+      <span style="
+        font-size:11px;
+      ">
         ${label}
-      </div>
-    `;
+      </span>
+
+    </div>
+
+  </div>
+`;
 
   }
 
@@ -1063,6 +1189,118 @@ markers[site.id].on("dragend", async (e) => {
     marker.bindPopup(popup);
 
   });
+
+}
+
+function updateSubtypeOptions() {
+
+  const category =
+    document.getElementById(
+      "siteCategory"
+    ).value;
+
+  const subtype =
+    document.getElementById(
+      "siteSubtype"
+    );
+
+  // ================= SCHOOL =================
+  if (category === "school") {
+
+    subtype.innerHTML = `
+
+      <option value="elementary">
+        Elementary School
+      </option>
+
+      <option value="middle">
+        Middle School
+      </option>
+
+      <option value="high">
+        High School
+      </option>
+
+      <option value="admin">
+        Administration
+      </option>
+
+    `;
+
+  }
+
+  // ================= CONSTRUCTION =================
+  else if (
+    category === "construction"
+  ) {
+
+    subtype.innerHTML = `
+
+      <option value="commercial">
+        Commercial
+      </option>
+
+      <option value="residential">
+        Residential
+      </option>
+
+      <option value="roadwork">
+        Roadwork
+      </option>
+
+      <option value="utilities">
+        Utilities
+      </option>
+
+    `;
+
+  }
+
+  // ================= WAREHOUSE =================
+  else if (
+    category === "warehouse"
+  ) {
+
+    subtype.innerHTML = `
+
+      <option value="distribution">
+        Distribution
+      </option>
+
+      <option value="storage">
+        Storage
+      </option>
+
+      <option value="cold">
+        Cold Storage
+      </option>
+
+    `;
+
+  }
+
+  // ================= GOVERNMENT =================
+  else if (
+    category === "government"
+  ) {
+
+    subtype.innerHTML = `
+
+      <option value="police">
+        Police
+      </option>
+
+      <option value="fire">
+        Fire
+      </option>
+
+      <option value="city">
+        City Services
+      </option>
+
+    `;
+
+  }
 
 }
 
@@ -2575,3 +2813,4 @@ window.confirmDeployment = confirmDeployment;
 window.closeDeployPreview = closeDeployPreview;
 window.removePendingDeployment = removePendingDeployment;
 window.addEmployeeToSite = addEmployeeToSite;
+window.updateSubtypeOptions = updateSubtypeOptions;
