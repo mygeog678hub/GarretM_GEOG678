@@ -1111,6 +1111,15 @@ document.getElementById("maintenanceCount").textContent =
   render();
 
   updateMap();
+  const siteModal =
+  document.getElementById("siteModal");
+
+if (
+  siteModal &&
+  siteModal.style.display === "block"
+) {
+  renderSites();
+}
 }
 
 // ================= EMPLOYEE MODAL =================
