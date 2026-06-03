@@ -176,7 +176,7 @@ button:hover {
 /* ================= MAP ================= */
 
 .map-card {
-  overflow: hidden;
+  overflow: visible;
 
   border-radius: 20px;
 

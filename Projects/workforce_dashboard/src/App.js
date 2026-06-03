@@ -7,7 +7,9 @@ import {
   onSnapshot,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  getDoc,
+  getDocs,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
@@ -80,9 +82,11 @@ let sites = [];
 let assets = [];
 let vehicles = [];
 let assignments = [];
+let pendingDeployments = [];
 let markers = {};
 let editingEmployeeId = null;
 let editingSiteId = null;
+let previewSiteId = null;
 
 // ================= MAP =================
 
@@ -288,18 +292,21 @@ if (!coords.length) {
 
 }
 
-  await addDoc(collection(db, "sites"), {
+ await addDoc(collection(db, "sites"), {
 
-    name,
-    address,
-    city,
-    state,
-    zip,
+  name,
+  address,
+  city,
+  state,
+  zip,
 
-    lat: +coords[0].lat,
-    lng: +coords[0].lon
+  lat: +coords[0].lat,
+  lng: +coords[0].lon,
 
-  });
+  activeEmployees: [],
+  defaultCrew: []
+
+});
 
   siteName.value = "";
   siteAddress.value = "";
@@ -443,6 +450,62 @@ if (
     startTime: new Date().toISOString(),
     endTime: null
   });
+}
+
+async function endBusinessDay() {
+
+  const activeAssignments =
+    assignments.filter(a => !a.endTime);
+
+    console.log(assignments);
+    console.log(activeAssignments);
+
+  if (!activeAssignments.length) {
+
+    alert(
+      "No active assignments"
+    );
+
+    return;
+
+  }
+
+  if (!confirm(
+    `Unassign ${activeAssignments.length} active assignments?`
+  )) return;
+
+  try {
+
+    for (const assignment of activeAssignments) {
+
+      await updateDoc(
+        doc(
+          db,
+          "assignments",
+          assignment.id
+        ),
+        {
+          endTime:
+            new Date().toISOString()
+        }
+      );
+
+    }
+
+    alert(
+      "Business day ended"
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to end business day"
+    );
+
+  }
+
 }
 
 // ================= UNASSIGN =================
@@ -609,15 +672,27 @@ function renderSites(filteredSites = sites) {
 
       <td>${s.zip || ""}</td>
 
-      <td>
+  <td>
 
-      <button onclick="editSite('${s.id}')">
-        Edit
-      </button>
+  <button onclick="editSite('${s.id}')">
+    Edit
+  </button>
 
-      </td>
+  <button onclick="saveDefaultCrew('${s.id}')">
+    Save Current Crew
+  </button>
 
-    </tr>
+  <button onclick="deploySiteCrew('${s.id}')">
+    Deploy Crew
+  </button>
+
+  <button onclick="clearSiteAssignments('${s.id}')">
+    Clear Site
+  </button>
+
+</td>
+
+</tr>
 
   `).join("");
 
@@ -745,7 +820,7 @@ const vehicle = vehicles.find(
   `;
   renderEmployees();
 }
-// ================= UPDATE MAP =================
+
 // ================= UPDATE MAP =================
 
 function updateMap() {
@@ -916,12 +991,12 @@ function refresh() {
   );
 
   // ================= EMPLOYEE DROPDOWN =================
-  assignEmployee.innerHTML =
-    employees.map(e => `
-      <option value="${e.id}">
-        ${e.name}
-      </option>
-    `).join("");
+ assignEmployee.innerHTML =
+  employees.map(e => `
+    <option value="${e.id}">
+      ${e.name}
+    </option>
+  `).join("");
 
   // ================= SITE DROPDOWN =================
   assignSite.innerHTML =
@@ -1791,6 +1866,554 @@ async function saveSiteEdit() {
 
 }
 
+async function saveDefaultCrew(siteId) {
+
+  try {
+
+    // find active assignments for this site
+    const crewAssignments =
+      assignments.filter(a =>
+
+        a.siteId === siteId &&
+        !a.endTime
+
+      );
+
+    // extract employee IDs
+    const employeeIds = [
+
+  ...new Set(
+    crewAssignments.map(
+      a => a.employeeId
+    )
+  )
+
+];
+
+    // update site
+    await updateDoc(
+      doc(db, "sites", siteId),
+      {
+        defaultCrew: employeeIds
+      }
+    );
+
+    const site =
+      sites.find(s => s.id === siteId);
+
+    alert(
+      `${employeeIds.length} employees saved to ${site?.name || "site"} default crew.`
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to save default crew"
+    );
+
+  }
+
+}
+
+async function deployDefaultCrews() {
+
+  try {
+
+    const sitesSnap =
+      await getDocs(collection(db, "sites"));
+
+    let deployedCount = 0;
+
+    for (const siteDoc of sitesSnap.docs) {
+
+      const site = siteDoc.data();
+
+      const crew =
+        site.defaultCrew || [];
+
+      console.log(
+        "Deploying Crew:",
+        crew
+      );
+
+      for (const employeeId of crew) {
+
+        const alreadyAssigned =
+          assignments.find(a =>
+
+            a.employeeId === employeeId &&
+            !a.endTime
+
+          );
+
+        if (alreadyAssigned) {
+          continue;
+        }
+
+        await addDoc(
+          collection(db, "assignments"),
+          {
+            employeeId,
+            siteId: siteDoc.id,
+            assetId: null,
+            vehicleId: null,
+            startTime:
+              new Date().toISOString(),
+            endTime: null
+          }
+        );
+
+        deployedCount++;
+
+      }
+
+    }
+
+    alert(
+      `${deployedCount} crew assignments deployed`
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to deploy crews"
+    );
+
+  }
+
+}
+// ================= GLOBAL =================
+async function clearSiteAssignments(siteId) {
+
+  try {
+
+    const activeAssignments =
+      assignments.filter(a =>
+
+        a.siteId === siteId &&
+        !a.endTime
+
+      );
+
+    console.log(
+      "Assignments Found:",
+      activeAssignments
+    );
+
+    if (!activeAssignments.length) {
+
+      alert("No active assignments");
+
+      return;
+
+    }
+
+    if (!confirm(
+      `Clear ${activeAssignments.length} assignments from this site?`
+    )) return;
+
+    for (const assignment of activeAssignments) {
+
+      await updateDoc(
+        doc(db, "assignments", assignment.id),
+        {
+          endTime:
+            new Date().toISOString()
+        }
+      );
+
+    }
+
+    alert("Site cleared.");
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Failed to clear site");
+
+  }
+
+}
+// ================= GLOBAL =================
+async function deploySiteCrew(siteId) {
+
+  const site =
+    sites.find(s => s.id === siteId);
+
+  if (!site) {
+    alert("Site not found");
+    return;
+  }
+
+  const crew =
+    site.defaultCrew || [];
+
+  if (!crew.length) {
+
+    alert(
+      "No default crew saved for this site"
+    );
+
+    return;
+
+  }
+
+  pendingDeployments = [];
+
+  crew.forEach(employeeId => {
+
+    const employee =
+      employees.find(
+        e => e.id === employeeId
+      );
+
+    const alreadyAssigned =
+      assignments.find(a =>
+
+        a.employeeId === employeeId &&
+        !a.endTime
+
+      );
+
+    pendingDeployments.push({
+      employeeId,
+      employeeName:
+        employee?.name || "Unknown",
+      siteId,
+      siteName: site.name,
+      alreadyAssigned
+    });
+
+  });
+
+  previewSiteId = siteId;
+
+  renderDeploymentPreview();
+
+}
+// ================= GLOBAL =================
+async function archiveAllCompletedAssignments() {
+
+  try {
+
+    const completedAssignments =
+      assignments.filter(a => a.endTime);
+
+    if (!completedAssignments.length) {
+
+      alert(
+        "No completed assignments to archive"
+      );
+
+      return;
+
+    }
+
+    if (!confirm(
+      `Archive ${completedAssignments.length} completed assignments?`
+    )) return;
+
+    for (const assignment of completedAssignments) {
+
+      await updateDoc(
+        doc(db, "assignments", assignment.id),
+        {
+          archived: true,
+          archivedAt:
+            new Date().toISOString()
+        }
+      );
+
+    }
+
+    alert(
+      `${completedAssignments.length} assignments archived`
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to archive assignments"
+    );
+
+  }
+
+}
+// ================= GLOBAL =================
+function renderDeploymentPreview() {
+
+  const modal =
+    document.getElementById(
+      "deployPreviewModal"
+    );
+
+  const body =
+    document.getElementById(
+      "deployPreviewBody"
+    );
+
+  // GROUP BY SITE
+ // GROUP BY SITE
+// GROUP BY SITE
+const grouped = {};
+
+const site =
+  sites.find(s => s.id === previewSiteId);
+
+if (site) {
+
+  grouped[site.id] = {
+    siteName: site.name,
+    employees: []
+  };
+
+}
+// populate employees
+pendingDeployments.forEach(d => {
+
+  if (!grouped[d.siteId]) return;
+
+  grouped[d.siteId].employees.push(d);
+
+});
+
+  body.innerHTML = Object.entries(grouped)
+    .map(([siteId, group]) => `
+
+      <div style="
+        margin-bottom:25px;
+        padding:15px;
+        border:1px solid #ccc;
+        border-radius:8px;
+        color:#111;
+      ">
+
+        <h3>
+          ${group.siteName}
+        </h3>
+
+        ${group.employees.map(emp => `
+
+          <div style="
+            margin-bottom:10px;
+            padding:8px;
+            border-bottom:1px solid #eee;
+          ">
+
+            <b>${emp.employeeName}</b>
+
+            <br>
+
+            Status:
+            ${
+              emp.alreadyAssigned
+                ? "Already Assigned"
+                : "Ready"
+            }
+
+            <br><br>
+
+            <button
+              onclick="removePendingDeployment(
+                '${siteId}',
+                '${emp.employeeId}'
+              )"
+            >
+              Remove
+            </button>
+
+          </div>
+
+        `).join("")}
+
+        <div style="
+          margin-top:15px;
+        ">
+
+          <select id="addEmployee-${siteId}">
+
+            <option value="">
+              Add Employee
+            </option>
+
+            ${
+              employees.map(e => `
+
+                <option value="${e.id}">
+                  ${e.name}
+                </option>
+
+              `).join("")
+            }
+
+          </select>
+
+          <button
+            onclick="addEmployeeToSite('${siteId}')"
+          >
+            Add
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join("");
+
+  modal.style.display = "block";
+
+}
+
+function removePendingDeployment(
+  siteId,
+  employeeId
+) {
+
+  pendingDeployments =
+    pendingDeployments.filter(d =>
+
+      !(
+        d.siteId === siteId &&
+        d.employeeId === employeeId
+      )
+
+    );
+
+  renderDeploymentPreview();
+
+}
+
+function closeDeployPreview() {
+
+  document.getElementById(
+    "deployPreviewModal"
+  ).style.display = "none";
+
+  pendingDeployments = [];
+
+}
+
+async function confirmDeployment() {
+
+  try {
+
+    let deployedCount = 0;
+
+    for (const d of pendingDeployments) {
+
+     const activeAssignment =
+  assignments.find(a =>
+
+    a.employeeId === d.employeeId &&
+    !a.endTime
+
+  );
+
+if (activeAssignment) {
+  continue;
+}
+
+      await addDoc(
+        collection(db, "assignments"),
+        {
+          employeeId: d.employeeId,
+          siteId: d.siteId,
+          assetId: null,
+          vehicleId: null,
+          startTime:
+            new Date().toISOString(),
+          endTime: null
+        }
+      );
+
+      deployedCount++;
+
+    }
+
+    closeDeployPreview();
+
+    alert(
+      `${deployedCount} crew members deployed`
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Deployment failed"
+    );
+
+  }
+
+}
+// ================= GLOBAL =================
+function addEmployeeToSite(siteId) {
+
+  const select =
+    document.getElementById(
+      `addEmployee-${siteId}`
+    );
+
+  const employeeId =
+    select.value;
+
+  if (!employeeId) return;
+
+  const employee =
+    employees.find(
+      e => e.id === employeeId
+    );
+
+  if (!employee) return;
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  if (!site) return;
+
+  // prevent duplicates
+  const exists =
+  pendingDeployments.some(d =>
+
+    d.siteId === siteId &&
+    d.employeeId === employeeId
+
+  );
+
+  if (exists) {
+
+    alert(
+      "Employee already added"
+    );
+
+    return;
+
+  }
+
+  pendingDeployments.push({
+
+    employeeId,
+    employeeName: employee.name,
+    siteId,
+    siteName: site.name,
+    alreadyAssigned: false
+
+  });
+
+  renderDeploymentPreview();
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -1826,3 +2449,13 @@ window.closeEditEmployeeModal = closeEditEmployeeModal;
 window.editSite = editSite;
 window.closeEditSiteModal = closeEditSiteModal;
 window.saveSiteEdit = saveSiteEdit;
+window.endBusinessDay = endBusinessDay;
+window.saveDefaultCrew = saveDefaultCrew;
+window.deployDefaultCrews = deployDefaultCrews;
+window.deploySiteCrew = deploySiteCrew;
+window.archiveAllCompletedAssignments = archiveAllCompletedAssignments;
+window.clearSiteAssignments = clearSiteAssignments;
+window.confirmDeployment = confirmDeployment;
+window.closeDeployPreview = closeDeployPreview;
+window.removePendingDeployment = removePendingDeployment;
+window.addEmployeeToSite = addEmployeeToSite;

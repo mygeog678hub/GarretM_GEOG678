@@ -196,6 +196,24 @@
 
 </div>
 
+<div style="
+  margin-top:15px;
+  margin-bottom:15px;
+  position:relative;
+  z-index:10;
+  display:flex;
+  gap:10px;
+">
+
+  <button
+    onclick="endBusinessDay()"
+    class="danger"
+  >
+    End Business Day
+  </button>
+
+</div>
+
   <!-- MAP CARD -->
    
   <div class="dashboard-card map-card">
@@ -386,6 +404,12 @@
 </div>
 <h2>Report</h2>
 <button onclick="exportExcel()">Export Excel</button>
+<button
+  onclick="archiveAllCompletedAssignments()"
+  class="danger"
+>
+  Archive Completed
+</button>
 <div class="table-wrapper">
   <table id="reportTable"></table>
 </div>
@@ -693,6 +717,48 @@
     </button>
 
     <button onclick="closeEditSiteModal()">
+      Cancel
+    </button>
+
+  </div>
+
+</div>
+
+<div id="deployPreviewModal"
+     style="
+       display:none;
+       position:fixed;
+       z-index:9999;
+       left:0;
+       top:0;
+       width:100%;
+       height:100%;
+       background-color:rgba(0,0,0,0.45);
+     ">
+
+  <div id="deployPreviewContent"
+       style="
+         background:white;
+         margin:5% auto;
+         padding:20px;
+         width:80%;
+         max-width:700px;
+         border-radius:8px;
+         max-height:80vh;
+         overflow:auto;
+       ">
+
+    <h2>Deployment Preview</h2>
+
+    <div id="deployPreviewBody"></div>
+
+    <br>
+
+    <button onclick="confirmDeployment()">
+      Confirm Deployment
+    </button>
+
+    <button onclick="closeDeployPreview()">
       Cancel
     </button>
 
