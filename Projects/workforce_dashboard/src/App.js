@@ -121,6 +121,8 @@ let vehicles = [];
 let assignments = [];
 let pendingDeployments = [];
 let markers = {};
+let searchMarker = null;
+let markerEditMode = false;
 let editingEmployeeId = null;
 let editingSiteId = null;
 let previewSiteId = null;
@@ -163,15 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= DEFAULT MAP =================
 
-  osm.addTo(window.map);
-
-  // ================= LAYER SWITCHER =================
-
-  L.control.layers({
-    "Street Map": osm,
-    "Light Canvas": lightMap,
-    "Dark Mode": darkMap
-  }).addTo(window.map);
+  osm.addTo(window.map); 
 
   // ================= HOME BUTTON =================
 
@@ -203,6 +197,73 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   homeControl.addTo(window.map);
+  // ================= ADDRESS SEARCH CONTROL =================
+
+const searchControl = L.control({
+  position: "topright"
+});
+
+searchControl.onAdd = function () {
+
+  const div = L.DomUtil.create(
+    "div",
+    "leaflet-bar"
+  );
+
+  div.innerHTML = `
+
+    <div style="
+      background:white;
+      padding:8px;
+      border-radius:6px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.25);
+      display:flex;
+      gap:6px;
+      align-items:center;
+    ">
+
+      <input
+        id="mapAddressSearch"
+        type="text"
+        placeholder="Search address..."
+        style="
+          border:none;
+          outline:none;
+          padding:6px;
+          width:220px;
+        "
+      >
+
+      <button
+        onclick="searchAddress()"
+        style="
+          padding:6px 10px;
+          cursor:pointer;
+        "
+      >
+        🔍
+      </button>
+
+    </div>
+
+  `;
+
+  // prevent map dragging while typing
+  L.DomEvent.disableClickPropagation(div);
+
+  return div;
+
+};
+
+searchControl.addTo(window.map);
+
+ // ================= LAYER SWITCHER =================
+
+  L.control.layers({
+    "Street Map": osm,
+    "Light Canvas": lightMap,
+    "Dark Mode": darkMap
+  }).addTo(window.map);
 
   // ================= FORCE RESIZE =================
 
@@ -1035,7 +1096,7 @@ const icon =
   [site.lat, site.lng],
   {
     icon,
-    draggable: true
+    draggable: markerEditMode
   }
 ).addTo(window.map);
 
@@ -1301,6 +1362,33 @@ function updateSubtypeOptions() {
     `;
 
   }
+
+}
+
+function toggleMarkerEditing() {
+
+  markerEditMode =
+    !markerEditMode;
+
+  Object.values(markers).forEach(marker => {
+
+    if (markerEditMode) {
+
+      marker.dragging.enable();
+
+    } else {
+
+      marker.dragging.disable();
+
+    }
+
+  });
+
+  alert(
+    markerEditMode
+      ? "Marker editing ENABLED"
+      : "Marker editing DISABLED"
+  );
 
 }
 
@@ -1899,6 +1987,79 @@ function toggleAllSites(source) {
 
 }
 
+async function searchAddress() {
+
+  const query =
+    document.getElementById(
+      "mapAddressSearch"
+    ).value.trim();
+
+  if (!query) return;
+
+  try {
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${
+        encodeURIComponent(query)
+      }&format=json&limit=1`
+    );
+
+    const results =
+      await response.json();
+
+    if (!results.length) {
+
+      alert("Address not found");
+
+      return;
+
+    }
+
+    const lat =
+      +results[0].lat;
+
+    const lng =
+      +results[0].lon;
+
+    window.map.flyTo(
+      [lat, lng],
+      16
+    );
+
+    // optional temporary marker
+   // remove old search marker
+if (searchMarker) {
+
+  window.map.removeLayer(
+    searchMarker
+  );
+
+}
+
+// create new temporary marker
+searchMarker = L.marker(
+  [lat, lng]
+)
+.addTo(window.map)
+.bindPopup(query)
+.openPopup();
+      document.getElementById(
+  "mapAddressSearch"
+).value = "";
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Address search failed"
+    );
+
+  }
+
+}
+
+
 async function deleteSelectedSites() {
 
   const checked =
@@ -2182,7 +2343,7 @@ const siteSubtype =
       return;
 
     }
-
+    
     // ================= UPDATE =================
 
     await updateDoc(
@@ -2814,3 +2975,5 @@ window.closeDeployPreview = closeDeployPreview;
 window.removePendingDeployment = removePendingDeployment;
 window.addEmployeeToSite = addEmployeeToSite;
 window.updateSubtypeOptions = updateSubtypeOptions;
+window.toggleMarkerEditing = toggleMarkerEditing;
+window.searchAddress = searchAddress;
