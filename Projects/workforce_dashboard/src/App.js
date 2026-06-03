@@ -313,6 +313,7 @@ if (!coords.length) {
   siteCity.value = "";
   siteState.value = "";
   siteZip.value = "";
+  siteName.focus();
 
 } catch (err) {
 
@@ -350,6 +351,7 @@ async function addEmployee() {
 
   empName.value = "";
   empRole.value = "";
+  empName.focus();
 }
 // ================= DELETE EMPLOYEE=================
 async function deleteEmployee(id) {
@@ -408,6 +410,7 @@ async function addAsset() {
 
   document.getElementById("assetId").value = "";
   document.getElementById("assetType").value = "";
+  document.getElementById("assetId").focus();
 }
 
 // ================= ASSIGN =================
@@ -1343,6 +1346,7 @@ async function addVehicle() {
   vehModel.value = "";
   vehPlate.value = "";
   vehUnit.value = "";
+  vehMake.focus();
 }
 
 async function reportIssue() {
