@@ -58,24 +58,44 @@ const assignEmployee = document.getElementById("assignEmployee");
 const assignSite = document.getElementById("assignSite");
 const assignAsset = document.getElementById("assignAsset");
 const assignVehicle = document.getElementById("assignVehicle");
+const siteCategory = document.getElementById("siteCategory");
+const siteSubtype = document.getElementById("siteSubtype");
 
 // ================= ICONS =================
-const greenIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-  iconSize: [32, 32],
-  iconAnchor: [16, 32]
-});
-const redIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-  iconSize: [32, 32],
-  iconAnchor: [16, 32]
-});
-const yellowIcon = new L.Icon({
-  iconUrl: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png",
-  iconSize: [32, 32],
-  iconAnchor: [16, 32]
-});
+function createSiteIcon(label, color) {
 
+  return L.divIcon({
+
+    className: "custom-site-marker",
+
+    html: `
+      <div
+        style="
+          width:42px;
+          height:42px;
+          border-radius:50%;
+          background:${color};
+          color:white;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-weight:700;
+          font-size:14px;
+          border:3px solid white;
+          box-shadow:0 0 10px rgba(0,0,0,0.35);
+        "
+      >
+        ${label}
+      </div>
+    `,
+
+    iconSize: [42, 42],
+    iconAnchor: [21, 42],
+    popupAnchor: [0, -40]
+
+  });
+
+}
 // ================= STATE =================
 let employees = [];
 let sites = [];
@@ -299,6 +319,9 @@ if (!coords.length) {
   city,
   state,
   zip,
+
+  siteCategory: siteCategory.value,
+  siteSubtype: siteSubtype.value,
 
   lat: +coords[0].lat,
   lng: +coords[0].lon,
@@ -867,15 +890,37 @@ function updateMap() {
       a.siteId === site.id && !a.endTime
     );
 
-    let icon = redIcon;
+   let color = "#6b7280";
+let label = "SITE";
 
-    if (active.length > 0) {
-      icon = greenIcon;
-    }
+// STATUS COLORS
+if (active.length > 0) {
+  color = "#16a34a";
+}
 
-    if (site.maintenance) {
-      icon = yellowIcon;
-    }
+if (site.maintenance) {
+  color = "#eab308";
+}
+
+// SCHOOL LABELS
+if (site.siteSubtype === "elementary") {
+  label = "ES";
+}
+
+else if (site.siteSubtype === "middle") {
+  label = "MS";
+}
+
+else if (site.siteSubtype === "high") {
+  label = "HS";
+}
+
+else if (site.siteSubtype === "admin") {
+  label = "ADM";
+}
+
+const icon =
+  createSiteIcon(label, color);
 
     // create marker
     if (!markers[site.id]) {
@@ -925,7 +970,30 @@ markers[site.id].on("dragend", async (e) => {
 
   } else {
 
-  markers[site.id].setIcon(icon);
+  if (markers[site.id]._icon) {
+
+    markers[site.id]._icon.innerHTML = `
+      <div
+        style="
+          width:42px;
+          height:42px;
+          border-radius:50%;
+          background:${color};
+          color:white;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-weight:700;
+          font-size:14px;
+          border:3px solid white;
+          box-shadow:0 0 10px rgba(0,0,0,0.35);
+        "
+      >
+        ${label}
+      </div>
+    `;
+
+  }
 
   markers[site.id].setLatLng([
     site.lat,
@@ -1754,6 +1822,15 @@ function editSite(id) {
   document.getElementById(
     "editSiteZip"
   ).value = site.zip || "";
+  document.getElementById(
+  "editSiteCategory"
+).value =
+  site.siteCategory || "school";
+
+document.getElementById(
+  "editSiteSubtype"
+).value =
+  site.siteSubtype || "elementary";
 
   document.getElementById(
     "editSiteModal"
@@ -1796,10 +1873,19 @@ async function saveSiteEdit() {
     ).value.trim();
 
   const zip =
+  
     document.getElementById(
       "editSiteZip"
     ).value.trim();
+    const siteCategory =
+  document.getElementById(
+    "editSiteCategory"
+  ).value;
 
+const siteSubtype =
+  document.getElementById(
+    "editSiteSubtype"
+  ).value;
   if (
     !name ||
     !address ||
@@ -1862,24 +1948,27 @@ async function saveSiteEdit() {
     // ================= UPDATE =================
 
     await updateDoc(
-      doc(
-        db,
-        "sites",
-        editingSiteId
-      ),
-      {
+  doc(
+    db,
+    "sites",
+    editingSiteId
+  ),
+  {
 
-        name,
-        address,
-        city,
-        state,
-        zip,
+    name,
+    address,
+    city,
+    state,
+    zip,
 
-        lat: +coords[0].lat,
-        lng: +coords[0].lon
+    siteCategory,
+    siteSubtype,
 
-      }
-    );
+    lat: +coords[0].lat,
+    lng: +coords[0].lon
+
+  }
+);
 
     closeEditSiteModal();
 
