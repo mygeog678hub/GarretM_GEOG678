@@ -653,7 +653,13 @@ async function deleteSelectedEmployees() {
 
 function renderSites(filteredSites = sites) {
 
-  const rows = filteredSites.map(s => `
+  const rows = filteredSites.map(s => {
+
+  const activeEmployees = assignments.filter(a =>
+    a.siteId === s.id && !a.endTime
+  ).length;
+
+  return `
 
     <tr>
 
@@ -674,6 +680,13 @@ function renderSites(filteredSites = sites) {
       <td>${s.state || ""}</td>
 
       <td>${s.zip || ""}</td>
+      <td>
+  ${
+    activeEmployees > 0
+      ? `${activeEmployees} Active`
+      : "Empty"
+  }
+</td>
 
   <td>
 
@@ -697,7 +710,9 @@ function renderSites(filteredSites = sites) {
 
 </tr>
 
-  `).join("");
+`;
+
+}).join("");
 
   document.getElementById("siteTable").innerHTML = `
 
@@ -715,6 +730,7 @@ function renderSites(filteredSites = sites) {
       <th>City</th>
       <th>State</th>
       <th>ZIP</th>
+      <th>Crew</th>
       <th>Action</th>
 
     </tr>
@@ -2164,8 +2180,6 @@ function renderDeploymentPreview() {
     );
 
   // GROUP BY SITE
- // GROUP BY SITE
-// GROUP BY SITE
 const grouped = {};
 
 const site =
