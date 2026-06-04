@@ -126,6 +126,7 @@ let markerEditMode = false;
 let editingEmployeeId = null;
 let editingSiteId = null;
 let previewSiteId = null;
+let currentMapFilter = "all";
 
 // ================= MAP =================
 
@@ -175,10 +176,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   homeControl.onAdd = function () {
 
-    const div = L.DomUtil.create(
-      "div",
-      "leaflet-bar leaflet-control"
-    );
+  const div = L.DomUtil.create(
+  "div"
+);
 
     div.innerHTML =
       '<button style="padding:5px;">🏠</button>';
@@ -213,13 +213,14 @@ searchControl.onAdd = function () {
   div.innerHTML = `
 
     <div style="
-      background:white;
-      padding:8px;
-      border-radius:6px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.25);
-      display:flex;
-      gap:6px;
-      align-items:center;
+      background:rgba(255,255,255,0.96);
+padding:10px;
+border-radius:12px;
+border:1px solid #d1d5db;
+box-shadow:0 2px 10px rgba(0,0,0,0.12);
+display:flex;
+gap:8px;
+align-items:center;
     ">
 
       <input
@@ -227,18 +228,27 @@ searchControl.onAdd = function () {
         type="text"
         placeholder="Search address..."
         style="
-          border:none;
-          outline:none;
-          padding:6px;
-          width:220px;
+          border:1px solid #d1d5db;
+border-radius:8px;
+outline:none;
+padding:8px 10px;
+width:220px;
+background:white;
+color:#111827;
+font-size:14px;
         "
       >
 
       <button
         onclick="searchAddress()"
         style="
-          padding:6px 10px;
-          cursor:pointer;
+          padding:8px 12px;
+cursor:pointer;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+font-weight:600;
         "
       >
         🔍
@@ -259,11 +269,11 @@ searchControl.addTo(window.map);
 
  // ================= LAYER SWITCHER =================
 
-  L.control.layers({
-    "Street Map": osm,
-    "Light Canvas": lightMap,
-    "Dark Mode": darkMap
-  }).addTo(window.map);
+ L.control.layers({
+  "Street Map": osm,
+  "Light Canvas": lightMap,
+  "Dark Mode": darkMap
+}).addTo(window.map);
 
   // ================= FORCE RESIZE =================
 
@@ -1100,6 +1110,11 @@ const icon =
   }
 ).addTo(window.map);
 
+markers[site.id].siteType =
+  site.siteCategory === "school"
+    ? `school-${site.siteSubtype}`
+    : site.siteCategory;
+
 // SAVE NEW POSITION
 markers[site.id].on("dragend", async (e) => {
 
@@ -1137,50 +1152,7 @@ markers[site.id].on("dragend", async (e) => {
 
   } else {
 
-  if (markers[site.id]._icon) {
-
-    markers[site.id]._icon.innerHTML = `
-  <div
-    style="
-      width:42px;
-      height:42px;
-      border-radius:50%;
-      background:${color};
-      color:white;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      border:3px solid white;
-      box-shadow:0 0 10px rgba(0,0,0,0.35);
-      font-weight:700;
-    "
-  >
-
-    <div style="
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      line-height:1;
-    ">
-
-      <span style="
-        font-size:16px;
-      ">
-        ${symbol}
-      </span>
-
-      <span style="
-        font-size:11px;
-      ">
-        ${label}
-      </span>
-
-    </div>
-
-  </div>
-`;
-
-  }
+  markers[site.id].setIcon(icon);
 
   markers[site.id].setLatLng([
     site.lat,
@@ -1188,6 +1160,11 @@ markers[site.id].on("dragend", async (e) => {
   ]);
 
 }
+
+// APPLY TO ALL MARKERS
+applyMarkerVisibility(
+  markers[site.id]
+);
 
     const marker = markers[site.id];
 
@@ -1404,8 +1381,21 @@ function refresh() {
   );
 
   // ================= EMPLOYEE DROPDOWN =================
- assignEmployee.innerHTML =
-  employees.map(e => `
+ // only employees without active assignments
+const availableEmployees =
+  employees.filter(e =>
+
+    !assignments.find(a =>
+
+      a.employeeId === e.id &&
+      !a.endTime
+
+    )
+
+  );
+
+assignEmployee.innerHTML =
+  availableEmployees.map(e => `
     <option value="${e.id}">
       ${e.name}
     </option>
@@ -2869,6 +2859,61 @@ if (activeAssignment) {
   }
 
 }
+
+function filterMapSites(type, button){
+
+  currentMapFilter = type;
+
+  // active button styling
+  document.querySelectorAll(".map-filters button")
+    .forEach(btn =>
+      btn.classList.remove("active-filter")
+    );
+
+  if(button){
+    button.classList.add("active-filter");
+  }
+
+  Object.values(markers).forEach(marker => {
+
+    applyMarkerVisibility(marker);
+
+  });
+
+}
+
+function applyMarkerVisibility(marker){
+
+  // SHOW ALL
+  if(currentMapFilter === "all"){
+
+    if(!window.map.hasLayer(marker)){
+      marker.addTo(window.map);
+    }
+
+    return;
+
+  }
+
+  // MATCH FILTER
+  if(marker.siteType === currentMapFilter){
+
+    if(!window.map.hasLayer(marker)){
+      marker.addTo(window.map);
+    }
+
+  }
+
+  // HIDE NON-MATCHING
+  else {
+
+    if(window.map.hasLayer(marker)){
+      window.map.removeLayer(marker);
+    }
+
+  }
+
+}
 // ================= GLOBAL =================
 function addEmployeeToSite(siteId) {
 
@@ -2977,3 +3022,4 @@ window.addEmployeeToSite = addEmployeeToSite;
 window.updateSubtypeOptions = updateSubtypeOptions;
 window.toggleMarkerEditing = toggleMarkerEditing;
 window.searchAddress = searchAddress;
+window.filterMapSites = filterMapSites;

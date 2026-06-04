@@ -230,6 +230,48 @@
   oninput="searchSite()"
 />
 
+<div class="map-filters">
+
+  
+
+  <button
+  onclick="filterMapSites('all', this)"
+  class="active-filter">
+  All
+</button>
+
+<button
+  onclick="filterMapSites('school-elementary', this)">
+  School-ES
+</button>
+
+<button
+  onclick="filterMapSites('school-middle', this)">
+  School-MS
+</button>
+
+<button
+  onclick="filterMapSites('school-high', this)">
+  School-HS
+</button>
+
+<button
+  onclick="filterMapSites('construction', this)">
+  Construction
+</button>
+
+<button
+  onclick="filterMapSites('warehouse', this)">
+  Warehouse
+</button>
+
+<button
+  onclick="filterMapSites('government', this)">
+  Government
+</button>
+
+</div>
+
 
     <div id="map"></div>
 

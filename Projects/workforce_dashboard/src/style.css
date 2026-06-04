@@ -727,3 +727,79 @@ body {
 .login-container button {
   width: 100%;
 }
+.map-filters{
+  position:absolute;
+  top:70px;
+  right:10px;
+  z-index:1000;
+
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+
+  background:rgba(17,24,39,0.92);
+
+  padding:10px;
+
+  border-radius:12px;
+
+  box-shadow:0 4px 14px rgba(0,0,0,0.35);
+}
+
+.map-filters button{
+
+  appearance:none;
+  -webkit-appearance:none;
+
+  border:none;
+
+  padding:8px 12px;
+
+  border-radius:8px;
+
+  cursor:pointer;
+
+  background:#374151;
+
+  color:white;
+
+  font-size:12px;
+  font-weight:700;
+
+  transition:0.2s ease;
+
+  opacity:1;
+}
+
+.map-filters button:hover{
+
+  background:#4b5563;
+
+  transform:translateY(-1px);
+}
+
+.map-filters .active-filter{
+
+  background:#2563eb;
+
+  color:white;
+
+  box-shadow:0 0 10px rgba(37,99,235,0.45);
+}
+.leaflet-top,
+.leaflet-bottom{
+  z-index:800 !important;
+}
+
+.leaflet-control{
+  z-index:850 !important;
+}
+
+.map-filters{
+  z-index:900;
+}
+.leaflet-control-layers{
+  background:white !important;
+  border-radius:10px !important;
+  overflow:hidden;
+}
