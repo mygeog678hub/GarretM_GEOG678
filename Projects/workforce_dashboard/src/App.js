@@ -1901,7 +1901,9 @@ function searchSite() {
 
   } else if (matches.length > 1) {
 
-    alert("Multiple sites match that search.");
+    } else if (matches.length > 1) {
+
+  return;
 
   } else {
 
