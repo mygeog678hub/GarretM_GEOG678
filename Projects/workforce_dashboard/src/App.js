@@ -1868,29 +1868,44 @@ async function logout() {
 
 function searchSite() {
 
-  const query =
-    document.getElementById("siteSearch")
-      .value
-      .toLowerCase();
+  const query = document
+    .getElementById("siteSearch")
+    .value
+    .trim()
+    .toLowerCase();
 
-  const match = sites.find(s =>
+  if (!query) return;
+  if (query.length < 3) return;
 
+  const matches = sites.filter(s =>
+
+    s.name &&
     s.name.toLowerCase().includes(query)
 
   );
 
-  if (!match) return;
+  if (matches.length === 1) {
 
-  window.map.flyTo(
-    [match.lat, match.lng],
-    16
-  );
+    const match = matches[0];
 
-  const marker = markers[match.id];
+    window.map.flyTo(
+      [match.lat, match.lng],
+      16
+    );
 
-  if (marker) {
+    const marker = markers[match.id];
 
-    marker.openPopup();
+    if (marker) {
+      marker.openPopup();
+    }
+
+  } else if (matches.length > 1) {
+
+    alert("Multiple sites match that search.");
+
+  } else {
+
+    alert("No matching site found.");
 
   }
 
