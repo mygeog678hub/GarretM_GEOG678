@@ -7,9 +7,14 @@
       "hosting": {
         "main": [
           "workforge-3b77f"
-        ],
-        "publicsafety": [
-          "public-safety-getforgecard"
+        ]
+      }
+    },
+
+    "forgecard-9071c": {
+      "hosting": {
+        "main": [
+          "forgecard-9071c"
         ]
       }
     }

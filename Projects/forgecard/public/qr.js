@@ -76,9 +76,19 @@ async function loadCard() {
         target="_blank"
       >
         🌐 ${data.website || "No website"}
-      </a>
+      </a>      
 
-      <div class="profile-actions">
+      <div class="qr-wrapper">
+
+  <div class="qr-section">
+
+    <div id="qrcode"></div>
+
+  </div>
+
+</div>
+
+      <div class="profile-actions">      
 
         <button id="saveContactBtn">
           Save Contact

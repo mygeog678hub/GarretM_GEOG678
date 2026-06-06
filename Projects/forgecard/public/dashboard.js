@@ -229,19 +229,82 @@ card.className =
     Delete
   </button>
 
-  <div class="qr-wrapper">
+</div>
+
+<div class="qr-wrapper">
+
   <div class="qr-section">
+
     <div id="qrcode-${docSnap.id}"></div>
+
+    <button
+      class="btn card-btn download-qr-btn"
+      data-id="${docSnap.id}"
+    >
+      Download QR
+    </button>
+
   </div>
-</div>
-</div>
 
 </div>
 
-    </div>
-
-  </div>
+</div>
 `;
+generateQR(docSnap.id);
+
+const downloadQRBtn =
+  card.querySelector(".download-qr-btn");
+
+downloadQRBtn.addEventListener(
+  "click",
+  () => {
+
+    const qrContainer =
+      document.getElementById(
+        `qrcode-${docSnap.id}`
+      );
+
+    const canvas =
+      qrContainer.querySelector("canvas");
+
+    const img =
+      qrContainer.querySelector("img");
+
+    let imageURL = "";
+
+    if (canvas) {
+
+      imageURL =
+        canvas.toDataURL("image/png");
+
+    } else if (img) {
+
+      imageURL = img.src;
+
+    } else {
+
+      alert("QR code not found.");
+
+      return;
+
+    }
+
+    const link =
+      document.createElement("a");
+
+    link.href = imageURL;
+
+    link.download =
+      `${data.name || "forgecard"}-qr.png`;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
+
+  }
+);
 console.log("Appending card:", data.name);
       dashboardGrid.appendChild(card);
       generateQR(docSnap.id);

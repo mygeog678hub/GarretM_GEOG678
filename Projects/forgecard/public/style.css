@@ -2155,3 +2155,22 @@ justify-content: center;
   z-index: 99999 !important;
 
 }
+.profile-actions {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+
+  margin-top: 24px;
+
+  align-items: center;
+
+}
+
+.profile-actions button {
+
+  width: 220px;
+
+}

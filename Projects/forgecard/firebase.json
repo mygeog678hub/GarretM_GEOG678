@@ -20,16 +20,8 @@
           "type": 301
         }
       ]
-    },
-    {
-      "target": "publicsafety",
-      "public": "publicsafety",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ]
     }
+    
   ],
   "functions": [
     {

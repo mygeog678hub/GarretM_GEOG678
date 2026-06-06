@@ -803,3 +803,612 @@ body {
   border-radius:10px !important;
   overflow:hidden;
 }
+html {
+
+  scroll-behavior: smooth;
+
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: Arial, sans-serif;
+}
+
+.hero {
+
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  padding: 40px 20px;
+
+  position: relative;
+
+  background:
+    linear-gradient(
+      rgba(5,10,18,0.78),
+      rgba(5,10,18,0.88)
+    ),
+    url("https://getforgecard.com/assets/pct3-annex.jpg");
+
+  background-size: cover;
+
+  background-position: center;
+
+  background-repeat: no-repeat;
+
+}
+
+.badge {
+  width: 180px;
+  max-width: 80%;
+
+  margin-bottom: 25px;
+}
+
+h1 {
+  font-size: 2.6rem;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 2rem;
+  color: #d4af37;
+
+  margin-bottom: 20px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+
+  color: #cbd5e1;
+
+  margin-bottom: 35px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+}
+
+.btn {
+  text-decoration: none;
+
+  padding: 14px 28px;
+
+  border-radius: 8px;
+
+  font-weight: bold;
+
+  transition: 0.3s ease;
+}
+
+.gold {
+  background: #d4af37;
+  color: #0f172a;
+}
+
+.gold:hover {
+  opacity: 0.9;
+}
+
+.outline {
+  border: 2px solid #d4af37;
+  color: #d4af37;
+}
+
+.outline:hover {
+  background: #d4af37;
+  color: #0f172a;
+}
+.quick-actions,
+.recruiting,
+.contact {
+  padding: 80px 20px;
+
+  text-align: center;
+}
+
+.quick-actions h3,
+.recruiting h3,
+.contact h3 {
+  font-size: 2rem;
+
+  margin-bottom: 40px;
+
+  color: #d4af37;
+}
+
+.cards {
+  display: flex;
+
+  gap: 25px;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #1e293b;
+
+  padding: 30px;
+
+  border-radius: 12px;
+
+  max-width: 320px;
+
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.card h4 {
+  margin-bottom: 15px;
+
+  color: #d4af37;
+}
+
+.card p {
+  color: #cbd5e1;
+
+  line-height: 1.6;
+}
+
+.recruiting p,
+.contact p {
+  color: #cbd5e1;
+
+  margin-bottom: 20px;
+
+  line-height: 1.7;
+}
+.navbar {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 20px 40px;
+
+  background: rgba(15, 23, 42, 0.95);
+
+  position: fixed;
+
+  top: 0;
+
+  left: 0;
+
+  z-index: 1000;
+
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  backdrop-filter: blur(10px);
+
+background:
+  rgba(8,12,20,0.72);
+
+border-bottom:
+  1px solid rgba(255,255,255,0.08);
+}
+
+.nav-logo {
+  font-size: 1.1rem;
+
+  font-weight: bold;
+
+  color: #d4af37;
+}
+
+.nav-links {
+  display: flex;
+
+  gap: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+
+  color: #f8fafc;
+
+  transition: 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #d4af37;
+}
+
+.hero {
+  padding-top: 120px;
+}
+.qr-section {
+  padding: 80px 20px;
+
+  text-align: center;
+}
+
+.qr-section h3 {
+  font-size: 2rem;
+
+  margin-bottom: 25px;
+
+  color: #d4af37;
+}
+
+.qr-section p {
+  color: #cbd5e1;
+
+  margin-bottom: 35px;
+
+  line-height: 1.7;
+}
+
+.qr-code {
+  width: 220px;
+
+  max-width: 90%;
+
+  background: white;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+}
+.vacation-watch {
+  padding: 80px 20px;
+
+  text-align: center;
+}
+
+.vacation-watch h3 {
+  font-size: 2rem;
+
+  margin-bottom: 20px;
+
+  color: #d4af37;
+}
+
+.vacation-watch p {
+  color: #cbd5e1;
+
+  margin-bottom: 25px;
+
+  line-height: 1.7;
+}
+
+.portal-btn {
+  display: inline-block;
+
+  text-decoration: none;
+
+  padding: 14px 28px;
+
+  border-radius: 8px;
+
+  background: #d4af37;
+
+  color: #0f172a;
+
+  font-weight: bold;
+
+  transition: 0.3s ease;
+}
+
+.portal-btn:hover {
+  opacity: 0.9;
+}
+
+.portal-note {
+  margin-top: 20px;
+
+  color: #94a3b8;
+
+  font-size: 0.95rem;
+}
+.forgecard-platform {
+  padding: 80px 20px;
+
+  text-align: center;
+
+  background: #111827;
+}
+
+.forgecard-platform h3 {
+  font-size: 2rem;
+
+  margin-bottom: 20px;
+
+  color: #d4af37;
+}
+
+.forgecard-platform p {
+  max-width: 700px;
+
+  margin: auto;
+
+  margin-bottom: 30px;
+
+  color: #cbd5e1;
+
+  line-height: 1.8;
+}
+@media (max-width: 768px) {
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+}
+@media (max-width: 768px) {
+
+  .action-bar {
+
+    gap: 8px;
+
+    padding: 10px;
+
+  }
+
+  .action-btn {
+
+    font-size: 0.85rem;
+
+    padding: 8px 14px;
+
+  }
+
+}
+.resource-card {
+
+  display: block;
+
+  text-decoration: none;
+
+  color: white;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  border-radius: 18px;
+
+  padding: 24px;
+
+  transition: 0.25s ease;
+
+}
+
+.resource-card:hover {
+
+  transform:
+    translateY(-6px) scale(1.015);
+
+  border-color: #c8a95b;
+
+  background:
+    rgba(255,255,255,0.07);
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,0.35);
+
+}
+.service-icon {
+
+  font-size: 2rem;
+
+  color: #c8a95b;
+
+  margin-bottom: 14px;
+
+  display: block;
+
+}
+.action-bar {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 9999;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+
+  padding: 12px 18px;
+
+  background:
+    rgba(8,12,20,0.92);
+
+  backdrop-filter: blur(10px);
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.08);
+
+}
+
+.action-btn {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 10px 18px;
+
+  border-radius: 999px;
+
+  text-decoration: none;
+
+  color: white;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  transition: 0.25s ease;
+
+  font-size: 0.95rem;
+
+}
+
+.action-btn:hover {
+
+  transform: translateY(-2px);
+
+  border-color: #c8a95b;
+
+  background:
+    rgba(200,169,91,0.12);
+
+}
+.mission-statement {
+
+  max-width: 900px;
+
+  margin: 30px auto 0;
+
+  padding: 0 20px;
+
+  line-height: 1.9;
+
+  font-size: 1.05rem;
+
+  color:
+    rgba(255,255,255,0.88);
+
+}
+.updates {
+
+  padding: 80px 20px;
+
+}
+
+.update-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(280px, 1fr));
+
+  gap: 24px;
+
+  margin-top: 40px;
+
+}
+
+.update-card {
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  border-radius: 20px;
+
+  padding: 24px;
+
+}
+
+.update-tag {
+
+  display: inline-block;
+
+  margin-bottom: 14px;
+
+  padding: 6px 12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(200,169,91,0.15);
+
+  color: #c8a95b;
+
+  font-size: 0.85rem;
+
+  font-weight: 600;
+
+}
+.resource-card,
+.action-btn,
+.update-card,
+.portal-btn,
+.btn {
+
+  transition:
+    all 0.28s ease;
+
+}
+.update-card:hover {
+
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(200,169,91,0.35);
+
+  background:
+    rgba(255,255,255,0.06);
+
+}
+.badge {
+
+  filter:
+    drop-shadow(
+      0 0 18px rgba(200,169,91,0.28)
+    );
+
+}
+.leadership {
+
+  padding: 80px 20px;
+
+  text-align: center;
+
+}
+
+.leadership-text {
+
+  max-width: 700px;
+
+  margin: 20px auto 32px;
+
+  line-height: 1.8;
+
+  color:
+    rgba(255,255,255,0.82);
+
+}
