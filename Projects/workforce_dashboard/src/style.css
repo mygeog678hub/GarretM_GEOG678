@@ -1506,3 +1506,8 @@ border-bottom:
 #dailySummary strong {
   float: right;
 }
+.activity-note {
+  border-left: 4px solid #3b82f6;
+  background: rgba(59,130,246,.1);
+}
+

@@ -130,6 +130,7 @@ let previewSiteId = null;
 let currentMapFilter = "all";
 let activityLogs = [];
 let activityFilter = "all";
+let siteNotes = [];
 
 // ================= MAP =================
 
@@ -411,6 +412,18 @@ onSnapshot(
 
   }
 
+);
+
+onSnapshot(
+  collection(db, "siteNotes"),
+  snap => {
+
+    siteNotes = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+  }
 );
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
@@ -1840,6 +1853,101 @@ function closeEmployeeModal() {
   if (modal) {
     modal.style.display = "none";
   }
+}
+
+function openSiteNoteModal() {
+
+  const select =
+    document.getElementById(
+      "noteSite"
+    );
+
+  select.innerHTML = "";
+
+  sites
+    .sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+    .forEach(site => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = site.id;
+      option.textContent = site.name;
+
+      select.appendChild(option);
+    });        
+
+  document.getElementById(
+    "siteNote"
+  ).value = "";
+
+  document.getElementById(
+    "siteNoteModal"
+  ).style.display = "flex";
+}
+
+function closeSiteNoteModal() {
+
+  document.getElementById(
+    "siteNoteModal"
+  ).style.display = "none";
+}    
+
+async function saveSiteNote() {
+
+  const siteId =
+    document.getElementById(
+      "noteSite"
+    ).value;
+
+  const note =
+    document.getElementById(
+      "siteNote"
+    ).value.trim();
+
+  if (!note) {
+
+    alert(
+      "Please enter a note."
+    );
+
+    return;
+  }  
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  await addDoc(
+    collection(db, "siteNotes"),
+    {
+      siteId,
+      siteName: site.name,
+      note,
+      createdBy:
+        auth.currentUser?.email ||
+        "Unknown",
+
+      createdAt:
+        new Date().toISOString()
+    }    
+  );  
+
+ await logActivity(
+  siteId,
+  "note",
+  `Site note added for ${site.name}`,
+  auth.currentUser?.email || "Unknown"
+);
+
+  closeSiteNoteModal();
+
+  alert(
+    "Site note saved."
+  );
 }
 
 // ================= EXPORT EXCEL =================
@@ -3307,6 +3415,128 @@ function addEmployeeToSite(siteId) {
 
 }
 
+function openViewNotesModal() {
+
+  const select =
+    document.getElementById(
+      "viewNotesSite"
+    );
+
+  select.innerHTML = "";
+
+  sites
+    .sort((a,b) =>
+      a.name.localeCompare(b.name)
+    )
+    .forEach(site => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value = site.id;
+      option.textContent =
+        site.name;
+
+      select.appendChild(option);
+
+    });
+
+  loadSiteNotes();
+
+  document.getElementById(
+    "viewNotesModal"
+  ).style.display = "block";
+
+}
+
+function closeViewNotesModal() {
+
+  document.getElementById(
+    "viewNotesModal"
+  ).style.display = "none";
+
+}
+
+function loadSiteNotes() {
+
+  const siteId =
+    document.getElementById(
+      "viewNotesSite"
+    ).value;
+    console.log("Selected Site:", siteId);
+console.log("All Notes:", siteNotes);
+
+  const notes =
+    siteNotes
+      .filter(
+        n => n.siteId === siteId
+      )
+      
+      .sort((a,b) =>
+        new Date(b.createdAt) -
+        new Date(a.createdAt)
+      );
+console.log("Matching Notes:", notes);
+  const container =
+    document.getElementById(
+      "siteNotesList"
+    );
+
+  if (!notes.length) {
+
+    container.innerHTML =
+      "<p>No notes found.</p>";
+
+    return;
+
+  }
+console.log("Container:", container);
+console.log("First Note:", notes[0]);
+  container.innerHTML =
+  notes.map(note => `
+
+    <div style="
+      background:#ffffff;
+      color:#111827;
+      border:1px solid #ddd;
+      padding:10px;
+      margin-bottom:10px;
+      border-radius:6px;
+    ">
+
+      <small style="color:#6b7280;">
+        ${new Date(
+          note.createdAt
+        ).toLocaleString()}
+      </small>
+
+      <br><br>
+
+      ${note.note}
+
+    </div>
+
+  `).join("");
+
+}
+
+function outsideViewNotesClick(event) {
+
+  const content =
+    document.getElementById(
+      "viewNotesContent"
+    );
+
+  if (!content.contains(event.target)) {
+
+    closeViewNotesModal();
+
+  }
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -3356,3 +3586,10 @@ window.updateSubtypeOptions = updateSubtypeOptions;
 window.toggleMarkerEditing = toggleMarkerEditing;
 window.searchAddress = searchAddress;
 window.filterMapSites = filterMapSites;
+window.openSiteNoteModal = openSiteNoteModal;
+window.closeSiteNoteModal = closeSiteNoteModal;
+window.saveSiteNote = saveSiteNote;
+window.openViewNotesModal = openViewNotesModal;
+window.closeViewNotesModal = closeViewNotesModal;
+window.loadSiteNotes = loadSiteNotes;
+window.outsideViewNotesClick = outsideViewNotesClick;
