@@ -347,11 +347,13 @@ function refreshActivityFeed() {
 onSnapshot(collection(db, "employees"), snap => {
   employees = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   refresh();
+  updateDailySummary();
 });
 
 onSnapshot(collection(db, "sites"), snap => {
   sites = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   refresh();
+  updateDailySummary();
 });
 
 onSnapshot(collection(db, "assignments"), snap => {
@@ -362,6 +364,7 @@ onSnapshot(collection(db, "assignments"), snap => {
   }))
   .filter(a => !a.archived);
   refresh();
+  updateDailySummary();
 });
 
 onSnapshot(collection(db, "assets"), snap => {
@@ -371,6 +374,7 @@ onSnapshot(collection(db, "assets"), snap => {
   }));
   console.log("Assets Loaded:", assets);
   refresh();
+  updateDailySummary();
 });
 
 onSnapshot(collection(db, "vehicles"), snap => {
@@ -379,6 +383,7 @@ onSnapshot(collection(db, "vehicles"), snap => {
     ...d.data()
   }));
   refresh();
+  updateDailySummary();
 });
 
 onSnapshot(
@@ -402,6 +407,7 @@ onSnapshot(
       });
 
     refreshActivityFeed();
+    updateDailySummary();
 
   }
 
@@ -1142,6 +1148,80 @@ const vehicle = vehicles.find(
     ${rows}
   `;
   renderEmployees();
+}
+
+function updateDailySummary() {
+
+  const summary =
+    document.getElementById(
+      "dailySummary"
+    );
+
+  if (!summary) return;
+
+  const today =
+    new Date().toDateString();
+
+  const assignmentsToday =
+    assignments.filter(a =>
+      new Date(
+        a.startTime
+      ).toDateString() === today
+    ).length;
+
+  const completedToday =
+    assignments.filter(a =>
+      a.endTime &&
+      new Date(
+        a.endTime
+      ).toDateString() === today
+    ).length;
+
+ const staffedSites =
+[
+  ...new Set(
+    assignments
+      .filter(
+        a => !a.endTime
+      )
+      .map(
+        a => a.siteId
+      )
+  )
+].length;
+
+const activeEmployees =
+  assignments.filter(
+    a => !a.endTime
+  ).length;
+
+const availableEmployees =
+  employees.length -
+  activeEmployees;
+
+  summary.innerHTML = `
+
+    <div>
+      Assignments Today:
+      <strong>${assignmentsToday}</strong>
+    </div>
+
+    <div>
+      Completed:
+      <strong>${completedToday}</strong>
+    </div>
+
+   <div>
+  Sites Staffed:
+  <strong>${staffedSites}</strong>
+</div>
+
+    <div>
+      Available:
+      <strong>${availableEmployees}</strong>
+    </div>
+
+  `;
 }
 
 // ================= UPDATE MAP =================

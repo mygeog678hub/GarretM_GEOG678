@@ -1497,3 +1497,12 @@ border-bottom:
 .activity-system strong {
   color: #3b82f6;
 }
+#dailySummary {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+#dailySummary strong {
+  float: right;
+}
