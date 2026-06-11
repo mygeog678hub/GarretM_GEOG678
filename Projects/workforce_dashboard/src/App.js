@@ -128,6 +128,8 @@ let editingEmployeeId = null;
 let editingSiteId = null;
 let previewSiteId = null;
 let currentMapFilter = "all";
+let activityLogs = [];
+let activityFilter = "all";
 
 // ================= MAP =================
 
@@ -286,6 +288,61 @@ searchControl.addTo(window.map);
 
 });
 
+function refreshActivityFeed() {
+
+  const feed =
+    document.getElementById(
+      "activityFeed"
+    );
+
+  if (!feed) return;
+
+  const filteredLogs =
+    activityFilter === "all"
+      ? activityLogs
+      : activityLogs.filter(
+          log => log.type === activityFilter
+        );
+
+  feed.innerHTML = filteredLogs
+    .slice(0, 25)
+    .map(log => {
+
+      const time = log.timestamp
+        ? new Date(
+            log.timestamp.seconds * 1000
+          ).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+          })
+        : "";
+
+      return `
+
+        <div class="activity-item activity-${log.type}">
+
+          <small>
+            ${time}
+          </small>
+
+          <br>
+
+          <strong>
+            ${log.type}
+          </strong>
+
+          <br>
+
+          ${log.message}
+
+        </div>
+
+      `;
+
+    })
+    .join("");
+}
+
 // ================= LOAD =================
 onSnapshot(collection(db, "employees"), snap => {
   employees = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -330,14 +387,7 @@ onSnapshot(
 
   snap => {
 
-    const feed =
-      document.getElementById(
-        "activityFeed"
-      );
-
-    if (!feed) return;
-
-    const logs = snap.docs
+    activityLogs = snap.docs
       .map(doc => doc.data())
       .sort((a, b) => {
 
@@ -351,43 +401,8 @@ onSnapshot(
 
       });
 
-    feed.innerHTML = logs
-  .slice(0, 25)
-  .map(log => {
+    refreshActivityFeed();
 
-    const time = log.timestamp
-      ? new Date(
-          log.timestamp.seconds * 1000
-        ).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit"
-        })
-      : "";
-
-    return `
-
-      <div class="activity-item activity-${log.type}">
-
-        <small>
-          ${time}
-        </small>
-
-        <br>
-
-        <strong>
-          ${log.type}
-        </strong>
-
-        <br>
-
-        ${log.message}
-
-      </div>
-
-    `;
-
-  })
-  .join("");
   }
 
 );
@@ -2757,6 +2772,16 @@ async function clearSiteAssignments(siteId) {
   }
 
 }
+
+function setActivityFilter(type) {
+
+  activityFilter = type;
+
+  refreshActivityFeed();
+
+}
+window.setActivityFilter =
+  setActivityFilter;
 // ================= GLOBAL =================
 async function deploySiteCrew(siteId) {
 
