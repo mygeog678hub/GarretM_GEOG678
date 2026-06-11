@@ -595,6 +595,17 @@ async function addAsset() {
 
 // ================= ASSIGN =================
 async function assign() {
+  alert(
+  `Employee: ${
+    assignEmployee.options[
+      assignEmployee.selectedIndex
+    ]?.text
+  }\nSite: ${
+    assignSite.options[
+      assignSite.selectedIndex
+    ]?.text
+  }`
+);
   if (!assignEmployee.value || !assignSite.value) {
     alert("Select employee and site");
     return;
@@ -625,21 +636,40 @@ if (
 
   return;
 }
-  await addDoc(collection(db, "assignments"), {
-    employeeId: assignEmployee.value,
-    siteId: assignSite.value,
-    assetId: assignAsset.value || null,
-    vehicleId: assignVehicle.value || null,
-    startTime: new Date().toISOString(),
-    endTime: null
-  });
+  const employeeId = assignEmployee.value;
+const siteId = assignSite.value;
 
-  
+const employee =
+  employees.find(
+    e => e.id === employeeId
+  );
 
-  await logActivity(
+const site =
+  sites.find(
+    s => s.id === siteId
+  );
+
+await addDoc(collection(db, "assignments"), {
+  employeeId,
+  siteId,
+  assetId: assignAsset.value || null,
+  vehicleId: assignVehicle.value || null,
+  startTime: new Date().toISOString(),
+  endTime: null
+});
+
+await logActivity(
+  siteId,
+  "assignment",
+  `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
+  "Dispatcher"
+);   
+
+await logActivity(
   assignSite.value,
   "assignment",
-  "Employee assigned to site"
+  `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
+  "Dispatcher"
 );
 }
 
@@ -765,7 +795,7 @@ async function unassign(empId) {
   const site =
     sites.find(
       s => s.id === a.siteId
-    );
+    );  
 
   await updateDoc(
     doc(db, "assignments", a.id),
@@ -2640,6 +2670,22 @@ async function deployDefaultCrews() {
           }
         );
 
+        const employee =
+  employees.find(
+    e => e.id === employeeId
+  );
+
+const site =
+  sites.find(
+    s => s.id === siteDoc.id
+  );
+
+await logActivity(
+  siteDoc.id,
+  "assignment",
+  `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
+  "Dispatcher"
+);
         deployedCount++;
 
       }
@@ -2974,7 +3020,7 @@ function closeDeployPreview() {
 }
 
 async function confirmDeployment() {
-
+  
   try {
 
     let deployedCount = 0;
@@ -2994,19 +3040,36 @@ if (activeAssignment) {
 }
 
       await addDoc(
-        collection(db, "assignments"),
-        {
-          employeeId: d.employeeId,
-          siteId: d.siteId,
-          assetId: null,
-          vehicleId: null,
-          startTime:
-            new Date().toISOString(),
-          endTime: null
-        }
-      );
+  collection(db, "assignments"),
+  {
+    employeeId: d.employeeId,
+    siteId: d.siteId,
+    assetId: null,
+    vehicleId: null,
+    startTime:
+      new Date().toISOString(),
+    endTime: null
+  }
+);
 
-      deployedCount++;
+const employee =
+  employees.find(
+    e => e.id === d.employeeId
+  );
+
+const site =
+  sites.find(
+    s => s.id === d.siteId
+  );
+
+await logActivity(
+  d.siteId,
+  "assignment",
+  `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
+  "Dispatcher"
+);
+
+deployedCount++;
 
     }
 
