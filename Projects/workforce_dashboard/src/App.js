@@ -649,6 +649,10 @@ const site =
     s => s.id === siteId
   );
 
+  console.log("employeeId:", employeeId);
+console.log("employee:", employee);
+console.log("site:", site);
+
 await addDoc(collection(db, "assignments"), {
   employeeId,
   siteId,
@@ -664,13 +668,6 @@ await logActivity(
   `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
   "Dispatcher"
 );   
-
-await logActivity(
-  assignSite.value,
-  "assignment",
-  `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
-  "Dispatcher"
-);
 }
 
 async function logActivity(
