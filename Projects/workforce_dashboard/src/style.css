@@ -1459,3 +1459,41 @@ border-bottom:
   color: #888;
   font-size: 11px;
 }
+.activity-assignment {
+  border-left: 4px solid #22c55e;
+}
+
+.activity-unassignment {
+  border-left: 4px solid #f97316;
+}
+
+.activity-maintenance {
+  border-left: 4px solid #eab308;
+}
+
+.activity-incident {
+  border-left: 4px solid #ef4444;
+}
+
+.activity-system {
+  border-left: 4px solid #3b82f6;
+}
+.activity-assignment strong {
+  color: #22c55e;
+}
+
+.activity-unassignment strong {
+  color: #f97316;
+}
+
+.activity-maintenance strong {
+  color: #eab308;
+}
+
+.activity-incident strong {
+  color: #ef4444;
+}
+
+.activity-system strong {
+  color: #3b82f6;
+}

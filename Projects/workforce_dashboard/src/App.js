@@ -366,7 +366,7 @@ onSnapshot(
 
     return `
 
-      <div class="activity-item">
+      <div class="activity-item activity-${log.type}">
 
         <small>
           ${time}
