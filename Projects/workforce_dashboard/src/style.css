@@ -1412,3 +1412,50 @@ border-bottom:
     rgba(255,255,255,0.82);
 
 }
+.panel {
+
+  background: #111827;
+
+  border-radius: 14px;
+
+  padding: 18px;
+
+  min-height: 170px;
+
+  display: flex;
+  flex-direction: column;
+
+}
+
+#activityFeed {
+
+  margin-top: 12px;
+
+  max-height: 220px;
+
+  overflow-y: auto;
+
+}
+
+.activity-item {
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+}
+.panel {
+
+  grid-column: span 2;
+
+  min-height: 220px;
+
+}
+.activity-item small {
+  color: #888;
+  font-size: 11px;
+}

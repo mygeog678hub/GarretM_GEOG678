@@ -10,6 +10,7 @@ import {
   deleteDoc,
   getDoc,
   getDocs,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
@@ -322,6 +323,74 @@ onSnapshot(collection(db, "vehicles"), snap => {
   }));
   refresh();
 });
+
+onSnapshot(
+
+  collection(db, "activityLogs"),
+
+  snap => {
+
+    const feed =
+      document.getElementById(
+        "activityFeed"
+      );
+
+    if (!feed) return;
+
+    const logs = snap.docs
+      .map(doc => doc.data())
+      .sort((a, b) => {
+
+        const aTime =
+          a.timestamp?.seconds || 0;
+
+        const bTime =
+          b.timestamp?.seconds || 0;
+
+        return bTime - aTime;
+
+      });
+
+    feed.innerHTML = logs
+  .slice(0, 25)
+  .map(log => {
+
+    const time = log.timestamp
+      ? new Date(
+          log.timestamp.seconds * 1000
+        ).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit"
+        })
+      : "";
+
+    return `
+
+      <div class="activity-item">
+
+        <small>
+          ${time}
+        </small>
+
+        <br>
+
+        <strong>
+          ${log.type}
+        </strong>
+
+        <br>
+
+        ${log.message}
+
+      </div>
+
+    `;
+
+  })
+  .join("");
+  }
+
+);
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
   const name = siteName.value.trim();
@@ -564,7 +633,47 @@ if (
     startTime: new Date().toISOString(),
     endTime: null
   });
+
+  
+
+  await logActivity(
+  assignSite.value,
+  "assignment",
+  "Employee assigned to site"
+);
 }
+
+async function logActivity(
+  siteId,
+  type,
+  message,
+  user = "System"
+) {
+
+  try {
+
+    await addDoc(
+      collection(db, "activityLogs"),
+      {
+        siteId,
+        type,
+        message,
+        user,
+        timestamp: serverTimestamp()
+      }
+    );
+
+  } catch (err) {
+
+    console.error(
+      "Activity log error:",
+      err
+    );
+
+  }
+
+}
+window.logActivity = logActivity;
 
 async function endBusinessDay() {
 
@@ -592,19 +701,36 @@ async function endBusinessDay() {
 
     for (const assignment of activeAssignments) {
 
-      await updateDoc(
-        doc(
-          db,
-          "assignments",
-          assignment.id
-        ),
-        {
-          endTime:
-            new Date().toISOString()
-        }
-      );
+  const employee =
+    employees.find(
+      e => e.id === assignment.employeeId
+    );
 
+  const site =
+    sites.find(
+      s => s.id === assignment.siteId
+    );
+
+  await updateDoc(
+    doc(
+      db,
+      "assignments",
+      assignment.id
+    ),
+    {
+      endTime:
+        new Date().toISOString()
     }
+  );
+
+  await logActivity(
+    assignment.siteId,
+    "unassignment",
+    `${employee?.name || "Employee"} removed from ${site?.name || "site"} during End Business Day`,
+    "System"
+  );
+
+}
 
     alert(
       "Business day ended"
@@ -624,15 +750,40 @@ async function endBusinessDay() {
 
 // ================= UNASSIGN =================
 async function unassign(empId) {
+
   const a = assignments.find(x =>
     x.employeeId === empId && !x.endTime
   );
 
   if (!a) return;
 
-  await updateDoc(doc(db, "assignments", a.id), {
-    endTime: new Date().toISOString()
-  });
+  const employee =
+    employees.find(
+      e => e.id === a.employeeId
+    );
+
+  const site =
+    sites.find(
+      s => s.id === a.siteId
+    );
+
+  await updateDoc(
+    doc(db, "assignments", a.id),
+    {
+      endTime: new Date().toISOString()
+    }
+  );
+
+  await logActivity(
+    a.siteId,
+    "unassignment",
+    `${employee?.name || "Employee"} manually unassigned from ${site?.name || "site"}`,
+    "Dispatcher"
+  );
+  alert(
+  `${employee?.name || "Employee"} unassigned successfully`
+);
+
 }
 
 // ================= DELETE =================
