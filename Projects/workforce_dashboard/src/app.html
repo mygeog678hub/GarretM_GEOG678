@@ -115,11 +115,7 @@
 
 <body>
 
-<div class="app-layout">
-
-  <!-- SIDEBAR -->  
-
-  </aside>
+<div class="app-layout">  
 
   <!-- MAIN CONTENT -->
 
@@ -190,7 +186,7 @@
 
   <span class="stat-label">
     Today's Operations
-  </span>
+  </span>  
 
   <div id="dailySummary">
 
@@ -198,9 +194,26 @@
 
   </div>
 
-</div>
+</div>  
+<div class="stat-card">
+    <span class="stat-label">
+      Assets In Maintenance
+    </span>
 
-  <div class="panel">
+    <h2 id="maintenanceCount">0</h2>
+  </div>
+  <div class="stat-card">
+
+  <span class="stat-label">
+    Open Incidents
+  </span>
+
+  <h2 id="incidentCount">
+    0
+  </h2>
+
+</div> 
+<div class="panel recent-activity-panel">
 
   <h3>
     Recent Activity
@@ -213,36 +226,72 @@
   </button>
 
   <button onclick="setActivityFilter('assignment')">
-    Assignments
+    Assignment
   </button>
 
   <button onclick="setActivityFilter('unassignment')">
-    Unassignments
+    Unassignment
+  </button>
+
+  <button onclick="setActivityFilter('note')">
+  Note
+</button>
+
+<button onclick="setActivityFilter('incident')">
+    Incident
   </button>
 
   <button onclick="setActivityFilter('maintenance')">
     Maintenance
-  </button>
-
-  <button onclick="setActivityFilter('incident')">
-    Incidents
-  </button>
+  </button>  
 
 </div>
 
   <div id="activityFeed"></div>
+</div>
+
+</div>   
+
+<div class="incident-panel">
+
+  <h3>🚨 Report Incident</h3>
+
+  <select id="incidentSite"></select>
+
+  <select id="incidentSeverity">
+
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+    <option value="Critical">Critical</option>
+
+  </select>
+
+  <textarea
+    id="incidentDescription"
+    placeholder="Describe incident..."
+  ></textarea>
+
+  <button onclick="saveIncident()">
+    Save Incident
+  </button>
 
 </div>
 
-  <div class="stat-card">
-    <span class="stat-label">
-      Assets In Maintenance
-    </span>
+<div class="incident-list-panel">
 
-    <h2 id="maintenanceCount">0</h2>
+  <h3>
+    🚨 Open Incidents
+    (<span id="openIncidentCount">0</span>)
+  </h3>
+
+  <div id="incidentList">
+    No incidents reported.
   </div>
 
 </div>
+
+
 
 <div style="
   margin-top:15px;
@@ -271,8 +320,8 @@
   View Site Notes
 </button>
 
-
 </div>
+
 
   <!-- MAP CARD -->
    
@@ -473,7 +522,6 @@
   View Sites
 </button>
 </div>
-</div>
 
 <div class="dashboard-card">
 <h2>Add Asset (Equipment)</h2>
@@ -545,18 +593,31 @@
   </div>
 
   <div id="maintenanceList"></div>
+  </div>
 
-</div>
-<h2>Report</h2>
-<button onclick="exportExcel()">Export Excel</button>
-<button
-  onclick="archiveAllCompletedAssignments()"
-  class="danger"
->
-  Archive Completed
-</button>
-<div class="table-wrapper">
-  <table id="reportTable"></table>
+<div class="dashboard-card">
+
+  <h2>Report</h2>
+
+  <div class="report-actions">
+
+    <button onclick="exportExcel()">
+      Export Excel
+    </button>
+
+    <button
+      onclick="archiveAllCompletedAssignments()"
+      class="danger"
+    >
+      Archive Completed
+    </button>
+
+  </div>
+
+  <div class="table-wrapper">
+    <table id="reportTable"></table>
+  </div>
+
 </div>
 
 <h2>Report Issue</h2>
@@ -983,6 +1044,7 @@
       Close
     </button>
 
+  </div>
   </div>
 
 </div>

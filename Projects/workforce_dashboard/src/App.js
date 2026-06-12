@@ -320,25 +320,23 @@ function refreshActivityFeed() {
 
       return `
 
-        <div class="activity-item activity-${log.type}">
+  <div class="activity-item activity-${log.type}">
 
-          <small>
-            ${time}
-          </small>
+    <small>${time}</small>
 
-          <br>
+    <br>
 
-          <strong>
-            ${log.type}
-          </strong>
+    <strong>
+      ${log.type.charAt(0).toUpperCase() + log.type.slice(1)}
+    </strong>
 
-          <br>
+    <br>
 
-          ${log.message}
+    ${log.message}
 
-        </div>
+  </div>
 
-      `;
+`;
 
     })
     .join("");
@@ -422,6 +420,29 @@ onSnapshot(
       id: doc.id,
       ...doc.data()
     }));
+
+    updateMap();
+
+  }
+);
+
+let incidents = [];
+
+onSnapshot(
+  collection(db, "incidents"),
+  snap => {
+
+    console.log(
+      "Incidents updated:",
+      snap.size
+    );
+
+    incidents = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    refresh();
 
   }
 );
@@ -1453,6 +1474,15 @@ applyMarkerVisibility(
 );
 
     const marker = markers[site.id];
+    const latestNote =
+  siteNotes
+    .filter(n =>
+      n.siteId === site.id
+    )
+    .sort((a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+    )[0];
 
     let popup =
       `<b>${site.name}</b><br>` +
@@ -1509,6 +1539,27 @@ applyMarkerVisibility(
         "<br><b>Maintenance Required</b>";
 
     }
+    if (latestNote) {
+
+  popup += `
+    <hr>
+
+    <b>Latest Note</b><br>
+
+    ${latestNote.note}<br><br>
+
+    <small>
+      Updated:
+      ${new Date(
+        latestNote.createdAt
+      ).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+      })}
+    </small>
+  `;
+
+}
 
     marker.bindPopup(popup);
 
@@ -1695,6 +1746,23 @@ assignEmployee.innerHTML =
       </option>
     `).join("");
 
+    // ================= INCIDENT SITE DROPDOWN =================
+const incidentSite =
+  document.getElementById(
+    "incidentSite"
+  );
+
+if (incidentSite) {
+
+  incidentSite.innerHTML =
+    sites.map(s => `
+      <option value="${s.id}">
+        ${s.name}
+      </option>
+    `).join("");
+
+}
+
   // ================= ASSET DROPDOWN =================
   const selectedAsset =
     assignAsset.value;
@@ -1777,6 +1845,13 @@ document.getElementById("maintenanceCount").textContent =
   assets.filter(
     a => a.status === "maintenance"
   ).length;
+
+  document.getElementById(
+  "incidentCount"
+).textContent =
+  incidents.length;
+
+  renderIncidents();
 
   render();
 
@@ -3537,6 +3612,170 @@ function outsideViewNotesClick(event) {
 
 }
 
+async function saveIncident() {
+
+  const siteId =
+    document.getElementById(
+      "incidentSite"
+    ).value;
+
+  const severity =
+    document.getElementById(
+      "incidentSeverity"
+    ).value;
+
+  const description =
+    document.getElementById(
+      "incidentDescription"
+    ).value.trim();
+
+  if (!description) {
+
+    alert(
+      "Description required."
+    );
+
+    return;
+
+  }  
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  await addDoc(
+    collection(
+      db,
+      "incidents"
+    ),
+    {
+
+      siteId,
+
+      siteName:
+        site?.name || "Unknown",
+
+      severity,
+
+      description,
+
+      reportedBy:
+        auth.currentUser?.email ||
+        "Unknown",
+
+      createdAt:
+        new Date().toISOString()
+
+    }
+    
+  );
+  
+
+  await logActivity(
+    siteId,
+    "incident",
+    `🚨 ${severity} Incident - ${site.name}`,
+    auth.currentUser?.email ||
+    "Unknown"
+  );  
+
+  alert(
+    "Incident reported."
+  );
+  
+}
+
+function renderIncidents() {
+
+  const container =
+    document.getElementById(
+      "incidentList"
+    );
+
+  if (!container) return;
+
+  document.getElementById(
+    "openIncidentCount"
+  ).textContent =
+    incidents.length;
+
+  if (!incidents.length) {
+
+    container.innerHTML =
+      "No incidents reported.";
+
+    return;
+
+  }
+
+  container.innerHTML =
+    incidents.map(i => `
+
+      <div class="incident-card">
+
+        <div>
+
+          <strong>
+            ${i.severity}
+          </strong>
+
+          <br>
+
+          ${i.description}
+
+          <br>
+
+          <small>
+            ${i.siteName}
+          </small>
+
+        </div>
+
+        <button
+          onclick="resolveIncident('${i.id}')"
+        >
+          Resolve
+        </button>
+
+      </div>
+
+    `).join("");
+
+}
+
+async function resolveIncident(id) {
+
+  if (
+    !confirm(
+      "Resolve this incident?"
+    )
+  ) {
+    return;
+  }
+
+  try {
+
+    await deleteDoc(
+      doc(db, "incidents", id)
+    );
+
+    alert(
+      "Incident resolved."
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Failed to resolve incident."
+    );
+
+  }
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -3593,3 +3832,6 @@ window.openViewNotesModal = openViewNotesModal;
 window.closeViewNotesModal = closeViewNotesModal;
 window.loadSiteNotes = loadSiteNotes;
 window.outsideViewNotesClick = outsideViewNotesClick;
+window.saveIncident = saveIncident;
+window.resolveIncident = resolveIncident;
+window.renderIncidents = renderIncidents;
