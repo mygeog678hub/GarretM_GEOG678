@@ -2344,16 +2344,26 @@ function searchSite() {
 
     const match = matches[0];
 
-    window.map.flyTo(
-      [match.lat, match.lng],
-      16
-    );
+   window.map.flyTo(
+  [match.lat, match.lng],
+  16
+);
+
+window.map.once("moveend", () => {
+  document.getElementById(
+    "siteSearch"
+  ).value = "";
+});
 
     const marker = markers[match.id];
 
-    if (marker) {
-      marker.openPopup();
-    }
+   if (marker) {
+  marker.openPopup();
+}
+
+document.getElementById(
+  "siteSearch"
+).value = "";
 
   } else if (matches.length > 1) {
 

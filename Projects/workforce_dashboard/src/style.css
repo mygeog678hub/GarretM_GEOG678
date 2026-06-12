@@ -357,16 +357,9 @@ button:hover {
 /* ================= STATS ================= */
 
 .stats-grid {
-
   display: grid;
-
-  grid-template-columns:
-    repeat(6, 1fr);
-
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-
-  margin-bottom: 28px;
-
 }
 
 .stat-card {
@@ -1414,21 +1407,6 @@ border-bottom:
     rgba(255,255,255,0.82);
 
 }
-.panel {
-
-  background: #111827;
-
-  border-radius: 14px;
-
-  padding: 18px;
-
-  min-height: 170px;
-
-  display: flex;
-  flex-direction: column;
-
-}
-
 #activityFeed {
   margin-top: 12px;
   max-height: 220px;
@@ -1447,8 +1425,12 @@ border-bottom:
 
 }
 .recent-activity-panel {
-  min-height: 220px;
-  grid-column: span 3;
+  min-height: 320px;
+}
+
+.recent-activity-panel h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
 }
 .activity-item small {
   color: #888;
