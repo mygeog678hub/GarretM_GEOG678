@@ -3592,14 +3592,16 @@ console.log("First Note:", notes[0]);
     ">
 
       <small style="color:#6b7280;">
-        ${new Date(
-          note.createdAt
-        ).toLocaleString()}
-      </small>
+  Entered by: ${note.createdBy}
+  <br>
+  ${new Date(
+    note.createdAt
+  ).toLocaleString()}
+</small>
 
-      <br><br>
+<br><br>
 
-      ${note.note}
+${note.note}
 
     </div>
 
