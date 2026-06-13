@@ -1881,12 +1881,17 @@ document.getElementById("maintenanceCount").textContent =
     a => a.status === "maintenance"
   ).length;
 
+ const incidentCountEl =
   document.getElementById(
-  "incidentCount"
-).textContent =
-  incidents.filter(i =>
-    i.status !== "Resolved"
-  ).length;
+    "incidentCount"
+  );
+
+if (incidentCountEl) {
+  incidentCountEl.textContent =
+    incidents.filter(i =>
+      i.status !== "Resolved"
+    ).length;
+}
 
   renderIncidents();
 
