@@ -441,6 +441,10 @@ onSnapshot(
       id: doc.id,
       ...doc.data()
     }));
+    console.log(
+  "Snapshot incidents:",
+  incidents.length
+);
 
     refresh();
 
@@ -1261,6 +1265,10 @@ const availableEmployees =
 // ================= UPDATE MAP =================
 
 function updateMap() {
+  console.log(
+  "updateMap:",
+  incidents.length
+);
 
   if (!window.map) return;
 
@@ -1297,6 +1305,33 @@ if (active.length > 0) {
 // MAINTENANCE
 if (site.maintenance) {
   color = "#eab308";
+}
+console.log(
+  "SITE:",
+  site.name,
+  site.id
+);
+
+console.log(
+  "INCIDENTS:",
+  incidents.map(i => ({
+    siteName: i.siteName,
+    siteId: i.siteId,
+    severity: i.severity,
+    status: i.status
+  }))
+);
+
+// CRITICAL INCIDENT
+const hasCriticalIncident =
+  incidents.some(i =>
+    i.siteId === site.id &&
+    i.severity === "Critical" &&
+    i.status !== "Resolved"
+  );
+
+if (hasCriticalIncident) {
+  color = "#dc2626";
 }
 
 // ================= SCHOOLS =================
@@ -1849,7 +1884,9 @@ document.getElementById("maintenanceCount").textContent =
   document.getElementById(
   "incidentCount"
 ).textContent =
-  incidents.length;
+  incidents.filter(i =>
+    i.status !== "Resolved"
+  ).length;
 
   renderIncidents();
 
@@ -3699,6 +3736,10 @@ async function saveIncident() {
 }
 
 function renderIncidents() {
+  console.log(
+  "renderIncidents:",
+  incidents.length
+);
 
   const container =
     document.getElementById(
@@ -3708,68 +3749,148 @@ function renderIncidents() {
   if (!container) return;
 
   document.getElementById(
-    "openIncidentCount"
-  ).textContent =
-    incidents.length;
+  "openIncidentCount"
+).textContent =
+  incidents.filter(i =>
+    i.status !== "Resolved"
+  ).length;
 
-  if (!incidents.length) {
+  const openIncidents =
+  incidents.filter(i =>
+    i.status !== "Resolved"
+  );
 
-    container.innerHTML =
-      "No incidents reported.";
+const resolvedIncidents =
+  incidents.filter(i =>
+    i.status === "Resolved"
+  );
 
-    return;
+container.innerHTML = `  
 
-  }
+  ${
+    openIncidents.length
+      ? openIncidents.map(i => `
 
-  container.innerHTML =
-    incidents.map(i => `
+        <div class="incident-card">
 
-      <div class="incident-card">
+          <div>
 
-        <div>
+            <strong>
+              ${i.severity}
+            </strong>
 
-          <strong>
-            ${i.severity}
-          </strong>
+            <br>
 
-          <br>
+            ${i.description}
 
-          ${i.description}
+            <br>
 
-          <br>
+            <small>
+              ${i.siteName}
+            </small>
 
-          <small>
-            ${i.siteName}
-          </small>
+          </div>
+
+          <button
+            onclick="resolveIncident('${i.id}')"
+          >
+            Resolve
+          </button>
 
         </div>
 
-        <button
-          onclick="resolveIncident('${i.id}')"
-        >
-          Resolve
-        </button>
+      `).join("")
+      : "<p>No open incidents.</p>"
+  }
 
-      </div>
+ <h3 class="resolved-incidents-title" style="margin-top:20px;">
+  ✅ Resolved Incidents
+</h3>
 
-    `).join("");
+<div class="resolved-incidents">
 
+${
+  resolvedIncidents.length
+    ? resolvedIncidents.map(i => `
+
+        <div class="incident-card resolved-card">
+
+          <div>
+
+            <strong>
+              ${i.severity}
+            </strong>
+
+            <br>
+
+            ${i.description}
+
+            <br>
+
+            <small>
+              ${i.siteName}
+            </small>
+
+            <br><br>
+
+            <small>
+              Resolved By:
+              ${i.resolvedBy || "Unknown"}
+            </small>
+
+            <br>
+
+            <small>
+              ${
+                i.resolvedAt
+                  ? new Date(
+                      i.resolvedAt
+                    ).toLocaleString()
+                  : ""
+              }
+            </small>
+
+            <br>
+
+            <small>
+              Resolution:
+              ${i.resolution || ""}
+            </small>
+
+          </div>
+
+        </div>
+
+      `).join("")
+      : "<p>No resolved incidents.</p>"
+  }
+</div>
+`;
 }
 
 async function resolveIncident(id) {
 
-  if (
-    !confirm(
-      "Resolve this incident?"
-    )
-  ) {
+  const resolution = prompt(
+    "Enter resolution notes:"
+  );
+
+  if (!resolution?.trim()) {
+    alert("Resolution notes required.");
     return;
   }
 
   try {
 
-    await deleteDoc(
-      doc(db, "incidents", id)
+    await updateDoc(
+      doc(db, "incidents", id),
+      {
+        status: "Resolved",
+        resolution: resolution.trim(),
+        resolvedBy:
+          auth.currentUser?.email || "Unknown",
+        resolvedAt:
+          new Date().toISOString()
+      }
     );
 
     alert(

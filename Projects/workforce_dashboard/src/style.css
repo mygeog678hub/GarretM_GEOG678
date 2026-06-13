@@ -1150,14 +1150,9 @@ border-bottom:
   h1 {
     font-size: 2rem;
   }
-
   h2 {
     font-size: 1.5rem;
   }
-
-}
-@media (max-width: 768px) {
-
   .action-bar {
 
     gap: 8px;
@@ -1165,7 +1160,6 @@ border-bottom:
     padding: 10px;
 
   }
-
   .action-btn {
 
     font-size: 0.85rem;
@@ -1173,7 +1167,27 @@ border-bottom:
     padding: 8px 14px;
 
   }
+  #map {
+    height: 70vh;
+  }
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 
+  .quick-actions button {
+    width: 100%;
+  }
+
+}
+.quick-actions {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 10px;
 }
 .resource-card {
 
@@ -1583,4 +1597,24 @@ border-bottom:
 
   font-size: 13px;
 
+}
+.resolved-incidents {
+  max-height: 300px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 10px;
+}
+.open-incidents-title {
+  color: #ef4444;
+}
+.resolved-incidents-title {
+  color: #22c55e;
+}
+.resolved-card {
+  border-left: 4px solid #22c55e;
+  opacity: 0.85;
+}
+.resolved-card {
+  border-left: 4px solid #22c55e;
+  opacity: 0.9;
 }
