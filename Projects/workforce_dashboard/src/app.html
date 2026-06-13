@@ -321,6 +321,7 @@
 />
 
 <div class="map-filters">
+  
 
   
 
@@ -762,17 +763,21 @@
        background-color:rgba(0,0,0,0.45);
      ">
 
-  <div id="siteModalContent"
-       style="
-         background:rgb(244, 242, 242);
-         margin:5% auto;
-         padding:20px;
-         width:80%;
-         max-width:800px;
-         border-radius:8px;
-         max-height:80vh;
-         overflow:auto;
-       ">
+<div id="siteModalContent"
+     style="
+       background:rgb(244, 242, 242);
+       margin:5% auto;
+       padding:20px;
+       width:95%;
+       max-width:1600px;
+       border-radius:8px;
+       max-height:80vh;
+       overflow:auto;
+
+       resize:both;
+       min-width:800px;
+       min-height:500px;
+">
 
     <h2>Sites</h2>
 
@@ -820,11 +825,15 @@
        background:white;
        margin:5% auto;
        padding:20px;
-       width:500px;
+       width:700px;
        border-radius:8px;
        max-height:80vh;
        overflow:auto;
-  ">
+
+       resize:both;
+       min-width:500px;
+       min-height:400px;
+">
 
     <h2>Edit Site</h2>
 
@@ -875,6 +884,24 @@
     Administration
   </option>
 
+</select>
+
+<label for="editSiteStatus">
+  Site Status
+</label>
+
+<select id="editSiteStatus">
+  <option value="Active">
+    🟢 Active
+  </option>
+
+  <option value="Inactive">
+    🟡 Inactive
+  </option>
+
+  <option value="Closed">
+    🔴 Closed
+  </option>
 </select>
 
 <button onclick="saveSiteEdit()">

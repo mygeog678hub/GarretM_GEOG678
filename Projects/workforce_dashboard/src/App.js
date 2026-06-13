@@ -131,6 +131,9 @@ let currentMapFilter = "all";
 let activityLogs = [];
 let activityFilter = "all";
 let siteNotes = [];
+let showActiveSites = true;
+let showInactiveSites = false;
+let showClosedSites = false;
 
 // ================= MAP =================
 
@@ -528,7 +531,7 @@ if (!coords.length) {
 
 }
 
- await addDoc(collection(db, "sites"), {
+await addDoc(collection(db, "sites"), {
 
   name,
   address,
@@ -538,6 +541,8 @@ if (!coords.length) {
 
   siteCategory: siteCategory.value,
   siteSubtype: siteSubtype.value,
+
+  status: "Active",
 
   lat: +coords[0].lat,
   lng: +coords[0].lon,
@@ -1007,6 +1012,19 @@ function renderSites(filteredSites = sites) {
     a.siteId === s.id && !a.endTime
   ).length;
 
+  const status =
+  s.status || "Active";
+
+  let statusBadge = "🟢 Active";
+
+if (status === "Inactive") {
+  statusBadge = "🟡 Inactive";
+}
+
+if (status === "Closed") {
+  statusBadge = "🔴 Closed";
+}
+
   return `
 
     <tr>
@@ -1028,6 +1046,8 @@ function renderSites(filteredSites = sites) {
       <td>${s.state || ""}</td>
 
       <td>${s.zip || ""}</td>
+
+      <td>${statusBadge}</td>
       <td>
   ${
     activeEmployees > 0
@@ -1078,6 +1098,7 @@ function renderSites(filteredSites = sites) {
       <th>City</th>
       <th>State</th>
       <th>ZIP</th>
+      <th>Status</th>
       <th>Crew</th>
       <th>Action</th>
 
@@ -1292,13 +1313,26 @@ function updateMap() {
     const active = assignments.filter(a =>
       a.siteId === site.id && !a.endTime
     );
+    const siteStatus =
+  site.status || "Active";
 
    let label = "SITE";
 let color = "#6b7280";
 let symbol = "📍";
 
+if (siteStatus === "Inactive") {
+  color = "#f59e0b";
+}
+
+if (siteStatus === "Closed") {
+  color = "#6b7280";
+}
+
 // ACTIVE STATUS
-if (active.length > 0) {
+if (
+  siteStatus === "Active" &&
+  active.length > 0
+) {
   color = "#16a34a";
 }
 
@@ -1456,6 +1490,8 @@ markers[site.id].siteType =
   site.siteCategory === "school"
     ? `school-${site.siteSubtype}`
     : site.siteCategory;
+
+    markers[site.id].siteId = site.id;
 
 // SAVE NEW POSITION
 markers[site.id].on("dragend", async (e) => {
@@ -1775,11 +1811,16 @@ assignEmployee.innerHTML =
 
   // ================= SITE DROPDOWN =================
   assignSite.innerHTML =
-    sites.map(s => `
+  sites
+    .filter(s =>
+      (s.status || "Active") === "Active"
+    )
+    .map(s => `
       <option value="${s.id}">
         ${s.name}
       </option>
-    `).join("");
+    `)
+    .join("");
 
     // ================= INCIDENT SITE DROPDOWN =================
 const incidentSite =
@@ -2747,6 +2788,11 @@ document.getElementById(
   site.siteSubtype || "elementary";
 
   document.getElementById(
+  "editSiteStatus"
+).value =
+  site.status || "Active";
+
+  document.getElementById(
     "editSiteModal"
   ).style.display = "block";
 
@@ -2794,6 +2840,11 @@ async function saveSiteEdit() {
     const siteCategory =
   document.getElementById(
     "editSiteCategory"
+  ).value;
+
+  const status =
+  document.getElementById(
+    "editSiteStatus"
   ).value;
 
 const siteSubtype =
@@ -2877,6 +2928,7 @@ const siteSubtype =
 
     siteCategory,
     siteSubtype,
+    status,
 
     lat: +coords[0].lat,
     lng: +coords[0].lon
@@ -3451,6 +3503,45 @@ function filterMapSites(type, button){
 }
 
 function applyMarkerVisibility(marker){
+
+  const site =
+    sites.find(
+      s => s.id === marker.siteId
+    );
+
+  const status =
+    site?.status || "Active";
+
+  // STATUS FILTERS
+  if (
+    status === "Active" &&
+    !showActiveSites
+  ) {
+    if(window.map.hasLayer(marker)){
+      window.map.removeLayer(marker);
+    }
+    return;
+  }
+
+  if (
+    status === "Inactive" &&
+    !showInactiveSites
+  ) {
+    if(window.map.hasLayer(marker)){
+      window.map.removeLayer(marker);
+    }
+    return;
+  }
+
+  if (
+    status === "Closed" &&
+    !showClosedSites
+  ) {
+    if(window.map.hasLayer(marker)){
+      window.map.removeLayer(marker);
+    }
+    return;
+  }
 
   // SHOW ALL
   if(currentMapFilter === "all"){
