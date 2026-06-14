@@ -123,6 +123,11 @@ let assignments = [];
 let pendingDeployments = [];
 let markers = {};
 const geofenceCircles = {};
+const activeIncidentMarkers = {};
+const activeIncidentGeofences = {};
+window.markers = markers;
+window.geofenceCircles = geofenceCircles;
+window.activeIncidentMarkers = activeIncidentMarkers;
 let searchMarker = null;
 let markerEditMode = false;
 let editingEmployeeId = null;
@@ -1392,7 +1397,19 @@ const hasCriticalIncident =
   );
 
 if (hasCriticalIncident) {
+
   color = "#dc2626";
+
+  highlightIncidentSite(
+    site.id
+  );
+
+} else {
+
+  clearIncidentHighlight(
+    site.id
+  );
+
 }
 
 // ================= SCHOOLS =================
@@ -1565,7 +1582,6 @@ markers[site.id].on("dragend", async (e) => {
   ]);
 
 }
-
 // ================= GEOFENCE =================
 
 const radius =
@@ -1705,6 +1721,160 @@ applyMarkerVisibility(
   });
 
 }
+
+function createAlertIcon() {
+
+  return L.divIcon({
+    className: "",
+    html: `
+      <div
+        style="
+          width:22px;
+          height:22px;
+          border-radius:50%;
+          background:#dc2626;
+          border:3px solid white;
+          box-shadow:
+            0 0 12px #dc2626;
+        ">
+      </div>
+    `,
+    iconSize: [22, 22]
+  });
+
+}
+
+function highlightIncidentSite(siteId) {
+
+  const marker =
+    markers[siteId];
+
+  const circle =
+    geofenceCircles[siteId];
+
+  if (!marker) return;
+
+  if (
+    activeIncidentMarkers[siteId]
+  ) {
+    return;
+  }
+
+  const originalIcon =
+    marker.options.icon;
+
+  const alertIcon =
+    createAlertIcon();
+
+  let flash = false;
+
+  const interval =
+    setInterval(() => {
+
+      flash = !flash;
+
+      marker.setIcon(
+        flash
+          ? alertIcon
+          : originalIcon
+      );
+
+      if (circle) {
+
+        circle.setStyle({
+
+          color:
+            flash
+              ? "#dc2626"
+              : "#38bdf8",
+
+          fillColor:
+            flash
+              ? "#dc2626"
+              : "#38bdf8"
+
+        });
+
+      }
+
+    }, 700);
+
+  activeIncidentMarkers[
+    siteId
+  ] = {
+    interval,
+    originalIcon
+  };
+
+}
+
+function clearIncidentHighlight(
+  siteId
+) {
+
+  const marker =
+    markers[siteId];
+
+  const circle =
+    geofenceCircles[siteId];
+
+  const active =
+    activeIncidentMarkers[
+      siteId
+    ];
+
+  if (!active) return;
+
+  clearInterval(
+    active.interval
+  );
+
+  if (marker) {
+
+    marker.setIcon(
+      active.originalIcon
+    );
+
+  }
+
+  if (circle) {
+
+    const site =
+      sites.find(
+        s => s.id === siteId
+      );
+
+    let color = "#38bdf8";
+
+    if (
+      site?.status ===
+      "Inactive"
+    ) {
+      color = "#9ca3af";
+    }
+
+    if (
+      site?.status ===
+      "Closed"
+    ) {
+      color = "#dc2626";
+    }
+
+    circle.setStyle({
+      color,
+      fillColor: color
+    });
+
+  }
+
+  delete activeIncidentMarkers[
+    siteId
+  ];
+
+}
+
+window.highlightIncidentSite = highlightIncidentSite;
+window.clearIncidentHighlight = clearIncidentHighlight;
 
 function updateSubtypeOptions() {
 
