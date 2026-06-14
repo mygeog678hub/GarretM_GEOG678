@@ -1469,28 +1469,6 @@ else if (
   label = "GOV";
 
 }
-
-// ================= SCHOOLS =================
-if (site.siteCategory === "school") {
-
-  if (site.siteSubtype === "elementary") {
-    label = "ES";
-  }
-
-  else if (site.siteSubtype === "middle") {
-    label = "MS";
-  }
-
-  else if (site.siteSubtype === "high") {
-    label = "HS";
-  }
-
-  else if (site.siteSubtype === "admin") {
-    label = "ADM";
-  }
-
-}
-
 // ================= CONSTRUCTION =================
 else if (
   site.siteCategory === "construction"
@@ -1645,9 +1623,63 @@ applyMarkerVisibility(
       new Date(a.createdAt)
     )[0];
 
-    let popup =
-      `<b>${site.name}</b><br>` +
-      `${site.city}, ${site.state}<br><br>`;
+    const activeCriticalIncident =
+  incidents
+    .filter(i =>
+      i.siteId === site.id &&
+      i.severity === "Critical" &&
+      i.status !== "Resolved"
+    )
+    .sort((a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
+    )[0];
+
+    let popup = "";
+
+if (activeCriticalIncident) {
+
+  popup = `
+    <div
+      style="
+        border-left:4px solid #dc2626;
+        padding-left:10px;
+      "
+    >
+
+      <h3 style="
+        color:#dc2626;
+        margin:0 0 8px 0;
+      ">
+        🚨 ACTIVE CRITICAL INCIDENT
+      </h3>
+
+      <b>Site:</b>
+      ${site.name}<br><br>
+
+      <b>Severity:</b>
+      ${activeCriticalIncident.severity}
+      <br><br>
+
+      <b>Description:</b><br>
+      ${activeCriticalIncident.description}
+      <br><br>
+
+      <b>Status:</b>
+      OPEN
+
+    </div>
+
+    <hr>
+  `;
+
+} else {
+
+  popup =
+    `<b>${site.name}</b><br>` +
+    `${site.city}, ${site.state}<br><br>`;
+
+}
 
     if (!active.length) {
 
@@ -4073,13 +4105,13 @@ async function saveIncident() {
   );
   
 
-  await logActivity(
-    siteId,
-    "incident",
-    `🚨 ${severity} Incident - ${site.name}`,
-    auth.currentUser?.email ||
-    "Unknown"
-  );  
+ await logActivity(
+  siteId,
+  "incident",
+  `🚨 ${severity} Incident - ${site.name}`,
+  auth.currentUser?.email ||
+  "Unknown"
+);
 
 if (
   severity?.toLowerCase() === "critical"
@@ -4087,40 +4119,53 @@ if (
 
   playCriticalAlert();
 
-  
-
-  const site =
-    sites.find(
-      s => s.id === siteId
-    );
-    console.log("Site:", site);
+  console.log("Site:", site);
 
   if (
     site &&
     window.map
   ) {
 
-    window.map.flyTo(
-      [site.lat, site.lng],
-      16,
-      {
-        duration: 1.5
-      }
-    );
+    document
+      .getElementById(
+        "operationsMapPanel"
+      )
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
 
     setTimeout(() => {
 
-      const marker =
-        markers[site.id];
+  window.map.flyTo(
+    [site.lat, site.lng],
+    16,
+    {
+      duration: 1.5
+    }
+  );
 
-      if (
-        marker &&
-        marker.openPopup
-      ) {
-        marker.openPopup();
-      }
+}, 500);
 
-    }, 1600);
+setTimeout(() => {
+
+  const marker =
+    markers[site.id];
+
+  if (
+    marker &&
+    marker.openPopup
+  ) {
+
+    marker.openPopup();
+
+    window.map.panBy(
+      [0, 150]
+    );
+
+  }
+
+}, 1800);
 
   }
 
@@ -4129,7 +4174,13 @@ if (
 alert(
   "Incident reported."
 );
-  
+document.getElementById(
+  "incidentDescription"
+).value = "";
+document.getElementById(
+  "incidentSeverity"
+).selectedIndex = 0;
+
 }
 
 function renderIncidents() {
