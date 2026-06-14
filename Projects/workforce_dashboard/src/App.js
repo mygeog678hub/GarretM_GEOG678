@@ -125,6 +125,12 @@ let markers = {};
 const geofenceCircles = {};
 const activeIncidentMarkers = {};
 const activeIncidentGeofences = {};
+const criticalAlert =
+  new Audio(
+    "./assets/critical-alert.mp3"
+  );
+
+criticalAlert.preload = "auto";
 window.markers = markers;
 window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
@@ -4075,9 +4081,54 @@ async function saveIncident() {
     "Unknown"
   );  
 
-  alert(
-    "Incident reported."
-  );
+if (
+  severity?.toLowerCase() === "critical"
+) {
+
+  playCriticalAlert();
+
+  
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+    console.log("Site:", site);
+
+  if (
+    site &&
+    window.map
+  ) {
+
+    window.map.flyTo(
+      [site.lat, site.lng],
+      16,
+      {
+        duration: 1.5
+      }
+    );
+
+    setTimeout(() => {
+
+      const marker =
+        markers[site.id];
+
+      if (
+        marker &&
+        marker.openPopup
+      ) {
+        marker.openPopup();
+      }
+
+    }, 1600);
+
+  }
+
+}
+
+alert(
+  "Incident reported."
+);
   
 }
 
@@ -4249,6 +4300,27 @@ async function resolveIncident(id) {
 
     alert(
       "Failed to resolve incident."
+    );
+
+  }
+
+}
+
+function playCriticalAlert() {
+
+  try {
+
+    criticalAlert.pause();
+
+    criticalAlert.currentTime = 0;
+
+    criticalAlert.play();
+
+  } catch (err) {
+
+    console.error(
+      "Critical alert failed:",
+      err
     );
 
   }
