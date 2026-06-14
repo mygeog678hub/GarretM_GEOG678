@@ -1126,7 +1126,14 @@ if (status === "Closed") {
 
 // ================= RENDER =================
 function render() {
-  const rows = assignments.map(a => {
+  const rows = [...assignments]
+
+  .sort((a, b) =>
+    new Date(b.startTime || 0) -
+    new Date(a.startTime || 0)
+  )
+
+  .map(a => {
     const emp = employees.find(e => e.id === a.employeeId);
     const site = sites.find(s => s.id === a.siteId);
     const asset = assets.find(
@@ -1209,18 +1216,23 @@ const vehicle = vehicles.find(
   }).join("");
 
   document.getElementById("reportTable").innerHTML = `
+  <thead>
     <tr>
-  <th>Start</th>
-  <th>End</th>
-  <th>Employee</th>
-  <th>Site</th>
-  <th>Asset</th>
-  <th>Vehicle</th>
-  <th>Employee Status</th>
-  <th>Action</th>
-</tr>
+      <th>Start</th>
+      <th>End</th>
+      <th>Employee</th>
+      <th>Site</th>
+      <th>Asset</th>
+      <th>Vehicle</th>
+      <th>Employee Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
     ${rows}
-  `;
+  </tbody>
+`;
   renderEmployees();
 }
 

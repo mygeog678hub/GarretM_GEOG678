@@ -416,12 +416,27 @@ button:hover {
 
 .table-wrapper {
   overflow-x: auto;
-
+  overflow-y: auto;
+  max-height: 400px;
   border-radius: 18px;
-
   margin-top: 18px;
 }
+.report-wrapper table {
+  border-collapse: separate !important;
+  border-spacing: 0;
+}
+.report-wrapper thead {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
+.report-wrapper thead th {
+  background: #0f172a;
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
 table {
   width: 100%;
 
@@ -430,7 +445,7 @@ table {
   background:
     rgba(15,23,42,0.75);
 
-  overflow: hidden;
+  
 
   border-radius: 18px;
 }
@@ -454,6 +469,8 @@ th {
   position: sticky;
 
   top: 0;
+
+  z-index: 100;
 }
 
 td {
