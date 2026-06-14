@@ -497,6 +497,16 @@
     Administration
   </option>
 
+  <label>Geofence Radius (ft)</label>
+
+<input
+  type="number"
+  id="siteGeofenceRadius"
+  value="150"
+  min="50"
+  max="1000"
+/>
+
 </select>
 <button>Add</button>
 </form>
@@ -846,6 +856,27 @@
 <input id="editSiteState">
 
 <input id="editSiteZip">
+
+<label
+  for="editSiteRadius"
+  style="
+    display:block;
+    margin-top:10px;
+    margin-bottom:4px;
+    color:#111827;
+    font-weight:600;
+  "
+>
+  Geofence Radius (ft)
+</label>
+
+<input
+  type="number"
+  id="editSiteRadius"
+  min="50"
+  max="1000"
+>
+
 <select id="editSiteCategory">
 
   <option value="school">

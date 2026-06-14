@@ -122,6 +122,7 @@ let vehicles = [];
 let assignments = [];
 let pendingDeployments = [];
 let markers = {};
+const geofenceCircles = {};
 let searchMarker = null;
 let markerEditMode = false;
 let editingEmployeeId = null;
@@ -468,6 +469,13 @@ const state =
   const zip =
   siteZip.value.trim();
 
+  const geofenceRadius =
+  Number(
+    document.getElementById(
+      "siteGeofenceRadius"
+    ).value
+  ) || 150;
+
  if (!name || !address || !city || !state || !zip) {
     alert("Enter site name, address, city, state, and ZIP");
     return;
@@ -544,6 +552,8 @@ await addDoc(collection(db, "sites"), {
 
   status: "Active",
 
+  geofenceRadius,
+
   lat: +coords[0].lat,
   lng: +coords[0].lon,
 
@@ -557,6 +567,11 @@ await addDoc(collection(db, "sites"), {
   siteCity.value = "";
   siteState.value = "";
   siteZip.value = "";
+
+  document.getElementById(
+  "siteGeofenceRadius"
+).value = 150;
+
   siteName.focus();
 
 } catch (err) {
@@ -1539,6 +1554,46 @@ markers[site.id].on("dragend", async (e) => {
 
 }
 
+// ================= GEOFENCE =================
+
+const radius =
+  site.geofenceRadius ?? 150;
+
+// Remove old circle
+if (geofenceCircles[site.id]) {
+
+  window.map.removeLayer(
+    geofenceCircles[site.id]
+  );
+
+}
+
+let circleColor = "#38bdf8";
+
+if (site.status === "Inactive") {
+  circleColor = "#9ca3af";
+}
+
+if (site.status === "Closed") {
+  circleColor = "#dc2626";
+}
+
+geofenceCircles[site.id] =
+  L.circle(
+    [site.lat, site.lng],
+    {
+      radius:
+        radius * 0.3048,
+
+      color:
+        circleColor,
+
+      weight: 2,
+
+      fillOpacity: 0.08
+    }
+  ).addTo(window.map);
+
 // APPLY TO ALL MARKERS
 applyMarkerVisibility(
   markers[site.id]
@@ -1547,6 +1602,7 @@ applyMarkerVisibility(
     const marker = markers[site.id];
     const latestNote =
   siteNotes
+  
     .filter(n =>
       n.siteId === site.id
     )
@@ -2778,6 +2834,10 @@ function editSite(id) {
     "editSiteZip"
   ).value = site.zip || "";
   document.getElementById(
+  "editSiteRadius"
+).value =
+  site.geofenceRadius ?? 150;
+  document.getElementById(
   "editSiteCategory"
 ).value =
   site.siteCategory || "school";
@@ -2837,6 +2897,12 @@ async function saveSiteEdit() {
     document.getElementById(
       "editSiteZip"
     ).value.trim();
+
+    document.getElementById(
+  "editSiteRadius"
+).value =
+  site.geofenceRadius ?? 150;
+
     const siteCategory =
   document.getElementById(
     "editSiteCategory"
@@ -2929,6 +2995,8 @@ const siteSubtype =
     siteCategory,
     siteSubtype,
     status,
+
+    geofenceRadius,
 
     lat: +coords[0].lat,
     lng: +coords[0].lon
