@@ -1671,3 +1671,41 @@ border-bottom:
 
   margin-top: 10px;
 }
+.about-banner {
+  width: 100%;
+  max-width: 1200px;
+
+  display: block;
+
+  margin: 25px auto 40px;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.15);
+}
+.founder-section {
+  text-align: center;
+}
+
+.founder-photo {
+  width: 220px;
+  max-width: 220px;
+
+  height: auto;
+
+  display: block;
+
+  margin: 20px auto;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.15);
+}
+.founder-title {
+  text-align: center;
+  font-weight: 600;
+  margin-top: 10px;
+  line-height: 1.6;
+}
