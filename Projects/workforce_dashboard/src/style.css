@@ -1709,3 +1709,31 @@ border-bottom:
   margin-top: 10px;
   line-height: 1.6;
 }
+.navBtn {
+  padding: 8px 14px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+.schedule-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.schedule-form > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
+
+.schedule-form label {
+  margin-bottom: 6px;
+  font-weight: 600;
+}

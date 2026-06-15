@@ -120,6 +120,7 @@ let sites = [];
 let assets = [];
 let vehicles = [];
 let assignments = [];
+let shifts = [];
 let pendingDeployments = [];
 let markers = {};
 const geofenceCircles = {};
@@ -462,6 +463,40 @@ onSnapshot(
 );
 
     refresh();
+
+  }
+);
+
+onSnapshot(
+  collection(db, "shifts"),
+  snap => {
+
+    shifts =
+      snap.docs.map(
+        d => ({
+          id: d.id,
+          ...d.data()
+        })
+      );
+
+    renderSchedules();
+
+  }
+);
+
+onSnapshot(
+  collection(db, "shifts"),
+  snap => {
+
+    shifts =
+      snap.docs.map(
+        d => ({
+          id: d.id,
+          ...d.data()
+        })
+      );
+
+    renderSchedules();
 
   }
 );
@@ -4378,6 +4413,315 @@ function playCriticalAlert() {
 
 }
 
+function showDashboard() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "block";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+}
+
+function showSchedulingPage() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "block";
+
+  populateScheduleDropdowns();
+
+}
+
+function populateScheduleDropdowns() {
+
+  const employeeSelect =
+    document.getElementById(
+      "scheduleEmployee"
+    );
+
+  const siteSelect =
+    document.getElementById(
+      "scheduleSite"
+    );
+
+  if (!employeeSelect || !siteSelect) {
+    return;
+  }
+
+  employeeSelect.innerHTML =
+    '<option value="">Select Officer</option>';
+
+  siteSelect.innerHTML =
+    '<option value="">Select Site</option>';
+
+  employees.forEach(emp => {
+
+    employeeSelect.innerHTML += `
+      <option value="${emp.id}">
+        ${emp.name}
+      </option>
+    `;
+
+  });
+
+  sites.forEach(site => {
+
+    siteSelect.innerHTML += `
+      <option value="${site.id}">
+        ${site.name}
+      </option>
+    `;
+
+  });
+
+}
+
+async function createShift() {
+
+  const employeeId =
+    document.getElementById(
+      "scheduleEmployee"
+    ).value;
+
+  const siteId =
+    document.getElementById(
+      "scheduleSite"
+    ).value;
+
+  const startTime =
+    document.getElementById(
+      "scheduleStart"
+    ).value;
+
+  const endTime =
+    document.getElementById(
+      "scheduleEnd"
+    ).value;
+
+  if (
+    !employeeId ||
+    !siteId ||
+    !startTime ||
+    !endTime
+  ) {
+    alert(
+      "Complete all fields."
+    );
+    return;
+  }
+
+  const employee =
+    employees.find(
+      e => e.id === employeeId
+    );
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+    const duplicate =
+  shifts.some(
+    shift =>
+
+      shift.employeeId === employeeId &&
+
+      shift.siteId === siteId &&
+
+      shift.startTime === startTime &&
+
+      shift.endTime === endTime
+  );
+
+if (duplicate) {
+
+  alert(
+    "This shift already exists."
+  );
+
+  return;
+
+}
+
+const conflict =
+  shifts.some(
+    shift =>
+
+      shift.employeeId ===
+      employeeId &&
+
+      timesOverlap(
+        startTime,
+        endTime,
+        shift.startTime,
+        shift.endTime
+      )
+  );
+
+if (conflict) {
+
+  alert(
+    "Officer already scheduled during this time."
+  );
+
+  return;
+
+}
+
+  await addDoc(
+    collection(db, "shifts"),    
+    {
+      
+
+      employeeId,
+
+      employeeName:
+        employee.name,
+
+      siteId,
+
+      siteName:
+        site.name,
+
+      startTime,
+
+      endTime,
+
+      status:
+        "Scheduled",
+
+      createdAt:
+        new Date().toISOString()
+
+    }
+    
+  );
+  console.log("Shift saved");
+  document.getElementById(
+  "scheduleEmployee"
+).value = "";
+
+document.getElementById(
+  "scheduleSite"
+).value = "";
+
+document.getElementById(
+  "scheduleStart"
+).value = "";
+
+document.getElementById(
+  "scheduleEnd"
+).value = "";
+console.log("Fields cleared");
+}
+
+function timesOverlap(
+  start1,
+  end1,
+  start2,
+  end2
+) {
+
+  return (
+    new Date(start1) <
+    new Date(end2)
+  ) &&
+  (
+    new Date(end1) >
+    new Date(start2)
+  );
+
+}
+
+
+function renderSchedules() {
+
+  const container =
+    document.getElementById(
+      "scheduleList"
+    );
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const sortedShifts =
+    [...shifts].sort(
+      (a, b) =>
+        new Date(a.startTime) -
+        new Date(b.startTime)
+    );
+
+  sortedShifts.forEach(shift => {
+
+    container.innerHTML += `
+
+      <div class="dashboard-card">
+
+        <strong>
+          ${shift.employeeName}
+        </strong>
+
+        <br>
+
+        ${shift.siteName}
+
+        <br>
+
+        ${new Date(
+          shift.startTime
+        ).toLocaleString()}
+
+        -
+
+        ${new Date(
+          shift.endTime
+        ).toLocaleString()}
+
+        <br><br>
+
+        <button
+          onclick="deleteShift('${shift.id}')"
+          class="danger"
+        >
+          Delete Shift
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+}
+
+async function deleteShift(id) {
+
+  if (
+    !confirm(
+      "Delete this shift?"
+    )
+  ) {
+    return;
+  }
+
+  await deleteDoc(
+    doc(
+      db,
+      "shifts",
+      id
+    )
+  );
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -4437,3 +4781,10 @@ window.outsideViewNotesClick = outsideViewNotesClick;
 window.saveIncident = saveIncident;
 window.resolveIncident = resolveIncident;
 window.renderIncidents = renderIncidents;
+window.showSchedulingPage = showSchedulingPage;
+window.showDashboard = showDashboard;
+window.showDashboard = showDashboard;
+window.showSchedulingPage = showSchedulingPage;
+window.createShift = createShift;
+window.renderSchedules = renderSchedules;
+window.deleteShift = deleteShift;

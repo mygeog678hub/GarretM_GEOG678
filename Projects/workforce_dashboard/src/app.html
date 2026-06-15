@@ -145,16 +145,32 @@
 
     <div class="header-right">
 
-      <button
-        onclick="logout()"
-        class="logoutBtn"
-      >
-        Logout
-      </button>
+  <button
+    onclick="showDashboard()"
+    class="navBtn"
+  >
+    Dashboard
+  </button>
 
-    </div>
+  <button
+    onclick="showSchedulingPage()"
+    class="navBtn"
+  >
+    Scheduling
+  </button>
+
+  <button
+    onclick="logout()"
+    class="logoutBtn"
+  >
+    Logout
+  </button>
+
+</div>
 
   </header>
+
+  <div id="dashboardPage">
 
   <div class="stats-grid">
 
@@ -240,9 +256,7 @@
 </div>
 
   <div id="activityFeed"></div>
-</div>
-
-</div>   
+</div> 
 
 <div class="incident-panel">
 
@@ -323,10 +337,7 @@
   oninput="searchSite()"
 />
 
-<div class="map-filters">
-  
-
-  
+<div class="map-filters">  
 
   <button
   onclick="filterMapSites('all', this)"
@@ -386,7 +397,7 @@
 <button onclick="openEmployeeModal()" style="margin-top:10px;">
   View Employees
 </button>
-</div>
+</div> 
 
 <div class="dashboard-card">
 <h2>Add Site</h2>
@@ -1094,6 +1105,76 @@
     </button>
 
   </div>
+  </div>
+
+</div>
+</div>
+
+<div
+  id="schedulingPage"
+  style="display:none;"
+>
+
+  <div class="dashboard-card">
+
+    <h2>Scheduling</h2>
+
+    <div class="schedule-form">
+
+  <div>
+    <label>Officer</label>
+
+    <select id="scheduleEmployee">
+      <option value="">
+        Select Officer
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label>Site</label>
+
+    <select id="scheduleSite">
+      <option value="">
+        Select Site
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label>Shift Start</label>
+
+    <input
+      type="datetime-local"
+      id="scheduleStart"
+    >
+  </div>
+
+  <div>
+    <label>Shift End</label>
+
+    <input
+      type="datetime-local"
+      id="scheduleEnd"
+    >
+  </div>
+
+  <div>
+    <label>&nbsp;</label>
+
+    <button onclick="createShift()">
+      Create Shift
+    </button>
+  </div>
+
+</div>
+
+  <div class="dashboard-card">
+
+    <h2>Scheduled Shifts</h2>
+
+    <div id="scheduleList"></div>
+
   </div>
 
 </div>
