@@ -284,14 +284,37 @@ window.googleLogin = async function() {
 
   try {
 
-    await signInWithPopup(
-      auth,
-      provider
-    );
+    const result =
+      await signInWithPopup(
+        auth,
+        provider
+      );
+
+    const user = result.user;
+
+    const allowedEmails = [
+      "your@email.com"
+    ];
+
+    if (
+      !allowedEmails.includes(
+        user.email
+      )
+    ) {
+
+      await signOut(auth);
+
+      alert(
+        "Unauthorized account."
+      );
+
+      return;
+    }
 
   } catch(e) {
 
-    error.textContent = e.message;
+    error.textContent =
+      e.message;
 
   }
 

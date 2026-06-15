@@ -36,7 +36,8 @@ onAuthStateChanged(auth, (user) => {
 
   if (!user) {
 
-    window.location.href = "index.html";
+    window.location.href =
+      "index.html";
 
   }
 
@@ -4687,12 +4688,13 @@ function renderSchedules() {
 
         <br><br>
 
-        <button
-          onclick="deleteShift('${shift.id}')"
-          class="danger"
-        >
-          Delete Shift
-        </button>
+        <button onclick="editShift('${shift.id}')">
+  Edit Shift
+</button>
+
+<button onclick="deleteShift('${shift.id}')">
+  Delete Shift
+</button>
 
       </div>
 
