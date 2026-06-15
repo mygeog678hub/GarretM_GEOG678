@@ -4724,6 +4724,249 @@ async function deleteShift(id) {
 
 }
 
+function closeEditShiftModal() {
+
+  document
+    .getElementById(
+      "editShiftModal"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+}
+
+window.closeEditShiftModal =
+  closeEditShiftModal;
+  
+
+function editShift(id) {
+
+  const shift =
+    shifts.find(
+      s => s.id === id
+    );
+
+  if (!shift) return;
+
+  populateEditShiftDropdowns();
+
+  document.getElementById(
+    "editShiftId"
+  ).value = shift.id;
+
+  document.getElementById(
+    "editShiftEmployee"
+  ).value = shift.employeeId;
+
+  document.getElementById(
+    "editShiftSite"
+  ).value = shift.siteId;
+
+  document.getElementById(
+    "editShiftStart"
+  ).value = shift.startTime;
+
+  document.getElementById(
+    "editShiftEnd"
+  ).value = shift.endTime;
+
+  document
+    .getElementById(
+      "editShiftModal"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+}
+
+window.editShift = editShift;
+
+function populateEditShiftDropdowns() {
+
+  const employeeSelect =
+    document.getElementById(
+      "editShiftEmployee"
+    );
+
+  const siteSelect =
+    document.getElementById(
+      "editShiftSite"
+    );
+
+  employeeSelect.innerHTML =
+    '<option value="">Select Officer</option>';
+
+  siteSelect.innerHTML =
+    '<option value="">Select Site</option>';
+
+  employees.forEach(employee => {
+
+    employeeSelect.innerHTML += `
+      <option value="${employee.id}">
+        ${employee.name}
+      </option>
+    `;
+
+  });
+
+  sites.forEach(site => {
+
+    siteSelect.innerHTML += `
+      <option value="${site.id}">
+        ${site.name}
+      </option>
+    `;
+
+  });
+
+}
+
+async function saveShiftEdit() {
+
+  const id =
+    document.getElementById(
+      "editShiftId"
+    ).value;
+
+  const employeeId =
+    document.getElementById(
+      "editShiftEmployee"
+    ).value;
+
+  const siteId =
+    document.getElementById(
+      "editShiftSite"
+    ).value;
+
+  const startTime =
+    document.getElementById(
+      "editShiftStart"
+    ).value;
+
+  const endTime =
+    document.getElementById(
+      "editShiftEnd"
+    ).value;
+
+  if (
+    !employeeId ||
+    !siteId ||
+    !startTime ||
+    !endTime
+  ) {
+    alert(
+      "Complete all fields."
+    );
+    return;
+  }
+
+  if (
+    new Date(endTime) <=
+    new Date(startTime)
+  ) {
+    alert(
+      "End time must be after start time."
+    );
+    return;
+  }
+
+  const duplicate =
+    shifts.some(
+      shift =>
+
+        shift.id !== id &&
+
+        shift.employeeId ===
+        employeeId &&
+
+        shift.siteId ===
+        siteId &&
+
+        shift.startTime ===
+        startTime &&
+
+        shift.endTime ===
+        endTime
+    );
+
+  if (duplicate) {
+
+    alert(
+      "This shift already exists."
+    );
+
+    return;
+
+  }
+
+  const conflict =
+    shifts.some(
+      shift =>
+
+        shift.id !== id &&
+
+        shift.employeeId ===
+        employeeId &&
+
+        timesOverlap(
+          startTime,
+          endTime,
+          shift.startTime,
+          shift.endTime
+        )
+    );
+
+  if (conflict) {
+
+    alert(
+      "Officer already scheduled during this time."
+    );
+
+    return;
+
+  }
+
+  const employee =
+    employees.find(
+      e => e.id === employeeId
+    );
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  await updateDoc(
+    doc(
+      db,
+      "shifts",
+      id
+    ),
+    {
+
+      employeeId,
+
+      employeeName:
+        employee.name,
+
+      siteId,
+
+      siteName:
+        site.name,
+
+      startTime,
+
+      endTime
+
+    }
+  );
+
+  closeEditShiftModal();
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -4790,3 +5033,4 @@ window.showSchedulingPage = showSchedulingPage;
 window.createShift = createShift;
 window.renderSchedules = renderSchedules;
 window.deleteShift = deleteShift;
+window.saveShiftEdit = saveShiftEdit;

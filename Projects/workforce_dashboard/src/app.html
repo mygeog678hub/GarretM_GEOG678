@@ -1110,6 +1110,55 @@
 </div>
 </div>
 
+<div id="editShiftModal" class="modal hidden">
+
+  <div class="modal-content">
+
+    <h2>Edit Shift</h2>
+
+    <input
+      type="hidden"
+      id="editShiftId"
+    >
+
+    <select id="editShiftEmployee">
+      <option value="">
+        Select Officer
+      </option>
+    </select>
+
+    <select id="editShiftSite">
+      <option value="">
+        Select Site
+      </option>
+    </select>
+
+    <input
+      type="datetime-local"
+      id="editShiftStart"
+    >
+
+    <input
+      type="datetime-local"
+      id="editShiftEnd"
+    >
+
+    <div class="modal-actions">
+
+      <button onclick="saveShiftEdit()">
+        Save Changes
+      </button>
+
+      <button onclick="closeEditShiftModal()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
 <div
   id="schedulingPage"
   style="display:none;"
