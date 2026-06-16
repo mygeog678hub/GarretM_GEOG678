@@ -1782,39 +1782,54 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   width: 90%;
   max-width: 700px;
 }
-@media (max-width: 768px){
+@media (max-width:768px){
 
-  .map-filters{
-    left:10px;
-    right:10px;
-
-    top:10px;
-
+  .map-filters,
+  .activity-filters{
     overflow-x:auto;
-    justify-content:flex-start;
+    flex-wrap:nowrap;
+
+    scrollbar-width:none;
+    -ms-overflow-style:none;
   }
 
-  .map-filters button{
+  .map-filters::-webkit-scrollbar,
+  .activity-filters::-webkit-scrollbar{
+    display:none;
+  }
+
+  .map-filters button,
+  .activity-filters button{
     flex-shrink:0;
-    font-size:11px;
-    padding:8px 10px;
   }
 
 }
 @media (max-width:768px){
 
-  .map-filters{
-    top:10px;
-    left:10px;
-    right:10px;
-
-    overflow-x:auto;
-    flex-wrap:nowrap;
-
-    max-width:calc(100% - 20px);
+  .dashboard-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
   }
 
-  .map-filters button{
+  .header-right{
+    width:100%;
+
+    display:flex;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+
+    gap:10px;
+
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+
+  .header-right::-webkit-scrollbar{
+    display:none;
+  }
+
+  .header-right button{
     flex-shrink:0;
   }
 
