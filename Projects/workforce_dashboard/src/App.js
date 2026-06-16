@@ -148,6 +148,7 @@ let siteNotes = [];
 let showActiveSites = true;
 let showInactiveSites = false;
 let showClosedSites = false;
+let timeEntries = [];
 
 
 
@@ -500,6 +501,22 @@ onSnapshot(
       );
 
     renderSchedules();
+
+  }
+);
+
+onSnapshot(
+  collection(db, "timeEntries"),
+  snapshot => {
+
+    timeEntries =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()          
+        })        
+      );
+      renderActiveTimeEntries();
 
   }
 );
@@ -4455,25 +4472,43 @@ function populateScheduleDropdowns() {
       "scheduleSite"
     );
 
-  if (!employeeSelect || !siteSelect) {
-    return;
-  }
+    const clockSelect =
+  document.getElementById(
+    "clockEmployee"
+  );
+
+ if (!employeeSelect || !siteSelect) {
+  return;
+}
 
   employeeSelect.innerHTML =
     '<option value="">Select Officer</option>';
 
+    employeeSelect.innerHTML =
+  '<option value="">Select Officer</option>';
+
   siteSelect.innerHTML =
     '<option value="">Select Site</option>';
 
-  employees.forEach(emp => {
+employees.forEach(emp => {
 
-    employeeSelect.innerHTML += `
+  employeeSelect.innerHTML += `
+    <option value="${emp.id}">
+      ${emp.name}
+    </option>
+  `;
+
+  if (clockSelect) {
+
+    clockSelect.innerHTML += `
       <option value="${emp.id}">
         ${emp.name}
       </option>
     `;
 
-  });
+  }
+
+});
 
   sites.forEach(site => {
 
@@ -5157,6 +5192,227 @@ function nextWeek() {
     renderWeeklyScheduleBoard();
 }
 
+async function clockIn() {
+
+  const employeeId =
+    document.getElementById(
+      "clockEmployee"
+    ).value;
+
+  if (!employeeId) {
+
+    alert(
+      "Select an officer."
+    );
+
+    return;
+  }
+
+  const employee =
+    employees.find(
+      e => e.id === employeeId
+    );
+
+  const activeShift =
+    shifts.find(
+      shift =>
+        shift.employeeId === employeeId
+    );
+
+  if (!activeShift) {
+
+    alert(
+      "No scheduled shift found."
+    );
+
+    return;
+  }
+
+  const existingEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId === employeeId &&
+        entry.status === "Clocked In"
+    );
+
+  if (existingEntry) {
+
+    alert(
+      "Officer already clocked in."
+    );
+
+    return;
+  }
+
+  await addDoc(
+    collection(db, "timeEntries"),
+    {
+
+      employeeId,
+
+      employeeName:
+        employee.name,
+
+      siteId:
+        activeShift.siteId,
+
+      siteName:
+        activeShift.siteName,
+
+      shiftId:
+        activeShift.id,
+
+      clockIn:
+        new Date().toISOString(),
+
+      clockOut:
+        null,
+
+      status:
+        "Clocked In",
+
+      hoursWorked:
+        0,
+
+      createdAt:
+        new Date().toISOString()
+
+    }
+
+  );
+
+  alert(
+    "Clock In Successful"
+  );
+
+}
+
+function renderActiveTimeEntries() {
+
+  const container =
+    document.getElementById(
+      "activeTimeEntries"
+    );
+
+  if (!container) return;
+
+  const activeEntries =
+    timeEntries.filter(
+      entry =>
+        entry.status === "Clocked In"
+    );
+
+  if (activeEntries.length === 0) {
+
+    container.innerHTML =
+      "No officers clocked in.";
+
+    return;
+  }
+
+  container.innerHTML =
+    activeEntries.map(entry => `
+
+      <div class="activity-item">
+
+        <strong>
+          ${entry.employeeName}
+        </strong>
+
+        <br>
+
+        ${entry.siteName}
+
+        <br>
+
+        ${new Date(entry.clockIn)
+          .toLocaleTimeString()}
+
+      </div>
+
+    `).join("");
+
+}
+
+async function clockOut() {
+
+  const employeeId =
+    document.getElementById(
+      "clockEmployee"
+    ).value;
+
+  if (!employeeId) {
+
+    alert(
+      "Select an officer."
+    );
+
+    return;
+  }
+
+  const activeEntry =
+    timeEntries.find(
+      entry =>
+
+        entry.employeeId === employeeId &&
+
+        entry.status === "Clocked In"
+    );
+
+  if (!activeEntry) {
+
+    alert(
+      "No active clock-in found."
+    );
+
+    return;
+  }
+
+  const clockOutTime =
+    new Date();
+
+  const clockInTime =
+    new Date(
+      activeEntry.clockIn
+    );
+
+  const hoursWorked =
+    (
+      (clockOutTime - clockInTime)
+      / 1000
+      / 60
+      / 60
+    ).toFixed(2);
+
+  await updateDoc(
+
+    doc(
+      db,
+      "timeEntries",
+      activeEntry.id
+    ),
+
+    {
+
+      clockOut:
+        clockOutTime.toISOString(),
+
+      hoursWorked:
+        Number(hoursWorked),
+
+      status:
+        "Clocked Out"
+
+    }
+
+  );
+
+  alert(
+    "Clock Out Successful"
+  );
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -5226,3 +5482,5 @@ window.deleteShift = deleteShift;
 window.saveShiftEdit = saveShiftEdit;
 window.previousWeek = previousWeek;
 window.nextWeek = nextWeek;
+window.clockIn = clockIn;
+window.clockOut = clockOut;

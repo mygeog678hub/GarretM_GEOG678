@@ -1935,3 +1935,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     font-size:16px;
     font-weight:600;
 }
+.clock-grid{
+  display:grid;
+  grid-template-columns:350px 1fr;
+  gap:20px;
+}
+@media (max-width:768px){
+
+  .clock-grid{
+    grid-template-columns:1fr;
+  }
+
+}

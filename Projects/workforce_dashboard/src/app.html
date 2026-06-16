@@ -1164,7 +1164,7 @@
   style="display:none;"
 >
 
-  <div class="dashboard-card">
+<div class="dashboard-card">
 
     <h2>Scheduling</h2>
 
@@ -1178,7 +1178,7 @@
         Select Officer
       </option>
     </select>
-  </div>
+  </div>  
 
   <div>
     <label>Site</label>
@@ -1246,16 +1246,45 @@
 
 </div>
 
-<div id="weeklyScheduleBoard"></div>
-
-  <div id="weeklyScheduleBoard"></div>
+<div id="weeklyScheduleBoard"></div>  
 </div>
+
+<div class="clock-grid">
+
+  <div class="dashboard-card">
+    <h2>Time Clock</h2>
+
+    <select id="clockEmployee">
+      <option value="">
+        Select Officer
+      </option>
+    </select>
+
+    <button onclick="clockIn()">
+  Clock In
+</button>
+
+<button onclick="clockOut()">
+  Clock Out
+</button>
   </div>
 
+  <div class="dashboard-card">
+
+    <h2>Officers On Duty</h2>
+
+    <div id="activeTimeEntries">
+      No officers clocked in.
+    </div>
+
+  </div>
+
+</div>
 
   </main>
 
 </div>
+
 <div class="bottom-panel">
 <footer class="site-footer">
   <p>
