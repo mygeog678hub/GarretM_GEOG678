@@ -751,8 +751,12 @@ body {
   z-index:1000;
 
   display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+
+  max-width:calc(100% - 20px);
+
+  gap:10px;
 
   background:rgba(17,24,39,0.92);
 
@@ -761,6 +765,16 @@ body {
   border-radius:12px;
 
   box-shadow:0 4px 14px rgba(0,0,0,0.35);
+
+  scrollbar-width:none;
+}
+
+.map-filters::-webkit-scrollbar{
+  display:none;
+}
+
+.map-filters button{
+  flex-shrink:0;
 }
 
 .map-filters button{
@@ -1767,4 +1781,41 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
   width: 90%;
   max-width: 700px;
+}
+@media (max-width: 768px){
+
+  .map-filters{
+    left:10px;
+    right:10px;
+
+    top:10px;
+
+    overflow-x:auto;
+    justify-content:flex-start;
+  }
+
+  .map-filters button{
+    flex-shrink:0;
+    font-size:11px;
+    padding:8px 10px;
+  }
+
+}
+@media (max-width:768px){
+
+  .map-filters{
+    top:10px;
+    left:10px;
+    right:10px;
+
+    overflow-x:auto;
+    flex-wrap:nowrap;
+
+    max-width:calc(100% - 20px);
+  }
+
+  .map-filters button{
+    flex-shrink:0;
+  }
+
 }
