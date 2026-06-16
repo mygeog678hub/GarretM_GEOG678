@@ -4437,6 +4437,7 @@ function showSchedulingPage() {
   ).style.display = "block";
 
   populateScheduleDropdowns();
+  renderWeeklyScheduleBoard(); 
 
 }
 
@@ -4656,15 +4657,15 @@ function renderSchedules() {
   const sortedShifts =
     [...shifts].sort(
       (a, b) =>
-        new Date(a.startTime) -
-        new Date(b.startTime)
+        new Date(b.startTime) -
+        new Date(a.startTime)
     );
 
   sortedShifts.forEach(shift => {
 
     container.innerHTML += `
 
-      <div class="dashboard-card">
+      <div class="shift-card">
 
         <strong>
           ${shift.employeeName}
@@ -4701,7 +4702,7 @@ function renderSchedules() {
     `;
 
   });
-
+renderWeeklyScheduleBoard();
 }
 
 async function deleteShift(id) {
@@ -4964,6 +4965,106 @@ async function saveShiftEdit() {
   );
 
   closeEditShiftModal();
+
+}
+
+function renderWeeklyScheduleBoard(){
+
+  const board =
+    document.getElementById(
+      "weeklyScheduleBoard"
+    );
+
+  if(!board) return;
+
+  const dayNames = [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ];
+
+  let html = `
+    <div class="weekly-board">
+      <div class="weekly-grid">
+
+        <div class="weekly-header">Officer</div>
+        <div class="weekly-header">Mon</div>
+        <div class="weekly-header">Tue</div>
+        <div class="weekly-header">Wed</div>
+        <div class="weekly-header">Thu</div>
+        <div class="weekly-header">Fri</div>
+        <div class="weekly-header">Sat</div>
+        <div class="weekly-header">Sun</div>
+  `;
+
+  employees.forEach(employee => {
+
+    html += `
+      <div class="weekly-cell officer-name">
+        ${employee.name}
+      </div>
+    `;
+
+    for(let day = 1; day <= 7; day++){
+
+      const actualDay =
+        day === 7 ? 0 : day;
+
+      const dayShifts =
+        shifts.filter(shift => {
+
+          return (
+            shift.employeeId === employee.id &&
+            new Date(
+              shift.startTime
+            ).getDay() === actualDay
+          );
+
+        });
+
+      html += `
+        <div class="weekly-cell">
+      `;
+
+      dayShifts.forEach(shift => {
+
+        html += `
+  <div
+    class="schedule-block"
+    onclick="editShift('${shift.id}')"
+  >
+    ${shift.siteName}
+<br>
+<small>
+  ${new Date(shift.startTime)
+    .toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    })}
+</small>
+  </div>
+`;
+
+      });
+
+      html += `
+        </div>
+      `;
+
+    }
+
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  board.innerHTML = html;
 
 }
 

@@ -1854,3 +1854,66 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   }
 
 }
+.weekly-board{
+  overflow-x:auto;
+}
+
+.weekly-grid{
+  display:grid;
+  grid-template-columns:200px repeat(7, 1fr);
+  gap:4px;
+  min-width:900px;
+}
+
+.weekly-header{
+  background:#1e293b;
+  color:white;
+  padding:10px;
+  text-align:center;
+  font-weight:700;
+}
+
+.weekly-cell{
+  border:1px solid #334155;
+  min-height:50px;
+  padding:8px;
+}
+
+.officer-name{
+  font-weight:600;
+}
+.schedule-block{
+  background:#2563eb;
+  color:white;
+
+  padding:6px;
+  margin-bottom:4px;
+
+  border-radius:6px;
+
+  font-size:12px;
+  font-weight:600;
+
+  text-align:center;
+
+  cursor:pointer;
+
+  transition:0.2s ease;
+}
+
+.schedule-block:hover{
+  transform:translateY(-1px);
+  opacity:0.9;
+}
+.shift-card{
+  background:#1e293b;
+  padding:12px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #334155;
+}
+.schedule-list-container{
+  max-height:500px;
+  overflow-y:auto;
+  padding-right:6px;
+}
