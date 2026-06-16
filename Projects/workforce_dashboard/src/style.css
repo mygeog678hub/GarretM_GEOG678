@@ -1784,7 +1784,29 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 @media (max-width:768px){
 
-  .map-filters,
+  .map-filters{
+    left:10px;
+    right:10px;
+
+    top:10px;
+
+    overflow-x:auto;
+    flex-wrap:nowrap;
+
+    max-width:calc(100% - 20px);
+
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+
+  .map-filters::-webkit-scrollbar{
+    display:none;
+  }
+
+  .map-filters button{
+    flex-shrink:0;
+  }
+
   .activity-filters{
     overflow-x:auto;
     flex-wrap:nowrap;
@@ -1793,12 +1815,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     -ms-overflow-style:none;
   }
 
-  .map-filters::-webkit-scrollbar,
   .activity-filters::-webkit-scrollbar{
     display:none;
   }
 
-  .map-filters button,
   .activity-filters button{
     flex-shrink:0;
   }
