@@ -149,6 +149,8 @@ let showActiveSites = true;
 let showInactiveSites = false;
 let showClosedSites = false;
 
+
+
 // ================= MAP =================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -4590,11 +4592,14 @@ if (conflict) {
       siteId,
 
       siteName:
-        site.name,
+  site.name,
 
-      startTime,
+siteCategory:
+  site.siteCategory || "other",
 
-      endTime,
+startTime,
+
+endTime,
 
       status:
         "Scheduled",
@@ -4969,13 +4974,28 @@ async function saveShiftEdit() {
 }
 
 function renderWeeklyScheduleBoard(){
+const weekEnd = getEndOfWeek(currentWeekStart);
 
+document.getElementById("weekRangeLabel").textContent =
+    `${currentWeekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`;
   const board =
     document.getElementById(
       "weeklyScheduleBoard"
     );
 
   if(!board) return;
+
+const weekShifts = shifts.filter(shift => {
+
+  const shiftDate =
+    new Date(shift.startTime);
+
+  return (
+    shiftDate >= currentWeekStart &&
+    shiftDate <= weekEnd
+  );
+
+});
 
   const dayNames = [
     "Sun",
@@ -5015,7 +5035,7 @@ function renderWeeklyScheduleBoard(){
         day === 7 ? 0 : day;
 
       const dayShifts =
-        shifts.filter(shift => {
+  weekShifts.filter(shift => {
 
           return (
             shift.employeeId === employee.id &&
@@ -5030,28 +5050,53 @@ function renderWeeklyScheduleBoard(){
         <div class="weekly-cell">
       `;
 
-      dayShifts.forEach(shift => {
+     dayShifts.forEach(shift => {
 
-        html += `
-  <div
-    class="schedule-block"
-    onclick="editShift('${shift.id}')"
-  >
-    ${shift.siteName}
-<br>
-<small>
-  ${new Date(shift.startTime)
-    .toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit"
-    })}
-</small>
-  </div>
-`;
+      const categoryColors = {
+  school: "#2196F3",
+  government: "#4CAF50",
+  construction: "#FF9800",
+  warehouse: "#9C27B0"
+};
 
+const blockColor =
+  categoryColors[
+    (shift.siteCategory || "other")
+      .toLowerCase()
+  ] || "#607D8B";
+
+  const startTime =
+    new Date(shift.startTime)
+      .toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
       });
 
-      html += `
+  const endTime =
+    new Date(shift.endTime)
+      .toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+
+  html += `
+    <div
+      class="schedule-block"
+      style="background:${blockColor}"
+      onclick="editShift('${shift.id}')"
+    >
+      ${shift.siteName}
+      <br>
+      <small>
+        ${startTime}-${endTime}
+      </small>
+    </div>
+  `;
+
+});
+html += `
         </div>
       `;
 
@@ -5066,6 +5111,50 @@ function renderWeeklyScheduleBoard(){
 
   board.innerHTML = html;
 
+}
+
+let currentWeekStart = getStartOfWeek(new Date());
+
+function getStartOfWeek(date) {
+    const d = new Date(date);
+
+    const day = d.getDay();
+
+    const diff = day === 0
+        ? -6
+        : 1 - day;
+
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+
+    return d;
+}
+
+function getEndOfWeek(startDate) {
+    const end = new Date(startDate);
+
+    end.setDate(end.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+
+    return end;
+}
+
+function previousWeek() {
+
+    currentWeekStart.setDate(
+        currentWeekStart.getDate() - 7
+    );
+
+    renderWeeklyScheduleBoard();
+}
+
+function nextWeek() {
+
+    currentWeekStart.setDate(
+        currentWeekStart.getDate() + 7
+    );
+
+    renderWeeklyScheduleBoard();
 }
 
 // ================= GLOBAL =================
@@ -5135,3 +5224,5 @@ window.createShift = createShift;
 window.renderSchedules = renderSchedules;
 window.deleteShift = deleteShift;
 window.saveShiftEdit = saveShiftEdit;
+window.previousWeek = previousWeek;
+window.nextWeek = nextWeek;

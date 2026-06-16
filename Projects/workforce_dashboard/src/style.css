@@ -1917,3 +1917,21 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   overflow-y:auto;
   padding-right:6px;
 }
+.week-navigation{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
+}
+
+.week-navigation button{
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+#weekRangeLabel{
+    font-size:16px;
+    font-weight:600;
+}
