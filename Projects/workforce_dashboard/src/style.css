@@ -414,20 +414,17 @@ button:hover {
 }
 /* ================= REPORT TABLE ================= */
 
-#attendanceRoster .table-wrapper {
-  display: block;
+
+#reportTable {
+  width: 100%;
+}
+
+.report-wrapper {
   overflow-y: auto;
   overflow-x: auto;
   max-height: 400px;
-  border-radius: 18px;
-  margin-top: 18px;
 }
-.report-wrapper thead th {
-  background: #0f172a;
-  position: sticky;
-  top: 0;
-  z-index: 101;
-}
+
 table {
   width: 100%;
 
@@ -456,12 +453,6 @@ th {
   text-transform: uppercase;
 
   letter-spacing: 0.5px;
-
-  position: sticky;
-
-  top: 0;
-
-  z-index: 100;
 }
 
 td {
@@ -1845,8 +1836,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   }
 
 }
-.weekly-board{
-  overflow-x:auto;
+.weekly-board {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
 }
 
 .weekly-grid{
@@ -1962,6 +1955,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .metric-box small {
   color: #cbd5e1;
 }
+#activeTimeEntries {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+#attendanceRoster .report-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+#attendanceRoster .table-wrapper {
+  display: block;
+}
+
 #attendanceRoster .report-table {
   width: 100%;
   border-collapse: separate;
@@ -1971,17 +1980,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #attendanceRoster .report-table thead th {
   position: sticky;
   top: 0;
-  z-index: 100;
   background: #0f172a;
-}
-#activeTimeEntries {
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-}
-
-#attendanceRoster {
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
+  z-index: 999;
 }

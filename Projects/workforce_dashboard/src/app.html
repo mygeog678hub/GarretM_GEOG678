@@ -1110,6 +1110,26 @@
 </div>
 </div>
 
+  <div id="missingClockInModal" class="modal hidden">
+
+  <div class="modal-content">
+
+    <h2>Missing Clock Ins</h2>
+
+    <div id="missingClockInList">
+      No missing clock-ins.
+    </div>
+
+    <br>
+
+    <button onclick="closeMissingClockInModal()">
+      Close
+    </button>
+
+  </div>
+
+</div>
+
 <div id="editShiftModal" class="modal hidden">
 
   <div class="modal-content">
@@ -1230,23 +1250,27 @@
 </div>
 
 <div class="dashboard-card">
+
   <h2>Weekly Schedule Board</h2>
 
   <div class="week-navigation">
 
     <button onclick="previousWeek()">
-        ◀ Previous Week
+      ◀ Previous Week
     </button>
 
     <div id="weekRangeLabel"></div>
 
     <button onclick="nextWeek()">
-        Next Week ▶
+      Next Week ▶
     </button>
 
-</div>
+  </div>
 
-<div id="weeklyScheduleBoard"></div>  
+  <div class="weekly-board-container">
+    <div id="weeklyScheduleBoard"></div>
+  </div>
+
 </div>
 
 <div class="clock-grid">
@@ -1301,10 +1325,15 @@
       <small>Scheduled Today</small>
     </div>
 
-    <div class="metric-box">
-      <span id="missingClockInCount">0</span>
-      <small>Missing Clock In</small>
-    </div>
+    <div class="metric-box"
+     onclick="showMissingClockIns()"
+     style="cursor:pointer;">
+
+  <span id="missingClockInCount">0</span>
+
+  <small>Missing Clock In</small>
+
+</div>
 
   </div>
 

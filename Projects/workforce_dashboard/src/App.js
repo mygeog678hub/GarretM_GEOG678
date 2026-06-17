@@ -149,6 +149,7 @@ let showActiveSites = true;
 let showInactiveSites = false;
 let showClosedSites = false;
 let timeEntries = [];
+let missingClockInList = [];
 
 
 
@@ -5194,6 +5195,35 @@ function nextWeek() {
     renderWeeklyScheduleBoard();
 }
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+
+  const R = 6371000; // meters
+
+  const dLat =
+    (lat2 - lat1) * Math.PI / 180;
+
+  const dLon =
+    (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) *
+    Math.sin(dLat / 2) +
+
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+
+  const c =
+    2 * Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
+
+  return R * c;
+}
+
 async function clockIn() {
 
   const employeeId =
@@ -5269,6 +5299,74 @@ alert(
 
     return;
   }
+
+  const site =
+  sites.find(
+    s => s.id === activeShift.siteId
+  );
+
+if (!site) {
+
+  alert(
+    "Assigned site not found."
+  );
+
+  return;
+}
+
+const distance =
+  calculateDistance(
+    officerLat,
+    officerLng,
+    Number(site.lat),
+    Number(site.lng)
+  );
+
+const allowedRadius =
+  Number(site.geofenceRadius) || 150;
+
+console.log(
+  "Officer:",
+  officerLat,
+  officerLng
+);
+
+console.log(
+  "Site:",
+  site.lat,
+  site.lng
+);
+
+console.log(
+  "Distance:",
+  distance
+);
+
+console.log(
+  "Radius:",
+  allowedRadius
+);
+
+if (distance > allowedRadius) {
+
+  alert(
+    `Clock In Denied
+
+Assigned Site:
+${site.siteName || activeShift.siteName}
+
+Distance:
+${Math.round(distance)} meters
+Maximum allowed distance:
+${allowedRadius} meters`
+  );
+
+  return;
+}
+
+console.log(
+  "Geofence Passed"
+);
 
   const existingEntry =
     timeEntries.find(
@@ -5524,6 +5622,7 @@ document.getElementById("scheduledTodayCount").textContent =
   scheduledToday.length;
 
   let missingClockIns = 0;
+  missingClockInList = [];
 
 scheduledToday.forEach(shift => {
 
@@ -5533,12 +5632,27 @@ scheduledToday.forEach(shift => {
 
   const shiftStart = new Date(shift.startTime);
 
-  if (
-    shiftStart < new Date() &&
-    !hasTimeEntry
-  ) {
-    missingClockIns++;
-  }
+ if (
+  shiftStart < new Date() &&
+  !hasTimeEntry
+) {
+
+  missingClockIns++;
+
+  missingClockInList.push({
+
+    officerName:
+      shift.employeeName || "Unknown",
+
+    siteName:
+      shift.siteName || "Unknown",
+
+    startTime:
+      shift.startTime
+
+  });
+
+}
 
 });
 
@@ -5596,6 +5710,63 @@ html += `
 `;
 console.log(html);
 document.getElementById("attendanceRoster").innerHTML = html;
+}
+
+function showMissingClockIns() {
+
+  let html = "";
+
+  if (missingClockInList.length === 0) {
+
+    html =
+      "<p>No missing clock-ins.</p>";
+
+  } else {
+
+    missingClockInList.forEach(item => {
+
+      html += `
+        <div class="shift-card">
+
+          <strong>
+            ${item.officerName}
+          </strong>
+
+          <br>
+
+          Site:
+          ${item.siteName}
+
+          <br>
+
+          Shift Start:
+          ${new Date(
+            item.startTime
+          ).toLocaleString()}
+
+        </div>
+      `;
+
+    });
+
+  }
+
+  document.getElementById(
+    "missingClockInList"
+  ).innerHTML = html;
+
+  document.getElementById(
+    "missingClockInModal"
+  ).classList.remove("hidden");
+
+}
+
+function closeMissingClockInModal() {
+
+  document.getElementById(
+    "missingClockInModal"
+  ).classList.add("hidden");
+
 }
 
 // ================= GLOBAL =================
@@ -5659,8 +5830,6 @@ window.resolveIncident = resolveIncident;
 window.renderIncidents = renderIncidents;
 window.showSchedulingPage = showSchedulingPage;
 window.showDashboard = showDashboard;
-window.showDashboard = showDashboard;
-window.showSchedulingPage = showSchedulingPage;
 window.createShift = createShift;
 window.renderSchedules = renderSchedules;
 window.deleteShift = deleteShift;
@@ -5670,5 +5839,7 @@ window.nextWeek = nextWeek;
 window.clockIn = clockIn;
 window.clockOut = clockOut;
 window.refreshSupervisorDashboard = refreshSupervisorDashboard;
+window.showMissingClockIns = showMissingClockIns;
+window.closeMissingClockInModal = closeMissingClockInModal;
 
 refreshSupervisorDashboard();
