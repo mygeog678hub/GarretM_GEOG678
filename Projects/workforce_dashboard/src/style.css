@@ -414,23 +414,14 @@ button:hover {
 }
 /* ================= REPORT TABLE ================= */
 
-.table-wrapper {
-  overflow-x: auto;
+#attendanceRoster .table-wrapper {
+  display: block;
   overflow-y: auto;
+  overflow-x: auto;
   max-height: 400px;
   border-radius: 18px;
   margin-top: 18px;
 }
-.report-wrapper table {
-  border-collapse: separate !important;
-  border-spacing: 0;
-}
-.report-wrapper thead {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
 .report-wrapper thead th {
   background: #0f172a;
   position: sticky;
@@ -1946,4 +1937,51 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     grid-template-columns:1fr;
   }
 
+}
+.supervisor-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.metric-box {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.metric-box span {
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+  color: #22c55e;
+}
+
+.metric-box small {
+  color: #cbd5e1;
+}
+#attendanceRoster .report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#attendanceRoster .report-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #0f172a;
+}
+#activeTimeEntries {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+
+#attendanceRoster {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
 }

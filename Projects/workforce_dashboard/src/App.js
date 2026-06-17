@@ -4443,6 +4443,8 @@ function showDashboard() {
     "schedulingPage"
   ).style.display = "none";
 
+  refreshSupervisorDashboard();
+
 }
 
 function showSchedulingPage() {
@@ -5213,6 +5215,46 @@ async function clockIn() {
       e => e.id === employeeId
     );
 
+    const position = await new Promise((resolve, reject) => {
+
+  if (!navigator.geolocation) {
+
+    reject(
+      new Error(
+        "Geolocation not supported"
+      )
+    );
+
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    resolve,
+    reject,
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+
+});
+
+const officerLat =
+  position.coords.latitude;
+
+const officerLng =
+  position.coords.longitude;
+
+console.log(
+  "Officer GPS:",
+  officerLat,
+  officerLng  
+);
+alert(
+  `GPS Acquired\n\nLat: ${officerLat}\nLng: ${officerLng}`
+);
+
   const activeShift =
     shifts.find(
       shift =>
@@ -5413,6 +5455,149 @@ async function clockOut() {
 
 }
 
+async function refreshSupervisorDashboard() {
+  console.log("Supervisor dashboard running");
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const attendanceSnapshot =
+  await getDocs(
+    collection(db, "timeEntries")
+  );
+
+const scheduleSnapshot =
+  await getDocs(
+    collection(db, "shifts")
+  );
+
+  const attendance = attendanceSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  const schedules = scheduleSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  console.log("Attendance Records:", attendance.length);
+console.log("Shift Records:", schedules.length);
+
+  let onDuty = 0;
+  let clockedOut = 0;
+
+  console.log(
+  "Roster Attendance Records:",
+  attendance.length
+);
+
+  attendance.forEach(entry => {
+
+   if (entry.status === "Clocked In") {
+  onDuty++;
+}
+
+if (entry.status === "Clocked Out") {
+  clockedOut++;
+}
+
+  });
+
+  document.getElementById("onDutyCount").textContent = onDuty;
+  document.getElementById("clockedOutCount").textContent = clockedOut;
+
+const scheduledToday = schedules.filter(shift => {
+
+  if (!shift.startTime) return false;
+
+  const start = new Date(shift.startTime);
+
+  return (
+    start.getFullYear() === today.getFullYear() &&
+    start.getMonth() === today.getMonth() &&
+    start.getDate() === today.getDate()
+  );
+
+});
+
+document.getElementById("scheduledTodayCount").textContent =
+  scheduledToday.length;
+
+  let missingClockIns = 0;
+
+scheduledToday.forEach(shift => {
+
+  const hasTimeEntry = attendance.some(entry =>
+    entry.shiftId === shift.id
+  );
+
+  const shiftStart = new Date(shift.startTime);
+
+  if (
+    shiftStart < new Date() &&
+    !hasTimeEntry
+  ) {
+    missingClockIns++;
+  }
+
+});
+
+document.getElementById("missingClockInCount").textContent =
+  missingClockIns;
+
+let html = `
+<div class="report-wrapper">
+  <div class="table-wrapper">
+    <table class="report-table">
+  <thead>
+    <tr>
+      <th>Officer</th>
+      <th>Site</th>
+      <th>Status</th>
+      <th>Clock In</th>
+      <th>Clock Out</th>
+      <th>Hours</th>
+    </tr>
+  </thead>
+  <tbody>
+`;
+
+attendance.forEach(entry => {
+
+  const clockInTime = entry.clockIn
+    ? entry.clockIn.toDate
+      ? entry.clockIn.toDate().toLocaleTimeString()
+      : new Date(entry.clockIn).toLocaleTimeString()
+    : "-";
+
+  const clockOutTime = entry.clockOut
+    ? entry.clockOut.toDate
+      ? entry.clockOut.toDate().toLocaleTimeString()
+      : new Date(entry.clockOut).toLocaleTimeString()
+    : "-";
+
+  html += `
+    <tr>
+      <td>${entry.employeeName || "-"}</td>
+      <td>${entry.siteName || "-"}</td>
+      <td>${entry.status || "-"}</td>
+      <td>${clockInTime}</td>
+      <td>${clockOutTime}</td>
+      <td>${entry.hoursWorked || "-"}</td>
+    </tr>
+  `;
+});
+
+html += `
+  </tbody>
+</table>
+  </div>
+</div>
+`;
+console.log(html);
+document.getElementById("attendanceRoster").innerHTML = html;
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -5484,3 +5669,6 @@ window.previousWeek = previousWeek;
 window.nextWeek = nextWeek;
 window.clockIn = clockIn;
 window.clockOut = clockOut;
+window.refreshSupervisorDashboard = refreshSupervisorDashboard;
+
+refreshSupervisorDashboard();
