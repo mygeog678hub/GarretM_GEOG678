@@ -5448,42 +5448,47 @@ console.log(
     return;
   }
 
+  const employeeName =
+  employee.name;
+
+const siteId =
+  activeShift.siteId;
+
+const siteName =
+  activeShift.siteName;
+
+const shiftId =
+  activeShift.id;
+  console.log(JSON.stringify(site, null, 2));
+  console.log("Active Shift:", activeShift);
+console.log("Site:", site);
+console.log("employee =", employee);
+console.log("activeShift =", activeShift);
+console.log("site =", site);
+
+console.log("employeeName =", employeeName);
+console.log("siteId =", siteId);
+console.log("siteName =", siteName);
+console.log("shiftId =", shiftId);
+
   await addDoc(
-    collection(db, "timeEntries"),
-    {
+  collection(db, "timeEntries"),
+  {
+    employeeId,
+    employeeName,
+    siteId,
+    siteName,
+    shiftId,
 
-      employeeId,
+    clockIn: serverTimestamp(),
+    status: "Clocked In",
 
-      employeeName:
-        employee.name,
-
-      siteId:
-        activeShift.siteId,
-
-      siteName:
-        activeShift.siteName,
-
-      shiftId:
-        activeShift.id,
-
-      clockIn:
-        new Date().toISOString(),
-
-      clockOut:
-        null,
-
-      status:
-        "Clocked In",
-
-      hoursWorked:
-        0,
-
-      createdAt:
-        new Date().toISOString()
-
-    }
-
-  );
+    monitoringActive: true,
+    lastGpsCheck: null,
+    gpsViolationCount: 0,
+    currentlyInsideGeofence: true
+  }
+);
 
   alert(
     "Clock In Successful"
@@ -5533,8 +5538,13 @@ function renderActiveTimeEntries() {
 
         <br>
 
-        ${new Date(entry.clockIn)
-          .toLocaleTimeString()}
+        ${
+  entry.clockIn
+    ? entry.clockIn
+        .toDate()
+        .toLocaleTimeString()
+    : "Unknown"
+}
 
       </div>
 
@@ -5871,17 +5881,17 @@ let html = `
 
 attendance.forEach(entry => {
 
-  const clockInTime = entry.clockIn
-    ? entry.clockIn.toDate
-      ? entry.clockIn.toDate().toLocaleTimeString()
-      : new Date(entry.clockIn).toLocaleTimeString()
-    : "-";
+ const clockInTime = entry.clockIn
+  ? entry.clockIn.toDate
+    ? entry.clockIn.toDate().toLocaleTimeString()
+    : new Date(entry.clockIn).toLocaleTimeString()
+  : "-";
 
-  const clockOutTime = entry.clockOut
-    ? entry.clockOut.toDate
-      ? entry.clockOut.toDate().toLocaleTimeString()
-      : new Date(entry.clockOut).toLocaleTimeString()
-    : "-";
+const clockOutTime = entry.clockOut
+  ? entry.clockOut.toDate
+    ? entry.clockOut.toDate().toLocaleTimeString()
+    : new Date(entry.clockOut).toLocaleTimeString()
+  : "-";
 
   html += `
     <tr>
