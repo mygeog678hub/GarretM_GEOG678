@@ -5964,6 +5964,97 @@ function showMissingClockIns() {
 
 }
 
+async function checkPostAbandonment() {
+
+  const activeEntries =
+    timeEntries.filter(
+      entry =>
+        entry.status === "Clocked In"
+    );
+
+  if (!activeEntries.length) {
+
+    alert(
+      "No officers currently clocked in."
+    );
+
+    return;
+  }
+
+  const position =
+    await new Promise(
+      (resolve, reject) => {
+
+        navigator.geolocation
+          .getCurrentPosition(
+            resolve,
+            reject,
+            {
+              enableHighAccuracy: true
+            }
+          );
+
+      }
+    );
+
+  const officerLat =
+    position.coords.latitude;
+
+  const officerLng =
+    position.coords.longitude;
+
+  for (const entry of activeEntries) {
+
+    const site =
+      sites.find(
+        s => s.id === entry.siteId
+      );
+
+    if (!site) continue;
+
+    const distance =
+      calculateDistance(
+        officerLat,
+        officerLng,
+        Number(site.lat),
+        Number(site.lng)
+      );
+
+    const radiusFeet =
+      Number(site.geofenceRadius) || 150;
+
+    const radiusMeters =
+      radiusFeet * 0.3048;
+alert(
+  `${entry.employeeName}
+
+Distance:
+${Math.round(distance)} meters
+
+Allowed:
+${Math.round(radiusMeters)} meters`
+);
+ if (
+  distance > radiusMeters
+) {
+
+  alert(
+    `${entry.employeeName} is outside geofence`
+  );
+
+}
+else {
+
+  alert(
+    `${entry.employeeName} is currently on post`
+  );
+
+}
+
+  }
+
+}
+
 function closeMissingClockInModal() {
 
   document.getElementById(
@@ -6044,5 +6135,6 @@ window.clockOut = clockOut;
 window.refreshSupervisorDashboard = refreshSupervisorDashboard;
 window.showMissingClockIns = showMissingClockIns;
 window.closeMissingClockInModal = closeMissingClockInModal;
+window.checkPostAbandonment = checkPostAbandonment;
 
 refreshSupervisorDashboard();
