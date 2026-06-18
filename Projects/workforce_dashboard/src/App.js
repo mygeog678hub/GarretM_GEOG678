@@ -570,12 +570,16 @@ const fullQuery = encodeURIComponent(
 );
 
 console.log("Primary Query:", fullQuery);
+console.log(
+  `${address}, ${city}, ${state} ${zip}, USA`
+);
 
 let response = await fetch(
   `https://nominatim.openstreetmap.org/search?q=${fullQuery}&format=json&limit=1`
 );
 
 coords = await response.json();
+console.log("Geocode Results:", coords);
 
 // FALLBACK ATTEMPT
 if (!coords.length) {
@@ -598,11 +602,30 @@ console.log("Geocode Result:", coords);
 
 if (!coords.length) {
 
-  alert(
-    "Location not found. Try another address."
-  );
+  const position =
+    await new Promise(
+      (resolve, reject) => {
 
-  return;
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000
+          }
+        );
+
+      }
+    );
+
+  coords = [{
+    lat: position.coords.latitude,
+    lon: position.coords.longitude
+  }];
+
+  alert(
+    "Address not found. Using current GPS location."
+  );
 
 }
 
@@ -3174,10 +3197,12 @@ async function saveSiteEdit() {
       "editSiteZip"
     ).value.trim();
 
+   const geofenceRadius =
+  Number(
     document.getElementById(
-  "editSiteRadius"
-).value =
-  site.geofenceRadius ?? 150;
+      "editSiteRadius"
+    ).value
+  ) || 150;
 
     const siteCategory =
   document.getElementById(
@@ -3242,15 +3267,33 @@ const siteSubtype =
 
     }
 
-    if (!coords.length) {
+   if (!coords.length) {
 
-      alert(
-        "Location not found"
-      );
+  const existingSite =
+    sites.find(
+      s => s.id === editingSiteId
+    );
 
-      return;
+  if (!existingSite) {
 
-    }
+    alert(
+      "Address not found and existing site could not be loaded."
+    );
+
+    return;
+
+  }
+
+  coords = [{
+    lat: existingSite.lat,
+    lon: existingSite.lng
+  }];
+
+  alert(
+    "Address not found. Existing coordinates will be retained."
+  );
+
+}
     
     // ================= UPDATE =================
 
@@ -4645,9 +4688,21 @@ endTime,
       createdAt:
         new Date().toISOString()
 
+        
+
     }
     
+    
   );
+
+  document.getElementById(
+  "scheduleEmployee"
+).value = "";
+
+document.getElementById(
+  "scheduleSite"
+).value = "";
+
   console.log("Shift saved");
   document.getElementById(
   "scheduleEmployee"
@@ -5340,7 +5395,20 @@ const allowedRadiusFeet =
 
 const allowedRadius =
   allowedRadiusFeet * 0.3048;
-
+console.log(
+  "Distance:",
+  distance,
+  "Allowed Feet:",
+  allowedRadiusFeet,
+  "Allowed Meters:",
+  allowedRadius,
+  "Site:",
+  site.siteName,
+  "Lat:",
+  site.lat,
+  "Lng:",
+  site.lng
+);
 if (distance > allowedRadius) {
 
   alert(
@@ -5352,7 +5420,9 @@ ${site.siteName || activeShift.siteName}
 Distance:
 ${Math.round(distance)} meters
 Allowed Radius:
-${allowedRadiusFeet} feet`
+${allowedRadiusFeet} feet
+Allowed Radius:
+${Math.round(allowedRadius)} meters`
   );
 
   return;
@@ -5419,6 +5489,10 @@ console.log(
     "Clock In Successful"
   );
 
+  document.getElementById(
+  "clockEmployee"
+).value = "";
+
 }
 
 function renderActiveTimeEntries() {
@@ -5470,82 +5544,207 @@ function renderActiveTimeEntries() {
 
 async function clockOut() {
 
-  const employeeId =
-    document.getElementById(
-      "clockEmployee"
-    ).value;
+const employeeId =
+document.getElementById(
+"clockEmployee"
+).value;
 
-  if (!employeeId) {
+if (!employeeId) {
 
-    alert(
-      "Select an officer."
-    );
+alert(
+  "Select an officer."
+);
 
-    return;
-  }
-
-  const activeEntry =
-    timeEntries.find(
-      entry =>
-
-        entry.employeeId === employeeId &&
-
-        entry.status === "Clocked In"
-    );
-
-  if (!activeEntry) {
-
-    alert(
-      "No active clock-in found."
-    );
-
-    return;
-  }
-
-  const clockOutTime =
-    new Date();
-
-  const clockInTime =
-    new Date(
-      activeEntry.clockIn
-    );
-
-  const hoursWorked =
-    (
-      (clockOutTime - clockInTime)
-      / 1000
-      / 60
-      / 60
-    ).toFixed(2);
-
-  await updateDoc(
-
-    doc(
-      db,
-      "timeEntries",
-      activeEntry.id
-    ),
-
-    {
-
-      clockOut:
-        clockOutTime.toISOString(),
-
-      hoursWorked:
-        Number(hoursWorked),
-
-      status:
-        "Clocked Out"
-
-    }
-
-  );
-
-  alert(
-    "Clock Out Successful"
-  );
+return;
 
 }
+
+const position =
+await new Promise(
+(resolve, reject) => {
+
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      reject,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000
+      }
+    );
+
+  }
+);
+
+const latitude =
+position.coords.latitude;
+
+const longitude =
+position.coords.longitude;
+
+const activeEntry =
+timeEntries.find(
+entry =>
+entry.employeeId === employeeId &&
+entry.status === "Clocked In"
+);
+
+if (!activeEntry) {
+
+alert(
+  "No active clock-in found."
+);
+
+return;
+
+}
+
+const site =
+sites.find(
+s =>
+s.id ===
+activeEntry.siteId
+);
+
+if (!site) {
+
+alert(
+  "Assigned site not found."
+);
+
+return;
+
+}
+
+const distance =
+calculateDistance(
+latitude,
+longitude,
+site.lat,
+site.lng
+);
+
+const allowedRadiusFeet =
+Number(
+site.geofenceRadius
+) || 150;
+
+const allowedRadius =
+allowedRadiusFeet * 0.3048;
+
+const outsideGeofence =
+distance > allowedRadius;
+
+if (outsideGeofence) {
+
+await addDoc(
+  collection(
+    db,
+    "activityLogs"
+  ),
+  {
+    type:
+      "gpsViolation",
+
+    message:
+      `${activeEntry.employeeName} clocked out outside assigned geofence.`,
+
+    employeeId:
+      activeEntry.employeeId,
+
+    employeeName:
+      activeEntry.employeeName,
+
+    siteId:
+      activeEntry.siteId,
+
+    siteName:
+      activeEntry.siteName,
+
+    distanceMeters:
+      Math.round(distance),
+
+    distanceFeet:
+      Math.round(
+        distance * 3.28084
+      ),
+
+    timestamp:
+      serverTimestamp()
+  }
+);
+
+}
+
+const clockOutTime =
+new Date();
+
+const clockInTime =
+new Date(
+activeEntry.clockIn
+);
+
+const hoursWorked =
+(
+(clockOutTime - clockInTime)
+/ 1000
+/ 60
+/ 60
+).toFixed(2);
+
+await updateDoc(
+
+doc(
+  db,
+  "timeEntries",
+  activeEntry.id
+),
+
+{
+  clockOut:
+    clockOutTime.toISOString(),
+
+  hoursWorked:
+    Number(hoursWorked),
+
+  status:
+    "Clocked Out"
+}
+
+);
+
+if (outsideGeofence) {
+
+alert(
+  `Clock Out Completed
+
+WARNING:
+You were outside the assigned geofence.
+
+Distance:
+${Math.round(distance * 3.28084)} feet
+
+This event has been logged.`
+);
+
+}
+else {
+
+alert(
+  "Clock Out Successful"
+);
+
+}
+
+document.getElementById(
+  "clockEmployee"
+).value = "";
+
+loadTimeEntries();
+
+refreshSupervisorDashboard();
+
+}
+
 
 async function refreshSupervisorDashboard() {
   console.log("Supervisor dashboard running");
