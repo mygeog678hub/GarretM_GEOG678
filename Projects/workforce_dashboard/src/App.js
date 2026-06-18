@@ -5276,29 +5276,42 @@ const officerLat =
 const officerLng =
   position.coords.longitude;
 
-console.log(
-  "Officer GPS:",
-  officerLat,
-  officerLng  
-);
 alert(
   `GPS Acquired\n\nLat: ${officerLat}\nLng: ${officerLng}`
 );
 
-  const activeShift =
-    shifts.find(
-      shift =>
-        shift.employeeId === employeeId
+const now = new Date();
+
+const activeShift =
+  shifts.find(shift => {
+
+    if (
+      shift.employeeId !== employeeId
+    ) {
+      return false;
+    }
+
+    const start =
+      new Date(shift.startTime);
+
+    const end =
+      new Date(shift.endTime);
+
+    return (
+      now >= start &&
+      now <= end
     );
 
-  if (!activeShift) {
+  });
 
-    alert(
-      "No scheduled shift found."
-    );
+if (!activeShift) {
 
-    return;
-  }
+  alert(
+    "No active shift available for clock-in."
+  );
+
+  return;
+}
 
   const site =
   sites.find(
@@ -5322,30 +5335,11 @@ const distance =
     Number(site.lng)
   );
 
-const allowedRadius =
+const allowedRadiusFeet =
   Number(site.geofenceRadius) || 150;
 
-console.log(
-  "Officer:",
-  officerLat,
-  officerLng
-);
-
-console.log(
-  "Site:",
-  site.lat,
-  site.lng
-);
-
-console.log(
-  "Distance:",
-  distance
-);
-
-console.log(
-  "Radius:",
-  allowedRadius
-);
+const allowedRadius =
+  allowedRadiusFeet * 0.3048;
 
 if (distance > allowedRadius) {
 
@@ -5357,8 +5351,8 @@ ${site.siteName || activeShift.siteName}
 
 Distance:
 ${Math.round(distance)} meters
-Maximum allowed distance:
-${allowedRadius} meters`
+Allowed Radius:
+${allowedRadiusFeet} feet`
   );
 
   return;
