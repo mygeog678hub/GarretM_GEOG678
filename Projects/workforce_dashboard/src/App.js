@@ -11,6 +11,7 @@ import {
   getDoc,
   getDocs,
   serverTimestamp,
+  increment,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
@@ -5437,7 +5438,8 @@ console.log(
       entry =>
         entry.employeeId === employeeId &&
         entry.status === "Clocked In"
-    );
+        
+    );    
 
   if (existingEntry) {
 
@@ -6025,31 +6027,164 @@ async function checkPostAbandonment() {
 
     const radiusMeters =
       radiusFeet * 0.3048;
-alert(
-  `${entry.employeeName}
+
+    alert(
+      `${entry.employeeName}
 
 Distance:
 ${Math.round(distance)} meters
 
 Allowed:
 ${Math.round(radiusMeters)} meters`
-);
- if (
-  distance > radiusMeters
+    );
+
+    const isInsideGeofence =
+      distance <= radiusMeters;
+
+    const entryRef =
+      doc(
+        db,
+        "timeEntries",
+        entry.id
+      );
+
+    // OFFICER LEFT POST
+
+    if (
+  !isInsideGeofence &&
+  entry.currentlyInsideGeofence === true
 ) {
 
   alert(
-    `${entry.employeeName} is outside geofence`
-  );
+    "ENTERED ABANDONMENT BLOCK"
+  ); 
 
-}
-else {
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type:
+            "Post Abandonment",
 
-  alert(
-    `${entry.employeeName} is currently on post`
-  );
+          employeeId:
+            entry.employeeId,
 
-}
+          employeeName:
+            entry.employeeName,
+
+          siteId:
+            entry.siteId,
+
+          siteName:
+            entry.siteName,
+
+          timestamp:
+            serverTimestamp()
+        }
+      );
+
+      await updateDoc(
+        entryRef,
+        {
+          currentlyInsideGeofence:
+            false,
+
+          gpsViolationCount:
+            increment(1),
+
+          lastGpsCheck:
+            serverTimestamp()
+        }
+      );
+
+      alert(
+        `${entry.employeeName} is outside geofence`
+      );
+
+    }
+
+    // OFFICER RETURNED
+
+    else if (
+      isInsideGeofence &&
+      entry.currentlyInsideGeofence === false
+    ) {
+
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type:
+            "Returned To Post",
+
+          employeeId:
+            entry.employeeId,
+
+          employeeName:
+            entry.employeeName,
+
+          siteId:
+            entry.siteId,
+
+          siteName:
+            entry.siteName,
+
+          timestamp:
+            serverTimestamp()
+        }
+      );
+
+      await updateDoc(
+        entryRef,
+        {
+          currentlyInsideGeofence:
+            true,
+
+          lastGpsCheck:
+            serverTimestamp()
+        }
+      );
+
+      alert(
+        `${entry.employeeName} has returned to post`
+      );
+
+    }
+
+    // NO STATE CHANGE
+
+    else {
+
+      await updateDoc(
+        entryRef,
+        {
+          lastGpsCheck:
+            serverTimestamp()
+        }
+      );
+
+      if (
+        isInsideGeofence
+      ) {
+
+        alert(
+          `${entry.employeeName} is currently on post`
+        );
+
+      }
+      else {
+
+        alert(
+          `${entry.employeeName} remains outside geofence`
+        );
+
+      }
+
+    }
 
   }
 
@@ -6057,9 +6192,13 @@ else {
 
 function closeMissingClockInModal() {
 
-  document.getElementById(
-    "missingClockInModal"
-  ).classList.add("hidden");
+  document
+    .getElementById(
+      "missingClockInModal"
+    )
+    ?.classList.add(
+      "hidden"
+    );
 
 }
 
