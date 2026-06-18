@@ -151,6 +151,7 @@ let showInactiveSites = false;
 let showClosedSites = false;
 let timeEntries = [];
 let missingClockInList = [];
+let postMonitoringTimer = null;
 
 
 
@@ -5461,17 +5462,6 @@ const siteName =
 
 const shiftId =
   activeShift.id;
-  console.log(JSON.stringify(site, null, 2));
-  console.log("Active Shift:", activeShift);
-console.log("Site:", site);
-console.log("employee =", employee);
-console.log("activeShift =", activeShift);
-console.log("site =", site);
-
-console.log("employeeName =", employeeName);
-console.log("siteId =", siteId);
-console.log("siteName =", siteName);
-console.log("shiftId =", shiftId);
 
   await addDoc(
   collection(db, "timeEntries"),
@@ -5491,7 +5481,7 @@ console.log("shiftId =", shiftId);
     currentlyInsideGeofence: true
   }
 );
-
+startPostMonitoring();
   alert(
     "Clock In Successful"
   );
@@ -5723,6 +5713,26 @@ doc(
 }
 
 );
+
+const remainingActiveEntries =
+  timeEntries.filter(
+    entry =>
+      entry.status ===
+      "Clocked In" &&
+      entry.employeeId !==
+      employeeId
+  );
+console.log(
+  "Remaining Active Entries:",
+  remainingActiveEntries
+);
+if (
+  remainingActiveEntries.length === 0
+) {
+
+  stopPostMonitoring();
+
+}
 
 if (outsideGeofence) {
 
@@ -6199,6 +6209,62 @@ function closeMissingClockInModal() {
     ?.classList.add(
       "hidden"
     );
+
+}
+
+function startPostMonitoring() {
+  console.log(
+  "Monitoring started"
+);
+
+  if (postMonitoringTimer) {
+
+    clearInterval(
+      postMonitoringTimer
+    );
+
+  }
+
+  postMonitoringTimer =
+    setInterval(
+      async () => { 
+
+        try {
+
+          await checkPostAbandonment();
+
+        }
+        catch (error) {
+
+          console.error(
+            "Post monitoring error:",
+            error
+          );
+
+        }
+
+      },
+      30000
+    ); 
+
+}
+
+function stopPostMonitoring() {
+
+  if (
+    !postMonitoringTimer
+  ) return;
+
+  clearInterval(
+    postMonitoringTimer
+  );
+
+  postMonitoringTimer =
+    null;
+
+  console.log(
+    "Post monitoring stopped."
+  );
 
 }
 
