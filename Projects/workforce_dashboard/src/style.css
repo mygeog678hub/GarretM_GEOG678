@@ -1983,3 +1983,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   background: #0f172a;
   z-index: 999;
 }
+.violation-card {
+  border-left: 4px solid #dc2626;
+}
+
+#activeViolationsCount {
+  color: #dc2626;
+  font-weight: 700;
+}

@@ -5430,10 +5430,6 @@ ${Math.round(allowedRadius)} meters`
   return;
 }
 
-console.log(
-  "Geofence Passed"
-);
-
   const existingEntry =
     timeEntries.find(
       entry =>
@@ -5722,10 +5718,7 @@ const remainingActiveEntries =
       entry.employeeId !==
       employeeId
   );
-console.log(
-  "Remaining Active Entries:",
-  remainingActiveEntries
-);
+
 if (
   remainingActiveEntries.length === 0
 ) {
@@ -5796,28 +5789,40 @@ const scheduleSnapshot =
   console.log("Attendance Records:", attendance.length);
 console.log("Shift Records:", schedules.length);
 
-  let onDuty = 0;
-  let clockedOut = 0;
+let onDuty = 0;
+let clockedOut = 0;
+let activeViolations = 0;
 
-  console.log(
+console.log(
   "Roster Attendance Records:",
   attendance.length
 );
 
-  attendance.forEach(entry => {
+attendance.forEach(entry => {
 
-   if (entry.status === "Clocked In") {
-  onDuty++;
-}
+  if (entry.status === "Clocked In") {
+    onDuty++;
+  }
 
-if (entry.status === "Clocked Out") {
-  clockedOut++;
-}
+  if (entry.status === "Clocked Out") {
+    clockedOut++;
+  }
 
-  });
+  if (
+    entry.status === "Clocked In" &&
+    entry.currentlyInsideGeofence === false
+  ) {
+    activeViolations++;
+  }
+
+});
 
   document.getElementById("onDutyCount").textContent = onDuty;
   document.getElementById("clockedOutCount").textContent = clockedOut;
+
+  document.getElementById(
+  "activeViolationsCount"
+).textContent = activeViolations;
 
 const scheduledToday = schedules.filter(shift => {
 
@@ -5977,6 +5982,10 @@ function showMissingClockIns() {
 }
 
 async function checkPostAbandonment() {
+  console.log(
+  "Monitoring Tick",
+  new Date().toLocaleTimeString()
+);
 
   const activeEntries =
     timeEntries.filter(
@@ -6060,145 +6069,125 @@ ${Math.round(radiusMeters)} meters`
 
     // OFFICER LEFT POST
 
-    if (
+if (
   !isInsideGeofence &&
   entry.currentlyInsideGeofence === true
 ) {
 
+  await addDoc(
+    collection(
+      db,
+      "activityLogs"
+    ),
+    {
+      type: "Post Abandonment",
+      employeeId: entry.employeeId,
+      employeeName: entry.employeeName,
+      siteId: entry.siteId,
+      siteName: entry.siteName,
+      timestamp: serverTimestamp()
+    }
+  );
+
+  await updateDoc(
+    entryRef,
+    {
+      currentlyInsideGeofence: false,
+      gpsViolationCount: increment(1),
+      lastGpsCheck: serverTimestamp()
+    }
+  );
+
+  if (
+    typeof refreshSupervisorDashboard ===
+    "function"
+  ) {
+    refreshSupervisorDashboard();
+  }
+
   alert(
-    "ENTERED ABANDONMENT BLOCK"
-  ); 
+    `${entry.employeeName} is outside geofence`
+  );
 
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type:
-            "Post Abandonment",
+}
 
-          employeeId:
-            entry.employeeId,
+// RETURNED TO POST
 
-          employeeName:
-            entry.employeeName,
+else if (
+  isInsideGeofence &&
+  entry.currentlyInsideGeofence === false
+) {
 
-          siteId:
-            entry.siteId,
-
-          siteName:
-            entry.siteName,
-
-          timestamp:
-            serverTimestamp()
-        }
-      );
-
-      await updateDoc(
-        entryRef,
-        {
-          currentlyInsideGeofence:
-            false,
-
-          gpsViolationCount:
-            increment(1),
-
-          lastGpsCheck:
-            serverTimestamp()
-        }
-      );
-
-      alert(
-        `${entry.employeeName} is outside geofence`
-      );
-
+  await addDoc(
+    collection(
+      db,
+      "activityLogs"
+    ),
+    {
+      type: "Returned To Post",
+      employeeId: entry.employeeId,
+      employeeName: entry.employeeName,
+      siteId: entry.siteId,
+      siteName: entry.siteName,
+      timestamp: serverTimestamp()
     }
+  );
 
-    // OFFICER RETURNED
-
-    else if (
-      isInsideGeofence &&
-      entry.currentlyInsideGeofence === false
-    ) {
-
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type:
-            "Returned To Post",
-
-          employeeId:
-            entry.employeeId,
-
-          employeeName:
-            entry.employeeName,
-
-          siteId:
-            entry.siteId,
-
-          siteName:
-            entry.siteName,
-
-          timestamp:
-            serverTimestamp()
-        }
-      );
-
-      await updateDoc(
-        entryRef,
-        {
-          currentlyInsideGeofence:
-            true,
-
-          lastGpsCheck:
-            serverTimestamp()
-        }
-      );
-
-      alert(
-        `${entry.employeeName} has returned to post`
-      );
-
+  await updateDoc(
+    entryRef,
+    {
+      currentlyInsideGeofence: true,
+      lastGpsCheck: serverTimestamp()
     }
+  );
 
-    // NO STATE CHANGE
+  if (
+    typeof refreshSupervisorDashboard ===
+    "function"
+  ) {
+    refreshSupervisorDashboard();
+  }
 
-    else {
+  alert(
+    `${entry.employeeName} has returned to post`
+  );
 
-      await updateDoc(
-        entryRef,
-        {
-          lastGpsCheck:
-            serverTimestamp()
-        }
-      );
+}
 
-      if (
-        isInsideGeofence
-      ) {
+// NO STATE CHANGE
 
-        alert(
-          `${entry.employeeName} is currently on post`
-        );
+else {
 
-      }
-      else {
-
-        alert(
-          `${entry.employeeName} remains outside geofence`
-        );
-
-      }
-
+  await updateDoc(
+    entryRef,
+    {
+      lastGpsCheck:
+        serverTimestamp()
     }
+  );
+
+  if (
+    isInsideGeofence
+  ) {
+
+    alert(
+      `${entry.employeeName} is currently on post`
+    );
+
+  }
+  else {
+
+    alert(
+      `${entry.employeeName} remains outside geofence`
+    );
 
   }
 
 }
+
+} // end for loop
+
+} // end checkPostAbandonment
 
 function closeMissingClockInModal() {
 
@@ -6213,9 +6202,6 @@ function closeMissingClockInModal() {
 }
 
 function startPostMonitoring() {
-  console.log(
-  "Monitoring started"
-);
 
   if (postMonitoringTimer) {
 
@@ -6260,11 +6246,7 @@ function stopPostMonitoring() {
   );
 
   postMonitoringTimer =
-    null;
-
-  console.log(
-    "Post monitoring stopped."
-  );
+    null; 
 
 }
 
