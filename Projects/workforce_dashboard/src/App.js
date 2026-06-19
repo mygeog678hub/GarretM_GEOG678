@@ -5897,6 +5897,14 @@ let html = `
 `;
 
 attendance.forEach(entry => {
+  const rowClass =
+
+  entry.status === "Clocked In" &&
+  entry.currentlyInsideGeofence === false
+
+    ? "violation-row"
+
+    : "";
 
  const clockInTime = entry.clockIn
   ? entry.clockIn.toDate
@@ -5911,7 +5919,7 @@ const clockOutTime = entry.clockOut
   : "-";
 
   html += `
-    <tr>
+    <tr class="${rowClass}">
       <td>${entry.employeeName || "-"}</td>
       <td>${entry.siteName || "-"}</td>
       <td>${entry.status || "-"}</td>
