@@ -5754,7 +5754,7 @@ document.getElementById(
   "clockEmployee"
 ).value = "";
 
-loadTimeEntries();
+//loadTimeEntries();
 
 refreshSupervisorDashboard();
 
@@ -5982,13 +5982,19 @@ function showMissingClockIns() {
 }
 
 async function checkPostAbandonment() {
-  console.log(
-  "Monitoring Tick",
-  new Date().toLocaleTimeString()
-);
 
-  const activeEntries =
-    timeEntries.filter(
+  const snapshot =
+  await getDocs(
+    collection(db, "timeEntries")
+  );
+
+const activeEntries =
+  snapshot.docs
+    .map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+    .filter(
       entry =>
         entry.status === "Clocked In"
     );
@@ -6097,6 +6103,13 @@ if (
       lastGpsCheck: serverTimestamp()
     }
   );
+
+  const violationAudio =
+  new Audio(
+    "assets/gps-violation.mp3"
+  );
+
+violationAudio.play();
 
   if (
     typeof refreshSupervisorDashboard ===
