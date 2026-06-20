@@ -321,12 +321,19 @@ function refreshActivityFeed() {
 
   if (!feed) return;
 
-  const filteredLogs =
-    activityFilter === "all"
-      ? activityLogs
-      : activityLogs.filter(
-          log => log.type === activityFilter
-        );
+  const dashboardLogs =
+  activityLogs.filter(
+    log =>
+      log.type !== "Post Abandonment" &&
+      log.type !== "Returned To Post"
+  );
+
+const filteredLogs =
+  activityFilter === "all"
+    ? dashboardLogs
+    : dashboardLogs.filter(
+        log => log.type === activityFilter
+      );
 
   feed.innerHTML = filteredLogs
     .slice(0, 25)
