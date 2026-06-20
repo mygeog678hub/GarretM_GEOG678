@@ -5976,6 +5976,8 @@ let html = `
       <th>Clock In</th>
       <th>Clock Out</th>
       <th>Hours</th>
+<th>Violations</th>
+<th>Level</th>
     </tr>
   </thead>
   <tbody>
@@ -5990,6 +5992,16 @@ attendance.forEach(entry => {
     ? "violation-row"
 
     : "";
+
+    const escalationLevel =
+  getEscalationLevel(
+    entry.gpsViolationCount || 0
+  );
+
+console.log(
+  entry.employeeName,
+  escalationLevel
+);
 
  const clockInTime = entry.clockIn
   ? entry.clockIn.toDate
@@ -6011,6 +6023,22 @@ const clockOutTime = entry.clockOut
       <td>${clockInTime}</td>
       <td>${clockOutTime}</td>
       <td>${entry.hoursWorked || "-"}</td>
+
+<td>
+  ${entry.gpsViolationCount || 0}
+</td>
+
+<td>
+  <span
+    class="${getEscalationClass(
+      entry.gpsViolationCount || 0
+    )}"
+  >
+    ${getEscalationLevel(
+      entry.gpsViolationCount || 0
+    )}
+  </span>
+</td>
     </tr>
   `;
 });
@@ -6535,6 +6563,44 @@ function renderComplianceFeed() {
 
       })
       .join("");
+}
+
+function getEscalationLevel(
+  violationCount
+) {
+
+  if (violationCount >= 4) {
+    return "Critical";
+  }
+
+  if (violationCount >= 2) {
+    return "Elevated";
+  }
+
+  if (violationCount >= 1) {
+    return "Warning";
+  }
+
+  return "Compliant";
+}
+
+function getEscalationClass(
+  violationCount
+) {
+
+  if (violationCount >= 4) {
+    return "escalation-critical";
+  }
+
+  if (violationCount >= 2) {
+    return "escalation-elevated";
+  }
+
+  if (violationCount >= 1) {
+    return "escalation-warning";
+  }
+
+  return "escalation-compliant";
 }
 
 // ================= GLOBAL =================
