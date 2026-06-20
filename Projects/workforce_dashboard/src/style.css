@@ -1423,6 +1423,11 @@ border-bottom:
   max-height: 220px;
   overflow-y: auto;
 }
+#complianceFeed {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
 
 .activity-item {
 

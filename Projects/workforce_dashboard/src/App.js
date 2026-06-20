@@ -6023,6 +6023,7 @@ html += `
 `;
 console.log(html);
 document.getElementById("attendanceRoster").innerHTML = html;
+renderComplianceFeed();
 }
 
 function showMissingClockIns() {
@@ -6183,14 +6184,16 @@ if (
       db,
       "activityLogs"
     ),
-    {
-      type: "Post Abandonment",
-      employeeId: entry.employeeId,
-      employeeName: entry.employeeName,
-      siteId: entry.siteId,
-      siteName: entry.siteName,
-      timestamp: serverTimestamp()
-    }
+  {
+  type: "Post Abandonment",
+  employeeId: entry.employeeId,
+  employeeName: entry.employeeName,
+  siteId: entry.siteId,
+  siteName: entry.siteName,
+  description:
+    `Left post at ${entry.siteName}`,
+  timestamp: serverTimestamp()
+}
   );
 
   await updateDoc(
@@ -6247,14 +6250,16 @@ else if (
       db,
       "activityLogs"
     ),
-    {
-      type: "Returned To Post",
-      employeeId: entry.employeeId,
-      employeeName: entry.employeeName,
-      siteId: entry.siteId,
-      siteName: entry.siteName,
-      timestamp: serverTimestamp()
-    }
+   {
+  type: "Returned To Post",
+  employeeId: entry.employeeId,
+  employeeName: entry.employeeName,
+  siteId: entry.siteId,
+  siteName: entry.siteName,
+  description:
+    `Returned to ${entry.siteName}`,
+  timestamp: serverTimestamp()
+}
   );
 
   await updateDoc(
@@ -6431,6 +6436,105 @@ function flyToViolationSite(
 
   }, 1600);
 
+}
+
+function renderComplianceFeed() {
+
+  const feed =
+    document.getElementById(
+      "complianceFeed"
+    );
+
+  if (!feed) return;
+
+  const complianceLogs =
+    activityLogs
+      .filter(log =>
+
+        log.type ===
+          "Post Abandonment"
+
+        ||
+
+        log.type ===
+          "Returned To Post"
+
+      )
+
+      .sort(
+        (a, b) =>
+
+          (b.timestamp?.seconds || 0)
+
+          -
+
+          (a.timestamp?.seconds || 0)
+      )
+
+      .slice(0, 25);
+
+  if (!complianceLogs.length) {
+
+    feed.innerHTML =
+      `
+        <div class="activity-item">
+          No compliance events.
+        </div>
+      `;
+
+    return;
+  }
+
+  feed.innerHTML =
+    complianceLogs
+      .map(log => {
+
+        const time =
+          log.timestamp?.toDate
+            ? log.timestamp
+                .toDate()
+                .toLocaleTimeString()
+            : "";
+
+        const icon =
+          log.type ===
+          "Post Abandonment"
+
+            ? "🚨"
+
+            : "✅";
+
+        return `
+          <div class="activity-item">
+
+            <strong>
+              ${icon}
+              ${log.employeeName || ""}
+            </strong>
+
+            <br>
+
+            ${
+  log.description ||
+
+  (
+    log.type === "Post Abandonment"
+      ? `Left post at ${log.siteName || "Unknown Site"}`
+      : `Returned to ${log.siteName || "Unknown Site"}`
+  )
+}
+
+            <br>
+
+            <small>
+              ${time}
+            </small>
+
+          </div>
+        `;
+
+      })
+      .join("");
 }
 
 // ================= GLOBAL =================
