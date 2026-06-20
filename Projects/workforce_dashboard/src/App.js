@@ -1768,7 +1768,8 @@ if (activeCriticalIncident) {
 
     } else {
 
-      popup += "<b>Employees:</b><br>";
+      popup +=
+  "<b>Assigned Resources:</b><br>";
 
       active.forEach(a => {
 
@@ -1806,6 +1807,83 @@ if (activeCriticalIncident) {
       });
 
     }
+
+  const officersOnDuty =
+  timeEntries.filter(entry =>
+    entry.siteId === site.id &&
+    entry.status === "Clocked In"
+  );
+
+const activeViolations =
+  officersOnDuty.filter(
+    officer =>
+      officer.currentlyInsideGeofence === false
+  );
+
+popup += "<hr>";
+
+popup +=
+  "<b>Security Officers On Duty:</b><br>";
+
+  if (activeViolations.length) {
+
+  popup += `
+    <div
+      style="
+        border-left:4px solid #dc2626;
+        padding-left:8px;
+        margin-bottom:10px;
+      "
+    >
+      <b>
+        🚨 ACTIVE POST ABANDONMENT
+      </b><br>
+  `;
+
+  activeViolations.forEach(
+    officer => {
+
+      popup += `
+        Officer:
+        ${officer.employeeName}<br>
+
+        Violation Count:
+        ${officer.gpsViolationCount || 0}
+        <br><br>
+      `;
+
+    }
+  );
+
+  popup += "</div>";
+
+}
+
+if (!officersOnDuty.length) {
+
+  popup +=
+    "No officers currently clocked in";
+
+} else {
+
+  officersOnDuty.forEach(
+    officer => {
+
+      popup += `
+        <div
+          style="
+            margin-bottom:6px;
+          "
+        >
+          👮
+          ${officer.employeeName}
+        </div>
+      `;
+
+    }
+  );
+
+}
 
     if (site.maintenance) {
 
@@ -6087,6 +6165,11 @@ if (
   !isInsideGeofence &&
   entry.currentlyInsideGeofence === true
 ) {
+  
+  console.log(
+  "POST ABANDONMENT TRIGGERED",
+  entry.employeeName
+);
 
   await addDoc(
     collection(
@@ -6112,6 +6195,19 @@ if (
     }
   );
 
+  if (
+  typeof updateMap ===
+  "function"
+) {
+  updateMap();
+}
+
+  showDashboard();
+
+flyToViolationSite(
+  entry.siteId
+);
+
   const violationAudio =
   new Audio(
     "assets/gps-violation.mp3"
@@ -6126,9 +6222,9 @@ violationAudio.play();
     refreshSupervisorDashboard();
   }
 
-  alert(
-    `${entry.employeeName} is outside geofence`
-  );
+ console.log(
+  `${entry.employeeName} is outside geofence`
+);
 
 }
 
@@ -6169,9 +6265,9 @@ else if (
     refreshSupervisorDashboard();
   }
 
-  alert(
-    `${entry.employeeName} has returned to post`
-  );
+ console.log(
+  `${entry.employeeName} has returned to post`
+);
 
 }
 
@@ -6191,14 +6287,14 @@ else {
     isInsideGeofence
   ) {
 
-    alert(
+    console.log(
       `${entry.employeeName} is currently on post`
     );
 
   }
   else {
 
-    alert(
+    console.log(
       `${entry.employeeName} remains outside geofence`
     );
 
@@ -6268,6 +6364,65 @@ function stopPostMonitoring() {
 
   postMonitoringTimer =
     null; 
+
+}
+
+function flyToViolationSite(
+  siteId
+) {
+
+  const mapElement =
+    document.getElementById(
+      "map"
+    );
+
+  if (mapElement) {
+
+    mapElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+  }
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  if (!site) {
+
+    console.error(
+      "Violation site not found:",
+      siteId
+    );
+
+    return;
+  }
+
+  map.flyTo(
+    [
+      site.lat,
+      site.lng
+    ],
+    17,
+    {
+      duration: 1.5
+    }
+  );
+
+  setTimeout(() => {
+
+    const marker =
+      markers[siteId];
+
+    if (marker) {
+
+      marker.openPopup();
+
+    }
+
+  }, 1600);
 
 }
 

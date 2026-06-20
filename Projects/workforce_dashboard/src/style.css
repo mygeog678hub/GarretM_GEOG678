@@ -2000,3 +2000,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   color: #111827 !important;
   font-weight: 700;
 }
+.violation-row:hover {
+
+  background: #ff4d4d;
+
+  color: white;
+
+}
