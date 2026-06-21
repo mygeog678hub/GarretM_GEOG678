@@ -37,10 +37,17 @@ onAuthStateChanged(auth, (user) => {
 
   if (!user) {
 
-    window.location.href =
-      "index.html";
+    window.location.href = "index.html";
+    return;
 
   }
+
+  currentUser = user;
+
+  console.log(
+    "Authenticated:",
+    user.email
+  );
 
 });
 // ================= DOM =================
@@ -152,6 +159,8 @@ let showClosedSites = false;
 let timeEntries = [];
 let missingClockInList = [];
 let postMonitoringTimer = null;
+let currentOfficer = null;
+let currentUser = null;
 
 
 
@@ -381,10 +390,50 @@ onSnapshot(collection(db, "employees"), snap => {
     role: d.data().role || "Officer"
   }));
 
-  console.log("Employees Loaded:", employees);
+  console.log(
+    "Employees Loaded:",
+    employees.length
+  );
 
-  refresh();
-  updateDailySummary();
+  if (!currentUser) return;
+
+  const employee =
+    employees.find(
+      e =>
+        e.email &&
+        currentUser.email &&
+        e.email.toLowerCase() ===
+        currentUser.email.toLowerCase()
+    );
+
+  console.log(
+    "Matched Employee:",
+    employee
+  );
+
+  if (
+    employee &&
+    employee.role === "Officer"
+  ) {
+
+    currentOfficer = employee;
+
+    console.log(
+      "Officer Login:",
+      employee.name
+    );
+
+    showOfficerPortal();
+
+  } else {
+
+    console.log(
+      "Supervisor Login"
+    );
+
+    showDashboard();
+
+  }
 
 });
 
@@ -826,6 +875,16 @@ if (
 }
   const employeeId = assignEmployee.value;
 const siteId = assignSite.value;
+
+console.log(
+  "User Email:",
+  user.email
+);
+
+console.log(
+  "Employees Loaded:",
+  employees.length
+);
 
 const employee =
   employees.find(
