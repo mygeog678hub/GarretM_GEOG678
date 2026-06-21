@@ -4975,6 +4975,11 @@ function editShift(id) {
     "editShiftEnd"
   ).value = shift.endTime;
 
+  document.getElementById(
+  "editShiftPay"
+).value =
+  shift.shiftPay || 0;
+
   document
     .getElementById(
       "editShiftModal"
@@ -5053,6 +5058,13 @@ async function saveShiftEdit() {
     document.getElementById(
       "editShiftEnd"
     ).value;
+
+    const shiftPay =
+  Number(
+    document.getElementById(
+      "editShiftPay"
+    ).value
+  ) || 0;
 
   if (
     !employeeId ||
@@ -5143,29 +5155,31 @@ async function saveShiftEdit() {
     );
 
   await updateDoc(
-    doc(
-      db,
-      "shifts",
-      id
-    ),
-    {
+  doc(
+    db,
+    "shifts",
+    id
+  ),
+  {
 
-      employeeId,
+    employeeId,
 
-      employeeName:
-        employee.name,
+    employeeName:
+      employee.name,
 
-      siteId,
+    siteId,
 
-      siteName:
-        site.name,
+    siteName:
+      site.name,
 
-      startTime,
+    startTime,
 
-      endTime
+    endTime,
 
-    }
-  );
+    shiftPay
+
+  }
+);
 
   closeEditShiftModal();
 
