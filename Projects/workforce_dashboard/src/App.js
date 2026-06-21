@@ -424,6 +424,8 @@ onSnapshot(collection(db, "employees"), snap => {
     );
 
     showOfficerPortal();
+    renderMySchedule();
+    renderMySite();
 
   } else {
 
@@ -441,6 +443,7 @@ onSnapshot(collection(db, "sites"), snap => {
   sites = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   refresh();
   updateDailySummary();
+  renderMySite();
 });
 
 onSnapshot(collection(db, "assignments"), snap => {
@@ -553,26 +556,14 @@ onSnapshot(
 
     renderSchedules();
 
-  }
-);
+    renderWeeklyScheduleBoard();
 
-onSnapshot(
-  collection(db, "shifts"),
-  snap => {
+    renderMySchedule();
 
-    shifts =
-      snap.docs.map(
-        d => ({
-          id: d.id,
-          ...d.data()
-        })
-      );
-
-    renderSchedules();
+    renderMySite();
 
   }
 );
-
 onSnapshot(
   collection(db, "timeEntries"),
   snapshot => {
@@ -6745,8 +6736,216 @@ function getEscalationClass(
   return "escalation-compliant";
 }
 
+function renderMySchedule() {
 
+  const container =
+    document.getElementById(
+      "mySchedule"
+    );
 
+  if (
+    !container ||
+    !currentOfficer
+  ) return;
+
+  const myShifts =
+    shifts
+      .filter(
+        shift =>
+          shift.employeeId ===
+          currentOfficer.id
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.startTime) -
+          new Date(b.startTime)
+      );
+
+  if (!myShifts.length) {
+
+    container.innerHTML =
+      "No scheduled shifts.";
+
+    return;
+
+  }
+
+  container.innerHTML =
+    myShifts.map(
+      shift => `
+
+        <div
+          style="
+            padding:10px;
+            margin-bottom:10px;
+            border:1px solid #ddd;
+            border-radius:8px;
+          "
+        >
+
+          <strong>
+            ${shift.siteName}
+          </strong>
+
+          <br>
+
+          ${new Date(
+            shift.startTime
+          ).toLocaleString()}
+
+          <br>
+
+          to
+
+          <br>
+
+          ${new Date(
+            shift.endTime
+          ).toLocaleString()}          
+
+<br>
+
+Pay:
+$${Number(
+  shift.shiftPay || 0
+).toFixed(2)}
+
+<br>
+
+          Status:
+${shift.status}
+
+        </div>
+
+      `
+    ).join("");
+
+}
+
+function renderMySite() {
+  console.log(
+  "renderMySite running"
+);
+
+  const container =
+    document.getElementById(
+      "mySite"
+    );
+
+  if (
+    !container ||
+    !currentOfficer
+  ) return;
+
+  const now =
+    new Date();
+
+  const myShift =
+    shifts
+
+      .filter(
+        shift =>
+          shift.employeeId ===
+          currentOfficer.id
+      )
+
+      .sort(
+        (a, b) =>
+          new Date(
+            a.startTime
+          ) -
+          new Date(
+            b.startTime
+          )
+      )
+
+      .find(
+        shift =>
+          new Date(
+            shift.endTime
+          ) >= now
+      );
+
+  if (!myShift) {
+
+    container.innerHTML =
+      "No site assigned.";
+
+    return;
+
+  }
+
+  const site =
+    sites.find(
+      s =>
+        s.id ===
+        myShift.siteId
+    );
+    console.log(
+  "My Shift:",
+  myShift
+);
+
+console.log(
+  "Shift Site ID:",
+  myShift.siteId
+);
+
+console.log(
+  "Sites Loaded:",
+  sites.length
+);
+
+console.log(
+  "Site IDs:",
+  sites.map(
+    s => s.id
+  )
+);
+
+console.log(
+  "Matched Site:",
+  site
+);
+
+  if (!site) {
+
+    container.innerHTML =
+      "Assigned site not found.";
+
+    return;
+
+  }
+
+  container.innerHTML = `
+
+    <strong>
+      ${site.name}
+    </strong>
+
+    <br><br>
+
+    ${site.address}
+
+    <br>
+
+    ${site.city},
+    ${site.state}
+    ${site.zip}
+
+    <br><br>
+
+    Category:
+    ${site.siteCategory}
+
+    <br>
+
+    Geofence:
+    ${site.geofenceRadius} ft
+
+  `;
+
+}
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -6820,5 +7019,6 @@ window.refreshSupervisorDashboard = refreshSupervisorDashboard;
 window.showMissingClockIns = showMissingClockIns;
 window.closeMissingClockInModal = closeMissingClockInModal;
 window.checkPostAbandonment = checkPostAbandonment;
+window.renderMySchedule = renderMySchedule
 
 refreshSupervisorDashboard();
