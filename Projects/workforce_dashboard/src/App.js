@@ -374,9 +374,18 @@ const filteredLogs =
 
 // ================= LOAD =================
 onSnapshot(collection(db, "employees"), snap => {
-  employees = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  employees = snap.docs.map(d => ({
+    id: d.id,
+    ...d.data(),
+    role: d.data().role || "Officer"
+  }));
+
+  console.log("Employees Loaded:", employees);
+
   refresh();
   updateDailySummary();
+
 });
 
 onSnapshot(collection(db, "sites"), snap => {
@@ -702,10 +711,11 @@ async function addEmployee() {
   }
 
   await addDoc(collection(db, "employees"), {
-    name,
-    designation: role,
-    createdAt: new Date().toISOString()
-  });
+  name,
+  designation: role,
+  role: "Officer",
+  createdAt: new Date().toISOString()
+});
 
   empName.value = "";
   empRole.value = "";
