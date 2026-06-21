@@ -4584,9 +4584,32 @@ function showDashboard() {
     "schedulingPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "officerPortal"
+  ).classList.add(
+    "hidden"
+  );
+
   refreshSupervisorDashboard();
 
 }
+window.showOfficerPortal = function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).classList.remove(
+    "hidden"
+  );
+
+};
 
 function showSchedulingPage() {
 
@@ -4598,8 +4621,14 @@ function showSchedulingPage() {
     "schedulingPage"
   ).style.display = "block";
 
+  document.getElementById(
+    "officerPortal"
+  ).classList.add(
+    "hidden"
+  );
+
   populateScheduleDropdowns();
-  renderWeeklyScheduleBoard(); 
+  renderWeeklyScheduleBoard();
 
 }
 
@@ -6656,6 +6685,8 @@ function getEscalationClass(
 
   return "escalation-compliant";
 }
+
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
