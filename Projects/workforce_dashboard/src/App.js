@@ -4677,6 +4677,17 @@ async function createShift() {
       "scheduleEnd"
     ).value;
 
+    document.getElementById(
+  "schedulePay"
+).value = "";
+
+    const shiftPay =
+  Number(
+    document.getElementById(
+      "schedulePay"
+    ).value
+  ) || 0;
+
   if (
     !employeeId ||
     !siteId ||
@@ -4748,39 +4759,36 @@ if (conflict) {
 }
 
   await addDoc(
-    collection(db, "shifts"),    
-    {
-      
+  collection(db, "shifts"),
+  {
 
-      employeeId,
+    employeeId,
 
-      employeeName:
-        employee.name,
+    employeeName:
+      employee.name,
 
-      siteId,
+    siteId,
 
-      siteName:
-  site.name,
+    siteName:
+      site.name,
 
-siteCategory:
-  site.siteCategory || "other",
+    siteCategory:
+      site.siteCategory || "other",
 
-startTime,
+    startTime,
 
-endTime,
+    endTime,
 
-      status:
-        "Scheduled",
+    shiftPay,
 
-      createdAt:
-        new Date().toISOString()
+    status:
+      "Scheduled",
 
-        
+    createdAt:
+      new Date().toISOString()
 
-    }
-    
-    
-  );
+  }
+);
 
   document.getElementById(
   "scheduleEmployee"
@@ -4848,45 +4856,55 @@ function renderSchedules() {
 
   sortedShifts.forEach(shift => {
 
-    container.innerHTML += `
+  container.innerHTML += `
 
-      <div class="shift-card">
+    <div class="shift-card">
 
-        <strong>
-          ${shift.employeeName}
-        </strong>
+      <strong>
+        ${shift.employeeName}
+      </strong>
 
-        <br>
+      <br>
 
-        ${shift.siteName}
+      ${shift.siteName}
 
-        <br>
+      <br>
 
-        ${new Date(
-          shift.startTime
-        ).toLocaleString()}
+      ${new Date(
+        shift.startTime
+      ).toLocaleString()}
 
-        -
+      -
 
-        ${new Date(
-          shift.endTime
-        ).toLocaleString()}
+      ${new Date(
+        shift.endTime
+      ).toLocaleString()}
 
-        <br><br>
+      <br>
 
-        <button onclick="editShift('${shift.id}')">
-  Edit Shift
-</button>
+      <strong>
+        Shift Pay:
+      </strong>
 
-<button onclick="deleteShift('${shift.id}')">
-  Delete Shift
-</button>
+      $${Number(
+        shift.shiftPay || 0
+      ).toFixed(2)}
 
-      </div>
+      <br><br>
 
-    `;
+      <button onclick="editShift('${shift.id}')">
+        Edit Shift
+      </button>
 
-  });
+      <button onclick="deleteShift('${shift.id}')">
+        Delete Shift
+      </button>
+
+    </div>
+
+  `;
+
+});
 renderWeeklyScheduleBoard();
 }
 
