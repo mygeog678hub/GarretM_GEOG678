@@ -5877,6 +5877,7 @@ console.log("Shift Records:", schedules.length);
 let onDuty = 0;
 let clockedOut = 0;
 let activeViolations = 0;
+let criticalCompliance = 0;
 
 console.log(
   "Roster Attendance Records:",
@@ -5899,6 +5900,12 @@ attendance.forEach(entry => {
   ) {
     activeViolations++;
   }
+  if (
+  entry.status === "Clocked In" &&
+  (entry.gpsViolationCount || 0) >= 4
+) {
+  criticalCompliance++;
+}
 
 });
 
@@ -5908,6 +5915,11 @@ attendance.forEach(entry => {
   document.getElementById(
   "activeViolationsCount"
 ).textContent = activeViolations;
+
+document.getElementById(
+  "criticalComplianceCount"
+).textContent =
+  criticalCompliance;
 
 const scheduledToday = schedules.filter(shift => {
 
