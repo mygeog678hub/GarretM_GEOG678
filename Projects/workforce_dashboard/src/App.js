@@ -5489,24 +5489,20 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 async function clockIn() {
 
-  const employeeId =
-    document.getElementById(
-      "clockEmployee"
-    ).value;
+  if (!currentOfficer) {
 
-  if (!employeeId) {
+  alert(
+    "Officer session not found."
+  );
 
-    alert(
-      "Select an officer."
-    );
+  return;
+}
 
-    return;
-  }
+const employeeId =
+  currentOfficer.id;
 
-  const employee =
-    employees.find(
-      e => e.id === employeeId
-    );
+const employee =
+  currentOfficer;
 
     const position = await new Promise((resolve, reject) => {
 
@@ -5748,20 +5744,17 @@ function renderActiveTimeEntries() {
 
 async function clockOut() {
 
-const employeeId =
-document.getElementById(
-"clockEmployee"
-).value;
+if (!currentOfficer) {
 
-if (!employeeId) {
+  alert(
+    "Officer session not found."
+  );
 
-alert(
-  "Select an officer."
-);
-
-return;
-
+  return;
 }
+
+const employeeId =
+  currentOfficer.id;
 
 const position =
 await new Promise(
@@ -5883,9 +5876,9 @@ const clockOutTime =
 new Date();
 
 const clockInTime =
-new Date(
-activeEntry.clockIn
-);
+  activeEntry.clockIn?.toDate
+    ? activeEntry.clockIn.toDate()
+    : new Date(activeEntry.clockIn);
 
 const hoursWorked =
 (
@@ -5955,12 +5948,6 @@ alert(
 );
 
 }
-
-document.getElementById(
-  "clockEmployee"
-).value = "";
-
-//loadTimeEntries();
 
 refreshSupervisorDashboard();
 
