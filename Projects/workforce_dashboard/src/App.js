@@ -561,6 +561,7 @@ onSnapshot(
     renderMySchedule();
 
     renderMySite();
+    renderMyAttendanceStatus();
 
   }
 );
@@ -4659,6 +4660,10 @@ window.showOfficerPortal = function() {
     "hidden"
   );
 
+  renderMySchedule();
+  renderMySite();
+  renderMyAttendanceStatus();
+
 };
 
 function showSchedulingPage() {
@@ -5954,8 +5959,7 @@ refreshSupervisorDashboard();
 }
 
 
-async function refreshSupervisorDashboard() {
-  console.log("Supervisor dashboard running");
+async function refreshSupervisorDashboard() {  
 
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -5974,6 +5978,7 @@ const scheduleSnapshot =
     id: doc.id,
     ...doc.data()
   }));
+  timeEntries = attendance;
 
   const schedules = scheduleSnapshot.docs.map(doc => ({
     id: doc.id,
@@ -6016,7 +6021,10 @@ attendance.forEach(entry => {
 }
 
 });
-
+console.log(
+  "Attendance Records:",
+  attendance.length
+);
   document.getElementById("onDutyCount").textContent = onDuty;
   document.getElementById("clockedOutCount").textContent = clockedOut;
 
@@ -6172,6 +6180,10 @@ html += `
 console.log(html);
 document.getElementById("attendanceRoster").innerHTML = html;
 renderComplianceFeed();
+
+if (typeof renderMyAttendanceStatus === "function") {
+  renderMyAttendanceStatus();
+}
 }
 
 function showMissingClockIns() {
@@ -6228,7 +6240,7 @@ async function checkPostAbandonment() {
   const snapshot =
   await getDocs(
     collection(db, "timeEntries")
-  );
+  ); 
 
 const activeEntries =
   snapshot.docs
@@ -6929,6 +6941,145 @@ console.log(
 
     Geofence:
     ${site.geofenceRadius} ft
+
+  `;
+
+}
+
+function renderMyAttendanceStatus() {
+
+  const container =
+    document.getElementById(
+      "myAttendanceStatus"
+    );
+
+  if (
+    !container ||
+    !currentOfficer
+  ) return;
+
+  const myEntries =
+    timeEntries
+      .filter(
+        entry =>
+          entry.employeeId ===
+          currentOfficer.id
+      )
+      .sort((a, b) => {
+
+        const aTime =
+          a.clockIn?.toDate
+            ? a.clockIn.toDate()
+            : new Date(a.clockIn || 0);
+
+        const bTime =
+          b.clockIn?.toDate
+            ? b.clockIn.toDate()
+            : new Date(b.clockIn || 0);
+
+        return bTime - aTime;
+
+      });
+
+  if (!myEntries.length) {
+
+    container.innerHTML =
+      "No attendance records found.";
+
+    return;
+
+  }
+
+  const latest =
+    myEntries[0];
+
+  const status =
+    latest.status ||
+    "Unknown";
+
+  const clockInTime =
+    latest.clockIn
+      ? (
+          latest.clockIn.toDate
+            ? latest.clockIn.toDate()
+            : new Date(latest.clockIn)
+        ).toLocaleTimeString()
+      : "-";
+
+      let displayHours = 0;
+
+if (latest.status === "Clocked In") {
+
+  const clockInDate =
+    latest.clockIn?.toDate
+      ? latest.clockIn.toDate()
+      : new Date(latest.clockIn);
+
+  displayHours =
+    (
+      (new Date() - clockInDate)
+      / 1000
+      / 60
+      / 60
+    ).toFixed(2);
+
+}
+else {
+
+  displayHours =
+    latest.hoursWorked || 0;
+
+}
+
+  container.innerHTML = `
+
+    <div>
+
+      <strong>
+        Status:
+      </strong>
+
+      ${
+        status === "Clocked In"
+          ? "🟢 Clocked In"
+          : "⚪ Clocked Out"
+      }
+
+      <br><br>
+
+      <strong>
+        Site:
+      </strong>
+
+      ${latest.siteName || "-"}
+
+      <br><br>
+
+      <strong>
+        Clock In:
+      </strong>
+
+      ${clockInTime}
+
+      <br><br>
+
+      <strong>
+        Hours Worked:
+      </strong>
+
+      ${displayHours}
+
+      <br><br>
+
+      <strong>
+        Compliance:
+      </strong>
+
+      ${getEscalationLevel(
+        latest.gpsViolationCount || 0
+      )}
+
+    </div>
 
   `;
 
