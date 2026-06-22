@@ -7886,6 +7886,10 @@ window.addPerson = function() {
       State ID
     </option>
 
+    <option>
+      None
+    </option>
+
   </select>
   </div>
 
@@ -8138,11 +8142,336 @@ window.addPerson = function() {
 };
 
 window.submitIncidentReport =
-function() {
+async function() {
 
-  alert(
-    "Submit logic coming next."
-  );
+  try {
+
+    const incidentType =
+      document.getElementById(
+        "incidentType"
+      ).value;
+
+    const severity =
+      document.getElementById(
+        "incidentSeverity"
+      ).value;
+
+    const narrative =
+      document.getElementById(
+        "incidentNarrative"
+      ).value.trim();
+
+    if (
+      !incidentType ||
+      !narrative
+    ) {
+
+      alert(
+        "Please complete all required fields."
+      );
+
+      return;
+
+    }
+
+    if (!currentOfficer) {
+
+      alert(
+        "Officer not found."
+      );
+
+      return;
+
+    }
+
+    let siteId = null;
+
+    const activeEntry =
+      timeEntries.find(
+        entry =>
+          entry.employeeId ===
+            currentOfficer.id &&
+          entry.status ===
+            "Clocked In"
+      );
+
+    if (activeEntry) {
+
+      siteId =
+        activeEntry.siteId;
+
+    } else {
+
+      const now =
+        new Date();
+
+      const currentShift =
+        shifts.find(
+          shift =>
+            shift.employeeId ===
+              currentOfficer.id &&
+            new Date(
+              shift.startTime
+            ) <= now &&
+            new Date(
+              shift.endTime
+            ) >= now
+        );
+
+      if (currentShift) {
+
+        siteId =
+          currentShift.siteId;
+
+      }
+
+    }
+
+    const site =
+      sites.find(
+        s => s.id === siteId
+      );
+
+    const persons = [];
+
+    document
+      .querySelectorAll(
+        ".person-card"
+      )
+      .forEach(card => {
+
+        persons.push({
+
+          role:
+            card.querySelector(
+              ".personRole"
+            )?.value || "",
+
+          firstName:
+            card.querySelector(
+              ".personFirstName"
+            )?.value || "",
+
+          middleName:
+            card.querySelector(
+              ".personMiddleName"
+            )?.value || "",
+
+          lastName:
+            card.querySelector(
+              ".personLastName"
+            )?.value || "",
+
+          alias:
+            card.querySelector(
+              ".personAlias"
+            )?.value || "",
+
+          dob:
+            card.querySelector(
+              ".personDOB"
+            )?.value || "",
+
+          sex:
+            card.querySelector(
+              ".personSex"
+            )?.value || "",
+
+          race:
+            card.querySelector(
+              ".personRace"
+            )?.value || "",
+
+          ethnicity:
+            card.querySelector(
+              ".personEthnicity"
+            )?.value || "",
+
+          heightFeet:
+            card.querySelector(
+              ".personHeightFeet"
+            )?.value || "",
+
+          heightInches:
+            card.querySelector(
+              ".personHeightInches"
+            )?.value || "",
+
+          weight:
+            card.querySelector(
+              ".personWeight"
+            )?.value || "",
+
+          hairColor:
+            card.querySelector(
+              ".personHairColor"
+            )?.value || "",
+
+          eyeColor:
+            card.querySelector(
+              ".personEyeColor"
+            )?.value || "",
+
+          idType:
+            card.querySelector(
+              ".personIdType"
+            )?.value || "",
+
+          idState:
+            card.querySelector(
+              ".personIdState"
+            )?.value || "",
+
+          idNumber:
+            card.querySelector(
+              ".personIdNumber"
+            )?.value || "",
+
+          homePhone:
+            card.querySelector(
+              ".personHomePhone"
+            )?.value || "",
+
+          cellPhone:
+            card.querySelector(
+              ".personCellPhone"
+            )?.value || "",
+
+          workPhone:
+            card.querySelector(
+              ".personWorkPhone"
+            )?.value || "",
+
+          street:
+            card.querySelector(
+              ".personStreet"
+            )?.value || "",
+
+          city:
+            card.querySelector(
+              ".personCity"
+            )?.value || "",
+
+          state:
+            card.querySelector(
+              ".personAddressState"
+            )?.value || "",
+
+          zip:
+            card.querySelector(
+              ".personZip"
+            )?.value || "",
+
+          employer:
+            card.querySelector(
+              ".personEmployer"
+            )?.value || "",
+
+          email:
+            card.querySelector(
+              ".personEmail"
+            )?.value || "",
+
+          preferredContact:
+            card.querySelector(
+              ".personPreferredContact"
+            )?.value || ""
+
+        });
+
+      });
+
+    const caseNumber =
+      await generateIncidentCaseNumber();
+
+    await addDoc(
+      collection(
+        db,
+        "incidents"
+      ),
+      {
+
+        caseNumber,
+
+        incidentType,
+        severity,
+
+        narrative,
+
+        officerId:
+          currentOfficer.id,
+
+        officerName:
+          currentOfficer.name,
+
+        siteId:
+          site?.id || "",
+
+        siteName:
+          site?.name || "",
+
+        persons,
+
+        status:
+          "Open",
+
+        createdAt:
+          serverTimestamp()
+
+      }
+    );
+
+    await addDoc(
+      collection(
+        db,
+        "activityLogs"
+      ),
+      {
+
+        type:
+          "Incident Report",
+
+        description:
+          `${caseNumber} created`,
+
+        timestamp:
+          serverTimestamp()
+
+      }
+    );
+
+    alert(
+      `Incident ${caseNumber} submitted successfully.`
+    );
+
+    document.getElementById(
+      "incidentType"
+    ).value = "";
+
+    document.getElementById(
+      "incidentSeverity"
+    ).selectedIndex = 0;
+
+    document.getElementById(
+      "incidentNarrative"
+    ).value = "";
+
+    document.getElementById(
+      "personsContainer"
+    ).innerHTML = "";
+
+  } catch (error) {
+
+    console.error(
+      "Incident Save Error:",
+      error
+    );
+
+    alert(
+      "Unable to save incident report."
+    );
+
+  }
 
 };
 // ================= GLOBAL =================
