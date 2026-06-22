@@ -1413,7 +1413,15 @@
 
   <h1>Officer Portal</h1>
 
+  <button
+  onclick="showOfficerIncidentReport()"
+>
+  Incident Reports
+</button>
+
   <div class="stats-grid">
+
+    
 
     <div class="dashboard-card">
 
@@ -1423,9 +1431,7 @@
         No scheduled shifts.
       </div>
 
-    </div>
-
-    
+    </div>    
 
     <div class="dashboard-card">
 
@@ -1529,6 +1535,8 @@
 
 </div>
 
+
+
     <div class="dashboard-card">
 
       <h2>My Compliance</h2>
@@ -1539,9 +1547,86 @@
 
       </div>
 
-    </div>
+    </div>    
+  </div>
+  </div>
+  <div
+  id="officerIncidentReportPage"
+  style="display:none;"
+>
+
+  <h1>
+    Incident Investigation Report
+  </h1>
+
+  <button
+    onclick="showOfficerPortal()"
+  >
+    Back to Officer Portal
+  </button>
+
+  <div class="dashboard-card">
+
+  <h2>Incident Information</h2>
+
+  <select id="incidentType">
+    <option value="">
+      Select Incident Type
+    </option>
+
+    <option>Suspicious Person</option>
+    <option>Trespassing</option>
+    <option>Theft</option>
+    <option>Property Damage</option>
+    <option>Medical Emergency</option>
+    <option>Safety Hazard</option>
+    <option>Other</option>
+  </select>
+
+  <select id="incidentSeverity">
+
+    <option>Low</option>
+    <option>Medium</option>
+    <option>High</option>
+    <option>Critical</option>
+
+  </select>
+
+</div>
+
+<div class="dashboard-card">
+
+  <h2>Persons Involved</h2>
+
+  <div id="personsContainer">
 
   </div>
+
+  <button onclick="addPerson()">
+    Add Person
+  </button>
+
+</div>
+
+<div class="dashboard-card">
+
+  <h2>Narrative</h2>
+
+  <textarea
+    id="incidentNarrative"
+    rows="10"
+    placeholder="Enter incident narrative..."
+  ></textarea>
+
+</div>
+
+<button
+  onclick="submitIncidentReport()"
+>
+  Submit Report
+</button>
+
+</div>
 
 </div>
 

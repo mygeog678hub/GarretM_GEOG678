@@ -10,6 +10,7 @@ import {
   deleteDoc,
   getDoc,
   getDocs,
+  setDoc,
   serverTimestamp,
   increment,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -4913,6 +4914,10 @@ window.showOfficerPortal = function() {
   ).style.display = "none";
 
   document.getElementById(
+  "officerIncidentReportPage"
+).style.display = "none";
+
+  document.getElementById(
     "officerPortal"
   ).classList.remove(
     "hidden"
@@ -4921,6 +4926,29 @@ window.showOfficerPortal = function() {
   renderMySchedule();
   renderMySite();
   renderMyAttendanceStatus();
+
+};
+
+window.showOfficerIncidentReport =
+function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "block";
 
 };
 
@@ -7556,6 +7584,567 @@ function testSiteChange() {
   loadSiteHistory();
 
 }
+
+async function generateIncidentCaseNumber() {
+
+  const currentYear =
+    new Date().getFullYear();
+
+  const counterRef =
+    doc(
+      db,
+      "counters",
+      "incidentCounter"
+    );
+
+  const snap =
+    await getDoc(counterRef);
+
+  let year = currentYear;
+  let currentNumber = 1;
+
+  if (snap.exists()) {
+
+    const data = snap.data();
+
+    year =
+      data.year || currentYear;
+
+    currentNumber =
+      data.currentNumber || 1;
+
+    if (year !== currentYear) {
+
+      year = currentYear;
+      currentNumber = 1;
+    }
+  }
+
+  const caseNumber =
+    `IC-${year}${String(
+      currentNumber
+    ).padStart(5, "0")}`;
+
+  await setDoc(
+    counterRef,
+    {
+      year,
+      currentNumber:
+        currentNumber + 1
+    }
+  );
+
+  return caseNumber;
+}
+
+window.addPerson = function() {
+
+  const container =
+    document.getElementById(
+      "personsContainer"
+    );
+
+    const personNumber =
+  container.children.length + 1;
+
+  container.insertAdjacentHTML(
+    "beforeend",
+
+    `
+<div class="dashboard-card person-card">
+
+  <h3>
+    Person ${personNumber}
+  </h3>
+
+  <button
+    type="button"
+    onclick="this.parentElement.remove()"
+  >
+    Remove Person
+  </button>
+
+  <div class="person-grid">
+
+<div class="field-group">
+
+  <label>Role</label>
+
+  <select
+  class="personRole"
+  required
+>
+
+  <option
+    value=""
+    selected
+    disabled
+  >
+    Select Role
+  </option>
+
+  <option>
+    Reporting Party
+  </option>
+
+  <option>
+    Complainant
+  </option>
+
+  <option>
+    Property Owner
+  </option>
+
+  <option>
+    Employee
+  </option>
+
+  <option>
+    Contractor
+  </option>
+
+  <option>
+    Visitor
+  </option>
+
+  <option>
+    Witness
+  </option>
+
+  <option>
+    Victim
+  </option>
+
+  <option>
+    Suspect
+  </option>
+
+  <option>
+    Other
+  </option>
+
+</select>
+</div>
+
+<div class="field-group">
+  <input
+    class="personFirstName"
+    placeholder="First Name"
+  >
+  </div>
+
+<div class="field-group">
+  <input
+    class="personMiddleName"
+    placeholder="Middle Name"
+  >
+  </div>
+
+  <div class="field-group">
+  <input
+    class="personLastName"
+    placeholder="Last Name"
+  >
+  </div>
+
+  <div class="field-group">
+
+  <label>
+    Alias / Nickname
+  </label>
+
+  <input
+    class="personAlias"
+    placeholder="Alias / Nickname"
+  >
+
+</div>
+
+  <div class="field-group">
+  <input
+    type="date"
+    class="personDOB"
+  >
+  </div>
+
+  <div class="field-group">
+  <select class="personSex">
+
+    <option value="">
+      Sex
+    </option>
+
+    <option>Male</option>
+    <option>Female</option>
+
+  </select>
+  </div>
+
+  <div class="field-group">
+
+  <label>
+    Feet
+  </label>
+
+  <input
+    class="personHeightFeet"
+    placeholder="5"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    Inches
+  </label>
+
+  <input
+    class="personHeightInches"
+    placeholder="11"
+  >
+
+</div>
+
+  <div class="field-group">
+  <input
+    class="personWeight"
+    placeholder="Weight"
+  >
+  </div>
+
+  <div class="field-group">
+
+  <label>
+    Race
+  </label>
+
+  <select class="personRace">
+
+    <option value="">
+      Select Race
+    </option>
+
+    <option>American Indian / Alaska Native</option>
+    <option>Asian</option>
+    <option>Black / African American</option>
+    <option>Native Hawaiian / Pacific Islander</option>
+    <option>White</option>
+    <option>Other</option>
+    <option>Unknown</option>
+
+  </select>
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    Ethnicity
+  </label>
+
+  <select class="personEthnicity">
+
+    <option value="">
+      Select Ethnicity
+    </option>
+
+    <option>Hispanic or Latino</option>
+    <option>Not Hispanic or Latino</option>
+    <option>Unknown</option>
+
+  </select>
+
+</div>
+
+  <div class="field-group">
+  <input
+    class="personHairColor"
+    placeholder="Hair Color"
+  >
+  </div>
+
+  <div class="field-group">
+  <input
+    class="personEyeColor"
+    placeholder="Eye Color"
+  >
+  </div>
+
+  <div class="field-group">
+  <select class="personIdType">
+
+    <option value="">
+      Identification Type
+    </option>
+
+    <option>
+      Driver License
+    </option>
+
+    <option>
+      State ID
+    </option>
+
+  </select>
+  </div>
+
+  <div class="field-group">
+  <select class="personIdState">
+
+  <option value="">State</option>
+
+  <option>AL</option>
+  <option>AK</option>
+  <option>AZ</option>
+  <option>AR</option>
+  <option>CA</option>
+  <option>CO</option>
+  <option>CT</option>
+  <option>DE</option>
+  <option>FL</option>
+  <option>GA</option>
+  <option>HI</option>
+  <option>ID</option>
+  <option>IL</option>
+  <option>IN</option>
+  <option>IA</option>
+  <option>KS</option>
+  <option>KY</option>
+  <option>LA</option>
+  <option>ME</option>
+  <option>MD</option>
+  <option>MA</option>
+  <option>MI</option>
+  <option>MN</option>
+  <option>MS</option>
+  <option>MO</option>
+  <option>MT</option>
+  <option>NE</option>
+  <option>NV</option>
+  <option>NH</option>
+  <option>NJ</option>
+  <option>NM</option>
+  <option>NY</option>
+  <option>NC</option>
+  <option>ND</option>
+  <option>OH</option>
+  <option>OK</option>
+  <option>OR</option>
+  <option>PA</option>
+  <option>RI</option>
+  <option>SC</option>
+  <option>SD</option>
+  <option>TN</option>
+  <option>TX</option>
+  <option>UT</option>
+  <option>VT</option>
+  <option>VA</option>
+  <option>WA</option>
+  <option>WV</option>
+  <option>WI</option>
+  <option>WY</option>
+
+</select>
+</div>
+
+<div class="field-group">
+  <input
+    class="personIdNumber"
+    placeholder="ID Number"
+  >
+  </div>
+
+  <div class="field-group">
+  <input
+    class="personHomePhone"
+    placeholder="Home Phone"
+  >
+  </div>
+
+  <div class="field-group">
+  <input
+    class="personCellPhone"
+    placeholder="Cell Phone"
+  >
+  </div>
+
+  <div class="field-group">
+  <input
+    class="personWorkPhone"
+    placeholder="Work Phone"
+  >
+  </div>
+  
+  <div class="field-group">
+
+  <label>
+    Street Address
+  </label>
+
+  <input
+    class="personStreet"
+    placeholder="Street Address"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    City
+  </label>
+
+  <input
+    class="personCity"
+    placeholder="City"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    State
+  </label>
+
+  <select class="personAddressState">
+
+    <option value="">
+      State
+    </option>
+
+    <option>AL</option>
+  <option>AK</option>
+  <option>AZ</option>
+  <option>AR</option>
+  <option>CA</option>
+  <option>CO</option>
+  <option>CT</option>
+  <option>DE</option>
+  <option>FL</option>
+  <option>GA</option>
+  <option>HI</option>
+  <option>ID</option>
+  <option>IL</option>
+  <option>IN</option>
+  <option>IA</option>
+  <option>KS</option>
+  <option>KY</option>
+  <option>LA</option>
+  <option>ME</option>
+  <option>MD</option>
+  <option>MA</option>
+  <option>MI</option>
+  <option>MN</option>
+  <option>MS</option>
+  <option>MO</option>
+  <option>MT</option>
+  <option>NE</option>
+  <option>NV</option>
+  <option>NH</option>
+  <option>NJ</option>
+  <option>NM</option>
+  <option>NY</option>
+  <option>NC</option>
+  <option>ND</option>
+  <option>OH</option>
+  <option>OK</option>
+  <option>OR</option>
+  <option>PA</option>
+  <option>RI</option>
+  <option>SC</option>
+  <option>SD</option>
+  <option>TN</option>
+  <option>TX</option>
+  <option>UT</option>
+  <option>VT</option>
+  <option>VA</option>
+  <option>WA</option>
+  <option>WV</option>
+  <option>WI</option>
+  <option>WY</option>
+
+  </select>
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    ZIP Code
+  </label>
+
+  <input
+    class="personZip"
+    placeholder="ZIP Code"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    Employer / School
+  </label>
+
+  <input
+    class="personEmployer"
+    placeholder="Employer / School"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    Email Address
+  </label>
+
+  <input
+    type="email"
+    class="personEmail"
+    placeholder="Email Address"
+  >
+
+</div>
+
+<div class="field-group">
+
+  <label>
+    Preferred Contact
+  </label>
+
+  <select class="personPreferredContact">
+
+    <option value="">
+      Select Method
+    </option>
+
+    <option>Cell Phone</option>
+    <option>Home Phone</option>
+    <option>Work Phone</option>
+    <option>Email</option>
+
+  </select>
+
+</div>
+</div>
+`
+
+
+  );
+
+};
+
+window.submitIncidentReport =
+function() {
+
+  alert(
+    "Submit logic coming next."
+  );
+
+};
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -7632,5 +8221,6 @@ window.checkPostAbandonment = checkPostAbandonment;
 window.renderMySchedule = renderMySchedule
 window.submitActivityReport = submitActivityReport;
 window.testSiteChange = testSiteChange;
+window.generateIncidentCaseNumber = generateIncidentCaseNumber;
 
 refreshSupervisorDashboard();

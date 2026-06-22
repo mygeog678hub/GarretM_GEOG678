@@ -2048,3 +2048,42 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   color: white;
 
 }
+.person-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-group input,
+.field-group select {
+  width: 100%;
+}
+#officerIncidentReportPage {
+  width: 100%;
+  max-width: 100%;
+}
+
+.person-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.person-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(200px, 1fr)
+    );
+
+  gap: 15px;
+
+  margin-top: 15px;
+}
