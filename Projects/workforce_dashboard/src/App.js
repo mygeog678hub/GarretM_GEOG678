@@ -8379,6 +8379,85 @@ async function() {
 
         });
 
+        const vehicles = [];
+
+document
+  .querySelectorAll(
+    ".vehicle-card"
+  )
+  .forEach(card => {
+
+    vehicles.push({
+
+      role:
+        card.querySelector(
+          ".vehicleRole"
+        )?.value || "",
+
+      owner:
+        card.querySelector(
+          ".vehicleOwner"
+        )?.value || "",
+
+      plate:
+        card.querySelector(
+          ".vehiclePlate"
+        )?.value || "",
+
+      state:
+        card.querySelector(
+          ".vehicleState"
+        )?.value || "",
+
+      year:
+        card.querySelector(
+          ".vehicleYear"
+        )?.value || "",
+
+      make:
+        card.querySelector(
+          ".vehicleMake"
+        )?.value || "",
+
+      model:
+        card.querySelector(
+          ".vehicleModel"
+        )?.value || "",
+
+      color:
+        card.querySelector(
+          ".vehicleColor"
+        )?.value || "",
+
+      vin:
+        card.querySelector(
+          ".vehicleVin"
+        )?.value || "",
+
+      insurance:
+        card.querySelector(
+          ".vehicleInsurance"
+        )?.value || "",
+
+      policy:
+        card.querySelector(
+          ".vehiclePolicy"
+        )?.value || "",
+
+      towed:
+        card.querySelector(
+          ".vehicleTowed"
+        )?.value || "",
+
+      notes:
+        card.querySelector(
+          ".vehicleNotes"
+        )?.value || ""
+
+    });
+
+  });
+
       });
 
     const caseNumber =
@@ -8411,6 +8490,8 @@ async function() {
           site?.name || "",
 
         persons,
+
+        vehicles,
 
         status:
           "Open",
@@ -8460,6 +8541,10 @@ async function() {
       "personsContainer"
     ).innerHTML = "";
 
+    document.getElementById(
+      "vehiclesContainer"
+    ).innerHTML = "";
+
   } catch (error) {
 
     console.error(
@@ -8472,6 +8557,181 @@ async function() {
     );
 
   }
+
+};
+
+window.addIncidentVehicle = function() {
+
+  const container =
+    document.getElementById(
+      "vehiclesContainer"
+    );
+
+  const vehicleNumber =
+    container.children.length + 1;
+
+  container.insertAdjacentHTML(
+    "beforeend",
+
+    `
+<div class="dashboard-card vehicle-card">
+
+  <h3>
+    Vehicle ${vehicleNumber}
+  </h3>
+
+  <button
+    type="button"
+    onclick="this.parentElement.remove()"
+  >
+    Remove Vehicle
+  </button>
+
+  <div class="person-grid">
+
+    <div class="field-group">
+      <label>Vehicle Role</label>
+      <select class="vehicleRole">
+
+        <option value="">
+          Select Role
+        </option>
+
+        <option>
+          Suspect Vehicle
+        </option>
+
+        <option>
+          Victim Vehicle
+        </option>
+
+        <option>
+          Witness Vehicle
+        </option>
+
+        <option>
+          Employee Vehicle
+        </option>
+
+        <option>
+          Visitor Vehicle
+        </option>
+
+        <option>
+          Other
+        </option>
+
+      </select>
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleOwner"
+        placeholder="Owner"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehiclePlate"
+        placeholder="License Plate"
+      >
+    </div>
+
+    <div class="field-group">
+      <select class="vehicleState">
+
+        <option value="">
+          State
+        </option>
+
+        <option>TX</option>
+        <option>LA</option>
+        <option>OK</option>
+        <option>NM</option>
+
+      </select>
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleYear"
+        placeholder="Year"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleMake"
+        placeholder="Make"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleModel"
+        placeholder="Model"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleColor"
+        placeholder="Color"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleVin"
+        placeholder="VIN"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleInsurance"
+        placeholder="Insurance Company"
+      >
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehiclePolicy"
+        placeholder="Policy Number"
+      >
+    </div>
+
+    <div class="field-group">
+      <select class="vehicleTowed">
+
+        <option value="">
+          Towed?
+        </option>
+
+        <option>
+          Yes
+        </option>
+
+        <option>
+          No
+        </option>
+
+      </select>
+    </div>
+
+    <div class="field-group">
+      <input
+        class="vehicleNotes"
+        placeholder="Vehicle Notes"
+      >
+    </div>
+
+  </div>
+
+</div>
+`
+  );
 
 };
 // ================= GLOBAL =================
