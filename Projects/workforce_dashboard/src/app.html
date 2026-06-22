@@ -1091,7 +1091,7 @@
     <h2>Site Notes</h2>
 
     <select id="viewNotesSite"
-            onchange="loadSiteNotes()">
+            onchange="testSiteChange()">
     </select>
 
     <hr>
@@ -1471,6 +1471,61 @@
     Loading...
 
   </div>
+
+</div>
+
+<div class="dashboard-card">
+
+  <h2>
+    Activity Report
+  </h2>
+
+  <select id="activityType">
+
+    <option value="">
+      Select Activity
+    </option>
+
+    <option>
+      Patrol Check
+    </option>
+
+    <option>
+      Door Check
+    </option>
+
+    <option>
+      Visitor Contact
+    </option>
+
+    <option>
+      Parking Enforcement
+    </option>
+
+    <option>
+      Alarm Response
+    </option>
+
+    <option>
+      Safety Hazard
+    </option>
+
+    <option>
+      General Activity
+    </option>
+
+  </select>
+
+  <textarea
+    id="activityDescription"
+    placeholder="Enter activity details..."
+  ></textarea>
+
+  <button
+    onclick="submitActivityReport()"
+  >
+    Submit Report
+  </button>
 
 </div>
 

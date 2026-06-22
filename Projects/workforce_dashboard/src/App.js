@@ -161,6 +161,7 @@ let missingClockInList = [];
 let postMonitoringTimer = null;
 let currentOfficer = null;
 let currentUser = null;
+let activityReports = [];
 
 
 
@@ -371,7 +372,7 @@ const filteredLogs =
 
     <br>
 
-    ${log.message}
+    ${log.message || log.description || ""}
 
   </div>
 
@@ -503,6 +504,39 @@ onSnapshot(
 
 );
 
+console.log("Before Activity Reports Listener");
+
+onSnapshot(
+  collection(db, "activityReports"),
+
+  snap => {
+
+    console.log("SNAPSHOT FIRED");
+
+    activityReports = snap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    console.log(
+      "REPORT COUNT:",
+      snap.size
+    );
+
+  },
+
+  error => {
+
+    console.error(
+      "ACTIVITY REPORT SNAPSHOT ERROR:",
+      error
+    );
+
+  }
+);
+
+console.log("After Activity Reports Listener");
+
 onSnapshot(
   collection(db, "siteNotes"),
   snap => {
@@ -544,7 +578,12 @@ onSnapshot(
 
 onSnapshot(
   collection(db, "shifts"),
+
   snap => {
+
+    console.log(
+      "SHIFTS SNAPSHOT FIRED"
+    );
 
     shifts =
       snap.docs.map(
@@ -554,6 +593,11 @@ onSnapshot(
         })
       );
 
+    console.log(
+      "SHIFTS LOADED:",
+      shifts.length
+    );
+
     renderSchedules();
 
     renderWeeklyScheduleBoard();
@@ -561,9 +605,20 @@ onSnapshot(
     renderMySchedule();
 
     renderMySite();
+
     renderMyAttendanceStatus();
 
+  },
+
+  error => {
+
+    console.error(
+      "SHIFTS LISTENER ERROR:",
+      error
+    );
+
   }
+
 );
 onSnapshot(
   collection(db, "timeEntries"),
@@ -4196,7 +4251,21 @@ function openViewNotesModal() {
 
     });
 
-  loadSiteNotes();
+    const activeEntry =
+  timeEntries.find(
+    entry =>
+      entry.employeeId === currentOfficer.id &&
+      entry.status === "Clocked In"
+  );
+
+if (activeEntry) {
+
+  select.value =
+    activeEntry.siteId;
+
+}
+
+  loadSiteHistory();
 
   document.getElementById(
     "viewNotesModal"
@@ -4269,13 +4338,202 @@ console.log("First Note:", notes[0]);
 
 <br><br>
 
-${note.note}
+<pre style="
+  color:#111827;
+  white-space:pre-wrap;
+">
+${JSON.stringify(note, null, 2)}
+</pre>
 
     </div>
 
   `).join("");
 
 }
+
+function loadSiteHistory() {
+
+ const select =
+  document.getElementById(
+    "viewNotesSite"
+  );
+
+console.log(
+  "Dropdown Element:",
+  select
+);
+
+console.log(
+  "Selected Index:",
+  select.selectedIndex
+);
+
+console.log(
+  "Selected Value:",
+  select.value
+);
+
+console.log(
+  "Selected Text:",
+  select.options[
+    select.selectedIndex
+  ]?.text
+);
+
+console.log(
+  "Duplicate Elements:",
+  document.querySelectorAll(
+    "#viewNotesSite"
+  ).length
+);
+  console.log("Activity Reports Count:", activityReports.length);
+console.log("Latest Report:", activityReports[0]);
+
+  const siteId =
+    document.getElementById(
+      "viewNotesSite"
+    ).value;
+    console.log("Selected Site:", siteId);
+console.log("All Notes:", siteNotes);
+
+  const notes = siteNotes
+  .filter(
+    n => n.siteId === siteId
+  )
+  .map(note => ({
+    type: "Site Note",
+    createdBy: note.createdBy,
+    createdAt: note.createdAt,
+    text: note.note || "",
+    raw: note
+  }));
+console.log(
+  "activityReports variable:",
+  activityReports
+);
+
+console.log(
+  "activityReports length:",
+  activityReports?.length
+);
+console.log(
+  "Selected Site ID:",
+  siteId
+);
+
+console.log(
+  "All Report Site IDs:",
+  activityReports.map(
+    r => ({
+      siteId: r.siteId,
+      siteName: r.siteName,
+      activityType: r.activityType
+    })
+  )
+);
+
+console.log(
+  "Matching Reports:",
+  activityReports.filter(
+    r => r.siteId === siteId
+  )
+);
+
+const reports = activityReports
+  .filter(
+    r => r.siteId === siteId
+  )
+  .map(report => ({
+    type: "Activity Report",
+    createdBy:
+  report.officerName ||
+  report.employeeName ||
+  report.createdBy ||
+  "Officer",
+    createdAt: report.timestamp,
+    text: `
+${report.activityType || "Activity"}
+
+${report.description || ""}
+    `.trim(),
+    raw: report
+  }));
+
+const history = [
+  ...notes,
+  ...reports
+].sort(
+  (a, b) =>
+    new Date(b.createdAt) -
+    new Date(a.createdAt)
+);
+
+  const container =
+  document.getElementById(
+    "siteNotesList"
+  );
+
+if (!history.length) {
+
+  container.innerHTML =
+    "<p>No history found.</p>";
+
+  return;
+
+}
+
+container.innerHTML =
+  history.map(item => {
+
+    const icon =
+      item.type === "Activity Report"
+        ? "📋"
+        : "📝";
+
+    return `
+
+      <div style="
+        background:#ffffff;
+        color:#111827;
+        border:1px solid #ddd;
+        padding:10px;
+        margin-bottom:10px;
+        border-radius:6px;
+      ">
+
+        <strong>
+          ${icon} ${item.type}
+        </strong>
+
+        <br><br>
+
+        <small style="color:#6b7280;">
+
+          ${item.createdBy}
+
+          <br>
+
+          ${new Date(
+            item.createdAt
+          ).toLocaleString()}
+
+        </small>
+
+        <br><br>
+
+        <div style="
+          white-space:pre-wrap;
+        ">
+          ${item.text}
+        </div>
+
+      </div>
+
+    `;
+
+  }).join("");
+}
+
 
 function outsideViewNotesClick(event) {
 
@@ -4791,9 +5049,10 @@ async function createShift() {
     alert(
       "Complete all fields."
     );
+    
     return;
   }
-
+console.log("All Shifts:", shifts);
   const employee =
     employees.find(
       e => e.id === employeeId
@@ -6747,7 +7006,27 @@ function renderMySchedule() {
     !currentOfficer
   ) return;
 
+  console.log(
+  "Current Officer ID:",
+  currentOfficer.id
+);
+
+console.log(
+  "All Shifts:",
+  shifts
+);
+
+  console.log(
+  "Officer Shifts:",
+  shifts.filter(
+    shift =>
+      shift.employeeId ===
+      currentOfficer.id
+  )
+);
+
   const myShifts =
+  
     shifts
       .filter(
         shift =>
@@ -6822,6 +7101,7 @@ ${shift.status}
 }
 
 function renderMySite() {
+
   console.log(
   "renderMySite running"
 );
@@ -6836,58 +7116,40 @@ function renderMySite() {
     !currentOfficer
   ) return;
 
-  const now =
-    new Date();
+const activeEntry = timeEntries.find(
+  entry =>
+    entry.employeeId === currentOfficer.id &&
+    entry.status === "Clocked In"
+);
 
-  const myShift =
-    shifts
+let siteId = null;
 
-      .filter(
-        shift =>
-          shift.employeeId ===
-          currentOfficer.id
-      )
+if (activeEntry) {
 
-      .sort(
-        (a, b) =>
-          new Date(
-            a.startTime
-          ) -
-          new Date(
-            b.startTime
-          )
-      )
+  siteId = activeEntry.siteId;
 
-      .find(
-        shift =>
-          new Date(
-            shift.endTime
-          ) >= now
-      );
+} else {
 
-  if (!myShift) {
+  const now = new Date();
 
-    container.innerHTML =
-      "No site assigned.";
+const currentShift = shifts.find(
+  shift =>
+    shift.employeeId === currentOfficer.id &&
+    new Date(shift.startTime) <= now &&
+    new Date(shift.endTime) >= now
+);
+console.log(
+  "Current Shift Found:",
+  currentShift
+);
 
-    return;
-
-  }
-
-  const site =
-    sites.find(
-      s =>
-        s.id ===
-        myShift.siteId
-    );
-    console.log(
-  "My Shift:",
-  myShift
+console.log(
+  "STEP 1"
 );
 
 console.log(
   "Shift Site ID:",
-  myShift.siteId
+  currentShift?.siteId
 );
 
 console.log(
@@ -6895,17 +7157,69 @@ console.log(
   sites.length
 );
 
+if (!currentShift) {
+
+  container.innerHTML =
+    "<p>No site assigned.</p>";
+
+  return;
+
+}
+if (!currentShift) {
+
+  container.innerHTML =
+    "<p>No site assigned.</p>";
+
+  return;
+
+}
+
+const assignedSite =
+  sites.find(
+    site =>
+      site.id === currentShift.siteId
+  );
+
 console.log(
-  "Site IDs:",
-  sites.map(
-    s => s.id
-  )
+  "STEP 2"
 );
 
 console.log(
-  "Matched Site:",
-  site
+  "Assigned Site:",
+  assignedSite
 );
+console.log(
+  "All Martin Shifts:",
+  shifts.filter(
+    shift =>
+      shift.employeeId === currentOfficer.id
+  )
+);
+
+  if (currentShift) {
+    siteId = currentShift.siteId;
+  }
+}
+
+if (!siteId) {
+
+  container.innerHTML =
+    "<p>No site assigned.</p>";
+
+  return;
+}
+
+const site = sites.find(
+  s => s.id === siteId
+);
+
+if (!site) {
+
+  container.innerHTML =
+    "<p>No site assigned.</p>";
+
+  return;
+}
 
   if (!site) {
 
@@ -7084,6 +7398,164 @@ else {
   `;
 
 }
+
+async function submitActivityReport() {
+
+  if (!currentOfficer) {
+
+    alert(
+      "Officer session not found."
+    );
+
+    return;
+
+  }
+
+  const activityType =
+    document.getElementById(
+      "activityType"
+    ).value;
+
+  const description =
+    document.getElementById(
+      "activityDescription"
+    ).value
+    .trim();
+
+  if (
+    !activityType ||
+    !description
+  ) {
+
+    alert(
+      "Complete all fields."
+    );
+
+    return;
+
+  }
+
+  const activeEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId ===
+          currentOfficer.id &&
+        entry.status ===
+          "Clocked In"
+    );
+
+  if (!activeEntry) {
+
+    alert(
+      "You must be clocked in."
+    );
+
+    return;
+
+  }
+
+  await addDoc(
+    collection(
+      db,
+      "activityReports"
+    ),
+    {
+
+      officerId:
+        currentOfficer.id,
+
+      officerName:
+        currentOfficer.name,
+
+      siteId:
+        activeEntry.siteId,
+
+      siteName:
+        activeEntry.siteName,
+
+      activityType,
+
+      description,
+
+      timestamp:
+        serverTimestamp()
+
+    }
+  );
+
+  await addDoc(
+  collection(
+    db,
+    "activityLogs"
+  ),
+  {
+    type: "Activity Report",
+
+    employeeId:
+      currentOfficer.id,
+
+    employeeName:
+      currentOfficer.name,
+
+    siteId:
+      activeEntry.siteId,
+
+    siteName:
+      activeEntry.siteName,
+
+    description:
+      `${activityType}: ${description}`,
+
+    timestamp:
+      serverTimestamp()
+  }
+);
+
+  alert(
+    "Activity Report Submitted"
+  );
+
+  document.getElementById(
+    "activityType"
+  ).value = "";
+
+  document.getElementById(
+    "activityDescription"
+  ).value = "";
+
+}
+
+function testSiteChange() {
+
+  const select =
+    document.getElementById(
+      "viewNotesSite"
+    );
+
+  console.log(
+    "CHANGE EVENT FIRED"
+  );
+
+  console.log(
+    "CHANGE Selected Index:",
+    select.selectedIndex
+  );
+
+  console.log(
+    "CHANGE Selected Value:",
+    select.value
+  );
+
+  console.log(
+    "CHANGE Selected Text:",
+    select.options[
+      select.selectedIndex
+    ]?.text
+  );
+
+  loadSiteHistory();
+
+}
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;
@@ -7158,5 +7630,7 @@ window.showMissingClockIns = showMissingClockIns;
 window.closeMissingClockInModal = closeMissingClockInModal;
 window.checkPostAbandonment = checkPostAbandonment;
 window.renderMySchedule = renderMySchedule
+window.submitActivityReport = submitActivityReport;
+window.testSiteChange = testSiteChange;
 
 refreshSupervisorDashboard();
