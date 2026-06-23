@@ -13,6 +13,8 @@ import {
   setDoc,
   serverTimestamp,
   increment,
+  query,
+  orderBy,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
@@ -5059,6 +5061,34 @@ employees.forEach(emp => {
 
 }
 
+window.showIncidentReportsPage =
+function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "block";
+
+  loadIncidentReports();
+
+};
 async function createShift() {
 
   const employeeId =
@@ -8758,6 +8788,261 @@ window.addIncidentVehicle = function() {
   );
 
 };
+
+async function loadIncidentReports() {
+
+    console.log(
+    "loadIncidentReports running"
+  );
+
+  const container =
+    document.getElementById(
+      "incidentReportsList"
+    );
+
+  console.log(
+    "container:",
+    container
+  );
+
+  if (!container) return;
+
+  container.innerHTML =
+    "<p>Loading...</p>";
+
+ try {
+
+  const snapshot =
+    await getDocs(
+      query(
+        collection(
+          db,
+          "incidents"
+        ),
+        orderBy(
+          "createdAt",
+          "desc"
+        )
+      )
+    );
+
+  console.log(
+    "After Firestore query"
+  );
+
+  console.log(
+    "Snapshot size:",
+    snapshot.size
+  );
+
+  if (
+    snapshot.empty
+  ) {
+
+    container.innerHTML =
+      "<p>No incident reports found.</p>";
+
+    return;
+
+  }
+
+ container.innerHTML =
+  snapshot.docs
+    .map(doc => {
+
+      const incident =
+        doc.data();
+
+      const created =
+        incident.createdAt?.toDate
+          ? incident.createdAt
+              .toDate()
+              .toLocaleString()
+          : "Pending";
+
+      return `
+
+        <div
+          class="dashboard-card"
+          style="
+            margin-bottom:12px;
+          "
+        >
+
+          <strong>
+            ${incident.caseNumber}
+          </strong>
+
+          <br>
+
+          Type:
+          ${incident.incidentType}
+
+          <br>
+
+          Severity:
+          ${incident.severity}
+
+          <br>
+
+          Officer:
+          ${incident.officerName}
+
+          <br>
+
+          Site:
+          ${incident.siteName}
+
+          <br>
+
+          Status:
+          ${incident.status}
+
+          <br>
+
+          Created:
+          ${created}
+
+          <br><br>
+
+<button
+  onclick="viewIncident('${doc.id}')"
+>
+  View
+</button>
+
+        </div>
+
+      `;
+
+    })
+    .join(""); 
+
+} catch (error) {
+
+  console.error(
+    "Error loading incidents:",
+    error
+  );
+
+  container.innerHTML =
+    "<p>Error loading incident reports.</p>";
+
+}
+
+}
+
+window.closeIncidentModal =
+function() {
+
+  document
+    .getElementById(
+      "viewIncidentModal"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+};
+
+window.viewIncident =
+async function(id) {
+
+  const snap =
+    await getDoc(
+      doc(
+        db,
+        "incidents",
+        id
+      )
+    );
+
+  if (!snap.exists()) return;
+
+  const incident =
+    snap.data();
+
+  renderIncidentViewer(
+    incident
+  );
+
+  document
+    .getElementById(
+      "viewIncidentModal"
+    )
+    .classList.remove(
+      "hidden"
+    );
+
+};
+
+function renderIncidentViewer(
+  incident
+) {
+
+  const container =
+    document.getElementById(
+      "incidentViewerContent"
+    );
+
+  container.innerHTML = `
+
+    <p>
+      <strong>
+        Case Number:
+      </strong>
+      ${incident.caseNumber}
+    </p>
+
+    <p>
+      <strong>
+        Incident Type:
+      </strong>
+      ${incident.incidentType}
+    </p>
+
+    <p>
+      <strong>
+        Severity:
+      </strong>
+      ${incident.severity}
+    </p>
+
+    <p>
+      <strong>
+        Officer:
+      </strong>
+      ${incident.officerName}
+    </p>
+
+    <p>
+      <strong>
+        Site:
+      </strong>
+      ${incident.siteName}
+    </p>
+
+    <p>
+      <strong>
+        Status:
+      </strong>
+      ${incident.status}
+    </p>
+
+    <hr>
+
+    <h3>
+      Narrative
+    </h3>
+
+    <p>
+      ${incident.narrative}
+    </p>
+
+  `;
+
+}
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;

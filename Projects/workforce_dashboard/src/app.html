@@ -970,6 +970,9 @@
 
 </div>
 
+
+</div>
+
 <div id="deployPreviewModal"
      style="
        display:none;
@@ -1342,17 +1345,6 @@
 
 </div>
 
-<div
-  id="incidentReportsPage"
-  style="display:none;"
->
-
-  <h1>Incident Reports</h1>
-
-  <div id="incidentReportsList"></div>
-
-</div>
-
 <div class="dashboard-card">
   <h2>Supervisor Dashboard</h2>
 
@@ -1665,6 +1657,28 @@
 
 </div>
 
+<div
+  id="incidentReportsPage"
+  style="display:none;"
+>
+
+  <div class="card">
+
+    <h2>
+      Incident Reports
+    </h2>
+
+    <div
+      id="incidentReportsList"
+    >
+      Loading...
+    </div>
+
+  </div>
+
+
+</div>
+
 
 <div class="bottom-panel">
 <footer class="site-footer">
@@ -1684,6 +1698,31 @@
   </div>
 </footer>
     </div>
+
+    <div
+  id="viewIncidentModal"
+  class="modal hidden"
+>
+
+  <div class="modal-content">
+
+    <h2>
+      Incident Details
+    </h2>
+
+    <div
+      id="incidentViewerContent"
+    ></div>
+
+    <br>
+
+    <button
+      onclick="closeIncidentModal()"
+    >
+      Close
+    </button>
+
+  </div>
 
 </body>
 </html>
