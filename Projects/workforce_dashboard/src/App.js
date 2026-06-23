@@ -4895,10 +4895,18 @@ function showDashboard() {
   ).style.display = "none";
 
   document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
     "officerPortal"
   ).classList.add(
     "hidden"
-  );
+  ); 
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
 
   refreshSupervisorDashboard();
 
@@ -4915,6 +4923,10 @@ window.showOfficerPortal = function() {
 
   document.getElementById(
   "officerIncidentReportPage"
+).style.display = "none";
+
+document.getElementById(
+  "incidentReportsPage"
 ).style.display = "none";
 
   document.getElementById(
@@ -4938,6 +4950,10 @@ function() {
 
   document.getElementById(
     "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
   ).style.display = "none";
 
   document.getElementById(
@@ -4967,6 +4983,14 @@ function showSchedulingPage() {
   ).classList.add(
     "hidden"
   );
+
+  document.getElementById(
+  "officerIncidentReportPage"
+).style.display = "none";
+
+document.getElementById(
+  "incidentReportsPage"
+).style.display = "none";
 
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();

@@ -711,8 +711,7 @@ tr:hover {
 body {
   font-family: Inter, sans-serif;
   margin: 0;
-  background: #0f172a;
-  color: #f1f5f9;
+  background: #0f172a;  
 
   min-height: 100vh;
 
@@ -865,8 +864,7 @@ html {
 
 body {
   background: #0f172a;
-  color: #f8fafc;
-  font-family: Arial, sans-serif;
+  color: #f8fafc;  
 }
 
 .hero {

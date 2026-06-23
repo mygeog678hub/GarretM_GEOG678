@@ -160,6 +160,13 @@
   </button>
 
   <button
+  id="incidentReportsBtn"
+  onclick="showIncidentReportsPage()"
+>
+  Incident Reports
+</button>
+
+  <button
     onclick="logout()"
     class="logoutBtn"
   >
@@ -511,7 +518,11 @@
     Administration
   </option>
 
-  <label>Geofence Radius (ft)</label>
+</select>
+
+<label>
+  Geofence Radius (ft)
+</label>
 
 <input
   type="number"
@@ -520,8 +531,6 @@
   min="50"
   max="150"
 />
-
-</select>
 <button>Add</button>
 </form>
 
@@ -1333,6 +1342,17 @@
 
 </div>
 
+<div
+  id="incidentReportsPage"
+  style="display:none;"
+>
+
+  <h1>Incident Reports</h1>
+
+  <div id="incidentReportsList"></div>
+
+</div>
+
 <div class="dashboard-card">
   <h2>Supervisor Dashboard</h2>
 
@@ -1550,7 +1570,9 @@
     </div>    
   </div>
   </div>
-  <div
+</div>
+
+<div
   id="officerIncidentReportPage"
   style="display:none;"
 >
@@ -1643,7 +1665,6 @@
 
 </div>
 
-</div>
 
 <div class="bottom-panel">
 <footer class="site-footer">
