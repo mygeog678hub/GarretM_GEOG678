@@ -1724,7 +1724,6 @@
 
 </div>
 
-
 <div class="bottom-panel">
 <footer class="site-footer">
   <p>
@@ -1821,6 +1820,66 @@
 
     <button
       onclick="closeCheckpointModal()"
+    >
+      Cancel
+    </button>
+
+  </div>
+
+</div>
+
+<div
+  id="editCheckpointModal"
+  class="modal hidden"
+>
+
+  <div class="modal-content">
+
+    <h2>
+      Edit Checkpoint
+    </h2>
+
+    <input
+      type="text"
+      id="editCheckpointName"
+      placeholder="Checkpoint Name"
+    >
+
+    <textarea
+      id="editCheckpointDescription"
+      placeholder="Description"
+    ></textarea>
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="editRequirePhoto"
+      >
+
+      Require Photo
+
+    </label>
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="editRequireNotes"
+      >
+
+      Require Notes
+
+    </label>
+
+    <button
+      onclick="saveCheckpointEdit()"
+    >
+      Save Changes
+    </button>
+
+    <button
+      onclick="closeEditCheckpointModal()"
     >
       Cancel
     </button>

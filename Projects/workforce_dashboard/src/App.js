@@ -168,6 +168,7 @@ let activityReports = [];
 let patrolTemplates = [];
 let currentPatrolId = null;
 let checkpoints = [];
+let editingCheckpointId = null;
 
 
 
@@ -9409,15 +9410,39 @@ function renderPatrolTemplates() {
 
                           <br><br>
 
-                          <button
-                            onclick="deleteCheckpoint(
-                              '${cp.id}'
-                            )"
-                          >
-                            Delete
-                          </button>
+                          <div class="checkpoint-tags">
 
-                        </div>
+  ${
+    cp.requiresPhoto
+      ? '<span class="checkpoint-tag">📷 Photo Required</span>'
+      : ''
+  }
+
+  ${
+    cp.requiresNotes
+      ? '<span class="checkpoint-tag">📝 Notes Required</span>'
+      : ''
+  }
+
+</div>
+
+                           <div class="checkpoint-actions">
+
+    <button
+      onclick="editCheckpoint('${cp.id}')"
+    >
+      Edit
+    </button>
+
+    <button
+      onclick="deleteCheckpoint('${cp.id}')"
+    >
+      Delete
+    </button>
+
+  </div>
+
+</div>
 
                       `
                     )
@@ -9604,6 +9629,144 @@ async function(id) {
   );
 
 };
+
+window.editCheckpoint =
+function(id) {
+
+ const checkpoint =
+  checkpoints.find(
+    cp => cp.id === id
+  );
+
+  if (!checkpoint) return;
+
+  editingCheckpointId = id;
+
+  document.getElementById(
+    "editCheckpointName"
+  ).value =
+    checkpoint.name || "";
+
+  document.getElementById(
+    "editCheckpointDescription"
+  ).value =
+    checkpoint.description || "";
+
+  document.getElementById(
+    "editRequirePhoto"
+  ).checked =
+    checkpoint.requirePhoto || false;
+
+  document.getElementById(
+    "editRequireNotes"
+  ).checked =
+    checkpoint.requireNotes || false;
+
+  document.getElementById(
+    "editCheckpointModal"
+  ).classList.remove(
+    "hidden"
+  );
+
+};
+
+window.saveCheckpointEdit =
+async function() {
+
+  if (!editingCheckpointId)
+    return;
+
+  await updateDoc(
+  doc(
+    db,
+    "checkpoints",
+    editingCheckpointId
+  ),
+  {
+    checkpointName:
+      document.getElementById(
+        "editCheckpointName"
+      ).value,
+
+    description:
+      document.getElementById(
+        "editCheckpointDescription"
+      ).value,
+
+    requiresPhoto:
+      document.getElementById(
+        "editRequirePhoto"
+      ).checked,
+
+    requiresNotes:
+      document.getElementById(
+        "editRequireNotes"
+      ).checked
+  }
+);
+
+  closeEditCheckpointModal();
+
+};
+
+window.closeEditCheckpointModal =
+function() {
+
+  editingCheckpointId = null;
+
+  document.getElementById(
+    "editCheckpointModal"
+  ).classList.add(
+    "hidden"
+  );
+
+};
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      document
+        .querySelectorAll(
+          ".modal"
+        )
+        .forEach(
+          modal =>
+            modal.classList.add(
+              "hidden"
+            )
+        );
+
+    }
+
+  }
+);
+
+window.addEventListener(
+  "click",
+  function(event) {
+
+    const modal =
+      document.getElementById(
+        "viewIncidentModal"
+      );
+
+    if (
+      event.target === modal
+    ) {
+
+      modal.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+);
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
