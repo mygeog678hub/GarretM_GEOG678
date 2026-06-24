@@ -166,6 +166,8 @@ let currentOfficer = null;
 let currentUser = null;
 let activityReports = [];
 let patrolTemplates = [];
+let currentPatrolId = null;
+let checkpoints = [];
 
 
 
@@ -657,6 +659,32 @@ onSnapshot(
       renderActiveTimeEntries();
 
   }
+);
+
+onSnapshot(
+
+  collection(
+    db,
+    "checkpoints"
+  ),
+
+  snapshot => {
+
+    checkpoints =
+      snapshot.docs.map(
+        doc => ({
+
+          id: doc.id,
+
+          ...doc.data()
+
+        })
+      );
+
+    renderPatrolTemplates();
+
+  }
+
 );
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
@@ -9296,6 +9324,8 @@ function() {
 
   populatePatrolSiteDropdown();
 };
+window.createPatrolTemplate =
+  createPatrolTemplate;
 
 function renderPatrolTemplates() {
 
@@ -9310,28 +9340,104 @@ function renderPatrolTemplates() {
     patrolTemplates.length
 
       ? patrolTemplates.map(
-          patrol => `
+          patrol => {
 
-          <div class="card">
+            const patrolCheckpoints =
+              checkpoints.filter(
+                cp =>
+                  cp.patrolId ===
+                  patrol.id
+              );
 
-            <h3>
-              ${patrol.name}
-            </h3>
+            return `
 
-            <p>
-              Site:
-              ${patrol.siteName}
-            </p>
+              <div class="patrol-card">
 
-          </div>
+                <h3>
+                  ${patrol.name}
+                </h3>
 
-        `
+                <button
+                  onclick="openCheckpointModal(
+                    '${patrol.id}'
+                  )"
+                >
+                  Add Checkpoint
+                </button>
+
+                <p>
+                  Site:
+                  ${patrol.siteName}
+                </p>
+
+                <div
+                  class="checkpoint-list"
+                >
+
+                  ${patrolCheckpoints
+                    .map(
+  (
+    cp,
+    index
+  ) => `
+
+                        <div
+                          class="checkpoint-card"
+                        >
+
+                          <div
+  class="checkpoint-header"
+>
+
+  <div
+    class="checkpoint-number"
+  >
+    ${index + 1}
+  </div>
+
+  <strong>
+    ${cp.checkpointName}
+  </strong>
+
+</div>
+
+                          ${
+                            cp.description
+                              ? `<br>${cp.description}`
+                              : ""
+                          }
+
+                          <br><br>
+
+                          <button
+                            onclick="deleteCheckpoint(
+                              '${cp.id}'
+                            )"
+                          >
+                            Delete
+                          </button>
+
+                        </div>
+
+                      `
+                    )
+                    .join("")}
+
+                </div>
+
+              </div>
+
+            `;
+
+          }
         ).join("")
 
       : `
+
         <p>
           No patrol templates.
         </p>
+
       `;
 }
 
@@ -9358,6 +9464,146 @@ function hideAllPages() {
   ).style.display = "none";
 
 }
+window.openCheckpointModal =
+function(patrolId) {  
+
+  currentPatrolId =
+    patrolId;
+
+  const modal =
+    document.getElementById(
+      "checkpointModal"
+    );
+
+  console.log(
+    "Modal found:",
+    modal
+  );
+
+  modal.classList.remove(
+    "hidden"
+  );
+
+  console.log(
+    "Classes:",
+    modal.className
+  );
+
+};
+
+window.closeCheckpointModal =
+function() {
+
+  document
+    .getElementById(
+      "checkpointModal"
+    )
+    .classList
+    .add(
+      "hidden"
+    );
+
+};
+
+window.saveCheckpoint =
+async function() {
+
+  const checkpointName =
+    document.getElementById(
+      "checkpointName"
+    ).value.trim();
+
+  const description =
+    document.getElementById(
+      "checkpointDescription"
+    ).value.trim();
+
+  const requiresPhoto =
+    document.getElementById(
+      "requiresPhoto"
+    ).checked;
+
+  const requiresNotes =
+    document.getElementById(
+      "requiresNotes"
+    ).checked;
+
+  if (!checkpointName) {
+
+    alert(
+      "Checkpoint name required."
+    );
+
+    return;
+  }
+
+  await addDoc(
+
+    collection(
+      db,
+      "checkpoints"
+    ),
+
+    {
+
+      patrolId:
+        currentPatrolId,
+
+      checkpointName,
+
+      description,
+
+      requiresPhoto,
+
+      requiresNotes,
+
+      createdAt:
+        serverTimestamp()
+
+    }
+
+  );
+document.getElementById(
+  "checkpointName"
+).value = "";
+
+document.getElementById(
+  "checkpointDescription"
+).value = "";
+
+document.getElementById(
+  "requiresPhoto"
+).checked = false;
+
+document.getElementById(
+  "requiresNotes"
+).checked = false;
+
+document.getElementById(
+  "checkpointName"
+).focus();
+
+};
+
+window.deleteCheckpoint =
+async function(id) {
+
+  const confirmed =
+    confirm(
+      "Delete this checkpoint?"
+    );
+
+  if (!confirmed) return;
+
+  await deleteDoc(
+    doc(
+      db,
+      "checkpoints",
+      id
+    )
+  );
+
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

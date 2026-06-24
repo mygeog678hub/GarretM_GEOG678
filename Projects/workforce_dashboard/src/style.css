@@ -2151,3 +2151,139 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
   color: #f8fafc;
 }
+.checkpoint-list {
+  margin-top: 15px;
+}
+
+.checkpoint-card {
+
+  background:
+    #1e293b;
+
+  border:
+    1px solid
+    #334155;
+
+  border-radius:
+    10px;
+
+  padding:
+    16px;
+
+  min-height:
+    100px;
+
+  transition:
+    all 0.2s ease;
+
+}
+
+.checkpoint-card:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    #3b82f6;
+
+}
+
+.checkpoint-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.checkpoint-list {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        350px,
+        1fr
+      )
+    );
+
+  gap: 15px;
+
+  margin-top: 15px;
+
+}
+.checkpoint-card:nth-child(odd) {
+
+  background:
+    #1e3a5f;
+
+}
+
+.checkpoint-card:nth-child(even) {
+
+  background:
+    #243043;
+
+}
+.checkpoint-header {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 10px;
+
+}
+
+.checkpoint-number {
+
+  width: 36px;
+
+  height: 36px;
+
+  background:
+    #2563eb;
+
+  border-radius:
+    8px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-weight:
+    bold;
+
+}
+.checkpoint-actions {
+
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 12px;
+
+}
+.patrol-card {
+
+  background: #1e293b;
+
+  padding: 30px;
+
+  border-radius: 12px;
+
+  width: 100%;
+
+  box-shadow:
+    0 4px 20px
+    rgba(
+      0,
+      0,
+      0,
+      0.3
+    );
+
+}

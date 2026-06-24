@@ -1466,7 +1466,7 @@
 
 </div>
 
-<div id="officerPortal" class="hidden">
+<div id="officerPortal" class="block">
 
   <h1>Officer Portal</h1>
 
@@ -1728,7 +1728,7 @@
 <div class="bottom-panel">
 <footer class="site-footer">
   <p>
-    © WorkForge, LLc. All rights reserved. | Developed by Garret M.
+    © WorkForge, LLC. All rights reserved.
   </p>
 
   <div class="footer-links">
@@ -1768,6 +1768,66 @@
     </button>
 
   </div>
+  </div>
+  
+  <div
+  id="checkpointModal"
+  class="modal hidden"
+>
+
+  <div class="modal-content">
+
+    <h2>
+      Add Checkpoint
+    </h2>
+
+    <input
+      id="checkpointName"
+      placeholder="Checkpoint Name"
+    >
+
+    <textarea
+      id="checkpointDescription"
+      placeholder="Description"
+    ></textarea>
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="requiresPhoto"
+      >
+
+      Require Photo
+
+    </label>
+
+    <label>
+
+      <input
+        type="checkbox"
+        id="requiresNotes"
+      >
+
+      Require Notes
+
+    </label>
+
+    <button
+      onclick="saveCheckpoint()"
+    >
+      Save Checkpoint
+    </button>
+
+    <button
+      onclick="closeCheckpointModal()"
+    >
+      Cancel
+    </button>
+
+  </div>
+
+</div>
 
 </body>
 </html>
