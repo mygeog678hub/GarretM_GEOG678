@@ -9344,11 +9344,17 @@ function renderPatrolTemplates() {
           patrol => {
 
             const patrolCheckpoints =
-              checkpoints.filter(
-                cp =>
-                  cp.patrolId ===
-                  patrol.id
-              );
+  checkpoints
+    .filter(
+      cp =>
+        cp.patrolId ===
+        patrol.id
+    )
+    .sort(
+      (a, b) =>
+        (a.sequence || 0) -
+        (b.sequence || 0)
+    );
 
             return `
 
@@ -9390,11 +9396,11 @@ function renderPatrolTemplates() {
   class="checkpoint-header"
 >
 
-  <div
-    class="checkpoint-number"
-  >
-    ${index + 1}
-  </div>
+<div
+  class="checkpoint-number"
+>
+  ${cp.sequence || index + 1}
+</div>
 
   <strong>
     ${cp.checkpointName}
@@ -9428,19 +9434,31 @@ function renderPatrolTemplates() {
 
                            <div class="checkpoint-actions">
 
-    <button
-      onclick="editCheckpoint('${cp.id}')"
-    >
-      Edit
-    </button>
+  <button
+    onclick="moveCheckpointUp('${cp.id}')"
+  >
+    ↑
+  </button>
 
-    <button
-      onclick="deleteCheckpoint('${cp.id}')"
-    >
-      Delete
-    </button>
+  <button
+    onclick="moveCheckpointDown('${cp.id}')"
+  >
+    ↓
+  </button>
 
-  </div>
+  <button
+    onclick="editCheckpoint('${cp.id}')"
+  >
+    Edit
+  </button>
+
+  <button
+    onclick="deleteCheckpoint('${cp.id}')"
+  >
+    Delete
+  </button>
+
+</div>
 
 </div>
 
@@ -9555,14 +9573,24 @@ async function() {
 
   if (!checkpointName) {
 
-    alert(
-      "Checkpoint name required."
-    );
+  alert(
+    "Checkpoint name required."
+  );
 
-    return;
-  }
+  return;
+}
 
-  await addDoc(
+const patrolCheckpoints =
+  checkpoints.filter(
+    cp =>
+      cp.patrolId ===
+      currentPatrolId
+  );
+
+const nextSequence =
+  patrolCheckpoints.length + 1;
+
+await addDoc(
 
     collection(
       db,
@@ -9570,22 +9598,23 @@ async function() {
     ),
 
     {
+  patrolId:
+    currentPatrolId,
 
-      patrolId:
-        currentPatrolId,
+  checkpointName,
 
-      checkpointName,
+  description,
 
-      description,
+  requiresPhoto,
 
-      requiresPhoto,
+  requiresNotes,
 
-      requiresNotes,
+  sequence:
+    nextSequence,
 
-      createdAt:
-        serverTimestamp()
-
-    }
+  createdAt:
+    serverTimestamp()
+}
 
   );
 document.getElementById(
@@ -9767,6 +9796,116 @@ window.addEventListener(
 
   }
 );
+
+window.moveCheckpointUp =
+async function(id) {
+
+  const checkpoint =
+    checkpoints.find(
+      cp => cp.id === id
+    );
+
+  if (!checkpoint)
+    return;
+
+  const aboveCheckpoint =
+    checkpoints.find(
+      cp =>
+        cp.patrolId ===
+          checkpoint.patrolId &&
+        cp.sequence ===
+          checkpoint.sequence - 1
+    );
+
+  if (!aboveCheckpoint)
+    return;
+
+  const currentSequence =
+    checkpoint.sequence;
+
+  const aboveSequence =
+    aboveCheckpoint.sequence;
+
+  await updateDoc(
+    doc(
+      db,
+      "checkpoints",
+      checkpoint.id
+    ),
+    {
+      sequence:
+        aboveSequence
+    }
+  );
+
+  await updateDoc(
+    doc(
+      db,
+      "checkpoints",
+      aboveCheckpoint.id
+    ),
+    {
+      sequence:
+        currentSequence
+    }
+  );
+
+};
+
+window.moveCheckpointDown =
+async function(id) {
+
+  const checkpoint =
+    checkpoints.find(
+      cp => cp.id === id
+    );
+
+  if (!checkpoint)
+    return;
+
+  const belowCheckpoint =
+    checkpoints.find(
+      cp =>
+        cp.patrolId ===
+          checkpoint.patrolId &&
+        cp.sequence ===
+          checkpoint.sequence + 1
+    );
+
+  if (!belowCheckpoint)
+    return;
+
+  const currentSequence =
+    checkpoint.sequence;
+
+  const belowSequence =
+    belowCheckpoint.sequence;
+
+  await updateDoc(
+    doc(
+      db,
+      "checkpoints",
+      checkpoint.id
+    ),
+    {
+      sequence:
+        belowSequence
+    }
+  );
+
+  await updateDoc(
+    doc(
+      db,
+      "checkpoints",
+      belowCheckpoint.id
+    ),
+    {
+      sequence:
+        currentSequence
+    }
+  );
+
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
