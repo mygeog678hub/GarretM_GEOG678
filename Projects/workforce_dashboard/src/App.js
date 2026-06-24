@@ -4961,6 +4961,10 @@ function showDashboard() {
   "patrolsPage"
 ).style.display = "none";
 
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
   refreshSupervisorDashboard();
 
 }
@@ -4988,6 +4992,10 @@ document.getElementById(
 
 document.getElementById(
   "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
 ).style.display = "none";
 
   renderMySchedule();
@@ -5023,6 +5031,10 @@ function() {
   "patrolsPage"
 ).style.display = "none";
 
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
 };
 
 function showSchedulingPage() {
@@ -5049,6 +5061,10 @@ document.getElementById(
 
 document.getElementById(
   "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
 ).style.display = "none";
 
   populateScheduleDropdowns();
@@ -5135,9 +5151,7 @@ function() {
 
   document.getElementById(
     "officerPortal"
-  ).classList.add(
-    "none"
-  );
+  ).style.display = "none";
 
   document.getElementById(
     "incidentReportsPage"
@@ -5146,6 +5160,10 @@ function() {
   document.getElementById(
   "patrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "myPatrolsPage"
+  ).style.display = "none";
 
   loadIncidentReports();
 
@@ -5170,13 +5188,9 @@ async function createShift() {
   const endTime =
     document.getElementById(
       "scheduleEnd"
-    ).value;
+    ).value;    
 
-    document.getElementById(
-  "schedulePay"
-).value = "";
-
-    const shiftPay =
+ const shiftPay =
   Number(
     document.getElementById(
       "schedulePay"
@@ -5311,6 +5325,10 @@ document.getElementById(
   "scheduleEnd"
 ).value = "";
 console.log("Fields cleared");
+
+document.getElementById(
+  "schedulePay"
+).value = "";
 }
 
 function timesOverlap(
@@ -7402,6 +7420,118 @@ if (!site) {
   `;
 
 }
+
+function renderMyPatrols() {
+
+  const container =
+    document.getElementById(
+      "myPatrolsList"
+    );
+
+  if (
+    !container ||
+    !currentOfficer
+  ) return;
+
+  const activeEntry = timeEntries.find(
+    entry =>
+      entry.employeeId === currentOfficer.id &&
+      entry.status === "Clocked In"
+  );
+
+  let siteId = null;
+
+  if (activeEntry) {
+
+    siteId = activeEntry.siteId;
+
+  } else {
+
+    const now = new Date();
+
+    const currentShift =
+      shifts.find(
+        shift =>
+          shift.employeeId === currentOfficer.id &&
+          new Date(shift.startTime) <= now &&
+          new Date(shift.endTime) >= now
+      );
+
+    if (!currentShift) {
+
+      container.innerHTML =
+        "<p>No patrols available.</p>";
+
+      return;
+
+    }
+
+    siteId = currentShift.siteId;
+
+  }
+
+  const sitePatrols =
+    patrolTemplates.filter(
+      patrol =>
+        patrol.siteId === siteId
+    );
+
+  if (!sitePatrols.length) {
+
+    container.innerHTML =
+      "<p>No patrol routes assigned to this site.</p>";
+
+    return;
+
+  }
+
+  container.innerHTML =
+    sitePatrols.map(
+      patrol => {
+
+        const checkpointCount =
+          checkpoints.filter(
+            cp =>
+              cp.patrolId === patrol.id
+          ).length;
+
+        return `
+
+          <div class="patrol-card">
+
+            <h3>
+              ${patrol.name}
+            </h3>
+
+            <p>
+              ${checkpointCount}
+              Checkpoints
+            </p>
+
+            <button
+              onclick="startPatrol('${patrol.id}')"
+            >
+              Start Patrol
+            </button>
+
+          </div>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+window.startPatrol =
+function(patrolId) {
+
+  console.log(
+    "Starting Patrol:",
+    patrolId
+  );
+
+};
 
 function renderMyAttendanceStatus() {
 
@@ -9904,6 +10034,39 @@ async function(id) {
         currentSequence
     }
   );
+
+};
+
+window.showMyPatrols =
+function() {
+
+  document.getElementById(
+    "officerPortal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display =
+    "block";
+
+    document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none"; 
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  renderMyPatrols();
 
 };
 

@@ -1476,6 +1476,12 @@
   Incident Reports
 </button>
 
+<button
+  onclick="showMyPatrols()"
+>
+  My Patrols
+</button>
+
   <div class="stats-grid">
 
     
@@ -1702,12 +1708,21 @@
 
 </div>
 
+
+ 
 <div
   id="incidentReportsPage"
   style="display:none;"
 >
+<button
+    onclick="showOfficerPortal()"
+  >
+    ← Back to Officer Portal
+  </button>
 
   <div class="card">
+
+    
 
     <h2>
       Incident Reports
@@ -1723,6 +1738,28 @@
 
 
 </div>
+
+<div
+  id="myPatrolsPage"
+  style="display:none;"
+>
+
+  <button
+    onclick="showOfficerPortal()"
+  >
+    ← Back to Officer Portal
+  </button>
+
+  <h2>
+    My Patrols
+  </h2>
+
+  <div
+    id="myPatrolsList"
+  ></div>
+
+</div>
+
 
 <div class="bottom-panel">
 <footer class="site-footer">
@@ -1887,6 +1924,7 @@
   </div>
 
 </div>
+
 
 </body>
 </html>
