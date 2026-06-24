@@ -166,6 +166,13 @@
   Incident Reports
 </button>
 
+<button
+  id="patrolsBtn"
+  onclick="showPatrolsPage()"
+>
+  Patrols
+</button>
+
   <button
     onclick="logout()"
     class="logoutBtn"
@@ -1200,6 +1207,44 @@
     </div>
 
   </div>
+
+</div>
+
+<div
+  id="patrolsPage"
+  style="display:none;"
+>
+
+  <h2>
+    Patrol Templates
+  </h2>
+
+  <div class="card">
+
+    <h3>
+      Create Patrol Template
+    </h3>
+
+    <input
+      id="patrolName"
+      placeholder="Patrol Name"
+    >
+
+    <select
+      id="patrolSite"
+    ></select>
+
+    <button
+      onclick="createPatrolTemplate()"
+    >
+      Create Patrol
+    </button>
+
+  </div>
+
+  <div
+    id="patrolTemplateList"
+  ></div>
 
 </div>
 

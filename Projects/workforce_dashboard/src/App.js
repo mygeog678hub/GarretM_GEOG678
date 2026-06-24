@@ -165,6 +165,7 @@ let postMonitoringTimer = null;
 let currentOfficer = null;
 let currentUser = null;
 let activityReports = [];
+let patrolTemplates = [];
 
 
 
@@ -442,6 +443,25 @@ onSnapshot(collection(db, "employees"), snap => {
   }
 
 });
+
+onSnapshot(
+  collection(
+    db,
+    "patrolTemplates"
+  ),
+  snapshot => {
+
+    patrolTemplates =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    renderPatrolTemplates();
+  }
+);
 
 onSnapshot(collection(db, "sites"), snap => {
   sites = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -4902,13 +4922,15 @@ function showDashboard() {
 
   document.getElementById(
     "officerPortal"
-  ).classList.add(
-    "hidden"
-  ); 
+  ).style.display = "none"; 
 
   document.getElementById(
     "incidentReportsPage"
   ).style.display = "none";
+
+  document.getElementById(
+  "patrolsPage"
+).style.display = "none";
 
   refreshSupervisorDashboard();
 
@@ -4932,10 +4954,12 @@ document.getElementById(
 ).style.display = "none";
 
   document.getElementById(
-    "officerPortal"
-  ).classList.remove(
-    "hidden"
-  );
+  "officerPortal"
+).style.display = "block";
+
+document.getElementById(
+  "patrolsPage"
+).style.display = "none";
 
   renderMySchedule();
   renderMySite();
@@ -4958,15 +4982,17 @@ function() {
     "incidentReportsPage"
   ).style.display = "none";
 
-  document.getElementById(
-    "officerPortal"
-  ).classList.add(
-    "hidden"
-  );
+ document.getElementById(
+  "officerPortal"
+).style.display = "none";
 
   document.getElementById(
     "officerIncidentReportPage"
   ).style.display = "block";
+
+  document.getElementById(
+  "patrolsPage"
+).style.display = "none";
 
 };
 
@@ -4980,11 +5006,9 @@ function showSchedulingPage() {
     "schedulingPage"
   ).style.display = "block";
 
-  document.getElementById(
-    "officerPortal"
-  ).classList.add(
-    "hidden"
-  );
+ document.getElementById(
+  "officerPortal"
+).style.display = "none";
 
   document.getElementById(
   "officerIncidentReportPage"
@@ -4992,6 +5016,10 @@ function showSchedulingPage() {
 
 document.getElementById(
   "incidentReportsPage"
+).style.display = "none";
+
+document.getElementById(
+  "patrolsPage"
 ).style.display = "none";
 
   populateScheduleDropdowns();
@@ -5079,12 +5107,16 @@ function() {
   document.getElementById(
     "officerPortal"
   ).classList.add(
-    "hidden"
+    "none"
   );
 
   document.getElementById(
     "incidentReportsPage"
   ).style.display = "block";
+
+  document.getElementById(
+  "patrolsPage"
+).style.display = "none";
 
   loadIncidentReports();
 
@@ -9031,15 +9063,299 @@ function renderIncidentViewer(
 
     <hr>
 
-    <h3>
-      Narrative
-    </h3>
+<h3>
+  Narrative
+</h3>
 
-    <p>
-      ${incident.narrative}
-    </p>
+<p>
+  ${incident.narrative}
+</p>
+
+<hr>
+
+<h3>
+  Persons Involved
+</h3>
+
+${
+  incident.persons &&
+  incident.persons.length
+
+    ? incident.persons.map(
+        person => `
+
+        <div class="person-card">
+
+          <p>
+            <strong>Name:</strong>
+            ${person.name || ""}
+          </p>
+
+          <p>
+            <strong>DOB:</strong>
+            ${person.dob || ""}
+          </p>
+
+          <p>
+            <strong>Phone:</strong>
+            ${person.phone || ""}
+          </p>
+
+          <p>
+            <strong>Role:</strong>
+            ${person.role || ""}
+          </p>
+
+          <p>
+            <strong>Address:</strong>
+            ${person.address || ""}
+          </p>
+
+        </div>
+
+      `
+      ).join("")
+
+    : "<p>No persons listed.</p>"
+}
+
+<hr>
+
+<h3>
+  Vehicles Involved
+</h3>
+
+${
+  incident.vehicles &&
+  incident.vehicles.length
+
+    ? incident.vehicles.map(
+        vehicle => `
+
+        <div class="vehicle-card">
+
+          <p>
+            <strong>Year:</strong>
+            ${vehicle.year || ""}
+          </p>
+
+          <p>
+            <strong>Make:</strong>
+            ${vehicle.make || ""}
+          </p>
+
+          <p>
+            <strong>Model:</strong>
+            ${vehicle.model || ""}
+          </p>
+
+          <p>
+            <strong>Color:</strong>
+            ${vehicle.color || ""}
+          </p>
+
+          <p>
+            <strong>License Plate:</strong>
+            ${vehicle.plate || ""}
+          </p>
+
+          <p>
+            <strong>State:</strong>
+            ${vehicle.state || ""}
+          </p>
+
+        </div>
+
+      `
+      ).join("")
+
+    : "<p>No vehicles listed.</p>"
+}
 
   `;
+
+}
+
+function populatePatrolSiteDropdown() {
+
+  const select =
+    document.getElementById(
+      "patrolSite"
+    );
+
+  if (!select) return;
+
+  select.innerHTML =
+    '<option value="">Select Site</option>';
+
+  sites.forEach(
+    site => {
+
+      select.innerHTML += `
+        <option value="${site.id}">
+          ${site.name}
+        </option>
+      `;
+    }
+  );
+}
+async function createPatrolTemplate() {
+
+  const name =
+    document.getElementById(
+      "patrolName"
+    ).value.trim();
+
+  const siteId =
+    document.getElementById(
+      "patrolSite"
+    ).value;
+
+  if (
+    !name ||
+    !siteId
+  ) {
+    alert(
+      "Complete all fields."
+    );
+    return;
+  }
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  await addDoc(
+    collection(
+      db,
+      "patrolTemplates"
+    ),
+    {
+      name,
+      siteId,
+      siteName:
+        site?.name || "",
+      createdAt:
+        Date.now()
+    }
+  );
+
+  document.getElementById(
+    "patrolName"
+  ).value = "";
+
+  document.getElementById(
+    "patrolSite"
+  ).value = "";
+}
+
+window.showPatrolsPage =
+function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).classList.add(
+    "hidden"
+  );
+
+  document.getElementById(
+  "patrolsPage"
+).style.display =
+  "block";
+
+  const patrolPage =
+    document.getElementById(
+      "patrolsPage"
+    );
+
+  patrolPage.style.display =
+    "block";
+
+  patrolPage.classList.remove(
+    "hidden"
+  );
+
+  populatePatrolSiteDropdown();
+};
+
+function renderPatrolTemplates() {
+
+  const container =
+    document.getElementById(
+      "patrolTemplateList"
+    );
+
+  if (!container) return;
+
+  container.innerHTML =
+    patrolTemplates.length
+
+      ? patrolTemplates.map(
+          patrol => `
+
+          <div class="card">
+
+            <h3>
+              ${patrol.name}
+            </h3>
+
+            <p>
+              Site:
+              ${patrol.siteName}
+            </p>
+
+          </div>
+
+        `
+        ).join("")
+
+      : `
+        <p>
+          No patrol templates.
+        </p>
+      `;
+}
+
+function hideAllPages() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
 
 }
 
