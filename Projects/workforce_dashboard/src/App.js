@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   increment,
   query,
+  where,
   orderBy  
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -438,9 +439,7 @@ onSnapshot(collection(db, "employees"), snap => {
       employee.name
     );
 
-    showOfficerPortal();
-    renderMySchedule();
-    renderMySite();
+    showOfficerPortal();    
 
   } else {
 
@@ -4975,7 +4974,9 @@ document.getElementById(
   refreshSupervisorDashboard();
 
 }
-window.showOfficerPortal = function() {
+
+window.showOfficerPortal =
+async function() {
 
   document.getElementById(
     "dashboardPage"
@@ -5008,6 +5009,7 @@ document.getElementById(
   renderMySchedule();
   renderMySite();
   renderMyAttendanceStatus();
+  await resumeActivePatrol();
 
 };
 
@@ -9933,68 +9935,121 @@ function() {
 };
 
 window.startPatrol =
-async function(patrolId) {  
+async function(patrolId) {
 
- const patrol =
-  patrolTemplates.find(
-    p => p.id === patrolId
-  );
+  const patrol =
+    patrolTemplates.find(
+      p => p.id === patrolId
+    );
 
-if (!patrol) {
+  if (!patrol) {
 
-  alert(
-    "Patrol not found."
-  );
+    alert(
+      "Patrol not found."
+    );
 
-  return;
+    return;
+  }
 
-}
+  //
+  // RESUME EXISTING PATROL
+  //
+  const existingPatrol =
+    await findActivePatrol(
+      currentOfficer.id
+    );
 
-const activePatrolRef =
-  await addDoc(
+  if (existingPatrol) {
 
-    collection(
-      db,
-      "activePatrols"
-    ),
+    currentActivePatrolId =
+      existingPatrol.id;
 
-    {
+    showPatrolExecution();
 
-      officerId:
-        currentOfficer.id,
+    await loadCurrentCheckpoint(
+      existingPatrol.id
+    );
 
-      officerName:
-        currentOfficer.name,
+    return;
+  }
 
-      patrolId:
-        patrol.id,
+  //
+  // CREATE NEW PATROL
+  //
+  const activePatrolRef =
+    await addDoc(
+      collection(
+        db,
+        "activePatrols"
+      ),
+      {
+        officerId:
+          currentOfficer.id,
 
-      patrolName:
-        patrol.name,
+        officerName:
+          currentOfficer.name,
 
-      siteId:
-        patrol.siteId,
+        patrolId:
+          patrol.id,
 
-      currentCheckpoint: 0,
+        patrolName:
+          patrol.name,
 
-      startedAt:
-        serverTimestamp(),
+        siteId:
+          patrol.siteId,
 
-      completed: false
+        currentCheckpoint: 0,
 
-    }
+        startedAt:
+          serverTimestamp(),
 
-  );
+        completed: false
+      }
+    );
+
   currentActivePatrolId =
-  activePatrolRef.id;
+    activePatrolRef.id;
 
-showPatrolExecution();
+  showPatrolExecution();
 
-await loadCurrentCheckpoint(
-  activePatrolRef.id
-);
+  await loadCurrentCheckpoint(
+    activePatrolRef.id
+  );
 
 };
+
+async function findActivePatrol(officerId) {
+
+  const snapshot =
+    await getDocs(
+      query(
+        collection(db, "activePatrols"),
+        where(
+          "officerId",
+          "==",
+          officerId
+        ),
+        where(
+          "completed",
+          "==",
+          false
+        )
+      )
+    );
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const docSnap =
+    snapshot.docs[0];
+
+  return {
+    id: docSnap.id,
+    ...docSnap.data()
+  };
+
+}
 
 window.loadCurrentCheckpoint =
 async function(activePatrolId) {
@@ -10027,21 +10082,77 @@ checkpoints.forEach(cp => {
 
 });
 
+console.log(
+  "Active Patrol Patrol ID:",
+  activePatrol.patrolId
+);
+
+console.log(
+  "Checkpoint Patrol IDs:",
+  checkpoints.map(
+    cp => cp.patrolId
+  )
+);
+
+console.log(
+  "All Checkpoints:",
+  checkpoints
+);
+
+console.log(
+  "Active Patrol:",
+  activePatrol
+);
+
+console.log(
+  "Active Patrol patrolId:",
+  activePatrol.patrolId
+);
+
+checkpoints.forEach(cp => {
+
+  console.log(
+    "Checkpoint:",
+    cp.id,
+    "patrolId:",
+    cp.patrolId,
+    "match:",
+    cp.patrolId ===
+      activePatrol.patrolId
+  );
+
+});
+
 const patrolCheckpoints =
   checkpoints
-    .filter(cp => {    
-
-      return (
+    .filter(
+      cp =>
         cp.patrolId ===
         activePatrol.patrolId
-      );
-
-    })
+    )
     .sort(
       (a, b) =>
         a.sequence - b.sequence
     );
 
+console.log(
+  "Found Patrol Checkpoints:",
+  patrolCheckpoints
+);
+console.log(
+  "Checkpoints Loaded:",
+  checkpoints.length
+);
+
+console.log(
+  "Patrol ID:",
+  activePatrol.patrolId
+);
+
+console.log(
+  "All Checkpoints:",
+  checkpoints
+);
   if (!patrolCheckpoints.length) {
 
     alert(
@@ -10113,31 +10224,43 @@ document.getElementById(
   "checkpointContent"
 ).innerHTML = `
 
+  ${
+    currentCheckpoint.description
+      ? `
+        <div
+          class="checkpoint-instructions"
+        >
+          <h4>
+            Instructions
+          </h4>
+
+          <p>
+            ${currentCheckpoint.description}
+          </p>
+        </div>
+      `
+      : ""
+  }
+
   <p>
-
     <strong>Photo Required:</strong>
-
     ${
       currentCheckpoint.requiresPhoto
         ? "Yes"
         : "No"
     }
-
   </p>
 
   <p>
-
     <strong>Notes Required:</strong>
-
     ${
       currentCheckpoint.requiresNotes
         ? "Yes"
         : "No"
     }
-
   </p>
 
-`; 
+`;
 
 };
 
@@ -10611,6 +10734,31 @@ function(id) {
     "editCheckpointModal"
   ).classList.remove(
     "hidden"
+  );
+
+};
+
+window.resumeActivePatrol =
+async function() {
+
+  if (!currentOfficer) return;
+
+  const activePatrol =
+    await findActivePatrol(
+      currentOfficer.id
+    );
+
+  if (!activePatrol) {
+    return;
+  }
+
+  currentActivePatrolId =
+    activePatrol.id;
+
+  showPatrolExecution();
+
+  await loadCurrentCheckpoint(
+    activePatrol.id
   );
 
 };

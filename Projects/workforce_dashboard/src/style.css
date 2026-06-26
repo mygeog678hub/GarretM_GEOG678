@@ -2292,3 +2292,20 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   overflow-y: auto;
   padding-right: 8px;
 }
+.checkpoint-instructions {
+  background: #0f172a;
+  border-left: 4px solid #3b82f6;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.checkpoint-instructions h4 {
+  margin: 0 0 10px 0;
+  color: #60a5fa;
+}
+
+.checkpoint-instructions p {
+  margin: 0;
+  line-height: 1.5;
+}
