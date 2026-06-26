@@ -1970,6 +1970,76 @@
 
 </div>
 
+<div
+  id="checkpointEvidenceModal"
+  class="modal hidden"
+>
+
+  <div class="modal-content">
+
+    <h2>
+      Complete Checkpoint
+    </h2>
+
+    <h3 id="evidenceCheckpointName"></h3>
+
+    <div
+      id="evidencePhotoSection"
+      class="hidden"
+    >
+
+      <label>
+        Photo Required
+      </label>
+
+      <input
+        type="file"
+        id="checkpointPhoto"
+        accept="image/*"
+        capture="environment"
+      >
+
+    </div>
+
+    <div
+      id="evidenceNotesSection"
+      class="hidden"
+    >
+
+      <label>
+        Notes
+      </label>
+
+      <textarea
+        id="checkpointNotes"
+        rows="5"
+        placeholder="Enter checkpoint notes..."
+      ></textarea>
+
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        class="secondary-btn"
+        onclick="closeCheckpointEvidenceModal()"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="primary-btn"
+        onclick="saveCheckpointEvidence()"
+      >
+        Save Checkpoint
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
 
 </body>
 </html>

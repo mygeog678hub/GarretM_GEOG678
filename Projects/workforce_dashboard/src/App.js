@@ -14,8 +14,15 @@ import {
   serverTimestamp,
   increment,
   query,
-  orderBy,
+  orderBy  
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 import {
   getAuth,
@@ -34,6 +41,7 @@ const firebaseConfig = {
 //===================== INITIALIZE =================
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const auth = getAuth(app);
 // ================= AUTH =================
 onAuthStateChanged(auth, (user) => {
@@ -6436,18 +6444,11 @@ const scheduleSnapshot =
     id: doc.id,
     ...doc.data()
   }));
-  console.log("Attendance Records:", attendance.length);
-console.log("Shift Records:", schedules.length);
 
 let onDuty = 0;
 let clockedOut = 0;
 let activeViolations = 0;
 let criticalCompliance = 0;
-
-console.log(
-  "Roster Attendance Records:",
-  attendance.length
-);
 
 attendance.forEach(entry => {
 
@@ -6473,10 +6474,7 @@ attendance.forEach(entry => {
 }
 
 });
-console.log(
-  "Attendance Records:",
-  attendance.length
-);
+
   document.getElementById("onDutyCount").textContent = onDuty;
   document.getElementById("clockedOutCount").textContent = clockedOut;
 
@@ -6785,11 +6783,6 @@ if (
   !isInsideGeofence &&
   entry.currentlyInsideGeofence === true
 ) {
-  
-  console.log(
-  "POST ABANDONMENT TRIGGERED",
-  entry.employeeName
-);
 
   await addDoc(
     collection(
@@ -7197,26 +7190,7 @@ function renderMySchedule() {
   if (
     !container ||
     !currentOfficer
-  ) return;
-
-  console.log(
-  "Current Officer ID:",
-  currentOfficer.id
-);
-
-console.log(
-  "All Shifts:",
-  shifts
-);
-
-  console.log(
-  "Officer Shifts:",
-  shifts.filter(
-    shift =>
-      shift.employeeId ===
-      currentOfficer.id
-  )
-);
+  ) return; 
 
   const myShifts =
   
@@ -9641,7 +9615,7 @@ const patrolCheckpoints =
   );
 
 const nextSequence =
-  patrolCheckpoints.length + 1;
+  patrolCheckpoints.length + 1; 
 
 await addDoc(
 
@@ -9712,45 +9686,6 @@ async function(id) {
 
 };
 
-window.editCheckpoint =
-function(id) {
-
- const checkpoint =
-  checkpoints.find(
-    cp => cp.id === id
-  );
-
-  if (!checkpoint) return;
-
-  editingCheckpointId = id;
-
-  document.getElementById(
-    "editCheckpointName"
-  ).value =
-    checkpoint.name || "";
-
-  document.getElementById(
-    "editCheckpointDescription"
-  ).value =
-    checkpoint.description || "";
-
-  document.getElementById(
-    "editRequirePhoto"
-  ).checked =
-    checkpoint.requirePhoto || false;
-
-  document.getElementById(
-    "editRequireNotes"
-  ).checked =
-    checkpoint.requireNotes || false;
-
-  document.getElementById(
-    "editCheckpointModal"
-  ).classList.remove(
-    "hidden"
-  );
-
-};
 
 window.saveCheckpointEdit =
 async function() {
@@ -10094,14 +10029,7 @@ checkpoints.forEach(cp => {
 
 const patrolCheckpoints =
   checkpoints
-    .filter(cp => {
-
-      console.log(
-        "Comparing:",
-        cp.patrolId,
-        "===",
-        activePatrol.patrolId
-      );
+    .filter(cp => {    
 
       return (
         cp.patrolId ===
@@ -10170,7 +10098,7 @@ const patrolCheckpoints =
 document.getElementById(
   "checkpointTitle"
 ).textContent =
-  currentCheckpoint.name;
+  currentCheckpoint.checkpointName;
 
 document.getElementById(
   "checkpointProgress"
@@ -10190,7 +10118,7 @@ document.getElementById(
     <strong>Photo Required:</strong>
 
     ${
-      currentCheckpoint.photoRequired
+      currentCheckpoint.requiresPhoto
         ? "Yes"
         : "No"
     }
@@ -10202,7 +10130,7 @@ document.getElementById(
     <strong>Notes Required:</strong>
 
     ${
-      currentCheckpoint.notesRequired
+      currentCheckpoint.requiresNotes
         ? "Yes"
         : "No"
     }
@@ -10282,112 +10210,8 @@ async function() {
 
   }
 
-  const nextCheckpoint =
-    activePatrol.currentCheckpoint + 1;
-
-  try {
-
-    await addDoc(
-
-      collection(
-        db,
-        "patrolCompletions"
-      ),
-
-      {
-
-        activePatrolId:
-          currentActivePatrolId,
-
-        patrolId:
-          activePatrol.patrolId,
-
-        checkpointId:
-          checkpoint.id,
-
-        checkpointName:
-          checkpoint.checkpointName,
-
-        officerId:
-          currentOfficer.id,
-
-        officerName:
-          currentOfficer.name,
-
-        siteId:
-          activePatrol.siteId,
-
-        completedAt:
-          serverTimestamp(),
-
-        photoUrl: "",
-
-        notes: ""
-
-      }
-
-    );
-
-    console.log(
-      "Patrol completion saved."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Error saving patrol completion:",
-      error
-    );
-
-    return;
-
-  }
-
-  await updateDoc(
-
-    activePatrolRef,
-
-    {
-
-      currentCheckpoint:
-        nextCheckpoint
-
-    }
-
-  );
-
-  if (
-    nextCheckpoint >=
-    patrolCheckpoints.length
-  ) {
-
-    await updateDoc(
-
-      activePatrolRef,
-
-      {
-
-        completed: true,
-
-        completedAt:
-          serverTimestamp()
-
-      }
-
-    );
-
-    alert(
-      "Patrol Complete!"
-    );
-
-    showMyPatrols();
-
-    return;
-
-  }
-
-  await loadCurrentCheckpoint(
-    currentActivePatrolId
+  openCheckpointEvidenceModal(
+    checkpoint
   );
 
 };
@@ -10426,6 +10250,367 @@ async function(id) {
       "patrolTemplates",
       id
     )
+  );
+
+};
+
+window.openCheckpointEvidenceModal =
+function(checkpoint) {
+
+  document.getElementById(
+  "evidenceCheckpointName"
+).textContent =
+  checkpoint.checkpointName;
+
+  document.getElementById(
+    "evidencePhotoSection"
+  ).classList.toggle(
+    "hidden",
+    !checkpoint.requiresPhoto
+  );
+
+  document.getElementById(
+    "evidenceNotesSection"
+  ).classList.toggle(
+    "hidden",
+    !checkpoint.requiresNotes
+  );
+
+  document.getElementById(
+    "checkpointEvidenceModal"
+  ).classList.remove(
+    "hidden"
+  );
+
+};
+
+window.closeCheckpointEvidenceModal =
+function() {
+
+  document.getElementById(
+    "checkpointEvidenceModal"
+  ).classList.add(
+    "hidden"
+  );
+  document.getElementById(
+  "checkpointNotes"
+).value = "";
+
+document.getElementById(
+  "checkpointPhoto"
+).value = "";
+
+};
+
+window.saveCheckpointEvidence =
+async function() {
+
+  if (!currentActivePatrolId) {
+
+    alert(
+      "No active patrol."
+    );
+
+    return;
+
+  }
+
+  const activePatrolRef =
+    doc(
+      db,
+      "activePatrols",
+      currentActivePatrolId
+    );
+
+  const activePatrolDoc =
+    await getDoc(
+      activePatrolRef
+    );
+
+  if (!activePatrolDoc.exists()) {
+
+    alert(
+      "Active patrol not found."
+    );
+
+    return;
+
+  }
+
+  const activePatrol =
+    activePatrolDoc.data();
+
+  const patrolCheckpoints =
+    checkpoints
+      .filter(
+        cp =>
+          cp.patrolId ===
+          activePatrol.patrolId
+      )
+      .sort(
+        (a, b) =>
+          a.sequence - b.sequence
+      );
+
+  const checkpoint =
+    patrolCheckpoints[
+      activePatrol.currentCheckpoint
+    ];
+
+  if (!checkpoint) {
+
+    alert(
+      "Checkpoint not found."
+    );
+
+    return;
+
+  }
+
+  const nextCheckpoint =
+    activePatrol.currentCheckpoint + 1;
+
+    const notes =
+  document.getElementById(
+    "checkpointNotes"
+  ).value.trim();
+
+  const photo =
+  document.getElementById(
+    "checkpointPhoto"
+  ).files[0];
+
+  let photoUrl = "";
+
+if (photo) {
+
+  photoUrl =
+    await uploadCheckpointPhoto(
+
+      photo,
+
+      activePatrol.patrolId,
+
+      checkpoint.id
+
+    );
+
+}
+
+    if (
+  checkpoint.requiresNotes &&
+  !notes
+) {
+
+  alert(
+    "Notes are required for this checkpoint."
+  );
+
+  return;
+
+}
+
+if (
+  checkpoint.requiresPhoto &&
+  !photo
+) {
+
+  alert(
+    "A photo is required for this checkpoint."
+  );
+
+  return;
+
+}
+
+  try {
+ 
+
+    await addDoc(
+
+      collection(
+        db,
+        "patrolCompletions"
+      ),
+
+      {
+
+        activePatrolId:
+          currentActivePatrolId,
+
+        patrolId:
+          activePatrol.patrolId,
+
+        checkpointId:
+          checkpoint.id,
+
+        checkpointName:
+          checkpoint.checkpointName,
+
+        officerId:
+          currentOfficer.id,
+
+        officerName:
+          currentOfficer.name,
+
+        siteId:
+          activePatrol.siteId,
+
+        completedAt:
+          serverTimestamp(),
+
+        photoUrl: photoUrl,
+
+        notes: notes
+
+      }
+
+    );
+
+    console.log(
+      "Patrol completion saved."
+    );
+
+  } catch (error) {
+
+  console.error(error);
+
+  alert(JSON.stringify(error));
+
+  return;
+
+}
+
+  await updateDoc(
+
+    activePatrolRef,
+
+    {
+
+      currentCheckpoint:
+        nextCheckpoint
+
+    }
+
+  );
+
+  if (
+  nextCheckpoint >=
+  patrolCheckpoints.length
+) {
+
+  await updateDoc(
+
+    activePatrolRef,
+
+    {
+
+      completed: true,
+
+      completedAt:
+        serverTimestamp()
+
+    }
+
+  );
+
+  closeCheckpointEvidenceModal();
+
+  alert(
+    "Patrol Complete!"
+  );
+
+  showMyPatrols();
+
+  return;
+
+}
+
+closeCheckpointEvidenceModal();
+
+await loadCurrentCheckpoint(
+  currentActivePatrolId
+);
+};
+
+window.uploadCheckpointPhoto =
+async function(
+  file,
+  patrolId,
+  checkpointId
+) {
+
+  const storageRef =
+    ref(
+
+      storage,
+
+      `patrolPhotos/${
+        patrolId
+      }/${
+        checkpointId
+      }/${
+        Date.now()
+      }`
+
+    );
+
+  await uploadBytes(
+    storageRef,
+    file
+  );
+
+  return await getDownloadURL(
+    storageRef
+  );
+
+};
+
+window.editCheckpoint =
+function(id) {
+
+  const checkpoint =
+    checkpoints.find(
+      cp => cp.id === id
+    );
+
+  if (!checkpoint) {
+
+    alert(
+      "Checkpoint not found."
+    );
+
+    return;
+
+  }
+
+  editingCheckpointId =
+    checkpoint.id;
+
+  document.getElementById(
+    "editCheckpointName"
+  ).value =
+    checkpoint.checkpointName;
+
+  document.getElementById(
+    "editCheckpointDescription"
+  ).value =
+    checkpoint.description || "";
+
+  document.getElementById(
+    "editRequirePhoto"
+  ).checked =
+    checkpoint.requiresPhoto;
+
+  document.getElementById(
+    "editRequireNotes"
+  ).checked =
+    checkpoint.requiresNotes;
+
+  document.getElementById(
+    "editCheckpointModal"
+  ).classList.remove(
+    "hidden"
   );
 
 };
