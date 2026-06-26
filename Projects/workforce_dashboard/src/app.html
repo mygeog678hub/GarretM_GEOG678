@@ -145,41 +145,46 @@
 
     <div class="header-right">
 
-  <button
-    onclick="showDashboard()"
-    class="navBtn"
-  >
-    Dashboard
-  </button>  
+  <div class="nav-buttons">
 
   <button
-    onclick="showSchedulingPage()"
-    class="navBtn"
-  >
-    Scheduling
-  </button>
+  id="dashboardBtn"
+  onclick="showDashboard()">
+  Dashboard
+</button>
 
-  <button
+<button
+  id="schedulingBtn"
+  onclick="showSchedulingPage()">
+  Scheduling
+</button>
+
+<button
   id="incidentReportsBtn"
-  onclick="showIncidentReportsPage()"
->
+  onclick="showIncidentReportsPage()">
   Incident Reports
 </button>
 
 <button
   id="patrolsBtn"
-  onclick="showPatrolsPage()"
->
+  onclick="showPatrolsPage()">
   Patrols
 </button>
 
-  <button
-    onclick="logout()"
-    class="logoutBtn"
-  >
-    Logout
-  </button>
+<button
+  id="patrolDashboardBtn"
+  onclick="showPatrolDashboardPage()">
+  Patrol Dashboard
+</button>
 
+  <button
+  id="logoutBtn"
+  class="logout-btn"
+  onclick="logout()">
+  Logout
+</button>
+
+</div>
 </div>
 
   </header>
@@ -1245,6 +1250,44 @@
   <div
     id="patrolTemplateList"
   ></div>
+
+</div>
+
+<div
+  id="patrolDashboardPage"
+  style="display:none;">
+
+  <h2>Live Patrol Dashboard</h2>
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <h3 id="activePatrolsCount">0</h3>
+      <p>Active Patrols</p>
+    </div>
+
+    <div class="stat-card">
+      <h3 id="officersOnPatrolCount">0</h3>
+      <p>Officers on Patrol</p>
+    </div>
+
+    <div class="stat-card">
+      <h3 id="completedPatrolsTodayCount">0</h3>
+      <p>Completed Today</p>
+    </div>
+
+    <div class="stat-card">
+      <h3 id="overduePatrolsCount">0</h3>
+      <p>Overdue Patrols</p>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <h3>Active Patrols</h3>
+
+    <div id="livePatrolTable"></div>
+  </div>
 
 </div>
 

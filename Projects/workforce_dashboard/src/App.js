@@ -179,6 +179,8 @@ let currentPatrolId = null;
 let checkpoints = [];
 let editingCheckpointId = null;
 let currentActivePatrolId = null;
+let activePatrols = [];
+let patrolCompletions = [];
 
 // ================= MAP =================
 
@@ -692,6 +694,22 @@ onSnapshot(
 
   }
 
+);
+
+onSnapshot(
+  collection(db, "activePatrols"),
+  snapshot => {
+
+    activePatrols =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    refreshPatrolDashboard();
+  }
 );
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
@@ -4947,6 +4965,10 @@ function showDashboard() {
     "dashboardPage"
   ).style.display = "block";
 
+  setActiveNavById(
+    "dashboardBtn"
+  );
+
   document.getElementById(
     "schedulingPage"
   ).style.display = "none";
@@ -4970,6 +4992,10 @@ function showDashboard() {
 document.getElementById(
   "myPatrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
 
   refreshSupervisorDashboard();
 
@@ -5034,7 +5060,7 @@ function() {
 
   document.getElementById(
     "officerIncidentReportPage"
-  ).style.display = "block";
+  ).style.display = "block";  
 
   document.getElementById(
   "patrolsPage"
@@ -5056,6 +5082,10 @@ function showSchedulingPage() {
     "schedulingPage"
   ).style.display = "block";
 
+  setActiveNavById(
+    "schedulingBtn"
+  );
+
  document.getElementById(
   "officerPortal"
 ).style.display = "none";
@@ -5075,6 +5105,10 @@ document.getElementById(
 document.getElementById(
   "myPatrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
 
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
@@ -5198,6 +5232,10 @@ function() {
   document.getElementById(
     "incidentReportsPage"
   ).style.display = "block";
+
+  setActiveNavById(
+  "incidentReportsBtn"
+);
 
   document.getElementById(
   "patrolsPage"
@@ -9332,6 +9370,14 @@ function() {
 ).style.display =
   "block";
 
+    setActiveNavById(
+    "patrolsBtn"
+  );
+
+  document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
   document.getElementById(
   "patrolExecutionPage"
 ).style.display = "none";
@@ -9942,6 +9988,19 @@ async function(patrolId) {
       p => p.id === patrolId
     );
 
+    const patrolCheckpointList =
+  checkpoints
+    .filter(
+      cp =>
+        cp.patrolId ===
+        patrolId
+    )
+    .sort(
+      (a, b) =>
+        (a.sequence || 0) -
+        (b.sequence || 0)
+    );
+
   if (!patrol) {
 
     alert(
@@ -9977,45 +10036,47 @@ async function(patrolId) {
   // CREATE NEW PATROL
   //
   const activePatrolRef =
-    await addDoc(
-      collection(
-        db,
-        "activePatrols"
-      ),
-      {
-        officerId:
-          currentOfficer.id,
+  await addDoc(
+    collection(
+      db,
+      "activePatrols"
+    ),
+    {
+      officerId:
+        currentOfficer.id,
 
-        officerName:
-          currentOfficer.name,
+      officerName:
+        currentOfficer.name,
 
-        patrolId:
-          patrol.id,
+      patrolId:
+        patrol.id,
 
-        patrolName:
-          patrol.name,
+      patrolName:
+        patrol.name,
 
-        siteId:
-          patrol.siteId,
+      siteId:
+  patrol.siteId,
 
-        currentCheckpoint: 0,
+currentCheckpoint: 0,
 
-        startedAt:
-          serverTimestamp(),
+currentCheckpointName:
+  patrolCheckpointList[0]
+    ?.checkpointName || "",
 
-        completed: false
-      }
-    );
+totalCheckpoints:
+  patrolCheckpointList.length,
 
-  currentActivePatrolId =
-    activePatrolRef.id;
+startedAt:
+  serverTimestamp(),
 
-  showPatrolExecution();
+lastUpdated:
+  serverTimestamp(),
 
-  await loadCurrentCheckpoint(
-    activePatrolRef.id
+completed: false,
+
+completedAt: null
+    }
   );
-
 };
 
 async function findActivePatrol(officerId) {
@@ -10761,6 +10822,230 @@ async function() {
     activePatrol.id
   );
 
+};
+
+window.setActiveNavById =
+function(id) {
+
+  document
+    .querySelectorAll(
+      ".nav-buttons button:not(.logout-btn)"
+    )
+    .forEach(btn =>
+      btn.classList.remove(
+        "active-nav"
+      )
+    );
+
+  document
+    .getElementById(id)
+    ?.classList.add(
+      "active-nav"
+    );
+};
+
+function refreshPatrolDashboard() {
+  refreshPatrolMetrics();
+  renderActivePatrolTable();
+}
+
+function refreshPatrolMetrics() {
+
+  const active =
+    activePatrols.filter(
+      p => !p.completed
+    );
+
+  document.getElementById(
+    "activePatrolsCount"
+  ).textContent =
+    active.length;
+
+  const officers =
+    new Set(
+      active.map(
+        p => p.officerId
+      )
+    );
+
+  document.getElementById(
+    "officersOnPatrolCount"
+  ).textContent =
+    officers.size;
+
+  const today =
+  new Date();
+
+today.setHours(
+  0,
+  0,
+  0,
+  0
+);
+
+const completedToday =
+  activePatrols.filter(
+    patrol => {
+
+      if (
+        !patrol.completed ||
+        !patrol.completedAt
+      ) {
+        return false;
+      }
+
+      return (
+        patrol.completedAt
+          .toDate() >= today
+      );
+    }
+  );
+
+document.getElementById(
+  "completedPatrolsTodayCount"
+).textContent =
+  completedToday.length;
+
+  document.getElementById(
+    "overduePatrolsCount"
+  ).textContent = 0;
+}
+
+function renderActivePatrolTable() {
+
+  const container =
+    document.getElementById(
+      "livePatrolTable"
+    );
+
+  if (!container)
+    return;
+
+  const active =
+    activePatrols.filter(
+      p => !p.completed
+    );
+
+  if (!active.length) {
+
+    container.innerHTML =
+      "<p>No active patrols.</p>";
+
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Officer</th>
+          <th>Patrol</th>
+          <th>Progress</th>
+          <th>Current Checkpoint</th>
+          <th>Started</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        ${active.map(
+          patrol => {
+
+            const progress =
+`${Math.min(
+  patrol.currentCheckpoint + 1,
+  patrol.totalCheckpoints
+)}
+ / ${patrol.totalCheckpoints}`;
+
+ const percent =
+  (patrol.currentCheckpoint /
+   patrol.totalCheckpoints) * 100;
+
+            return `
+              <tr>              
+           
+                <td>${patrol.officerName}</td>
+
+                <td>${patrol.patrolName}</td>
+
+                <td>
+  <div>${progress}</div>
+
+  <div class="progress-bar">
+    <div
+      class="progress-fill"
+      style="
+        width:${percent}%;
+      ">
+    </div>
+  </div>
+</td>
+
+                <td>
+                  ${
+                    patrol.currentCheckpointName ||
+                    "-"
+                  }
+                </td>
+
+                <td>
+                  ${
+                    patrol.startedAt
+                      ?.toDate()
+                      .toLocaleTimeString()
+                  }
+                </td>
+              </tr>
+            `;
+          }
+        ).join("")}
+
+      </tbody>
+    </table>
+  `;
+}
+
+window.showPatrolDashboardPage =
+function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "block";
+
+  setActiveNavById(
+    "patrolDashboardBtn"
+  );
+
+   document.getElementById(
+  "patrolExecutionPage"
+).style.display = "none";
+
+  document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "officerPortal"
+  ).style.display = "none";
+
+  refreshPatrolDashboard();
 };
 
 // ================= GLOBAL =================
