@@ -1266,6 +1266,14 @@
       <p>Active Patrols</p>
     </div>
 
+    <div class="card">
+  <h3>Completed Patrols</h3>
+
+  <div id="completedPatrolHistory">
+    <p>No completed patrols.</p>
+  </div>
+</div>
+
     <div class="stat-card">
       <h3 id="officersOnPatrolCount">0</h3>
       <p>Officers on Patrol</p>
@@ -2063,27 +2071,6 @@
 
     </div>
 
-    <div
-  id="patrolTimelineModal"
-  class="modal"
-  style="display:none;">
-
-  <div class="modal-content">
-
-    <span
-      class="close"
-      onclick="closePatrolTimelineModal()">
-      &times;
-    </span>
-
-    <h3>Patrol Timeline</h3>
-
-    <div id="patrolTimeline"></div>
-
-  </div>
-
-</div>
-
     <div class="modal-actions">
 
       <button
@@ -2106,6 +2093,32 @@
 
 </div>
 
+<div
+  id="patrolTimelineModal"
+  class="modal"
+  style="display:none;">
+
+  <div class="modal-content">
+
+    <h3>Patrol Timeline</h3>
+
+    <div id="patrolTimeline">
+      Loading...
+    </div>
+
+    <div class="modal-actions">
+
+  <button
+      class="secondary-btn"
+      onclick="closePatrolTimelineModal()">
+      Close
+    </button>
+
+    </div>    
+
+  </div>
+
+</div>
 
 </body>
 </html>

@@ -696,6 +696,15 @@ onSnapshot(
 
 );
 
+window.renderPatrolDashboard =
+function() {
+
+  refreshPatrolMetrics();
+  renderActivePatrolTable();
+  renderCompletedPatrolHistory();
+
+};
+
 onSnapshot(
   collection(db, "activePatrols"),
   snapshot => {
@@ -708,7 +717,8 @@ onSnapshot(
         })
       );
 
-    refreshPatrolDashboard();
+    renderPatrolDashboard();
+   
   }
 );
 
@@ -721,6 +731,7 @@ setInterval(() => {
     ).style.display !== "none"
   ) {
     renderPatrolDashboard();
+    
   }
 }, 10000);
 // ================= ADD SITE -GEOCODING =================
@@ -11066,6 +11077,7 @@ document.getElementById(
   "overduePatrolsCount"
 ).textContent =
   overduePatrols.length;
+  renderCompletedPatrolHistory();
 }
 
 function renderActivePatrolTable() {
@@ -11342,90 +11354,150 @@ window.viewPatrolTimeline =
 async function(
   patrolSessionId
 ) {
+  console.log(
+  "Timeline clicked:",
+  patrolSessionId
+);
 
   const events =
     await loadPatrolTimeline(
       patrolSessionId
     );
 
+    console.log(
+  "Timeline events:",
+  events
+);
+
   const container =
     document.getElementById(
       "patrolTimeline"
     );
 
-  container.innerHTML =
-    events.map(
-      event => {
+  if (!events.length) {
 
-        let icon = "📍";
-        let text = "";
+    container.innerHTML =
+      `
+      <p>
+        No timeline events found.
+      </p>
+      `;
 
-        switch (
-          event.eventType
-        ) {
+  } else {
 
-          case "PATROL_STARTED":
-            icon = "🟢";
-            text =
-              "Patrol Started";
-            break;
+    container.innerHTML =
+      events.map(
+        event => {
 
-          case "CHECKPOINT_COMPLETED":
-            icon = "✅";
-            text =
-              `${event.checkpointName} Completed`;
-            break;
+          let icon = "📍";
+          let text = "";
 
-          case "PATROL_COMPLETED":
-            icon = "🏁";
-            text =
-              "Patrol Completed";
-            break;
+          switch (
+            event.eventType
+          ) {
 
-          case "PATROL_OVERDUE":
-            icon = "⚠️";
-            text =
-              "Patrol Became Overdue";
-            break;
+            case "PATROL_STARTED":
+              icon = "🟢";
+              text =
+                "Patrol Started";
+              break;
+
+            case "CHECKPOINT_COMPLETED":
+              icon = "✅";
+              text =
+                `${event.checkpointName} Completed`;
+              break;
+
+            case "PATROL_COMPLETED":
+              icon = "🏁";
+              text =
+                "Patrol Completed";
+              break;
+
+            case "PATROL_OVERDUE":
+              icon = "⚠️";
+              text =
+                "Patrol Became Overdue";
+              break;
+
+            default:
+              text =
+                event.eventType;
+          }
+
+          const time =
+            event.timestamp?.toDate
+              ? event.timestamp
+                  .toDate()
+                  .toLocaleString()
+              : "-";
+
+          return `
+            <div
+              class="timeline-item">
+
+              <div
+                class="timeline-time">
+
+                ${time}
+
+              </div>
+
+              <div
+                class="timeline-event">
+
+                ${icon}
+                ${text}
+
+              </div>
+
+            </div>
+          `;
         }
+      ).join("");
+  }
 
-        const time =
-          event.timestamp?.toDate
-            ? event.timestamp
-                .toDate()
-                .toLocaleTimeString()
-            : "";
+  console.log(
+  "Opening timeline modal..."
+);
 
-        return `
-          <div
-            class="timeline-item">
-
-            <div
-              class="timeline-time">
-
-              ${time}
-
-            </div>
-
-            <div
-              class="timeline-event">
-
-              ${icon}
-              ${text}
-
-            </div>
-
-          </div>
-        `;
-      }
-    ).join("");
+document.getElementById(
+  "patrolTimelineModal"
+).style.display =
+  "flex";
 
   document.getElementById(
-    "patrolTimelineModal"
+    "officerPortal"
   ).style.display =
-    "block";
+    "none";
+
+    document.getElementById(
+  "patrolExecutionPage"
+).style.display = "none";
+
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display =
+    "none";
+
+    document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none"; 
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
 
 };
+
 window.testPatrolTimeline =
 async function() {
 
@@ -11458,7 +11530,96 @@ function() {
 
 };
 
+window.renderCompletedPatrolHistory =
+function() {
 
+  const container =
+    document.getElementById(
+      "completedPatrolHistory"
+    );
+
+  if (!container)
+    return;
+
+  const completed =
+    activePatrols
+      .filter(
+        p => p.completed
+      )
+      .sort(
+        (a, b) => {
+
+          const aTime =
+            a.completedAt?.toDate?.()
+              ?.getTime() || 0;
+
+          const bTime =
+            b.completedAt?.toDate?.()
+              ?.getTime() || 0;
+
+          return bTime - aTime;
+        }
+      );
+
+  if (!completed.length) {
+
+    container.innerHTML =
+      `
+      <p>
+        No completed patrols.
+      </p>
+      `;
+
+    return;
+  }
+
+  container.innerHTML =
+    completed.map(
+      patrol => `
+
+      <div
+        class="completed-patrol-card">
+
+        <div>
+
+          <strong>
+            ${patrol.patrolName}
+          </strong>
+
+          <br>
+
+          Officer:
+          ${patrol.officerName}
+
+          <br>
+
+          Completed:
+${
+  patrol.completedAt?.toDate
+    ? patrol.completedAt
+        .toDate()
+        .toLocaleString([], {
+          dateStyle: "short",
+          timeStyle: "short"
+        })
+    : "-"
+}
+        </div>
+
+        <button
+          onclick="
+            viewPatrolTimeline(
+              '${patrol.id}'
+            )
+          ">
+          Timeline
+        </button>
+
+      </div>
+
+      `
+    ).join("");
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
