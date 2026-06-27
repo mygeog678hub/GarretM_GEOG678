@@ -711,6 +711,18 @@ onSnapshot(
     refreshPatrolDashboard();
   }
 );
+
+setInterval(() => {
+  refreshPatrolMetrics();
+
+  if (
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display !== "none"
+  ) {
+    renderPatrolDashboard();
+  }
+}, 10000);
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
   const name = siteName.value.trim();
@@ -10066,6 +10078,23 @@ currentCheckpointName:
 totalCheckpoints:
   patrolCheckpointList.length,
 
+  startedAt:
+  serverTimestamp(),
+
+scheduledStart:
+  Date.now(),
+
+expectedDuration:
+  patrol.estimatedDuration ||
+  1800000,
+
+lastUpdated:
+  serverTimestamp(),
+
+completed: false,
+
+completedAt: null,
+
 startedAt:
   serverTimestamp(),
 
@@ -10077,6 +10106,14 @@ completed: false,
 completedAt: null
     }
   );
+  currentActivePatrolId =
+  activePatrolRef.id;
+
+showPatrolExecution();
+
+await loadCurrentCheckpoint(
+  activePatrolRef.id
+);
 };
 
 async function findActivePatrol(officerId) {
@@ -10906,9 +10943,18 @@ document.getElementById(
 ).textContent =
   completedToday.length;
 
-  document.getElementById(
-    "overduePatrolsCount"
-  ).textContent = 0;
+  const overduePatrols =
+  active.filter(
+    patrol =>
+      isPatrolOverdue(
+        patrol
+      )
+  );
+
+document.getElementById(
+  "overduePatrolsCount"
+).textContent =
+  overduePatrols.length;
 }
 
 function renderActivePatrolTable() {
@@ -10924,7 +10970,7 @@ function renderActivePatrolTable() {
   const active =
     activePatrols.filter(
       p => !p.completed
-    );
+    );    
 
   if (!active.length) {
 
@@ -10951,6 +10997,24 @@ function renderActivePatrolTable() {
         ${active.map(
           patrol => {
 
+            const status =
+  isPatrolOverdue(patrol)
+    ? `
+      <span class="badge warning">
+        Overdue
+      </span>
+    `
+    : `
+      <span class="badge success">
+        Active
+      </span>
+    `;
+
+    const rowClass =
+  isPatrolOverdue(patrol)
+    ? "overdue-row"
+    : "";
+
             const progress =
 `${Math.min(
   patrol.currentCheckpoint + 1,
@@ -10963,7 +11027,7 @@ function renderActivePatrolTable() {
    patrol.totalCheckpoints) * 100;
 
             return `
-              <tr>              
+                <tr class="${rowClass}">            
            
                 <td>${patrol.officerName}</td>
 
@@ -11047,6 +11111,34 @@ document.getElementById(
 
   refreshPatrolDashboard();
 };
+
+function isPatrolOverdue(
+  patrol
+) {
+  if (!patrol) {
+    return false;
+  }
+
+  if (patrol.completed) {
+    return false;
+  }
+
+  if (
+    !patrol.scheduledStart
+  ) {
+    return false;
+  }
+
+  const expectedDuration =
+    patrol.expectedDuration ||
+    1800000;
+
+  return (
+    Date.now() >
+    patrol.scheduledStart +
+      expectedDuration
+  );
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
