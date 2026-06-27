@@ -10095,19 +10095,35 @@ completed: false,
 
 completedAt: null,
 
-startedAt:
-  serverTimestamp(),
-
-lastUpdated:
-  serverTimestamp(),
-
-completed: false,
-
-completedAt: null
     }
   );
   currentActivePatrolId =
   activePatrolRef.id;
+
+  await logPatrolEvent({
+
+  patrolSessionId:
+    activePatrolRef.id,
+
+  patrolId:
+    patrol.id,
+
+  patrolName:
+    patrol.name,
+
+  officerId:
+    currentOfficer.id,
+
+  officerName:
+    currentOfficer.name,
+
+  siteId:
+    patrol.siteId,
+
+  eventType:
+    "PATROL_STARTED"
+
+});
 
 showPatrolExecution();
 
@@ -10148,6 +10164,39 @@ async function findActivePatrol(officerId) {
   };
 
 }
+
+window.logPatrolEvent =
+async function(eventData) {
+
+  try {
+
+    const payload = {
+      ...eventData
+    };
+
+    if (
+      !payload.timestamp
+    ) {
+      payload.timestamp =
+        serverTimestamp();
+    }
+
+    await addDoc(
+      collection(
+        db,
+        "patrolEvents"
+      ),
+      payload
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Failed to log patrol event:",
+      error
+    );
+  }
+};
 
 window.loadCurrentCheckpoint =
 async function(activePatrolId) {
@@ -10688,6 +10737,43 @@ if (
 
     );
 
+    await logPatrolEvent({
+
+  patrolSessionId:
+    currentActivePatrolId,
+
+  patrolId:
+    activePatrol.patrolId,
+
+  patrolName:
+    activePatrol.patrolName,
+
+  officerId:
+    currentOfficer.id,
+
+  officerName:
+    currentOfficer.name,
+
+  siteId:
+    activePatrol.siteId,
+
+  eventType:
+    "CHECKPOINT_COMPLETED",
+
+  checkpointId:
+    checkpoint.id,
+
+  checkpointName:
+    checkpoint.checkpointName,
+
+  notes:
+    notes || "",
+
+  photoUrl:
+    photoUrl || ""
+
+});
+
     console.log(
       "Patrol completion saved."
     );
@@ -10734,6 +10820,31 @@ if (
     }
 
   );
+
+  await logPatrolEvent({
+
+  patrolSessionId:
+    currentActivePatrolId,
+
+  patrolId:
+    activePatrol.patrolId,
+
+  patrolName:
+    activePatrol.patrolName,
+
+  officerId:
+    currentOfficer.id,
+
+  officerName:
+    currentOfficer.name,
+
+  siteId:
+    activePatrol.siteId,
+
+  eventType:
+    "PATROL_COMPLETED"
+
+});
 
   closeCheckpointEvidenceModal();
 
@@ -11194,6 +11305,160 @@ function getPatrolElapsed(
 
   return `${minutes}m`;
 }
+
+window.loadPatrolTimeline =
+async function(
+  patrolSessionId
+) {
+
+  const q = query(
+    collection(
+      db,
+      "patrolEvents"
+    ),
+    where(
+      "patrolSessionId",
+      "==",
+      patrolSessionId
+    ),
+    orderBy(
+      "timestamp",
+      "asc"
+    )
+  );
+
+  const snapshot =
+    await getDocs(q);
+
+  return snapshot.docs.map(
+    doc => ({
+      id: doc.id,
+      ...doc.data()
+    })
+  );
+};
+
+window.viewPatrolTimeline =
+async function(
+  patrolSessionId
+) {
+
+  const events =
+    await loadPatrolTimeline(
+      patrolSessionId
+    );
+
+  const container =
+    document.getElementById(
+      "patrolTimeline"
+    );
+
+  container.innerHTML =
+    events.map(
+      event => {
+
+        let icon = "📍";
+        let text = "";
+
+        switch (
+          event.eventType
+        ) {
+
+          case "PATROL_STARTED":
+            icon = "🟢";
+            text =
+              "Patrol Started";
+            break;
+
+          case "CHECKPOINT_COMPLETED":
+            icon = "✅";
+            text =
+              `${event.checkpointName} Completed`;
+            break;
+
+          case "PATROL_COMPLETED":
+            icon = "🏁";
+            text =
+              "Patrol Completed";
+            break;
+
+          case "PATROL_OVERDUE":
+            icon = "⚠️";
+            text =
+              "Patrol Became Overdue";
+            break;
+        }
+
+        const time =
+          event.timestamp?.toDate
+            ? event.timestamp
+                .toDate()
+                .toLocaleTimeString()
+            : "";
+
+        return `
+          <div
+            class="timeline-item">
+
+            <div
+              class="timeline-time">
+
+              ${time}
+
+            </div>
+
+            <div
+              class="timeline-event">
+
+              ${icon}
+              ${text}
+
+            </div>
+
+          </div>
+        `;
+      }
+    ).join("");
+
+  document.getElementById(
+    "patrolTimelineModal"
+  ).style.display =
+    "block";
+
+};
+window.testPatrolTimeline =
+async function() {
+
+  const completed =
+    activePatrols.find(
+      p => p.completed
+    );
+
+  if (!completed) {
+
+    alert(
+      "No completed patrol found."
+    );
+
+    return;
+  }
+
+  await viewPatrolTimeline(
+    completed.id
+  );
+};
+
+window.closePatrolTimelineModal =
+function() {
+
+  document.getElementById(
+    "patrolTimelineModal"
+  ).style.display =
+    "none";
+
+};
+
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
