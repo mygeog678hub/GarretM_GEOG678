@@ -2399,9 +2399,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   transition: width .3s ease;
 }
 .overdue-row {
-  border-left:
-    5px solid #f59e0b;
-
+  border-left: 5px solid #f59e0b;
   background:
     rgba(
       245,
@@ -2409,4 +2407,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
       11,
       0.08
     );
+}
+
+.overdue-time {
+  color: #f59e0b;
+  font-weight: 600;
 }

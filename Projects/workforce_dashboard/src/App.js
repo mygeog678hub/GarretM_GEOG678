@@ -10984,11 +10984,13 @@ function renderActivePatrolTable() {
     <table class="table">
       <thead>
         <tr>
-          <th>Officer</th>
-          <th>Patrol</th>
-          <th>Progress</th>
-          <th>Current Checkpoint</th>
-          <th>Started</th>
+         <th>Officer</th>
+            <th>Patrol</th>
+            <th>Progress</th>
+            <th>Current Checkpoint</th>
+            <th>Started</th>
+            <th>Elapsed</th>
+            <th>Status</th>
         </tr>
       </thead>
 
@@ -10996,9 +10998,13 @@ function renderActivePatrolTable() {
 
         ${active.map(
           patrol => {
+            
 
-            const status =
-  isPatrolOverdue(patrol)
+       const overdue =
+  isPatrolOverdue(patrol);
+
+const status =
+  overdue
     ? `
       <span class="badge warning">
         Overdue
@@ -11010,10 +11016,24 @@ function renderActivePatrolTable() {
       </span>
     `;
 
-    const rowClass =
-  isPatrolOverdue(patrol)
+const rowClass =
+  overdue
     ? "overdue-row"
     : "";
+
+const elapsed =
+  getPatrolElapsed(
+    patrol
+  );
+
+const elapsedDisplay =
+  overdue
+    ? `
+      <span class="overdue-time">
+        ${elapsed}
+      </span>
+    `
+    : elapsed;
 
             const progress =
 `${Math.min(
@@ -11060,6 +11080,9 @@ function renderActivePatrolTable() {
                       .toLocaleTimeString()
                   }
                 </td>
+
+              <td>${elapsedDisplay}</td>
+              <td>${status}</td>
               </tr>
             `;
           }
@@ -11138,6 +11161,38 @@ function isPatrolOverdue(
     patrol.scheduledStart +
       expectedDuration
   );
+}
+
+function getPatrolElapsed(
+  patrol
+) {
+  if (
+    !patrol?.scheduledStart
+  ) {
+    return "-";
+  }
+
+  const elapsedMs =
+    Date.now() -
+    patrol.scheduledStart;
+
+  const minutes =
+    Math.floor(
+      elapsedMs / 60000
+    );
+
+  const hours =
+    Math.floor(
+      minutes / 60
+    );
+
+  if (hours > 0) {
+    return `${hours}h ${
+      minutes % 60
+    }m`;
+  }
+
+  return `${minutes}m`;
 }
 
 // ================= GLOBAL =================
