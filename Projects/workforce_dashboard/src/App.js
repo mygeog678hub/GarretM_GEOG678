@@ -1941,6 +1941,16 @@ applyMarkerVisibility(
 );
 
     const marker = markers[site.id];
+
+    console.log(
+  "Notes for site:",
+  site.name,
+  siteNotes
+    .filter(
+      n => n.siteId === site.id
+    )
+);
+
     const latestNote =
   siteNotes
   
@@ -2149,14 +2159,17 @@ if (!officersOnDuty.length) {
     ${latestNote.note}<br><br>
 
     <small>
-      Updated:
-      ${new Date(
-        latestNote.createdAt
-      ).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit"
-      })}
-    </small>
+  Updated:
+  ${new Date(
+    latestNote.createdAt
+  ).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  })}
+</small>
   `;
 
 }
@@ -10730,6 +10743,47 @@ if (
 
 }
 
+let latitude = null;
+let longitude = null;
+let accuracy = null;
+
+try {
+
+  const position =
+    await new Promise(
+      (resolve, reject) => {
+
+        navigator.geolocation
+          .getCurrentPosition(
+            resolve,
+            reject,
+            {
+              enableHighAccuracy: true,
+              timeout: 10000
+            }
+          );
+
+      }
+    );
+
+  latitude =
+    position.coords.latitude;
+
+  longitude =
+    position.coords.longitude;
+
+  accuracy =
+    position.coords.accuracy;
+
+} catch (error) {
+
+  console.warn(
+    "Unable to obtain GPS location:",
+    error
+  );
+
+}
+
   try {
  
 
@@ -10771,11 +10825,20 @@ if (
 
         photoUrl: photoUrl,
 
-        notes: notes
+        notes: notes,
 
-      }
+        latitude:
+          latitude,
 
-    );
+        longitude:
+          longitude,
+
+        accuracy:
+          accuracy
+
+              }
+
+            );
 
     await logPatrolEvent({
 
@@ -10810,7 +10873,16 @@ if (
     notes || "",
 
   photoUrl:
-    photoUrl || ""
+  photoUrl || "",
+
+latitude:
+  latitude,
+
+longitude:
+  longitude,
+
+accuracy:
+  accuracy
 
 });
 
@@ -11524,26 +11596,76 @@ async function(
               : "-";
 
           return `
-            <div
-              class="timeline-item">
+  <div class="timeline-item">
 
-              <div
-                class="timeline-time">
+    <div class="timeline-time">
+      ${time}
+    </div>
 
-                ${time}
+    <div class="timeline-event">
+      ${icon}
+      ${text}
+    </div>
 
-              </div>
+    ${
+      event.notes
+        ? `
+          <div class="timeline-notes">
+            📝 ${event.notes}
+          </div>
+        `
+        : ""
+    }
 
-              <div
-                class="timeline-event">
+    ${
+      event.photoUrl
+        ? `
+          <div class="timeline-photo-link">
+            <button
+              class="secondary-btn"
+              onclick="
+                window.open(
+                  '${event.photoUrl}',
+                  '_blank'
+                )
+              ">
+              📷 View Photo
+            </button>
+          </div>
+        `
+        : ""
+    }
 
-                ${icon}
-                ${text}
+    ${
+      event.latitude
+        ? `
+          <div class="timeline-location">
+            📍
+            ${event.latitude.toFixed(6)},
+            ${event.longitude.toFixed(6)}
+          </div>
 
-              </div>
+          <div class="timeline-accuracy">
+            GPS Accuracy:
+            ${Math.round(event.accuracy)} m
+          </div>
 
-            </div>
-          `;
+          <button
+            class="secondary-btn"
+            onclick="
+              viewPatrolLocation(
+                ${event.latitude},
+                ${event.longitude}
+              )
+            ">
+            🗺 View on Map
+          </button>
+        `
+        : ""
+    }
+
+  </div>
+`;
         }
       ).join("");
   }
@@ -11710,6 +11832,50 @@ ${
 
       `
     ).join("");
+};
+
+window.viewPatrolLocation =
+function(lat, lng) {
+
+  closePatrolTimelineModal();
+
+  showDashboard();
+
+  document.getElementById(
+  "operationsMapPanel"
+)?.scrollIntoView({
+  behavior: "smooth",
+  block: "start"
+});
+
+  setTimeout(() => {
+
+    map.invalidateSize();
+
+    map.flyTo(
+      [lat, lng],
+      19,
+      {
+        duration: 2
+      }
+    );
+
+    L.popup()
+      .setLatLng(
+        [lat, lng]
+      )
+      .setContent(`
+        <strong>
+          Patrol Evidence
+        </strong>
+        <br>
+        ${lat.toFixed(6)},
+        ${lng.toFixed(6)}
+      `)
+      .openOn(map);
+
+  }, 500);
+
 };
 
 // ================= GLOBAL =================
