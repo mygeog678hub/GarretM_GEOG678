@@ -662,10 +662,13 @@ onSnapshot(
       snapshot.docs.map(
         doc => ({
           id: doc.id,
-          ...doc.data()          
-        })        
+          ...doc.data()
+        })
       );
-      renderActiveTimeEntries();
+
+    renderActiveTimeEntries();
+
+    updateMap();
 
   }
 );
@@ -1651,9 +1654,11 @@ function updateMap() {
 
     if (!site.lat || !site.lng) return;
 
-    const active = assignments.filter(a =>
-      a.siteId === site.id && !a.endTime
-    );
+    const active = timeEntries.filter(
+  entry =>
+    entry.siteId === site.id &&
+    entry.status === "Clocked In"
+);
     const siteStatus =
   site.status || "Active";
 
@@ -1670,6 +1675,27 @@ if (siteStatus === "Closed") {
 }
 
 // ACTIVE STATUS
+
+console.log(
+  "SITE:",
+  site.name,
+  site.id
+);
+
+console.log(
+  "TIME ENTRIES:",
+  timeEntries
+);
+
+console.log(
+  "MATCHING ENTRIES:",
+  timeEntries.filter(
+    entry =>
+      entry.siteId === site.id &&
+      entry.status === "Clocked In"
+  )
+);
+
 if (
   siteStatus === "Active" &&
   active.length > 0
@@ -11498,60 +11524,26 @@ async function(
               : "-";
 
           return `
-  <div
-    class="timeline-item">
-
-    <div
-      class="timeline-time">
-
-      ${time}
-
-    </div>
-
-    <div
-      class="timeline-event">
-
-      ${icon}
-      ${text}
-
-      ${
-        event.photoUrl
-          ? `
             <div
-              class="timeline-evidence">
+              class="timeline-item">
 
-              <button
-                onclick="
-                  window.open(
-                    '${event.photoUrl}',
-                    '_blank'
-                  )
-                ">
-                📷 View Photo
-              </button>
+              <div
+                class="timeline-time">
+
+                ${time}
+
+              </div>
+
+              <div
+                class="timeline-event">
+
+                ${icon}
+                ${text}
+
+              </div>
 
             </div>
-          `
-          : ""
-      }
-
-      ${
-        event.notes
-          ? `
-            <div
-              class="timeline-notes">
-
-              📝 ${event.notes}
-
-            </div>
-          `
-          : ""
-      }
-
-    </div>
-
-  </div>
-`;
+          `;
         }
       ).join("");
   }
