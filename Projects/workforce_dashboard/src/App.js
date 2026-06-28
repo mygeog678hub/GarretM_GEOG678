@@ -11618,23 +11618,17 @@ async function(
     }
 
     ${
-      event.photoUrl
-        ? `
-          <div class="timeline-photo-link">
-            <button
-              class="secondary-btn"
-              onclick="
-                window.open(
-                  '${event.photoUrl}',
-                  '_blank'
-                )
-              ">
-              📷 View Photo
-            </button>
-          </div>
-        `
-        : ""
-    }
+  event.photoUrl
+    ? `
+      <div class="timeline-photo">
+        <img
+          src="${event.photoUrl}"
+          class="evidence-thumbnail"
+          onclick="openPhotoViewer(this.src)">
+      </div>
+    `
+    : ""
+}
 
     ${
       event.latitude
@@ -11877,6 +11871,65 @@ function(lat, lng) {
   }, 500);
 
 };
+
+window.openPhotoViewer =
+function(photoUrl) {
+
+  document.getElementById(
+    "photoViewerImage"
+  ).src = photoUrl;
+
+  document.getElementById(
+    "photoViewerModal"
+  ).style.display =
+    "flex";
+};
+
+window.closePhotoViewer =
+function() {
+
+  document.getElementById(
+    "photoViewerModal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "photoViewerImage"
+  ).src = "";
+};
+
+window.addEventListener(
+  "click",
+  e => {
+
+    const modal =
+      document.getElementById(
+        "photoViewerModal"
+      );
+
+    if (e.target === modal) {
+      closePhotoViewer();
+    }
+  }
+);
+
+document.addEventListener(
+  "keydown",
+  e => {
+
+    const modal =
+      document.getElementById(
+        "photoViewerModal"
+      );
+
+    if (
+      e.key === "Escape" &&
+      modal.style.display === "flex"
+    ) {
+      closePhotoViewer();
+    }
+  }
+);
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

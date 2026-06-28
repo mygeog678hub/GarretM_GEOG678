@@ -2524,3 +2524,33 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   font-size: 12px;
   color: #888;
 }
+.timeline-photo {
+  margin-top: 10px;
+}
+
+.evidence-thumbnail {
+  width: 140px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.evidence-thumbnail:hover {
+  transform: scale(1.05);
+}
+.photo-viewer-content {
+  width: auto;
+  max-width: 95%;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+
+.full-photo {
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 10px;
+}
