@@ -2449,9 +2449,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   height: 500px;
 }
 #completedPatrolHistory {
-  flex: 1;
+  max-height: 350px;
   overflow-y: auto;
-  padding-right: 10px;
+  padding-right: 6px;
 }
 .compact-card {
   max-width: 320px;
@@ -2471,4 +2471,32 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .timeline-event {
   color: white;
+}
+.timeline-evidence {
+  margin-top: 8px;
+}
+
+.timeline-evidence button {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.timeline-notes {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-style: italic;
+}
+.timeline-evidence,
+.timeline-notes {
+  margin-left: 28px;
+  margin-top: 8px;
+}
+.timeline-notes {
+  color: #94a3b8;
+  font-style: italic;
+}
+.completed-patrols-list {
+  max-height: 650px;
+  overflow-y: auto;
+  padding-right: 6px;
 }

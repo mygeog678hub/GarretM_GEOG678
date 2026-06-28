@@ -10078,40 +10078,40 @@ async function(patrolId) {
         patrol.name,
 
       siteId:
-  patrol.siteId,
+        patrol.siteId,
 
-currentCheckpoint: 0,
+      currentCheckpoint: 0,
 
-currentCheckpointName:
-  patrolCheckpointList[0]
-    ?.checkpointName || "",
+      currentCheckpointName:
+        patrolCheckpointList[0]
+          ?.checkpointName || "",
 
-totalCheckpoints:
-  patrolCheckpointList.length,
+      totalCheckpoints:
+        patrolCheckpointList.length,
 
-  startedAt:
-  serverTimestamp(),
+      startedAt:
+        serverTimestamp(),
 
-scheduledStart:
-  Date.now(),
+      scheduledStart:
+        Date.now(),
 
-expectedDuration:
-  patrol.estimatedDuration ||
-  1800000,
+      expectedDuration:
+        patrol.estimatedDuration ||
+        1800000,
 
-lastUpdated:
-  serverTimestamp(),
+      lastUpdated:
+        serverTimestamp(),
 
-completed: false,
+      completed: false,
 
-completedAt: null,
-
+      completedAt: null
     }
   );
-  currentActivePatrolId =
+
+currentActivePatrolId =
   activePatrolRef.id;
 
-  await logPatrolEvent({
+await logPatrolEvent({
 
   patrolSessionId:
     activePatrolRef.id,
@@ -10715,6 +10715,9 @@ if (
       ),
 
       {
+
+        patrolSessionId:
+         currentActivePatrolId,
 
         activePatrolId:
           currentActivePatrolId,
@@ -11323,30 +11326,92 @@ async function(
   patrolSessionId
 ) {
 
-  const q = query(
-    collection(
-      db,
-      "patrolEvents"
-    ),
-    where(
-      "patrolSessionId",
-      "==",
-      patrolSessionId
-    ),
-    orderBy(
-      "timestamp",
-      "asc"
-    )
+  // Load patrol events
+  const eventsQuery =
+    query(
+      collection(
+        db,
+        "patrolEvents"
+      ),
+      where(
+        "patrolSessionId",
+        "==",
+        patrolSessionId
+      ),
+      orderBy(
+        "timestamp",
+        "asc"
+      )
+    );
+
+  const eventsSnapshot =
+    await getDocs(
+      eventsQuery
+    );
+
+  const events =
+    eventsSnapshot.docs.map(
+      doc => ({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
+
+  // Load checkpoint evidence
+  const completionsQuery =
+    query(
+      collection(
+        db,
+        "patrolCompletions"
+      ),
+      where(
+        "patrolSessionId",
+        "==",
+        patrolSessionId
+      )
+    );
+
+  const completionsSnapshot =
+    await getDocs(
+      completionsQuery
+    );
+
+  // Build evidence lookup
+  const evidenceMap = {};
+
+  completionsSnapshot.forEach(
+    doc => {
+
+      const completion =
+        doc.data();
+
+      evidenceMap[
+        completion.checkpointId
+      ] = completion;
+    }
   );
 
-  const snapshot =
-    await getDocs(q);
+  // Merge evidence into events
+  return events.map(
+    event => {
 
-  return snapshot.docs.map(
-    doc => ({
-      id: doc.id,
-      ...doc.data()
-    })
+      const evidence =
+        evidenceMap[
+          event.checkpointId
+        ];
+
+      return {
+
+        ...event,
+
+        photoUrl:
+          evidence?.photoUrl || "",
+
+        notes:
+          evidence?.notes || ""
+
+      };
+    }
   );
 };
 
@@ -11433,26 +11498,60 @@ async function(
               : "-";
 
           return `
+  <div
+    class="timeline-item">
+
+    <div
+      class="timeline-time">
+
+      ${time}
+
+    </div>
+
+    <div
+      class="timeline-event">
+
+      ${icon}
+      ${text}
+
+      ${
+        event.photoUrl
+          ? `
             <div
-              class="timeline-item">
+              class="timeline-evidence">
 
-              <div
-                class="timeline-time">
-
-                ${time}
-
-              </div>
-
-              <div
-                class="timeline-event">
-
-                ${icon}
-                ${text}
-
-              </div>
+              <button
+                onclick="
+                  window.open(
+                    '${event.photoUrl}',
+                    '_blank'
+                  )
+                ">
+                📷 View Photo
+              </button>
 
             </div>
-          `;
+          `
+          : ""
+      }
+
+      ${
+        event.notes
+          ? `
+            <div
+              class="timeline-notes">
+
+              📝 ${event.notes}
+
+            </div>
+          `
+          : ""
+      }
+
+    </div>
+
+  </div>
+`;
         }
       ).join("");
   }
