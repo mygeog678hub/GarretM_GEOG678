@@ -179,8 +179,8 @@ let currentPatrolId = null;
 let checkpoints = [];
 let editingCheckpointId = null;
 let currentActivePatrolId = null;
-let activePatrols = [];
-let patrolCompletions = [];
+window.activePatrols = [];
+window.patrolCompletions = [];
 
 // ================= MAP =================
 
@@ -474,12 +474,19 @@ onSnapshot(
   }
 );
 
-onSnapshot(collection(db, "sites"), snap => {
-  sites = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  refresh();
-  updateDailySummary();
-  renderMySite();
-});
+onSnapshot(
+  collection(db, "sites"),
+  snapshot => {
+
+    window.sites =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+  }
+);
 
 onSnapshot(collection(db, "assignments"), snap => {
   assignments = snap.docs
@@ -712,7 +719,7 @@ onSnapshot(
   collection(db, "activePatrols"),
   snapshot => {
 
-    activePatrols =
+    window.activePatrols =
       snapshot.docs.map(
         doc => ({
           id: doc.id,
@@ -721,7 +728,8 @@ onSnapshot(
       );
 
     renderPatrolDashboard();
-   
+    window.renderPatrolAnalytics();
+    window.renderPatrolCharts();
   }
 );
 

@@ -104,6 +104,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="charts.js"></script>
 <script type="module" src="app.js"></script>
 
 
@@ -1876,6 +1878,30 @@
 
   <h3>🏢 Site Performance</h3>
   <div id="sitePerformanceTable"></div>
+
+ <div class="analytics-charts">
+
+  <div class="chart-card">
+    <h3>Completed vs Active Patrols</h3>
+    <canvas id="patrolStatusChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Patrols By Day</h3>
+    <canvas id="patrolsByDayChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Top Officers</h3>
+    <canvas id="topOfficersChart"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Patrol Volume By Site</h3>
+    <canvas id="patrolVolumeBySiteChart"></canvas>
+  </div>
+
+</div>
 
 </div>
 
