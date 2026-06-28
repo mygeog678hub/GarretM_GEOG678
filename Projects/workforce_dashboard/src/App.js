@@ -11931,6 +11931,407 @@ document.addEventListener(
   }
 );
 
+window.showPatrolAnalytics =
+function() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolTimelineModal"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "block";
+
+  renderPatrolAnalytics();
+};
+
+window.renderPatrolAnalytics =
+function() {
+
+  const total =
+    activePatrols.length;
+
+  const completed =
+    activePatrols.filter(
+      p => p.completed
+    ).length;
+
+  const active =
+    activePatrols.filter(
+      p => !p.completed
+    ).length;  
+
+  const completionRate =
+    total
+      ? Math.round(
+          (completed / total) * 100
+        )
+      : 0;
+
+  const missed =
+    activePatrols.filter(
+      p =>
+        p.totalCheckpoints &&
+        p.currentCheckpoint <
+          p.totalCheckpoints - 1 &&
+        p.completed
+    ).length;
+
+  const overdue =
+  activePatrols.filter(
+    patrol => {
+
+      if (
+        patrol.completed ||
+        !patrol.startedAt
+      ) {
+        return false;
+      }
+
+      const elapsed =
+        Date.now() -
+        patrol.startedAt
+          .toDate()
+          .getTime();
+
+      return (
+        elapsed >
+        patrol.expectedDuration
+      );
+    }
+  ).length;
+
+  const officerStats = {};
+
+activePatrols.forEach(
+  patrol => {
+
+    const officer =
+      patrol.officerName ||
+      "Unknown";
+
+    if (!officerStats[officer]) {
+
+      officerStats[officer] = {
+        total: 0,
+        completed: 0
+      };
+    }
+
+    officerStats[officer].total++;
+
+    if (patrol.completed) {
+      officerStats[officer].completed++;
+    }
+  }
+);
+
+const topOfficer =
+  Object.entries(
+    officerStats
+  )
+    .sort(
+      (
+        [, a],
+        [, b]
+      ) =>
+        b.completed -
+        a.completed
+    )[0]?.[0] ||
+  "-";
+
+  const completedPatrols =
+    activePatrols.filter(
+      p =>
+        p.completed &&
+        p.startedAt &&
+        p.completedAt
+    );
+
+  const averageSeconds =
+    completedPatrols.length
+      ? Math.round(
+          completedPatrols.reduce(
+            (sum, patrol) => {
+
+              const seconds =
+                (
+                  patrol.completedAt.toDate() -
+                  patrol.startedAt.toDate()
+                ) / 1000;
+
+              return sum + seconds;
+            },
+            0
+          ) /
+          completedPatrols.length
+        )
+      : 0;
+
+  const minutes =
+    Math.floor(
+      averageSeconds / 60
+    );
+
+  const seconds =
+    averageSeconds % 60;  
+
+  document.getElementById(
+    "patrolAnalyticsCards"
+  ).innerHTML =
+    `
+    <div class="stat-card">
+      <h2>${total}</h2>
+      <p>📋 Total Patrols</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>${completed}</h2>
+      <p>✅ Completed</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>${active}</h2>
+      <p>🟢 Active</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>${overdue}</h2>
+      <p>⚠ Overdue</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>${completionRate}%</h2>
+      <p>🎯 Completion Rate</p>
+    </div>
+
+    <div class="stat-card">
+  <h2>${topOfficer}</h2>
+  <p>🏆 Top Officer</p>
+</div>
+
+    <div class="stat-card">
+      <h2>${minutes}m ${seconds}s</h2>
+      <p>⏱ Avg Duration</p>
+    </div>
+
+    <div class="stat-card">
+      <h2>${missed}</h2>
+      <p>❌ Missed Checkpoints</p>
+    </div>
+    
+    `;
+
+  renderOfficerPerformance();
+  renderSitePerformance();
+};
+
+window.renderSitePerformance =
+function() {
+
+  const stats = {};
+
+  activePatrols.forEach(
+    patrol => {
+
+      const site =
+        sites.find(
+          s =>
+            s.id ===
+            patrol.siteId
+        );  
+
+     const name =
+  site?.name ||
+  "Unknown";
+
+      if (!stats[name]) {
+
+        stats[name] = {
+          total: 0,
+          completed: 0
+        };
+      }
+
+      stats[name].total++;
+
+      if (patrol.completed) {
+        stats[name].completed++;
+      }
+    }
+  );
+
+  document.getElementById(
+    "sitePerformanceTable"
+  ).innerHTML =
+    `
+      <table class="table">
+
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>Patrols</th>
+            <th>Completed</th>
+            <th>Completion %</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            Object.entries(stats)
+              .map(
+                ([name, s]) => {
+
+                  const pct =
+                    s.total
+                      ? Math.round(
+                          s.completed /
+                          s.total *
+                          100
+                        )
+                      : 0;
+
+                  return `
+                    <tr>
+                      <td>${name}</td>
+                      <td>${s.total}</td>
+                      <td>${s.completed}</td>
+                      <td>${pct}%</td>
+                    </tr>
+                  `;
+                }
+              )
+              .join("")
+          }
+
+        </tbody>
+
+      </table>
+    `;
+};
+
+window.renderOfficerPerformance =
+function() {
+
+  const container =
+    document.getElementById(
+      "officerPerformanceTable"
+    );
+
+  if (!container)
+    return;
+
+  const stats = {};
+
+  activePatrols.forEach(
+    patrol => {
+
+      const officer =
+        patrol.officerName ||
+        "Unknown";
+
+      if (!stats[officer]) {
+
+        stats[officer] = {
+          total: 0,
+          completed: 0
+        };
+      }
+
+      stats[officer].total++;
+
+      if (patrol.completed) {
+        stats[officer].completed++;
+      }
+    }
+  );
+
+  const rows =
+    Object.entries(stats)
+      .sort(
+        (
+          [, a],
+          [, b]
+        ) =>
+          b.completed -
+          a.completed
+      );
+
+  container.innerHTML =
+    `
+      <table class="table">
+
+        <thead>
+          <tr>
+            <th>Officer</th>
+            <th>Patrols</th>
+            <th>Completed</th>
+            <th>Completion %</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            rows.map(
+              ([name, s]) => {
+
+                const pct =
+                  s.total
+                    ? Math.round(
+                        s.completed /
+                        s.total *
+                        100
+                      )
+                    : 0;
+
+                return `
+                  <tr>
+                    <td>${name}</td>
+                    <td>${s.total}</td>
+                    <td>${s.completed}</td>
+                    <td>${pct}%</td>
+                  </tr>
+                `;
+              }
+            ).join("")
+          }
+
+        </tbody>
+
+      </table>
+    `;
+};
+
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;

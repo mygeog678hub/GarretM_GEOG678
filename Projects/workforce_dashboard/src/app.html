@@ -173,6 +173,10 @@
   Patrol Dashboard
 </button>
 
+<button onclick="showPatrolAnalytics()">
+  📊 Patrol Analytics
+</button>
+
   <button
   id="logoutBtn"
   class="logout-btn"
@@ -1851,6 +1855,27 @@
     </button>
 
   </div>
+
+</div>
+
+<div
+  id="patrolAnalyticsPage"
+  style="display:none;">
+
+  <div class="page-header">
+    <h2>📊 Patrol Analytics Dashboard</h2>
+  </div>
+
+  <div
+    id="patrolAnalyticsCards"
+    class="stats-grid">
+  </div>
+
+  <h3>👮 Officer Performance</h3>
+  <div id="officerPerformanceTable"></div>
+
+  <h3>🏢 Site Performance</h3>
+  <div id="sitePerformanceTable"></div>
 
 </div>
 
