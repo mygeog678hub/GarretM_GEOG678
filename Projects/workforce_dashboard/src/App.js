@@ -12399,6 +12399,28 @@ function () {
         </option>
       `;
     });
+
+    siteSelect.value =
+  analyticsSiteFilter;
+
+officerSelect.value =
+  analyticsOfficerFilter;
+
+siteSelect.onchange = () => {
+
+  analyticsSiteFilter =
+    siteSelect.value;
+
+  renderPatrolAnalytics();
+};
+
+officerSelect.onchange = () => {
+
+  analyticsOfficerFilter =
+    officerSelect.value;
+
+  renderPatrolAnalytics();
+};
 };
 
 window.applyAnalyticsFilters =
