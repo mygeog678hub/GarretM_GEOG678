@@ -11995,18 +11995,21 @@ function() {
 window.renderPatrolAnalytics =
 function() {
 
+  const filteredPatrols =
+  getFilteredPatrols();
+
   const total =
-    activePatrols.length;
+  filteredPatrols.length;
 
-  const completed =
-    activePatrols.filter(
-      p => p.completed
-    ).length;
+const completed =
+  filteredPatrols.filter(
+    p => p.completed
+  ).length;
 
-  const active =
-    activePatrols.filter(
-      p => !p.completed
-    ).length;  
+const active =
+  filteredPatrols.filter(
+    p => !p.completed
+  ).length; 
 
   const completionRate =
     total
@@ -12016,7 +12019,7 @@ function() {
       : 0;
 
   const missed =
-    activePatrols.filter(
+    filteredPatrols.filter(
       p =>
         p.totalCheckpoints &&
         p.currentCheckpoint <
@@ -12025,7 +12028,7 @@ function() {
     ).length;
 
   const overdue =
-  activePatrols.filter(
+  filteredPatrols.filter(
     patrol => {
 
       if (
@@ -12050,7 +12053,7 @@ function() {
 
   const officerStats = {};
 
-activePatrols.forEach(
+filteredPatrols.forEach(
   patrol => {
 
     const officer =
@@ -12088,7 +12091,7 @@ const topOfficer =
   "-";
 
   const completedPatrols =
-    activePatrols.filter(
+    filteredPatrols.filter(
       p =>
         p.completed &&
         p.startedAt &&
@@ -12536,6 +12539,32 @@ function () {
 
   refreshPatrolAnalytics();
 };
+
+function getFilteredPatrols() {
+
+  let filtered =
+    [...activePatrols];
+
+  if (analyticsSiteFilter) {
+    filtered =
+      filtered.filter(
+        p =>
+          p.siteId ===
+          analyticsSiteFilter
+      );
+  }
+
+ if (analyticsOfficerFilter) {
+  filtered =
+    filtered.filter(
+      p =>
+        p.officerId ===
+        analyticsOfficerFilter
+    );
+}
+
+  return filtered;
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
