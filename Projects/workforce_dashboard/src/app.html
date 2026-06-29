@@ -105,7 +105,7 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="charts.js"></script>
+<script src="js/charts.js"></script>
 <script type="module" src="app.js"></script>
 
 
@@ -192,6 +192,10 @@
   class="logout-btn"
   onclick="logout()">
   Logout
+</button>
+
+ <button onclick="testPdf()">
+  Test PDF
 </button>
 
 </div>
@@ -2502,6 +2506,15 @@
   </div>
 
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+<script src="js/pdf.js"></script>
+
+<script type="module" src="app.js"></script>
+<footer class="site-footer">
 
 </body>
 </html>
