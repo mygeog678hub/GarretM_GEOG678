@@ -12180,9 +12180,12 @@ const topOfficer =
 window.renderSitePerformance =
 function() {  
 
+  const patrols =
+  getFilteredPatrols();
+
   const stats = {};
 
-  activePatrols.forEach(
+  patrols.forEach(
     patrol => {
 
       const site =
@@ -12264,6 +12267,8 @@ function() {
 
 window.renderOfficerPerformance =
 function() {  
+  const patrols =
+  getFilteredPatrols();
 
   const container =
     document.getElementById(
@@ -12275,7 +12280,7 @@ function() {
 
   const stats = {};
 
-  activePatrols.forEach(
+  patrols.forEach(
     patrol => {
 
       const officer =
