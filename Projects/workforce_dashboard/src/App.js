@@ -12166,7 +12166,7 @@ const topOfficer =
     </div>
     
     `;
-
+  populateAnalyticsFilters();
   renderOfficerPerformance();
   renderSitePerformance();
 };
@@ -12500,6 +12500,75 @@ function () {
 
   refreshPatrolAnalytics();
 };
+
+function populateAnalyticsFilters() {
+
+  const siteSelect =
+    document.getElementById(
+      "analyticsSiteFilter"
+    );
+
+  const officerSelect =
+    document.getElementById(
+      "analyticsOfficerFilter"
+    );
+
+  if (!siteSelect || !officerSelect)
+    return;
+
+  // Reset dropdowns
+  siteSelect.innerHTML =
+    `<option value="">All Sites</option>`;
+
+  officerSelect.innerHTML =
+    `<option value="">All Officers</option>`;
+
+  // Sites
+  [...sites]
+    .sort((a, b) =>
+      (a.name || "").localeCompare(
+        b.name || ""
+      )
+    )
+    .forEach(site => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value = site.id;
+      option.textContent =
+        site.name || "Unnamed Site";
+
+      siteSelect.appendChild(option);
+    });
+
+  // Officers
+  [...employees]
+    .filter(
+      e => e.role === "Officer"
+    )
+    .sort((a, b) =>
+      (a.name || "").localeCompare(
+        b.name || ""
+      )
+    )
+    .forEach(officer => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value = officer.id;
+      option.textContent =
+        officer.name ||
+        "Unnamed Officer";
+
+      officerSelect.appendChild(option);
+    });
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
