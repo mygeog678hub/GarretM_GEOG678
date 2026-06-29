@@ -1866,7 +1866,39 @@
 
   <div class="page-header">
     <h2>📊 Patrol Analytics Dashboard</h2>
-  </div>
+  </div>  
+
+  <div class="analytics-filters">
+
+  <input
+    type="date"
+    id="analyticsStartDate">
+
+  <input
+    type="date"
+    id="analyticsEndDate">
+
+  <select id="analyticsSiteFilter">
+    <option value="">
+      All Sites
+    </option>
+  </select>
+
+  <select id="analyticsOfficerFilter">
+    <option value="">
+      All Officers
+    </option>
+  </select>
+
+  <button id="applyAnalyticsFiltersBtn">
+    Apply
+  </button>
+
+  <button id="clearAnalyticsFiltersBtn">
+    Clear
+  </button>
+
+</div>
 
   <div
     id="patrolAnalyticsCards"

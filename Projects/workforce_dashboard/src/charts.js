@@ -6,6 +6,7 @@ let topOfficerChart;
 let siteVolumeChart;
 
 function renderPatrolCharts() {
+   
   console.log(
     "Rendering patrol charts..."
   );

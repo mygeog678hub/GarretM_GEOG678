@@ -182,6 +182,7 @@ let currentActivePatrolId = null;
 window.activePatrols = [];
 window.patrolCompletions = [];
 
+
 // ================= MAP =================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -441,7 +442,8 @@ onSnapshot(collection(db, "employees"), snap => {
       employee.name
     );
 
-    showOfficerPortal();    
+    showOfficerPortal(); 
+       
 
   } else {
 
@@ -478,13 +480,18 @@ onSnapshot(
   collection(db, "sites"),
   snapshot => {
 
-    window.sites =
+    sites =
       snapshot.docs.map(
         doc => ({
           id: doc.id,
           ...doc.data()
         })
       );
+
+    window.sites = sites;
+
+    updateMap();
+    populatePatrolSiteDropdown();
   }
 );
 
@@ -9336,7 +9343,8 @@ ${
 
 }
 
-function populatePatrolSiteDropdown() {
+window.populatePatrolSiteDropdown =
+function() {
 
   const select =
     document.getElementById(
@@ -9358,7 +9366,8 @@ function populatePatrolSiteDropdown() {
       `;
     }
   );
-}
+};
+
 async function createPatrolTemplate() {
 
   const name =
@@ -12163,7 +12172,7 @@ const topOfficer =
 };
 
 window.renderSitePerformance =
-function() {
+function() {  
 
   const stats = {};
 
@@ -12248,7 +12257,7 @@ function() {
 };
 
 window.renderOfficerPerformance =
-function() {
+function() {  
 
   const container =
     document.getElementById(
@@ -12338,6 +12347,158 @@ function() {
 
       </table>
     `;
+};
+
+window.populateAnalyticsFilters =
+function () {
+
+  const siteSelect =
+    document.getElementById(
+      "analyticsSiteFilter"
+    );
+
+  const officerSelect =
+    document.getElementById(
+      "analyticsOfficerFilter"
+    );
+
+  if (!siteSelect || !officerSelect)
+    return;
+
+  siteSelect.innerHTML =
+    `<option value="">All Sites</option>`;
+
+  officerSelect.innerHTML =
+    `<option value="">All Officers</option>`;
+
+  sites
+    .sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+    .forEach(site => {
+
+      siteSelect.innerHTML += `
+        <option value="${site.id}">
+          ${site.name}
+        </option>
+      `;
+    });
+
+  employees
+    .filter(
+      e => e.role === "Officer"
+    )
+    .sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+    .forEach(officer => {
+
+      officerSelect.innerHTML += `
+        <option value="${officer.id}">
+          ${officer.name}
+        </option>
+      `;
+    });
+};
+
+window.applyAnalyticsFilters =
+function () {
+
+  const start =
+    document.getElementById(
+      "analyticsStartDate"
+    ).value;
+
+  const end =
+    document.getElementById(
+      "analyticsEndDate"
+    ).value;
+
+  const siteId =
+    document.getElementById(
+      "analyticsSiteFilter"
+    ).value;
+
+  const officerId =
+    document.getElementById(
+      "analyticsOfficerFilter"
+    ).value;
+
+  filteredPatrolCompletions =
+    patrolCompletions.filter(
+      patrol => {
+
+        let pass = true;
+
+        if (start) {
+
+          const startDate =
+            new Date(start);
+
+          pass =
+            pass &&
+            patrol.completedAt?.toDate() >=
+              startDate;
+        }
+
+        if (end) {
+
+          const endDate =
+            new Date(end);
+          endDate.setHours(
+            23,
+            59,
+            59,
+            999
+          );
+
+          pass =
+            pass &&
+            patrol.completedAt?.toDate() <=
+              endDate;
+        }
+
+        if (siteId) {
+          pass =
+            pass &&
+            patrol.siteId === siteId;
+        }
+
+        if (officerId) {
+          pass =
+            pass &&
+            patrol.employeeId === officerId;
+        }
+
+        return pass;
+      }
+    );
+
+  refreshPatrolAnalytics();
+};
+
+window.clearAnalyticsFilters =
+function () {
+
+  document.getElementById(
+    "analyticsStartDate"
+  ).value = "";
+
+  document.getElementById(
+    "analyticsEndDate"
+  ).value = "";
+
+  document.getElementById(
+    "analyticsSiteFilter"
+  ).value = "";
+
+  document.getElementById(
+    "analyticsOfficerFilter"
+  ).value = "";
+
+  filteredPatrolCompletions = [];
+
+  refreshPatrolAnalytics();
 };
 
 // ================= GLOBAL =================

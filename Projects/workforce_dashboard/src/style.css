@@ -2579,3 +2579,17 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   margin-bottom: 20px;
   font-weight: 600;
 }
+.analytics-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.analytics-filters input,
+.analytics-filters select,
+.analytics-filters button {
+  padding: 8px 12px;
+  border-radius: 6px;
+}
