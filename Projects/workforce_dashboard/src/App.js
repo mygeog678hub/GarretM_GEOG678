@@ -184,6 +184,7 @@ let analyticsOfficerFilter = "";
 let analyticsStartDateFilter = "";
 let analyticsEndDateFilter = "";
 let companyProfile = {};
+let currentIncidentId = null;
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
@@ -8871,8 +8872,10 @@ async function() {
             )?.value || ""
 
         });
+        
+  });
 
-        const vehicles = [];
+  const vehicles = [];
 
 document
   .querySelectorAll(
@@ -8949,7 +8952,6 @@ document
 
     });
 
-  });
 
       });
 
@@ -8984,7 +8986,8 @@ document
 
         persons,
 
-        vehicles,
+        vehicles:
+          incidentVehicles,
         
         lawEnforcement: {
   agency:
@@ -9407,6 +9410,8 @@ function() {
 window.viewIncident =
 async function(id) {
 
+  currentIncidentId = id;
+
   const snap =
     await getDoc(
       doc(
@@ -9421,6 +9426,9 @@ async function(id) {
   const incident =
     snap.data();
 
+    window.currentIncident =
+  incident;
+
   renderIncidentViewer(
     incident
   );
@@ -9432,9 +9440,7 @@ async function(id) {
     .classList.remove(
       "hidden"
     );
-
 };
-
 function renderIncidentViewer(
   incident
 ) {
@@ -13155,6 +13161,9 @@ async function () {
 
     companyProfile =
       docSnap.data();
+
+      window.companyProfile =
+  companyProfile;
 
     document.getElementById(
       "companyName"
