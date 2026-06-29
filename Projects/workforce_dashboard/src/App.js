@@ -136,6 +136,18 @@ function createSiteIcon(
 
 }
 // ================= STATE =================
+const geofenceCircles = {};
+const activeIncidentMarkers = {};
+const activeIncidentGeofences = {};
+const tenantId = "default";
+const criticalAlert =
+  new Audio(
+    "./assets/critical-alert.mp3"
+  );
+criticalAlert.preload = "auto";
+
+
+
 let employees = [];
 let sites = [];
 let assets = [];
@@ -144,18 +156,6 @@ let assignments = [];
 let shifts = [];
 let pendingDeployments = [];
 let markers = {};
-const geofenceCircles = {};
-const activeIncidentMarkers = {};
-const activeIncidentGeofences = {};
-const criticalAlert =
-  new Audio(
-    "./assets/critical-alert.mp3"
-  );
-
-criticalAlert.preload = "auto";
-window.markers = markers;
-window.geofenceCircles = geofenceCircles;
-window.activeIncidentMarkers = activeIncidentMarkers;
 let searchMarker = null;
 let markerEditMode = false;
 let editingEmployeeId = null;
@@ -179,13 +179,16 @@ let currentPatrolId = null;
 let checkpoints = [];
 let editingCheckpointId = null;
 let currentActivePatrolId = null;
-window.activePatrols = [];
-window.patrolCompletions = [];
 let analyticsSiteFilter = "";
 let analyticsOfficerFilter = "";
 let analyticsStartDateFilter = "";
 let analyticsEndDateFilter = "";
-
+let companyProfile = {};
+//window.markers = markers;
+window.geofenceCircles = geofenceCircles;
+window.activeIncidentMarkers = activeIncidentMarkers;
+window.activePatrols = [];
+window.patrolCompletions = [];
 
 // ================= MAP =================
 
@@ -659,6 +662,7 @@ onSnapshot(
     renderMySite();
 
     renderMyAttendanceStatus();
+    loadCompanyProfile();
 
   },
 
@@ -5074,6 +5078,56 @@ function playCriticalAlert() {
 
 }
 
+window.showCompanySettingsPage =
+function () {  
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "block";
+
+  setActiveNavById(
+    "companySettingsBtn"
+  );
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";  
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).style.display = "none"; 
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+  "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+
+};
+
 function showDashboard() {
 
   document.getElementById(
@@ -5116,6 +5170,10 @@ document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
   refreshSupervisorDashboard();
 
 }
@@ -5150,6 +5208,10 @@ document.getElementById(
 document.getElementById(
   "myPatrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
 
   renderMySchedule();
   renderMySite();
@@ -5231,6 +5293,10 @@ document.getElementById(
 
   document.getElementById(
     "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
   ).style.display = "none";
 
   populateScheduleDropdowns();
@@ -5370,6 +5436,10 @@ document.getElementById(
 
   document.getElementById(
     "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
   ).style.display = "none";
 
   loadIncidentReports();
@@ -9668,6 +9738,10 @@ document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
   const patrolPage =
     document.getElementById(
       "patrolsPage"
@@ -11580,6 +11654,10 @@ document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
   refreshPatrolDashboard();
 };
 
@@ -12191,12 +12269,20 @@ function() {
   ).style.display = "none";
 
   document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+  document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "block";
 
    setActiveNavById(
     "patrolAnalyticsBtn"
   );
+
+  document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
 
   renderPatrolAnalytics();
 };
@@ -12879,6 +12965,170 @@ if (analyticsEndDateFilter) {
 }
   return filtered;
 }
+
+window.saveCompanyProfile =
+async function () {
+
+  try {
+
+    const profile = {
+      companyName:
+        document.getElementById(
+          "companyName"
+        ).value,
+
+      phone:
+        document.getElementById(
+          "companyPhone"
+        ).value,
+
+      email:
+        document.getElementById(
+          "companyEmail"
+        ).value,
+
+      website:
+        document.getElementById(
+          "companyWebsite"
+        ).value,
+
+      licenseNumber:
+        document.getElementById(
+          "companyLicenseNumber"
+        ).value,
+
+      address:
+        document.getElementById(
+          "companyAddress"
+        ).value,
+
+      city:
+        document.getElementById(
+          "companyCity"
+        ).value,
+
+      state:
+        document.getElementById(
+          "companyState"
+        ).value,
+
+      zip:
+        document.getElementById(
+          "companyZip"
+        ).value,
+
+        createdAt:
+    companyProfile.createdAt ??
+    serverTimestamp(),
+
+      updatedAt:
+        serverTimestamp()
+    };
+
+    await setDoc(
+      doc(
+        db,
+        "tenants",
+        tenantId,
+        "settings",
+        "companyProfile"
+      ),
+      profile,
+      { merge: true }
+    );
+
+    alert(
+      "Company profile saved."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Save company profile error:",
+      error
+    );
+
+    alert(
+      "Unable to save company profile."
+    );
+  }
+};
+
+window.loadCompanyProfile =
+async function () {
+
+  try {
+
+    const docRef = doc(
+      db,
+      "tenants",
+      tenantId,
+      "settings",
+      "companyProfile"
+    );
+
+    const docSnap =
+      await getDoc(docRef);
+
+    if (!docSnap.exists())
+      return;
+
+    companyProfile =
+      docSnap.data();
+
+    document.getElementById(
+      "companyName"
+    ).value =
+      companyProfile.companyName || "";
+
+    document.getElementById(
+      "companyPhone"
+    ).value =
+      companyProfile.phone || "";
+
+    document.getElementById(
+      "companyEmail"
+    ).value =
+      companyProfile.email || "";
+
+    document.getElementById(
+      "companyWebsite"
+    ).value =
+      companyProfile.website || "";
+
+    document.getElementById(
+      "companyLicenseNumber"
+    ).value =
+      companyProfile.licenseNumber || "";
+
+    document.getElementById(
+      "companyAddress"
+    ).value =
+      companyProfile.address || "";
+
+    document.getElementById(
+      "companyCity"
+    ).value =
+      companyProfile.city || "";
+
+    document.getElementById(
+      "companyState"
+    ).value =
+      companyProfile.state || "";
+
+    document.getElementById(
+      "companyZip"
+    ).value =
+      companyProfile.zip || "";
+
+  } catch (error) {
+
+    console.error(
+      "Load company profile error:",
+      error
+    );
+  }
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
