@@ -183,6 +183,8 @@ window.activePatrols = [];
 window.patrolCompletions = [];
 let analyticsSiteFilter = "";
 let analyticsOfficerFilter = "";
+let analyticsStartDateFilter = "";
+let analyticsEndDateFilter = "";
 
 
 // ================= MAP =================
@@ -12442,6 +12444,48 @@ function () {
 
     renderPatrolAnalytics();
   };
+
+  const startInput =
+  document.getElementById(
+    "analyticsStartDate"
+  );
+
+if (startInput) {
+  startInput.onchange =
+    e => {
+
+      analyticsStartDateFilter =
+        e.target.value;
+
+      console.log(
+        "Start Date:",
+        analyticsStartDateFilter
+      );
+
+      renderPatrolAnalytics();
+    };
+}
+
+const endInput =
+  document.getElementById(
+    "analyticsEndDate"
+  );
+
+if (endInput) {
+  endInput.onchange =
+    e => {
+
+      analyticsEndDateFilter =
+        e.target.value;
+
+      console.log(
+        "End Date:",
+        analyticsEndDateFilter
+      );
+
+      renderPatrolAnalytics();
+    };
+}
  
 };
 
@@ -12567,7 +12611,65 @@ function getFilteredPatrols() {
         analyticsOfficerFilter
     );
 }
+  if (analyticsStartDateFilter) {
 
+  const start =
+    new Date(
+      analyticsStartDateFilter
+    );
+
+  start.setHours(
+    0, 0, 0, 0
+  );
+
+  filtered =
+    filtered.filter(
+      patrol => {
+
+        if (!patrol.startedAt)
+          return false;
+
+        const patrolDate =
+          patrol.startedAt
+            .toDate();
+
+        return (
+          patrolDate >=
+          start
+        );
+      }
+    );
+}
+
+if (analyticsEndDateFilter) {
+
+  const end =
+    new Date(
+      analyticsEndDateFilter
+    );
+
+  end.setHours(
+    23, 59, 59, 999
+  );
+
+  filtered =
+    filtered.filter(
+      patrol => {
+
+        if (!patrol.startedAt)
+          return false;
+
+        const patrolDate =
+          patrol.startedAt
+            .toDate();
+
+        return (
+          patrolDate <=
+          end
+        );
+      }
+    );
+}
   return filtered;
 }
 
