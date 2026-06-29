@@ -721,6 +721,50 @@ onSnapshot(
 
 );
 
+document.getElementById(
+  "companyLogoUpload"
+).onchange =
+function(e) {
+
+  const file =
+    e.target.files[0];
+
+  if (!file) return;
+
+  const preview =
+    document.getElementById(
+      "companyLogoPreview"
+    );
+
+  preview.src =
+    URL.createObjectURL(file);
+
+  preview.style.display =
+    "block";
+};
+
+document.getElementById(
+  "companyPatchUpload"
+).onchange =
+function(e) {
+
+  const file =
+    e.target.files[0];
+
+  if (!file) return;
+
+  const preview =
+    document.getElementById(
+      "companyPatchPreview"
+    );
+
+  preview.src =
+    URL.createObjectURL(file);
+
+  preview.style.display =
+    "block";
+};
+
 window.renderPatrolDashboard =
 function() {
 
@@ -12971,6 +13015,38 @@ async function () {
 
   try {
 
+    let logoUrl =
+      companyProfile.logoUrl || "";
+
+    let patchUrl =
+      companyProfile.patchUrl || "";
+
+      const logoFile =
+  document.getElementById(
+    "companyLogoUpload"
+  ).files[0];
+
+if (logoFile) {
+
+  logoUrl =
+    await uploadCompanyLogo(
+      logoFile
+    );
+}
+
+const patchFile =
+  document.getElementById(
+    "companyPatchUpload"
+  ).files[0];
+
+if (patchFile) {
+
+  patchUrl =
+    await uploadCompanyPatch(
+      patchFile
+    );
+}
+
     const profile = {
       companyName:
         document.getElementById(
@@ -13017,6 +13093,9 @@ async function () {
           "companyZip"
         ).value,
 
+        logoUrl,
+        patchUrl,
+
         createdAt:
     companyProfile.createdAt ??
     serverTimestamp(),
@@ -13052,6 +13131,7 @@ async function () {
       "Unable to save company profile."
     );
   }
+  
 };
 
 window.loadCompanyProfile =
@@ -13128,6 +13208,71 @@ async function () {
       error
     );
   }
+  if (companyProfile.logoUrl) {
+
+  const logoPreview =
+    document.getElementById(
+      "companyLogoPreview"
+    );
+
+  logoPreview.src =
+    companyProfile.logoUrl;
+
+  logoPreview.style.display =
+    "block";
+}
+
+if (companyProfile.patchUrl) {
+
+  const patchPreview =
+    document.getElementById(
+      "companyPatchPreview"
+    );
+
+  patchPreview.src =
+    companyProfile.patchUrl;
+
+  patchPreview.style.display =
+    "block";
+}
+};
+
+window.uploadCompanyLogo =
+async function(file) {
+
+  const storageRef =
+    ref(
+      storage,
+      `company-assets/${tenantId}/logo`
+    );
+
+  await uploadBytes(
+    storageRef,
+    file
+  );
+
+  return await getDownloadURL(
+    storageRef
+  );
+};
+
+window.uploadCompanyPatch =
+async function(file) {
+
+  const storageRef =
+    ref(
+      storage,
+      `company-assets/${tenantId}/patch`
+    );
+
+  await uploadBytes(
+    storageRef,
+    file
+  );
+
+  return await getDownloadURL(
+    storageRef
+  );
 };
 
 // ================= GLOBAL =================
