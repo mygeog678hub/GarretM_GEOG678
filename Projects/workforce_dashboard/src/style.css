@@ -2593,3 +2593,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   padding: 8px 12px;
   border-radius: 6px;
 }
+.shift-classification {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #334155;
+  color: #fff;
+  font-size: 12px;
+}

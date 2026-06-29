@@ -756,6 +756,25 @@ setInterval(() => {
     
   }
 }, 10000);
+
+document.getElementById(
+  "employeeRole"
+).onchange =
+function() {
+
+  const section =
+    document.getElementById(
+      "securityLicenseSection"
+    );
+
+  section.style.display =
+    this.value ===
+    "Security Officer"
+
+      ? "block"
+
+      : "none";
+};
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
   const name = siteName.value.trim();
@@ -910,7 +929,15 @@ await addDoc(collection(db, "sites"), {
 // ================= ADD EMPLOYEE=================
 async function addEmployee() {
   const name = empName.value.trim();
-  const role = empRole.value.trim();
+  const role =
+  document.getElementById(
+    "employeeRole"
+  ).value;
+
+  const securityLevel =
+  document.getElementById(
+    "employeeSecurityLevel"
+  ).value;
 
   if (!name) {
     alert("Enter employee name");
@@ -931,6 +958,13 @@ async function addEmployee() {
   name,
   designation: role,
   role: "Officer",
+  securityLevel:
+  role ===
+  "Security Officer"
+
+    ? securityLevel
+
+    : "",
   createdAt: new Date().toISOString()
 });
 
@@ -5078,6 +5112,10 @@ document.getElementById(
     "patrolDashboardPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
   refreshSupervisorDashboard();
 
 }
@@ -5189,6 +5227,10 @@ document.getElementById(
 
 document.getElementById(
     "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
   ).style.display = "none";
 
   populateScheduleDropdowns();
@@ -5326,6 +5368,10 @@ document.getElementById(
     "myPatrolsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
   loadIncidentReports();
 
 };
@@ -5357,6 +5403,11 @@ async function createShift() {
       "schedulePay"
     ).value
   ) || 0;
+
+  const classification =
+  document.getElementById(
+    "shiftClassification"
+  ).value;
 
   if (
     !employeeId ||
@@ -5449,6 +5500,8 @@ if (conflict) {
     startTime,
 
     endTime,
+
+    classification,
 
     shiftPay,
 
@@ -5544,6 +5597,11 @@ function renderSchedules() {
       ${shift.siteName}
 
       <br>
+
+      <span class="shift-classification">
+      🛡
+        ${shift.classification || "Unclassified"}
+      </span>
 
       ${new Date(
         shift.startTime
@@ -5655,6 +5713,11 @@ function editShift(id) {
 ).value =
   shift.shiftPay || 0;
 
+  document.getElementById(
+  "editShiftClassification"
+).value =
+  shift.classification || "";
+
   document
     .getElementById(
       "editShiftModal"
@@ -5741,17 +5804,61 @@ async function saveShiftEdit() {
     ).value
   ) || 0;
 
+  const classification =
+  document.getElementById(
+    "editShiftClassification"
+  ).value; 
+
+  const employee =
+  employees.find(
+    e => e.id === employeeId
+  );
+
+  const levels = {
+  "LVL 2": 2,
+  "LVL 3": 3,
+  "LVL 4": 4
+};
+
+const officerLevel =
+  levels[
+    employee.securityLevel
+  ] || 0;
+
+const shiftLevel =
+  levels[
+    classification
+  ] || 0;
+
+if (
+  officerLevel <
+  shiftLevel
+) {
+  alert(
+    `${employee.name} is not licensed for this assignment.`
+  );
+
+  return;
+}
+
   if (
-    !employeeId ||
-    !siteId ||
-    !startTime ||
-    !endTime
-  ) {
-    alert(
-      "Complete all fields."
-    );
-    return;
-  }
+  !employeeId ||
+  !siteId ||
+  !startTime ||
+  !endTime
+) {
+  console.log({
+    employeeId,
+    siteId,
+    startTime,
+    endTime
+  });
+
+  alert(
+    "Complete all fields."
+  );
+  return;
+}
 
   if (
     new Date(endTime) <=
@@ -5817,12 +5924,7 @@ async function saveShiftEdit() {
 
     return;
 
-  }
-
-  const employee =
-    employees.find(
-      e => e.id === employeeId
-    );
+  }  
 
   const site =
     sites.find(
@@ -5851,7 +5953,9 @@ async function saveShiftEdit() {
 
     endTime,
 
-    shiftPay
+    shiftPay,
+
+    classification
 
   }
 );
@@ -8767,6 +8871,28 @@ document
         persons,
 
         vehicles,
+        
+        lawEnforcement: {
+  agency:
+    document.getElementById(
+      "incidentAgency"
+    ).value.trim(),
+
+  officer:
+    document.getElementById(
+      "incidentAgencyOfficer"
+    ).value.trim(),
+
+  badge:
+    document.getElementById(
+      "incidentAgencyBadge"
+    ).value.trim(),
+
+  caseNumber:
+    document.getElementById(
+      "incidentAgencyCase"
+    ).value.trim()
+},
 
         status:
           "Open",
@@ -8819,6 +8945,22 @@ document
     document.getElementById(
       "vehiclesContainer"
     ).innerHTML = "";
+
+      document.getElementById(
+  "incidentAgency"
+).value = "";
+
+document.getElementById(
+  "incidentAgencyOfficer"
+).value = "";
+
+document.getElementById(
+  "incidentAgencyBadge"
+).value = "";
+
+document.getElementById(
+  "incidentAgencyCase"
+).value = "";
 
   } catch (error) {
 
@@ -9188,9 +9330,12 @@ function renderIncidentViewer(
       "incidentViewerContent"
     );
 
+    const law =
+  incident.lawEnforcement || {};
+
   container.innerHTML = `
 
-    <p>
+      <p>
       <strong>
         Case Number:
       </strong>
@@ -9258,9 +9403,20 @@ ${
         <div class="person-card">
 
           <p>
-            <strong>Name:</strong>
-            ${person.name || ""}
+            <strong>Role:</strong>
+            ${person.role || ""}
           </p>
+        
+        <p>
+  <strong>Name:</strong>
+  ${[
+    person.firstName,
+    person.middleName,
+    person.lastName
+  ]
+    .filter(Boolean)
+    .join(" ")}
+</p>
 
           <p>
             <strong>DOB:</strong>
@@ -9268,19 +9424,26 @@ ${
           </p>
 
           <p>
-            <strong>Phone:</strong>
-            ${person.phone || ""}
-          </p>
+  <strong>Phone:</strong>
+  ${
+    person.cellPhone ||
+    person.homePhone ||
+    person.workPhone ||
+    ""
+  }
+</p>          
 
           <p>
-            <strong>Role:</strong>
-            ${person.role || ""}
-          </p>
-
-          <p>
-            <strong>Address:</strong>
-            ${person.address || ""}
-          </p>
+  <strong>Address:</strong>
+  ${[
+    person.street,
+    person.city,
+    person.state,
+    person.zip
+  ]
+    .filter(Boolean)
+    .join(", ")}
+</p>
 
         </div>
 
@@ -9289,6 +9452,38 @@ ${
 
     : "<p>No persons listed.</p>"
 }
+
+${
+  law.agency ||
+  law.officer ||
+  law.badge ||
+  law.caseNumber
+
+    ? `
+
+    <hr>
+  <h4>🚔 Law Enforcement Information</h4>
+
+  <p>
+    <strong>Agency:</strong>
+    ${law.agency}
+  </p>
+
+  <p>
+    <strong>Officer:</strong>
+    ${law.officer}
+  </p>
+
+  <p>
+    <strong>Badge #:</strong>
+    ${law.badge}
+  </p>
+
+  <p>
+    <strong>Agency Case #:</strong>
+    ${law.caseNumber}
+  </p>
+` : ""}
 
 <hr>
 
@@ -9468,6 +9663,10 @@ function() {
   document.getElementById(
   "myPatrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
 
   const patrolPage =
     document.getElementById(
@@ -11377,6 +11576,10 @@ document.getElementById(
     "officerPortal"
   ).style.display = "none";
 
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
   refreshPatrolDashboard();
 };
 
@@ -11990,6 +12193,10 @@ function() {
   document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "block";
+
+   setActiveNavById(
+    "patrolAnalyticsBtn"
+  );
 
   renderPatrolAnalytics();
 };
@@ -12735,7 +12942,7 @@ window.renderIncidents = renderIncidents;
 window.showSchedulingPage = showSchedulingPage;
 window.showDashboard = showDashboard;
 window.createShift = createShift;
-window.renderSchedules = renderSchedules;
+window.renderSchedules = renderSchedules
 window.deleteShift = deleteShift;
 window.saveShiftEdit = saveShiftEdit;
 window.previousWeek = previousWeek;

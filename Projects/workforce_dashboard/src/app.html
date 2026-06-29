@@ -175,7 +175,9 @@
   Patrol Dashboard
 </button>
 
-<button onclick="showPatrolAnalytics()">
+<button
+  id="patrolAnalyticsBtn"
+  onclick="showPatrolAnalytics()">
   📊 Patrol Analytics
 </button>
 
@@ -406,13 +408,68 @@
 <h2>Add Employee</h2>
 <form onsubmit="addEmployee(); return false;">
 <input id="empName" placeholder="Employee Name">
-<select id="empRole">
-  <option>Worker</option>
-  <option>Foreman</option>
-  <option>Manager</option>
-  <option>Crossing Guard</option>
-  <option>Supervisor</option>
+<select id="employeeRole">
+
+  <option value="">
+    Select Role
+  </option>
+
+  <option>
+    Administrator
+  </option>
+
+  <option>
+    Supervisor
+  </option>
+
+  <option>
+    Security Officer
+  </option>
+
+  <option>
+    Dispatcher
+  </option>
+
+  <option>
+    Investigator
+  </option>
+
+  <option>
+    Office Staff
+  </option>
+
 </select>
+
+<div
+  id="securityLicenseSection"
+  style="display:none;">
+
+  <h4>
+    🛡 Security License Information
+  </h4>
+
+  <select
+    id="employeeSecurityLevel">
+
+    <option value="">
+      Select License Level
+    </option>
+
+    <option value="LVL 2">
+      LVL 2 - Unarmed
+    </option>
+
+    <option value="LVL 3">
+      LVL 3 - Armed
+    </option>
+
+    <option value="LVL 4">
+      LVL 4 - Bodyguard
+    </option>
+
+  </select>
+
+</div>
 <button>Add</button>
 </form>
 <button onclick="openEmployeeModal()" style="margin-top:10px;">
@@ -564,6 +621,8 @@
   <button type="submit">Add</button>
 </form>
 </div>
+
+
 <div class="dashboard-card">
 <h2>Add Vehicle</h2>
 <form onsubmit="addVehicle(); return false;">
@@ -1199,6 +1258,26 @@
     step="0.01"
     placeholder="225.00"
   >
+
+  <select id="editShiftClassification">
+
+  <option value="">
+    Select Classification
+  </option>
+
+  <option value="LVL 2">
+    LVL 2 - Unarmed
+  </option>
+
+  <option value="LVL 3">
+    LVL 3 - Armed
+  </option>
+
+  <option value="LVL 4">
+    LVL 4 - Bodyguard
+  </option>
+
+</select>
 </div>
 
     <div class="modal-actions">
@@ -1361,6 +1440,26 @@
     placeholder="225.00"
   >
 </div>
+
+<select id="shiftClassification">
+
+  <option value="">
+    Select Classification
+  </option>
+
+  <option value="LVL 2">
+    LVL 2 - Unarmed
+  </option>
+
+  <option value="LVL 3">
+    LVL 3 - Armed
+  </option>
+
+  <option value="LVL 4">
+    LVL 4 - Bodyguard
+  </option>
+
+</select>
 
   <div>
     <label>&nbsp;</label>
@@ -1727,6 +1826,62 @@
   <button onclick="addPerson()">
     Add Person
   </button>
+
+</div>
+
+<div class="dashboard-card">
+
+  <h2>
+    🚔 Law Enforcement Information
+  </h2>
+
+  <div class="person-grid">
+
+    <div class="field-group">
+      <label>
+        Law Enforcement Agency
+      </label>
+
+      <input
+        type="text"
+        id="incidentAgency"
+        placeholder="Houston Police Department">
+    </div>
+
+    <div class="field-group">
+      <label>
+        Law Enforcement Officer
+      </label>
+
+      <input
+        type="text"
+        id="incidentAgencyOfficer"
+        placeholder="Officer Smith">
+    </div>
+
+    <div class="field-group">
+      <label>
+        Badge #
+      </label>
+
+      <input
+        type="text"
+        id="incidentAgencyBadge"
+        placeholder="12345">
+    </div>
+
+    <div class="field-group">
+      <label>
+        Agency Case #
+      </label>
+
+      <input
+        type="text"
+        id="incidentAgencyCase"
+        placeholder="HPD-26-123456">
+    </div>
+
+  </div>
 
 </div>
 
