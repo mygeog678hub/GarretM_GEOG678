@@ -610,25 +610,26 @@ onSnapshot(
 let incidents = [];
 
 onSnapshot(
-  collection(db, "incidents"),
-  snap => {
+  collection(db, "incidentReports"),
+  snapshot => {
 
     console.log(
       "Incidents updated:",
-      snap.size
+      snapshot.size
     );
 
-    incidents = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    incidents =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
     console.log(
-  "Snapshot incidents:",
-  incidents.length
-);
+      "Snapshot incidents:",
+      incidents.length
+    );
 
     refresh();
-
   }
 );
 
@@ -5604,6 +5605,9 @@ if (conflict) {
     employeeName:
       employee.name,
 
+      securityLevel:
+  employee.securityLevel || "",
+
     siteId,
 
     siteName:
@@ -7597,6 +7601,9 @@ $${Number(
 
 <br>
 
+License Level:
+${currentOfficer.securityLevel || "N/A"}
+
           Status:
 ${shift.status}
 
@@ -8872,10 +8879,10 @@ async function() {
             )?.value || ""
 
         });
-        
+                
   });
 
-  const vehicles = [];
+  const incidentVehicles = [];
 
 document
   .querySelectorAll(
@@ -8883,7 +8890,7 @@ document
   )
   .forEach(card => {
 
-    vehicles.push({
+    incidentVehicles.push({
 
       role:
         card.querySelector(
@@ -8952,8 +8959,7 @@ document
 
     });
 
-
-      });
+  });    
 
     const caseNumber =
       await generateIncidentCaseNumber();
@@ -8961,7 +8967,7 @@ document
     await addDoc(
       collection(
         db,
-        "incidents"
+        "incidentReports"
       ),
       {
 
@@ -9269,7 +9275,7 @@ window.addIncidentVehicle = function() {
 
 };
 
-async function loadIncidentReports() {  
+async function loadIncidentReports() {    
 
   const container =
     document.getElementById(
@@ -9288,7 +9294,7 @@ async function loadIncidentReports() {
       query(
         collection(
           db,
-          "incidents"
+          "incidentReports"
         ),
         orderBy(
           "createdAt",
@@ -9409,17 +9415,19 @@ function() {
 
 window.viewIncident =
 async function(id) {
+  console.log("View clicked:", id);
 
   currentIncidentId = id;
 
   const snap =
     await getDoc(
-      doc(
-        db,
-        "incidents",
-        id
-      )
+   doc(
+  db,
+  "incidentReports",
+  id
+)
     );
+    console.log("Document exists:", snap.exists());
 
   if (!snap.exists()) return;
 
@@ -9441,6 +9449,7 @@ async function(id) {
       "hidden"
     );
 };
+
 function renderIncidentViewer(
   incident
 ) {
