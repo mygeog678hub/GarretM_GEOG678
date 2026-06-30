@@ -27,6 +27,24 @@ function checkPageBreak(
 ) {
 
   if (
+    y + requiredSpace > 270
+  ) {
+
+    doc.addPage();
+
+    y = 20;
+  }
+}  
+
+  
+  const margin = 15;
+const contentWidth = 180;
+
+function checkPageBreak(
+  requiredSpace = 20
+) {
+
+  if (
     y + requiredSpace > 250
   ) {
 
@@ -75,6 +93,42 @@ function addSectionHeader(
   );
 
   y += 15;
+}
+
+function writeParagraph(
+  text,
+  x = 20,
+  width = 170,
+  lineHeight = 6
+) {
+
+  const lines =
+    doc.splitTextToSize(
+      text || "",
+      width
+    );
+
+  lines.forEach(
+    line => {
+
+      if (
+        y + lineHeight > 270
+      ) {
+
+        doc.addPage();
+
+        y = 20;
+      }
+
+      doc.text(
+        line,
+        x,
+        y
+      );
+
+      y += lineHeight;
+    }
+  );
 }
 
 function addFieldRow(
@@ -390,20 +444,18 @@ if (
       );
       shaded = !shaded;
 
-      addFieldRow(
-        "Identification:",
-          `${person.idType || ""}${
-            person.idNumber
-              ? " - " + person.idNumber
-              : ""
-          }`,
-        "State:",
-        person.idState ||
-        person.state,
-        "",
-        "",
-        shaded
-      );
+    addFieldRow(
+  "Identification:",
+  `${person.idType || ""}${
+    person.idNumber
+      ? " - " + person.idNumber
+      : ""
+  }`,
+  "State:",
+  person.idState ||
+    person.state,
+  shaded
+);
       shaded = !shaded;
 
       y += 5;
@@ -412,42 +464,242 @@ if (
 }
 
 // ======================
+// Vehicles Involved
+// ======================
+
+if (
+  incident.vehicles &&
+  incident.vehicles.length
+) {
+
+  addSectionHeader(
+    "VEHICLES INVOLVED"
+  );
+
+  incident.vehicles.forEach(
+  (vehicle, index) => {
+
+    let cardHeight = 45;
+
+    if (vehicle.notes) {
+      const noteLines =
+        doc.splitTextToSize(
+          vehicle.notes,
+          contentWidth - 40
+        );
+
+      cardHeight +=
+        noteLines.length * 5 + 10;
+    }
+
+    checkPageBreak(
+      cardHeight + 10
+    );
+
+    const startY = y;
+
+    doc.setDrawColor(
+      180,
+      180,
+      180
+    );
+
+    doc.roundedRect(
+      margin,
+      startY,
+      contentWidth,
+      cardHeight,
+      3,
+      3
+    );
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+      `Vehicle #${index + 1}`,
+      margin + 4,
+      startY + 7
+    );
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.setFontSize(10);
+
+    let rowY =
+      startY + 14;
+
+      let shaded = false;
+
+    const fields = [
+      ["Role", vehicle.role],
+      ["Owner", vehicle.owner],
+      [
+        "Plate",
+        `${vehicle.plate || ""} ${
+          vehicle.state
+            ? `(${vehicle.state})`
+            : ""
+        }`
+      ],
+      [
+        "Vehicle",
+        `${vehicle.year || ""} ${
+          vehicle.make || ""
+        } ${
+          vehicle.model || ""
+        }`
+      ],
+      ["Color", vehicle.color],
+      ["VIN", vehicle.vin],
+      ["Insurance", vehicle.insurance],
+      ["Policy", vehicle.policy],
+      ["Towed", vehicle.towed]
+    ];
+
+    fields.forEach(
+      field => {
+
+        if (!field[1])
+          return;
+        if (shaded) {
+  doc.setFillColor(
+    242,
+    242,
+    242
+  );
+
+  doc.rect(
+    margin + 2,
+    rowY - 4,
+    contentWidth - 4,
+    6,
+    "F"
+  );
+}
+
+        doc.setFont(
+          "helvetica",
+          "bold"
+        );
+
+        doc.text(
+          `${field[0]}:`,
+          margin + 5,
+          rowY
+        );
+
+        doc.setFont(
+          "helvetica",
+          "normal"
+        );
+
+        doc.text(
+          String(field[1]),
+          margin + 35,
+          rowY
+        );
+
+        rowY += 6;
+        shaded = !shaded;
+      }
+    );
+
+    if (vehicle.notes) {
+
+      rowY += 2;
+
+      doc.setFont(
+        "helvetica",
+        "bold"
+      );
+
+      if (shaded) {
+  doc.setFillColor(
+    242,
+    242,
+    242
+  );
+
+  doc.rect(
+    margin + 2,
+    rowY - 4,
+    contentWidth - 4,
+    8,
+    "F"
+  );
+}
+
+      doc.text(
+        "Notes:",
+        margin + 5,
+        rowY
+      );
+
+      doc.setFont(
+        "helvetica",
+        "normal"
+      );
+
+      const noteLines =
+        doc.splitTextToSize(
+          vehicle.notes,
+          contentWidth - 40
+        );
+
+      doc.text(
+        noteLines,
+        margin + 35,
+        rowY
+      );
+
+      rowY +=
+        noteLines.length * 5;
+    }
+
+    y =
+      startY +
+      cardHeight +
+      5;
+  }
+);
+
+y += 5;
+}
+
+// ======================
   // Narrative
   // ======================
 
-  addSectionHeader(
+addSectionHeader(
   "Narrative"
 );
 
-  doc.setFontSize(11);
+doc.setFontSize(11);
 
-  const narrativeLines =
-    doc.splitTextToSize(
-      incident.narrative || "",
-      170
-    );
-
-  doc.text(
-    narrativeLines,
-    20,
-    y
-  );
-
-  y +=
-    narrativeLines.length * 6 +
-    15;
-
-
-doc.setDrawColor(200);
-
-doc.line(
-  20,
-  y,
-  190,
-  y
+writeParagraph(
+  incident.narrative || ""
 );
 
 y += 10;
+
+checkPageBreak(35);
+
+const submittedDate =
+  incident.createdAt
+    ? new Date(
+        incident.createdAt.seconds
+          ? incident.createdAt.seconds * 1000
+          : incident.createdAt
+      ).toLocaleString()
+    : "";
 
 doc.setFont(
   "helvetica",
@@ -488,15 +740,6 @@ doc.setFont(
   "helvetica",
   "normal"
 );
-
-const submittedDate =
-  incident.createdAt
-    ? new Date(
-        incident.createdAt.seconds
-          ? incident.createdAt.seconds * 1000
-          : incident.createdAt
-      ).toLocaleString()
-    : "";
 
 doc.text(
   submittedDate,
@@ -541,5 +784,5 @@ for (
   doc.save(
     fileName
   );
-};
+}
 
