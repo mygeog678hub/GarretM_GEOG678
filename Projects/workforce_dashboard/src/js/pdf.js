@@ -1,37 +1,8 @@
-window.testPdf =
-function() {
-
-  const {
-    jsPDF
-  } = window.jspdf;
-
-  const doc =
-    new jsPDF();
-
-  doc.setFontSize(20);
-
-  doc.text(
-    "WorkForge PDF Engine",
-    20,
-    30
-  );
-
-  doc.setFontSize(12);
-
-  doc.text(
-    "PDF engine initialized successfully.",
-    20,
-    50
-  );
-
-  doc.save(
-    "test.pdf"
-  );
- 
-};
 
 window.downloadIncidentPdf =
 async function() {
+  let y = 20;
+  
 
   const incident =
     window.currentIncident;
@@ -49,118 +20,358 @@ async function() {
     jsPDF
   } = window.jspdf;
 
-  const doc =
-    new jsPDF();
+  const doc = new jsPDF();
 
-  let y = 20;
+function checkPageBreak(
+  requiredSpace = 20
+) {
 
-  // ======================
-  // Company Header
-  // ======================
+  if (
+    y + requiredSpace > 250
+  ) {
 
-  doc.setFontSize(18);
+    doc.addPage();
+
+    y = 20;
+  }
+}
+
+function addSectionHeader(
+  title
+) {
+
+  checkPageBreak(20);
+
+  doc.setFillColor(
+    45,
+    45,
+    45
+  );
+
+  doc.rect(
+    15,
+    y,
+    180,
+    8,
+    "F"
+  );
+
+  doc.setTextColor(
+    255
+  );
+
+  doc.setFontSize(
+    12
+  );
 
   doc.text(
-    window.companyProfile?.companyName ||
-    "Security Company",
+    title,
+    20,
+    y + 5
+  );
+
+  doc.setTextColor(
+    0
+  );
+
+  y += 15;
+}
+
+function addFieldRow(
+  leftLabel,
+  leftValue,
+  rightLabel = "",
+  rightValue = ""
+) {
+
+  checkPageBreak();
+
+  doc.setFont(
+    undefined,
+    "bold"
+  );
+
+  doc.text(
+    String(leftLabel),
+    20,
+    y
+  );
+
+  doc.setFont(
+    undefined,
+    "normal"
+  );
+
+  doc.text(
+    String(
+      leftValue || ""
+    ),
+    50,
+    y
+  );
+
+  if (rightLabel) {
+
+    doc.setFont(
+      undefined,
+      "bold"
+    );
+
+    doc.text(
+      String(rightLabel),
+      110,
+      y
+    );
+
+    doc.setFont(
+      undefined,
+      "normal"
+    );
+
+    doc.text(
+      String(
+        rightValue || ""
+      ),
+      145,
+      y
+    );
+  }
+
+  y += 8;
+}
+
+doc.setFontSize(18);
+
+doc.text(
+  window.companyProfile?.companyName ||
+  "Security Company",
+  20,
+  y
+);
+
+y += 8;
+
+if (
+  window.companyProfile?.licenseNumber
+) {
+
+  doc.setFontSize(11);
+
+  doc.text(
+    `License #: ${window.companyProfile.licenseNumber}`,
     20,
     y
   );
 
   y += 8;
+}
 
-  doc.setFontSize(11);
+y += 8;
 
-  if (
-    window.companyProfile?.licenseNumber
-  ) {
+doc.setFontSize(16);
 
-    doc.text(
-      `License #: ${window.companyProfile?.licenseNumber}`,
-      20,
-      y
-    );
+doc.text(
+  "Incident Report",
+  20,
+  y
+);
 
-    y += 8;
-  }
-
-  doc.setFontSize(16);
-
-  doc.text(
-    "Incident Report",
-    20,
-    y
-  );
-
-  y += 15;
+y += 15;
 
   // ======================
   // Incident Information
   // ======================
 
   doc.setFontSize(11);
+  
+  addSectionHeader(
+  "Incident Information"
+);
 
-  doc.text(
-    `Case Number: ${incident.caseNumber || ""}`,
-    20,
-    y
-  );
+doc.autoTable({
 
-  y += 8;
+  startY: y,
 
-  doc.text(
-    `Officer: ${incident.officerName || ""}`,
-    20,
-    y
-  );
+  theme: "grid",
 
-  y += 8;
+  body: [
 
-  doc.text(
-    `Incident Type: ${incident.incidentType || ""}`,
-    20,
-    y
-  );
+    [
+      "Case Number",
+      incident.caseNumber || ""
+    ],
 
-  y += 8;
+    [
+      "Officer",
+      incident.officerName || ""
+    ],
 
-  doc.text(
-    `Severity: ${incident.severity || ""}`,
-    20,
-    y
-  );
+    [
+      "Incident Type",
+      incident.incidentType || ""
+    ],
 
-  y += 8;
+    [
+      "Severity",
+      incident.severity || ""
+    ],
 
-  doc.text(
-    `Status: ${incident.status || ""}`,
-    20,
-    y
-  );
+    [
+      "Status",
+      incident.status || ""
+    ],
 
-  y += 8;
+    [
+      "Site",
+      incident.siteName || ""
+    ]
 
-  doc.text(
-    `Site: ${incident.siteName || ""}`,
-    20,
-    y
-  );
+  ]
+});
 
-  y += 15;
-
+y =
+  doc.lastAutoTable
+    .finalY + 15;
+  
   // ======================
+  // Persons Involved
+  // ======================
+
+if (
+  incident.persons &&
+  incident.persons.length
+) {
+
+  addSectionHeader(
+  "Persons Involved"
+);
+
+  incident.persons.forEach(
+    (person, index) => {
+
+      addSectionHeader(
+        `Person Involved #${index + 1}`
+      );
+
+      const fullName =
+        [
+          person.firstName,
+          person.middleName,
+          person.lastName
+        ]
+        .filter(Boolean)
+        .join(" ");
+
+      const address =
+        [
+          person.street,
+          person.city,
+          person.state,
+          person.zip
+        ]
+        .filter(Boolean)
+        .join(", ");
+
+      const height =
+        person.heightFeet &&
+        person.heightInches
+          ? `${person.heightFeet}' ${person.heightInches}"`
+          : "";
+
+      const dob =
+        person.dob
+          ? new Date(
+              person.dob
+            ).toLocaleDateString()
+          : "";
+
+      addFieldRow(
+        "Name:",
+        fullName,
+        "Role:",
+        person.role
+      );
+
+      addFieldRow(
+        "Alias:",
+        person.alias,
+        "DOB:",
+        dob
+      );
+
+      addFieldRow(
+        "Sex:",
+        person.sex,
+        "Race:",
+        person.race
+      );
+
+      addFieldRow(
+        "Ethnicity:",
+        person.ethnicity
+      );
+
+      addFieldRow(
+        "Height:",
+        height,
+        "Weight:",
+        person.weight
+          ? `${person.weight} lbs`
+          : ""
+      );
+
+      addFieldRow(
+        "Hair:",
+        person.hairColor,
+        "Eyes:",
+        person.eyeColor
+      );
+
+      addFieldRow(
+        "Address:",
+        address
+      );
+
+      addFieldRow(
+        "Cell:",
+        person.cellPhone,
+        "Home:",
+        person.homePhone
+      );
+
+      addFieldRow(
+        "Employer:",
+        person.employer
+      );
+
+      addFieldRow(
+        "Email:",
+        person.email
+      );
+
+      addFieldRow(
+        "Identification:",
+        `${person.idType || ""}
+${person.idNumber
+  ? " - " + person.idNumber
+  : ""}`,
+        "State:",
+        person.idState ||
+        person.state
+      );
+
+      y += 5;
+    }
+  );
+}
+
+// ======================
   // Narrative
   // ======================
 
-  doc.setFontSize(13);
-
-  doc.text(
-    "Narrative",
-    20,
-    y
-  );
-
-  y += 8;
+  addSectionHeader(
+  "Narrative"
+);
 
   doc.setFontSize(11);
 
@@ -180,43 +391,36 @@ async function() {
     narrativeLines.length * 6 +
     15;
 
-  // ======================
-  // Persons Involved
-  // ======================
 
-  if (
-    incident.persons &&
-    incident.persons.length
-  ) {
+addSectionHeader(
+  "Signatures"
+);
 
-    doc.autoTable({
+doc.text(
+  "________________________",
+  20,
+  y
+);
 
-      startY: y,
+doc.text(
+  "Reporting Officer",
+  20,
+  y + 7
+);
 
-      head: [[
-        "Name",
-        "Role",
-        "Phone"
-      ]],
+doc.text(
+  "________________________",
+  120,
+  y
+);
 
-      body:
-        incident.persons.map(
-          person => [
+doc.text(
+  "Supervisor",
+  120,
+  y + 7
+);
 
-            `${person.firstName || ""}
-${person.lastName || ""}`,
-
-            person.role || "",
-
-            person.cellPhone || ""
-          ]
-        )
-    });
-
-    y =
-      doc.lastAutoTable
-        .finalY + 15;
-  }
+y += 25;
 
   // ======================
   // Save PDF
@@ -227,7 +431,29 @@ ${person.lastName || ""}`,
       ? `${incident.caseNumber}.pdf`
       : "incident-report.pdf";
 
+      const pages =
+  doc.internal
+    .getNumberOfPages();
+
+for (
+  let i = 1;
+  i <= pages;
+  i++
+) {
+
+  doc.setPage(i);
+
+  doc.setFontSize(9);
+
+  doc.text(
+    `Generated by WorkForge Dashboard - Page ${i} of ${pages}`,
+    20,
+    285
+  );
+}
+
   doc.save(
     fileName
   );
 };
+
