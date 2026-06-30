@@ -824,12 +824,14 @@
      ">
 
   <div style="
-       background:white;
-       margin:10% auto;
-       padding:20px;
-       width:400px;
-       border-radius:8px;
-  ">
+  background:white;
+  margin:5vh auto;
+  padding:20px;
+  width:400px;
+  max-height:85vh;
+  overflow-y:auto;
+  border-radius:8px;
+">
 
     <h2>Edit Employee</h2>
 
@@ -838,15 +840,74 @@
       placeholder="Employee Name"
     >
 
-    <select id="editEmpRole">
+  <select id="editEmpRole">
 
-      <option>Worker</option>
-      <option>Foreman</option>
-      <option>Manager</option>
-      <option>Crossing Guard</option>
-      <option>Supervisor</option>
+  <option value="">
+    Select Role
+  </option>
 
-    </select>
+  <option>
+    Administrator
+  </option>
+
+  <option>
+    Supervisor
+  </option>
+
+  <option>
+    Security Officer
+  </option>
+
+  <option>
+    Dispatcher
+  </option>
+
+  <option>
+    Investigator
+  </option>
+
+  <option>
+    Office Staff
+  </option>
+
+</select>
+
+<br><br>
+
+<br><br>
+
+<div id="editLicenseSection" style="display:none;">
+
+  <select id="editEmployeeLicenseLevel">
+    <option value="">Select License Level</option>
+    <option value="Non-Commissioned (Level II)">
+      Non-Commissioned (Level II)
+    </option>
+    <option value="Commissioned (Level III)">
+      Commissioned (Level III)
+    </option>
+    <option value="Personal Protection Officer (Level IV)">
+      Personal Protection Officer (Level IV)
+    </option>
+  </select>
+
+  <br><br>
+
+  <input
+    id="editEmployeeLicenseNumber"
+    placeholder="License Number"
+  >
+
+  <br><br>
+
+  <input
+    type="date"
+    id="editEmployeeLicenseExpiration"
+  >
+
+</div>
+
+<br>
 
     <br><br>
 

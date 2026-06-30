@@ -190,6 +190,22 @@ window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
 window.activePatrols = [];
 window.patrolCompletions = [];
+let currentWeekStart = getStartOfWeek(new Date());
+
+function getStartOfWeek(date) {
+    const d = new Date(date);
+
+    const day = d.getDay();
+
+    const diff = day === 0
+        ? -6
+        : 1 - day;
+
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+
+    return d;
+}
 
 // ================= MAP =================
 
@@ -724,6 +740,21 @@ onSnapshot(
 );
 
 document.getElementById(
+  "editEmpRole"
+).addEventListener(
+  "change",
+  function () {
+
+    document.getElementById(
+      "editLicenseSection"
+    ).style.display =
+      this.value === "Security Officer"
+        ? "block"
+        : "none";
+  }
+);
+
+document.getElementById(
   "companyLogoUpload"
 ).onchange =
 function(e) {
@@ -766,6 +797,28 @@ function(e) {
   preview.style.display =
     "block";
 };
+
+const editRole =
+  document.getElementById(
+    "editEmpRole"
+  );
+
+if (editRole) {
+  editRole.addEventListener(
+    "change",
+    function () {
+
+      document.getElementById(
+        "editLicenseSection"
+      ).style.display =
+        this.value ===
+        "Security Officer"
+          ? "block"
+          : "none";
+
+    }
+  );
+}
 
 window.renderPatrolDashboard =
 function() {
@@ -3482,7 +3535,37 @@ function editEmployee(id) {
 
   document.getElementById(
     "editEmpRole"
-  ).value = emp.designation || "Worker";
+  ).value = emp.designation || "Worker"; 
+
+  document.getElementById(
+  "editLicenseSection"
+).style.display =
+  emp.designation ===
+  "Security Officer"
+    ? "block"
+    : "none";
+
+document.getElementById(
+  "editEmployeeLicenseLevel"
+).value =
+  emp.licenseLevel || "";
+
+document.getElementById(
+  "editEmployeeLicenseNumber"
+).value =
+  emp.licenseNumber || "";
+
+document.getElementById(
+  "editEmployeeLicenseExpiration"
+).value =
+  emp.licenseExpiration || "";
+
+document.getElementById(
+  "editLicenseSection"
+).style.display =
+  emp.type === "Security Officer"
+    ? "block"
+    : "none";
 
   document.getElementById(
     "editEmployeeModal"
@@ -3502,7 +3585,22 @@ async function saveEmployeeEdit() {
   const designation =
     document.getElementById(
       "editEmpRole"
-    ).value.trim();
+    ).value.trim();  
+
+const licenseLevel =
+  document.getElementById(
+    "editEmployeeLicenseLevel"
+  ).value;
+
+const licenseNumber =
+  document.getElementById(
+    "editEmployeeLicenseNumber"
+  ).value.trim();
+
+const licenseExpiration =
+  document.getElementById(
+    "editEmployeeLicenseExpiration"
+  ).value;
 
   if (!name) {
 
@@ -3515,16 +3613,19 @@ async function saveEmployeeEdit() {
   try {
 
     await updateDoc(
-      doc(
-        db,
-        "employees",
-        editingEmployeeId
-      ),
-      {
-        name,
-        designation
-      }
-    );
+  doc(
+    db,
+    "employees",
+    editingEmployeeId
+  ),
+  {
+    name,
+    designation,    
+    licenseLevel,
+    licenseNumber,
+    licenseExpiration
+  }
+);
 
     closeEditEmployeeModal();
 
@@ -6223,23 +6324,6 @@ html += `
 
 }
 
-let currentWeekStart = getStartOfWeek(new Date());
-
-function getStartOfWeek(date) {
-    const d = new Date(date);
-
-    const day = d.getDay();
-
-    const diff = day === 0
-        ? -6
-        : 1 - day;
-
-    d.setDate(d.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
-
-    return d;
-}
-
 function getEndOfWeek(startDate) {
     const end = new Date(startDate);
 
@@ -6394,6 +6478,10 @@ if (!site) {
 
   return;
 }
+console.log("Officer Lat:", officerLat);
+console.log("Officer Lng:", officerLng);
+console.log("Site Object:", site);
+console.log("Active Shift:", activeShift);
 
 const distance =
   calculateDistance(
@@ -6425,7 +6513,7 @@ console.log(
 if (distance > allowedRadius) {
 
   alert(
-    `Clock In Denied
+    `Clock In Denied   
 
 Assigned Site:
 ${site.siteName || activeShift.siteName}
@@ -6437,6 +6525,11 @@ ${allowedRadiusFeet} feet
 Allowed Radius:
 ${Math.round(allowedRadius)} meters`
   );
+  alert(
+  `Accuracy: ${Math.round(
+    position.coords.accuracy
+  )} meters`
+);
 
   return;
 }

@@ -81,10 +81,28 @@ function addFieldRow(
   leftLabel,
   leftValue,
   rightLabel = "",
-  rightValue = ""
+  rightValue = "",
+  shaded = false
 ) {
 
   checkPageBreak();
+
+  if (shaded) {
+
+  doc.setFillColor(
+    235,
+    235,
+    235
+  );
+
+  doc.rect(
+    18,
+    y - 5,
+    175,
+    7,
+    "F"
+  );
+}
 
   doc.setFont(
     undefined,
@@ -242,10 +260,6 @@ if (
   incident.persons.length
 ) {
 
-  addSectionHeader(
-  "Persons Involved"
-);
-
   incident.persons.forEach(
     (person, index) => {
 
@@ -277,39 +291,50 @@ if (
         person.heightInches
           ? `${person.heightFeet}' ${person.heightInches}"`
           : "";
-
+        
       const dob =
         person.dob
           ? new Date(
               person.dob
             ).toLocaleDateString()
           : "";
-
+          let shaded = false;
+            
       addFieldRow(
         "Name:",
         fullName,
         "Role:",
-        person.role
+        person.role,
+        shaded
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Alias:",
         person.alias,
         "DOB:",
-        dob
+        dob, 
+        shaded       
       );
+    shaded = !shaded;
 
       addFieldRow(
         "Sex:",
         person.sex,
         "Race:",
-        person.race
+        person.race,
+        shaded
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Ethnicity:",
-        person.ethnicity
+        person.ethnicity,
+        "",
+        "",
+        shaded        
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Height:",
@@ -317,48 +342,69 @@ if (
         "Weight:",
         person.weight
           ? `${person.weight} lbs`
-          : ""
+          : "",
+          shaded
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Hair:",
         person.hairColor,
         "Eyes:",
-        person.eyeColor
+        person.eyeColor,
+        shaded        
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Address:",
-        address
+        address,
+        shaded
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Cell:",
         person.cellPhone,
         "Home:",
-        person.homePhone
+        person.homePhone,
+        shaded              
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Employer:",
-        person.employer
+        person.employer,
+        "",
+        "",
+        shaded
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Email:",
-        person.email
+        person.email,
+        "",
+        "",
+        shaded        
       );
+      shaded = !shaded;
 
       addFieldRow(
         "Identification:",
-        `${person.idType || ""}
-${person.idNumber
-  ? " - " + person.idNumber
-  : ""}`,
+          `${person.idType || ""}${
+            person.idNumber
+              ? " - " + person.idNumber
+              : ""
+          }`,
         "State:",
         person.idState ||
-        person.state
+        person.state,
+        "",
+        "",
+        shaded
       );
+      shaded = !shaded;
 
       y += 5;
     }
