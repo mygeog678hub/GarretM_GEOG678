@@ -184,6 +184,7 @@ let analyticsOfficerFilter = "";
 let analyticsStartDateFilter = "";
 let analyticsEndDateFilter = "";
 let companyProfile = {};
+let incidentReports = [];
 let currentIncidentId = null;
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
@@ -5293,6 +5294,11 @@ document.getElementById(
     "patrolAnalyticsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
 
 };
 
@@ -5341,6 +5347,11 @@ document.getElementById(
   document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
+
+   document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
 
   refreshSupervisorDashboard();
 
@@ -5466,6 +5477,11 @@ document.getElementById(
   document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
 
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
@@ -5609,6 +5625,11 @@ document.getElementById(
   document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
 
   loadIncidentReports();
 
@@ -8750,397 +8771,87 @@ window.addPerson = function() {
 </div>
 </div>
 `
-
-
   );
 
 };
 
 window.submitIncidentReport =
-async function() {
+async function () {
 
   try {
 
-    const incidentType =
-      document.getElementById(
-        "incidentType"
-      ).value;
-
-    const severity =
-      document.getElementById(
-        "incidentSeverity"
-      ).value;
-
-    const narrative =
-      document.getElementById(
-        "incidentNarrative"
-      ).value.trim();
+    const incidentData =
+      collectIncidentData();
 
     if (
-      !incidentType ||
-      !narrative
+      !incidentData.incidentType ||
+      !incidentData.narrative
     ) {
-
       alert(
         "Please complete all required fields."
       );
-
       return;
-
     }
 
-    if (!currentOfficer) {
-
-      alert(
-        "Officer not found."
-      );
-
-      return;
-
-    }
-
-    let siteId = null;
-
-    const activeEntry =
-      timeEntries.find(
-        entry =>
-          entry.employeeId ===
-            currentOfficer.id &&
-          entry.status ===
-            "Clocked In"
-      );
-
-    if (activeEntry) {
-
-      siteId =
-        activeEntry.siteId;
-
-    } else {
-
-      const now =
-        new Date();
-
-      const currentShift =
-        shifts.find(
-          shift =>
-            shift.employeeId ===
-              currentOfficer.id &&
-            new Date(
-              shift.startTime
-            ) <= now &&
-            new Date(
-              shift.endTime
-            ) >= now
-        );
-
-      if (currentShift) {
-
-        siteId =
-          currentShift.siteId;
-
-      }
-
-    }
-
-    const site =
-      sites.find(
-        s => s.id === siteId
-      );
-
-    const persons = [];
-
-    document
-      .querySelectorAll(
-        ".person-card"
-      )
-      .forEach(card => {
-
-        persons.push({
-
-          role:
-            card.querySelector(
-              ".personRole"
-            )?.value || "",
-
-          firstName:
-            card.querySelector(
-              ".personFirstName"
-            )?.value || "",
-
-          middleName:
-            card.querySelector(
-              ".personMiddleName"
-            )?.value || "",
-
-          lastName:
-            card.querySelector(
-              ".personLastName"
-            )?.value || "",
-
-          alias:
-            card.querySelector(
-              ".personAlias"
-            )?.value || "",
-
-          dob:
-            card.querySelector(
-              ".personDOB"
-            )?.value || "",
-
-          sex:
-            card.querySelector(
-              ".personSex"
-            )?.value || "",
-
-          race:
-            card.querySelector(
-              ".personRace"
-            )?.value || "",
-
-          ethnicity:
-            card.querySelector(
-              ".personEthnicity"
-            )?.value || "",
-
-          heightFeet:
-            card.querySelector(
-              ".personHeightFeet"
-            )?.value || "",
-
-          heightInches:
-            card.querySelector(
-              ".personHeightInches"
-            )?.value || "",
-
-          weight:
-            card.querySelector(
-              ".personWeight"
-            )?.value || "",
-
-          hairColor:
-            card.querySelector(
-              ".personHairColor"
-            )?.value || "",
-
-          eyeColor:
-            card.querySelector(
-              ".personEyeColor"
-            )?.value || "",
-
-          idType:
-            card.querySelector(
-              ".personIdType"
-            )?.value || "",
-
-          idState:
-            card.querySelector(
-              ".personIdState"
-            )?.value || "",
-
-          idNumber:
-            card.querySelector(
-              ".personIdNumber"
-            )?.value || "",
-
-          homePhone:
-            card.querySelector(
-              ".personHomePhone"
-            )?.value || "",
-
-          cellPhone:
-            card.querySelector(
-              ".personCellPhone"
-            )?.value || "",
-
-          workPhone:
-            card.querySelector(
-              ".personWorkPhone"
-            )?.value || "",
-
-          street:
-            card.querySelector(
-              ".personStreet"
-            )?.value || "",
-
-          city:
-            card.querySelector(
-              ".personCity"
-            )?.value || "",
-
-          state:
-            card.querySelector(
-              ".personAddressState"
-            )?.value || "",
-
-          zip:
-            card.querySelector(
-              ".personZip"
-            )?.value || "",
-
-          employer:
-            card.querySelector(
-              ".personEmployer"
-            )?.value || "",
-
-          email:
-            card.querySelector(
-              ".personEmail"
-            )?.value || "",
-
-          preferredContact:
-            card.querySelector(
-              ".personPreferredContact"
-            )?.value || ""
-
-        });
-                
-  });
-
-  
-
-  const incidentVehicles = [];
-
-document
-  .querySelectorAll(
-    ".vehicle-card"
-  )
-  .forEach(card => {
-
-    incidentVehicles.push({
-
-      role:
-        card.querySelector(
-          ".vehicleRole"
-        )?.value || "",
-
-      owner:
-        card.querySelector(
-          ".vehicleOwner"
-        )?.value || "",
-
-      plate:
-        card.querySelector(
-          ".vehiclePlate"
-        )?.value || "",
-
-      state:
-        card.querySelector(
-          ".vehicleState"
-        )?.value || "",
-
-      year:
-        card.querySelector(
-          ".vehicleYear"
-        )?.value || "",
-
-      make:
-        card.querySelector(
-          ".vehicleMake"
-        )?.value || "",
-
-      model:
-        card.querySelector(
-          ".vehicleModel"
-        )?.value || "",
-
-      color:
-        card.querySelector(
-          ".vehicleColor"
-        )?.value || "",
-
-      vin:
-        card.querySelector(
-          ".vehicleVin"
-        )?.value || "",
-
-      insurance:
-        card.querySelector(
-          ".vehicleInsurance"
-        )?.value || "",
-
-      policy:
-        card.querySelector(
-          ".vehiclePolicy"
-        )?.value || "",
-
-      towed:
-        card.querySelector(
-          ".vehicleTowed"
-        )?.value || "",
-
-      notes:
-        card.querySelector(
-          ".vehicleNotes"
-        )?.value || ""
-
-    });
-
-  });    
+    const editingId =
+      document.getElementById(
+        "editingIncidentId"
+      ).value;
 
     const caseNumber =
       await generateIncidentCaseNumber();
 
-    await addDoc(
-      collection(
-        db,
-        "incidentReports"
-      ),
-      {
+    if (editingId) {
 
-        caseNumber,
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          editingId
+        ),
+        {
+          ...incidentData,
 
-        incidentType,
-        severity,
+          caseNumber,
 
-        narrative,
+          status:
+            "submitted",
 
-        officerId:
-          currentOfficer.id,
+          lastEdited:
+            serverTimestamp(),
 
-        officerName:
-          currentOfficer.name,
+          submittedAt:
+            serverTimestamp()
+        }
+      );
 
-        siteId:
-          site?.id || "",
+    } else {
 
-        siteName:
-          site?.name || "",
+      await addDoc(
+        collection(
+          db,
+          "incidentReports"
+        ),
+        {
+          ...incidentData,
 
-        persons,
+          caseNumber,
 
-        vehicles:
-          incidentVehicles,
-        
-        lawEnforcement: {
-  agency:
-    document.getElementById(
-      "incidentAgency"
-    ).value.trim(),
+          status:
+            "submitted",
 
-  officer:
-    document.getElementById(
-      "incidentAgencyOfficer"
-    ).value.trim(),
+          createdAt:
+            serverTimestamp(),
 
-  badge:
-    document.getElementById(
-      "incidentAgencyBadge"
-    ).value.trim(),
+          lastEdited:
+            serverTimestamp(),
 
-  caseNumber:
-    document.getElementById(
-      "incidentAgencyCase"
-    ).value.trim()
-},
+          submittedAt:
+            serverTimestamp()
+        }
+      );
 
-        status:
-          "Open",
-
-        createdAt:
-          serverTimestamp()
-
-      }
-    );
+    }
 
     await addDoc(
       collection(
@@ -9148,7 +8859,6 @@ document
         "activityLogs"
       ),
       {
-
         type:
           "Incident Report",
 
@@ -9157,13 +8867,16 @@ document
 
         timestamp:
           serverTimestamp()
-
       }
     );
 
     alert(
       `Incident ${caseNumber} submitted successfully.`
     );
+
+    document.getElementById(
+      "editingIncidentId"
+    ).value = "";
 
     document.getElementById(
       "incidentType"
@@ -9185,21 +8898,21 @@ document
       "vehiclesContainer"
     ).innerHTML = "";
 
-      document.getElementById(
-  "incidentAgency"
-).value = "";
+    document.getElementById(
+      "incidentAgency"
+    ).value = "";
 
-document.getElementById(
-  "incidentAgencyOfficer"
-).value = "";
+    document.getElementById(
+      "incidentAgencyOfficer"
+    ).value = "";
 
-document.getElementById(
-  "incidentAgencyBadge"
-).value = "";
+    document.getElementById(
+      "incidentAgencyBadge"
+    ).value = "";
 
-document.getElementById(
-  "incidentAgencyCase"
-).value = "";
+    document.getElementById(
+      "incidentAgencyCase"
+    ).value = "";
 
   } catch (error) {
 
@@ -9214,7 +8927,7 @@ document.getElementById(
 
   }
 
-};
+};   
 
 window.addIncidentVehicle = function() {
 
@@ -9391,6 +9104,236 @@ window.addIncidentVehicle = function() {
 
 };
 
+function collectIncidentData() {
+
+  const incidentType =
+    document.getElementById(
+      "incidentType"
+    ).value;
+
+  const severity =
+    document.getElementById(
+      "incidentSeverity"
+    ).value;
+
+  const narrative =
+    document.getElementById(
+      "incidentNarrative"
+    ).value.trim();
+
+  if (!currentOfficer) {
+    throw new Error(
+      "Officer not found."
+    );
+  }
+
+  let siteId = null;
+
+  const activeEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId ===
+          currentOfficer.id &&
+        entry.status ===
+          "Clocked In"
+    );
+
+  if (activeEntry) {
+
+    siteId =
+      activeEntry.siteId;
+
+  } else {
+
+    const now =
+      new Date();
+
+    const currentShift =
+      shifts.find(
+        shift =>
+          shift.employeeId ===
+            currentOfficer.id &&
+          new Date(
+            shift.startTime
+          ) <= now &&
+          new Date(
+            shift.endTime
+          ) >= now
+      );
+
+    if (currentShift) {
+      siteId =
+        currentShift.siteId;
+    }
+  }
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
+
+  const persons = [];
+
+  document
+    .querySelectorAll(
+      ".person-card"
+    )
+    .forEach(card => {
+
+      persons.push({
+        // KEEP ALL OF YOUR
+        // PERSON FIELDS HERE
+      });
+
+    });
+
+  const incidentVehicles = [];
+
+  document
+    .querySelectorAll(
+      ".vehicle-card"
+    )
+    .forEach(card => {
+
+      incidentVehicles.push({
+        // KEEP ALL OF YOUR
+        // VEHICLE FIELDS HERE
+      });
+
+    });
+
+  return {
+
+    incidentType,
+    severity,
+    narrative,
+
+    officerId:
+      currentOfficer.id,
+
+    officerName:
+      currentOfficer.name,
+
+    siteId:
+      site?.id || "",
+
+    siteName:
+      site?.name || "",
+
+    persons,
+
+    vehicles:
+      incidentVehicles,
+
+    lawEnforcement: {
+      agency:
+        document.getElementById(
+          "incidentAgency"
+        ).value.trim(),
+
+      officer:
+        document.getElementById(
+          "incidentAgencyOfficer"
+        ).value.trim(),
+
+      badge:
+        document.getElementById(
+          "incidentAgencyBadge"
+        ).value.trim(),
+
+      caseNumber:
+        document.getElementById(
+          "incidentAgencyCase"
+        ).value.trim()
+    }
+  };
+
+}
+
+window.saveIncidentDraft =
+async function () {
+
+  try {
+
+    const incidentData =
+      collectIncidentData();
+
+    const editingId =
+      document.getElementById(
+        "editingIncidentId"
+      ).value;
+
+    if (editingId) {
+
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          editingId
+        ),
+        {
+          ...incidentData,
+
+          status:
+            "draft",
+
+          lastEdited:
+            serverTimestamp()
+        }
+      );
+
+    } else {
+
+      const docRef =
+        await addDoc(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          {
+            ...incidentData,
+
+            caseNumber:
+              null,
+
+            status:
+              "draft",
+
+            createdAt:
+              serverTimestamp(),
+
+            lastEdited:
+              serverTimestamp(),
+
+            submittedAt:
+              null
+          }
+        );
+
+      document.getElementById(
+        "editingIncidentId"
+      ).value =
+        docRef.id;
+    }
+
+    alert(
+      "Draft saved."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Draft Save Error:",
+      error
+    );
+
+    alert(
+      "Unable to save draft."
+    );
+
+  }
+
+};
 async function loadIncidentReports() {    
 
   const container =
@@ -9417,7 +9360,15 @@ async function loadIncidentReports() {
           "desc"
         )
       )
-    );  
+    ); 
+    
+    incidentReports =
+  snapshot.docs.map(
+    doc => ({
+      id: doc.id,
+      ...doc.data()
+    })
+  );
 
   if (
     snapshot.empty
@@ -9917,6 +9868,11 @@ document.getElementById(
   document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
 
   const patrolPage =
     document.getElementById(
@@ -10473,6 +10429,50 @@ async function(id) {
     }
   );
 
+};
+
+window.showMyReportsPage =
+async function () {
+  await loadIncidentReports();
+
+  hideAllPages();
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "block";
+
+    document.getElementById(
+    "officerPortal"
+  ).style.display =
+    "none";
+
+    document.getElementById(
+  "patrolExecutionPage"
+).style.display = "none";
+
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display =
+    "none";
+
+    document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none"; 
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  loadMyReports();
 };
 
 window.showMyPatrols =
@@ -11834,6 +11834,11 @@ document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
   refreshPatrolDashboard();
 };
 
@@ -12459,6 +12464,11 @@ function() {
   document.getElementById(
     "patrolDashboardPage"
   ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
 
   renderPatrolAnalytics();
 };
@@ -13709,10 +13719,10 @@ async function () {
       "supplementIncidentId"
     ).value;
 
-  const caseNumber =
+ /* const caseNumber =
     document.getElementById(
       "supplementCaseNumber"
-    ).value;
+    ).value; */
 
   const supplementId =
     document.getElementById(
@@ -13774,6 +13784,207 @@ function () {
   ).style.display =
     "block";
 };
+
+window.showMyReports =
+async function () {
+
+  const drafts =
+    incidentReports.filter(
+      r =>
+        r.officerId ===
+          currentOfficer.id &&
+        r.status ===
+          "draft"
+    );
+
+  renderDraftReports(
+    drafts
+  );
+};
+
+window.loadMyReports =
+function () {
+  console.log(
+  "All Incident Reports:",
+  incidentReports
+);
+
+console.log(
+  "Current Officer:",
+  currentOfficer.id
+);
+
+  const drafts =
+    incidentReports.filter(
+      r =>
+        r.officerId ===
+          currentOfficer.id &&
+        r.status ===
+          "draft"
+    );
+
+    console.log(
+  "Drafts:",
+  drafts
+);
+
+  const submitted =
+    incidentReports.filter(
+      r =>
+        r.officerId ===
+          currentOfficer.id &&
+        r.status ===
+          "submitted"
+    );
+
+  renderDraftReports(
+    drafts
+  );
+
+  /*renderSubmittedReports(
+    submitted
+  );*/
+
+};
+
+function renderDraftReports(
+  drafts
+) {
+
+  const tbody =
+    document.getElementById(
+      "draftReportsBody"
+    );
+
+  tbody.innerHTML = "";
+
+  drafts.forEach(report => {
+
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          ${
+            report.createdAt
+              ?.toDate()
+              ?.toLocaleDateString() ||
+            ""
+          }
+        </td>
+
+        <td>
+          ${report.incidentType}
+        </td>
+
+        <td>
+
+          <button
+            onclick="
+              editDraft(
+                '${report.id}'
+              )
+            "
+          >
+            Continue
+          </button>
+
+        </td>
+      </tr>
+    `;
+
+  });
+
+}
+
+window.editDraft =
+async function (
+  reportId
+) {
+
+  try {
+
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          reportId
+        )
+      );
+
+    if (!snap.exists()) {
+      alert(
+        "Draft not found."
+      );
+      return;
+    }
+
+    const report =
+      snap.data();
+
+    document.getElementById(
+      "editingIncidentId"
+    ).value =
+      reportId;
+
+          document.getElementById(
+      "incidentType"
+    ).value =
+      report.incidentType || "";
+
+    document.getElementById(
+      "incidentSeverity"
+    ).value =
+      report.severity || "";
+
+    document.getElementById(
+      "incidentNarrative"
+    ).value =
+      report.narrative || "";
+
+          document.getElementById(
+      "incidentAgency"
+    ).value =
+      report.lawEnforcement
+        ?.agency || "";
+
+    document.getElementById(
+      "incidentAgencyOfficer"
+    ).value =
+      report.lawEnforcement
+        ?.officer || "";
+
+    document.getElementById(
+      "incidentAgencyBadge"
+    ).value =
+      report.lawEnforcement
+        ?.badge || "";
+
+    document.getElementById(
+      "incidentAgencyCase"
+    ).value =
+      report.lawEnforcement
+        ?.caseNumber || "";            
+
+              showOfficerIncidentReport();
+
+  } catch (error) {
+
+    console.error(
+      "Edit Draft Error:",
+      error
+    );
+
+    alert(
+      "Unable to open draft."
+    );
+
+  }
+
+};
+
+
+
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

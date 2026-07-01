@@ -1816,6 +1816,10 @@
   Investigative Reports
 </button>
 
+<button onclick="showMyReportsPage()">
+  My Reports
+</button>
+
 <button
   onclick="showMyPatrols()"
 >
@@ -2101,6 +2105,14 @@
 </div>
 
 <button
+  type="button"
+  onclick="saveIncidentDraft()"
+>
+  Save Draft
+</button>
+
+<button
+  type="button"
   onclick="submitIncidentReport()"
 >
   Submit Report
@@ -2128,6 +2140,54 @@
 
   </div>
 
+
+</div>
+
+<div
+  id="myReportsPage"
+  style="display:none;"
+>
+
+  <h2>My Reports</h2>
+
+  <h3>Draft Reports</h3>
+
+  <table
+    id="draftReportsTable"
+    class="data-table"
+  >
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody
+      id="draftReportsBody"
+    ></tbody>
+  </table>
+
+  <h3>Submitted Reports</h3>
+
+  <table
+    id="submittedReportsTable"
+    class="data-table"
+  >
+    <thead>
+      <tr>
+        <th>Case #</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody
+      id="submittedReportsBody"
+    ></tbody>
+  </table>
 
 </div>
 
@@ -2232,6 +2292,18 @@
   <button id="clearAnalyticsFiltersBtn">
     Clear
   </button>
+
+</div>
+
+<div id="myReportsPage" style="display:none;">
+
+  <h3>Draft Reports</h3>
+
+  <div id="draftReportsList"></div>
+
+  <h3>Submitted Reports</h3>
+
+  <div id="submittedReportsList"></div>
 
 </div>
 
@@ -2376,6 +2448,11 @@
   class="modal hidden"
 >
   <div class="modal-content">
+
+    <input
+  type="hidden"
+  id="editingIncidentId"
+/>
 
     <h2>
       Incident Details
