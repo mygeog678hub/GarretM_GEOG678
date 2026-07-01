@@ -9550,8 +9550,8 @@ async function(id) {
   const incident =
     snap.data();
 
-    window.currentIncident =
-  incident;
+    incident.id = id;
+window.currentIncident = incident;
 
   renderIncidentViewer(
     incident
@@ -9784,6 +9784,7 @@ ${
 }
 
   `;
+  loadSupplements(incident.id);
 
 }
 
@@ -13438,6 +13439,340 @@ async function(file) {
   return await getDownloadURL(
     storageRef
   );
+};
+
+window.openSupplementModal =
+async function () {
+
+  console.log(
+    "Current Incident:",
+    window.currentIncident
+  );
+
+  const incident =
+    window.currentIncident;
+
+  if (!incident) {
+    alert(
+      "No incident selected."
+    );
+    return;
+  }
+
+  document.getElementById(
+    "supplementIncidentId"
+  ).value =
+    incident.id;
+
+  document.getElementById(
+    "supplementCaseNumber"
+  ).value =
+    incident.caseNumber;
+
+  const supplementNumber =
+    await getNextSupplementNumber(
+      incident.id
+    );
+
+  document.getElementById(
+    "supplementNumber"
+  ).value =
+    supplementNumber;
+
+  document.getElementById(
+    "viewIncidentModal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "supplementModal"
+  ).style.display =
+    "block";
+};
+
+
+window.closeSupplementModal =
+function () {
+
+  document.getElementById(
+    "supplementModal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "viewIncidentModal"
+  ).style.display =
+    "block";
+};
+
+window.loadSupplements =
+async function (
+  incidentId
+) {
+  const container =
+    document.getElementById(
+      "supplementsContainer"
+    );
+
+  if (!container) return;
+
+  container.innerHTML =
+    "<p>Loading supplements...</p>";
+
+  try {
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements"
+        )
+      );
+
+    if (snapshot.empty) {
+      container.innerHTML =
+        "<p>No supplemental reports.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+
+    snapshot.forEach(
+      docSnap => {
+        const s =
+          docSnap.data();
+
+        const created =
+          s.createdAt?.toDate
+            ? s.createdAt
+                .toDate()
+                .toLocaleString()
+            : "Unknown Date";
+
+        container.innerHTML += `
+  <div
+    class="supplement-card"
+    onclick="
+      viewSupplement(
+        '${incidentId}',
+        '${s.supplementId}'
+      )
+    "
+    style="
+      cursor:pointer;
+    "
+  >
+    <strong>
+      Supplement ${s.supplementId}
+    </strong>
+    <br>
+    Officer:
+    ${s.officerName}
+    <br>
+    ${created}
+  </div>
+`;
+      }
+    );
+  }
+  catch (err) {
+    console.error(
+      "Error loading supplements:",
+      err
+    );
+
+    container.innerHTML =
+      "<p>Error loading supplements.</p>";
+  }
+};
+
+window.viewSupplement =
+async function (
+  incidentId,
+  supplementId
+) {
+
+  const snap =
+    await getDoc(
+      doc(
+        db,
+        "incidentReports",
+        incidentId,
+        "supplements",
+        supplementId
+      )
+    );
+
+  if (!snap.exists()) {
+    alert(
+      "Supplement not found."
+    );
+    return;
+  }
+
+  const s =
+    snap.data();
+
+  document.getElementById(
+    "supplementViewerContent"
+  ).innerHTML = `
+    <p>
+      <strong>
+        Case Number:
+      </strong>
+      ${s.caseNumber}
+    </p>
+
+    <p>
+      <strong>
+        Supplement:
+      </strong>
+      ${s.supplementId}
+    </p>
+
+    <p>
+      <strong>
+        Officer:
+      </strong>
+      ${s.officerName}
+    </p>
+
+    <p>
+      <strong>
+        Date:
+      </strong>
+      ${
+        s.createdAt?.toDate
+          ? s.createdAt
+              .toDate()
+              .toLocaleString()
+          : ""
+      }
+    </p>
+
+    <hr>
+
+    <h3>
+      Narrative
+    </h3>
+
+    <pre
+      style="
+        white-space: pre-wrap;
+        font-family: inherit;
+      "
+    >
+${s.narrative}
+    </pre>
+  `;
+
+  document.getElementById(
+  "viewIncidentModal"
+).style.display =
+  "none";
+
+  document.getElementById(
+    "viewSupplementModal"
+  ).style.display =
+    "block";
+};
+
+window.getNextSupplementNumber =
+async function (
+  incidentId
+) {
+  const snapshot =
+    await getDocs(
+      collection(
+        db,
+        "incidentReports",
+        incidentId,
+        "supplements"
+      )
+    );
+    console.log(
+  "Supplement count:",
+  snapshot.size
+);
+
+  return String(
+    snapshot.size + 1
+  ).padStart(3, "0");
+};
+
+window.saveSupplement =
+async function () {
+
+  const incidentId =
+    document.getElementById(
+      "supplementIncidentId"
+    ).value;
+
+  const caseNumber =
+    document.getElementById(
+      "supplementCaseNumber"
+    ).value;
+
+  const supplementId =
+    document.getElementById(
+      "supplementNumber"
+    ).value;
+
+  const narrative =
+    document.getElementById(
+      "supplementNarrative"
+    ).value;
+
+  await setDoc(
+    doc(
+      db,
+      "incidentReports",
+      incidentId,
+      "supplements",
+      supplementId
+    ),
+    {
+      incidentId,
+      caseNumber,
+      supplementId,
+      reportType:
+        "Supplement",
+      narrative,
+      officerId:
+        currentOfficer.id,
+      officerName:
+        currentOfficer.name,
+      createdAt:
+        serverTimestamp()
+    }
+  );
+
+  alert(
+    `Supplement ${supplementId} saved.`
+  );
+
+  closeSupplementModal();
+
+  loadSupplements(
+    incidentId
+  );
+  document.getElementById(
+  "supplementNarrative"
+).value = "";
+};
+
+window.closeSupplementViewer =
+function () {
+  document.getElementById(
+    "viewSupplementModal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "viewIncidentModal"
+  ).style.display =
+    "block";
 };
 
 // ================= GLOBAL =================

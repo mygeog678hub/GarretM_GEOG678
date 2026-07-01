@@ -2293,10 +2293,88 @@
     </div>
 
     <div
+  id="viewSupplementModal"
+  class="modal"
+  style="display:none;"
+>
+  <div class="modal-content">
+
+    <h2>
+      Supplemental Report
+    </h2>
+
+    <div
+      id="supplementViewerContent"
+    ></div>
+
+    <br>
+
+    <button
+      onclick="closeSupplementViewer()"
+    >
+      Close
+    </button>
+
+  </div>
+</div>
+
+<div
+  id="supplementModal"
+  class="modal"
+  style="display:none;"
+>
+  <div class="modal-content">
+
+    <h2>Create Supplemental Report</h2>
+
+    <input
+      type="hidden"
+      id="supplementIncidentId"
+    >
+
+    <div class="field-group">
+      <label>Case Number</label>
+      <input
+        id="supplementCaseNumber"
+        readonly
+      >
+    </div>
+
+    <div class="field-group">
+      <label>Supplement Number</label>
+      <input
+        id="supplementNumber"
+        readonly
+      >
+    </div>
+
+    <div class="field-group">
+      <label>Narrative</label>
+      <textarea
+        id="supplementNarrative"
+        rows="10"
+      ></textarea>
+    </div>
+
+   <button
+  onclick="closeSupplementModal()"
+>
+  Cancel
+</button>
+
+<button
+  onclick="saveSupplement()"
+>
+  Save Supplement
+</button>    
+
+  </div>
+</div>
+
+    <div
   id="viewIncidentModal"
   class="modal hidden"
 >
-
   <div class="modal-content">
 
     <h2>
@@ -2307,6 +2385,18 @@
       id="incidentViewerContent"
     ></div>
 
+    <hr>
+
+    <h3>
+      Supplemental Reports
+    </h3>
+
+    <div
+      id="supplementsContainer"
+    >
+      No supplemental reports.
+    </div>
+
     <br>
 
     <button
@@ -2315,13 +2405,21 @@
       Close
     </button>
 
-      <button
-      onclick="downloadIncidentPdf()">
-        📄 Download PDF
+    <button
+      class="btn btn-secondary"
+      onclick="openSupplementModal()"
+    >
+      ➕ Create Supplement
+    </button>
+
+    <button
+      onclick="downloadIncidentPdf()"
+    >
+      📄 Download PDF
     </button>
 
   </div>
-  </div>
+</div>
   
   <div
   id="checkpointModal"
