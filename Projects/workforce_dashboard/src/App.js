@@ -424,6 +424,27 @@ const filteredLogs =
     .join("");
 }
 
+function fileToBase64(file) {
+  return new Promise(
+    (resolve, reject) => {
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => resolve(
+          reader.result
+        );
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(
+        file
+      );
+    }
+  );
+}
+
 // ================= LOAD =================
 onSnapshot(collection(db, "employees"), snap => {
 
@@ -13128,6 +13149,9 @@ async function () {
     let logoUrl =
       companyProfile.logoUrl || "";
 
+      let logoBase64 =
+  companyProfile.logoBase64 || "";
+
     let patchUrl =
       companyProfile.patchUrl || "";
 
@@ -13136,12 +13160,32 @@ async function () {
     "companyLogoUpload"
   ).files[0];
 
+  console.log(
+  "Selected logo file:",
+  logoFile
+);
+
 if (logoFile) {
 
   logoUrl =
     await uploadCompanyLogo(
       logoFile
     );
+
+  logoBase64 =
+    await fileToBase64(
+      logoFile
+    );
+
+    console.log(
+  "Base64 length:",
+  logoBase64?.length
+);
+
+console.log(
+  "Base64 starts with:",
+  logoBase64?.substring(0, 30)
+);
 }
 
 const patchFile =
@@ -13204,6 +13248,7 @@ if (patchFile) {
         ).value,
 
         logoUrl,
+        logoBase64,
         patchUrl,
 
         createdAt:
@@ -13213,6 +13258,11 @@ if (patchFile) {
       updatedAt:
         serverTimestamp()
     };
+
+    console.log(
+  "Saving profile:",
+  profile
+);
 
     await setDoc(
       doc(
@@ -13225,6 +13275,8 @@ if (patchFile) {
       profile,
       { merge: true }
     );
+    companyProfile = profile;
+    window.companyProfile = profile;
 
     alert(
       "Company profile saved."

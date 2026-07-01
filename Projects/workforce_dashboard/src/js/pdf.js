@@ -1,4 +1,5 @@
 
+
 window.downloadIncidentPdf =
 async function() {
   let y = 20;
@@ -53,6 +54,7 @@ function checkPageBreak(
     y = 20;
   }
 }
+
 
 function addSectionHeader(
   title
@@ -212,33 +214,110 @@ function addFieldRow(
   y += 8;
 }
 
+let headerTextX = 20;
+const headerTop = y;
+
+// ======================
+// Company Logo
+// ======================
+
+if (
+  window.companyProfile
+    ?.logoBase64
+) {
+
+ const img = new Image();
+img.src = window.companyProfile.logoBase64;
+
+const logoWidth = 28;
+const logoHeight =
+  (img.height * logoWidth) /
+  img.width;
+
+doc.addImage(
+  window.companyProfile.logoBase64,
+  "PNG",
+  20,
+  headerTop - 2,
+  logoWidth,
+  logoHeight
+);
+
+headerTextX = 55;
+}
+
+// ======================
+// Company Name
+// ======================
+
 doc.setFontSize(18);
 
 doc.text(
   window.companyProfile?.companyName ||
-  "Security Company",
-  20,
+    "Security Company",
+  headerTextX,
   y
 );
 
 y += 8;
 
+// ======================
+// License Number
+// ======================
+
 if (
   window.companyProfile?.licenseNumber
 ) {
-
   doc.setFontSize(11);
 
   doc.text(
     `License #: ${window.companyProfile.licenseNumber}`,
-    20,
+    headerTextX,
     y
   );
 
-  y += 8;
+  y += 6;
+}
+
+// ======================
+// Address
+// ======================
+
+if (
+  window.companyProfile?.address
+) {
+  doc.setFontSize(10);
+
+  doc.text(
+    window.companyProfile.address,
+    headerTextX,
+    y
+  );
+
+  y += 5;
+}
+
+// ======================
+// Phone
+// ======================
+
+if (
+  window.companyProfile?.phone
+) {
+  doc.text(
+    window.companyProfile.phone,
+    headerTextX,
+    y
+  );
+
+  y += 5;
 }
 
 y += 8;
+
+// ======================
+// Report Title
+// ======================
 
 doc.setFontSize(16);
 
