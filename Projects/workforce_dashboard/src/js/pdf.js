@@ -22,6 +22,11 @@ async function() {
   } = window.jspdf;
 
   const doc = new jsPDF();
+  const pageWidth =
+  doc.internal.pageSize.getWidth();
+
+const pageHeight =
+  doc.internal.pageSize.getHeight();
 
 function checkPageBreak(
   requiredSpace = 20
@@ -239,8 +244,8 @@ doc.addImage(
   "PNG",
   20,
   headerTop - 2,
-  logoWidth,
-  logoHeight
+  28,
+  12
 );
 
 headerTextX = 55;
@@ -754,20 +759,73 @@ y += 5;
 }
 
 // ======================
-  // Narrative
-  // ======================
+// Narrative
+// ======================
 
 addSectionHeader(
   "Narrative"
 );
 
+const narrative =
+  incident.narrative ||
+  "No narrative provided.";
+
 doc.setFontSize(11);
 
-writeParagraph(
-  incident.narrative || ""
+const narrativeLines =
+  doc.splitTextToSize(
+    narrative,
+    pageWidth -
+      (margin * 2) -
+      10
+  );
+
+const lineHeight = 5;
+
+const narrativeHeight =
+  (narrativeLines.length *
+    lineHeight) +
+  10;
+
+checkPageBreak(
+  narrativeHeight + 15
 );
 
-y += 10;
+// Light background
+doc.setFillColor(
+  248,
+  248,
+  248
+);
+
+doc.rect(
+  margin,
+  y,
+  pageWidth -
+    (margin * 2),
+  narrativeHeight,
+  "F"
+);
+
+// Border
+doc.rect(
+  margin,
+  y,
+  pageWidth -
+    (margin * 2),
+  narrativeHeight
+);
+
+// Narrative text
+doc.text(
+  narrativeLines,
+  margin + 5,
+  y + 8
+);
+
+y +=
+  narrativeHeight +
+  10;
 
 checkPageBreak(35);
 
