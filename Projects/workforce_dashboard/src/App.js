@@ -208,6 +208,48 @@ function getStartOfWeek(date) {
     return d;
 }
 
+let incidents = [];
+
+onSnapshot(
+  collection(
+    db,
+    "incidents"
+  ),
+  snapshot => {
+
+    incidents =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    refresh();
+    updateMap();
+
+  }
+);
+
+onSnapshot(
+  collection(
+    db,
+    "incidentReports"
+  ),
+  snapshot => {
+
+    incidentReports =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    refresh();
+  }
+);
+
 // ================= MAP =================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -374,9 +416,11 @@ function refreshActivityFeed() {
 
   if (!feed) return;
 
-  const dashboardLogs =
+ const dashboardLogs =
   activityLogs.filter(
     log =>
+      ( !log.scope ||
+        log.scope === "site" ) &&
       log.type !== "Post Abandonment" &&
       log.type !== "Returned To Post"
   );
@@ -644,32 +688,6 @@ onSnapshot(
 
     updateMap();
 
-  }
-);
-
-let incidents = [];
-
-onSnapshot(
-  collection(db, "incidentReports"),
-  snapshot => {
-
-    console.log(
-      "Incidents updated:",
-      snapshot.size
-    );
-
-    incidents =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-    console.log(
-      "Snapshot incidents:",
-      incidents.length
-    );
-
-    refresh();
   }
 );
 
@@ -1250,19 +1268,25 @@ async function logActivity(
   siteId,
   type,
   message,
-  user = "System"
+  user = "System",
+  scope = "site"
 ) {
 
   try {
 
     await addDoc(
-      collection(db, "activityLogs"),
+      collection(
+        db,
+        "activityLogs"
+      ),
       {
         siteId,
         type,
         message,
         user,
-        timestamp: serverTimestamp()
+        scope,
+        timestamp:
+          serverTimestamp()
       }
     );
 
@@ -1274,9 +1298,10 @@ async function logActivity(
     );
 
   }
-
 }
-window.logActivity = logActivity;
+
+window.logActivity =
+  logActivity;
 
 async function endBusinessDay() {
 
@@ -4617,12 +4642,21 @@ function openViewNotesModal() {
 
     });
 
-    const activeEntry =
-  timeEntries.find(
-    entry =>
-      entry.employeeId === currentOfficer.id &&
-      entry.status === "Clocked In"
-  );
+let activeEntry = null;
+
+if (
+  window.currentEmployee &&
+  currentEmployee.id
+) {
+  activeEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId ===
+          currentEmployee.id &&
+        entry.status ===
+          "Clocked In"
+    );
+}
 
 if (activeEntry) {
 
@@ -4630,6 +4664,14 @@ if (activeEntry) {
     activeEntry.siteId;
 
 }
+select.onchange = function () {
+  console.log(
+    "Site changed:",
+    this.value
+  );
+
+  loadSiteHistory();
+};
 
   loadSiteHistory();
 
@@ -4718,6 +4760,12 @@ ${JSON.stringify(note, null, 2)}
 }
 
 function loadSiteHistory() {
+  console.log(
+  "loadSiteHistory fired:",
+  document.getElementById(
+    "viewNotesSite"
+  ).value
+);
 
  const select =
   document.getElementById(
@@ -5194,21 +5242,51 @@ async function resolveIncident(id) {
   );
 
   if (!resolution?.trim()) {
-    alert("Resolution notes required.");
+    alert(
+      "Resolution notes required."
+    );
     return;
   }
 
   try {
 
+    const incidentRef =
+      doc(
+        db,
+        "incidents",
+        id
+      );
+
+    const snap =
+      await getDoc(
+        incidentRef
+      );
+
+    if (!snap.exists()) {
+
+      alert(
+        "This incident no longer exists."
+      );
+
+      return;
+    }
+
     await updateDoc(
-      doc(db, "incidents", id),
+      incidentRef,
       {
-        status: "Resolved",
-        resolution: resolution.trim(),
+        status:
+          "Resolved",
+
+        resolution:
+          resolution.trim(),
+
         resolvedBy:
-          auth.currentUser?.email || "Unknown",
+          auth.currentUser?.email ||
+          "Unknown",
+
         resolvedAt:
-          new Date().toISOString()
+          new Date()
+            .toISOString()
       }
     );
 
@@ -5225,7 +5303,6 @@ async function resolveIncident(id) {
     );
 
   }
-
 }
 
 function playCriticalAlert() {
@@ -9703,6 +9780,15 @@ function getIncidentStatusBadge(
     default:
       return status || "";
   }
+
+  const comments =
+  document.getElementById(
+    "supervisorComments"
+  );
+
+if (comments) {
+  comments.value = "";
+}
 }
 
 window.viewIncident =
@@ -9801,6 +9887,8 @@ function renderIncidentActionButtons() {
       case "submitted":
 
         html += `
+
+        
           <button
             onclick="
               approveIncident(
@@ -9907,6 +9995,7 @@ function renderIncidentActionButtons() {
   container.innerHTML =
     html;
 }
+
 function renderIncidentViewer(
   incident
 ) {
@@ -14539,6 +14628,79 @@ async function(id) {
 
     alert(
       "Unable to approve report."
+    );
+  }
+};
+
+window.returnIncident =
+async function(id) {
+
+  try {
+
+    const comments =
+      document
+        .getElementById(
+          "supervisorComments"
+        )
+        .value
+        .trim();
+
+    if (!comments) {
+      alert(
+        "Please provide correction instructions."
+      );
+      return;
+    }
+
+    if (
+      !confirm(
+        "Return this report for corrections?"
+      )
+    ) {
+      return;
+    }
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        id
+      ),
+      {
+        status:
+          "returned",
+
+        supervisorComments:
+          comments,
+
+        returnedAt:
+          serverTimestamp(),
+
+        returnedBy:
+          currentEmployee.id,
+
+        returnedByName:
+          currentEmployee.name
+      }
+    );
+
+    alert(
+      "Report returned to officer."
+    );
+
+    closeIncidentModal();
+
+    await loadIncidentReviewQueue();
+
+  } catch (error) {
+
+    console.error(
+      "Return Error:",
+      error
+    );
+
+    alert(
+      "Unable to return report."
     );
   }
 };

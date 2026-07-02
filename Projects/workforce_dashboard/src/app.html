@@ -1227,30 +1227,20 @@
        background-color:rgba(0,0,0,0.45);
      ">
 
-  <div style="
-       background:white;
-       margin:5% auto;
-       padding:20px;
-       width:700px;
-       border-radius:8px;
-       max-height:80vh;
-       overflow:auto;
-  ">
   <div id="viewNotesContent"
-     style="
-       background:white;
-       margin:5% auto;
-       padding:20px;
-       width:700px;
-       border-radius:8px;
-       max-height:80vh;
-       overflow:auto;
-">
+       style="
+         background:white;
+         margin:5% auto;
+         padding:20px;
+         width:700px;
+         border-radius:8px;
+         max-height:80vh;
+         overflow:auto;
+       ">
 
     <h2>Site Notes</h2>
 
-    <select id="viewNotesSite"
-            onchange="testSiteChange()">
+    <select id="viewNotesSite">
     </select>
 
     <hr>
@@ -1259,14 +1249,13 @@
 
     <br>
 
-    <button onclick="closeViewNotesModal()">
+    <button
+      onclick="closeViewNotesModal()">
       Close
     </button>
 
   </div>
-  </div>
 
-</div>
 </div>
 
   <div id="missingClockInModal" class="modal hidden">
@@ -2499,6 +2488,21 @@
     </div>
 
     <br>
+
+    <div class="form-group">
+  <label>
+    Supervisor Comments
+  </label>
+
+  <textarea
+    id="supervisorComments"
+    class="form-control"
+    rows="4"
+    placeholder="Explain what needs to be corrected..."
+  ></textarea>
+</div>
+
+<br>
 
     <div id="incidentActionButtons">
 
