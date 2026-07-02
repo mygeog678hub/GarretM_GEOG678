@@ -470,6 +470,8 @@ onSnapshot(collection(db, "employees"), snap => {
         e.email.toLowerCase() ===
         currentUser.email.toLowerCase()
     );
+    window.currentEmployee =
+  employee;
 
   console.log(
     "Matched Employee:",
@@ -5299,6 +5301,10 @@ document.getElementById(
   ).style.display =
     "none";
 
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
 
 };
 
@@ -5353,6 +5359,10 @@ document.getElementById(
   ).style.display =
     "none";
 
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
   refreshSupervisorDashboard();
 
 }
@@ -5392,6 +5402,10 @@ document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
 
+   document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
   renderMySchedule();
   renderMySite();
   renderMyAttendanceStatus();
@@ -5410,25 +5424,54 @@ function() {
     "schedulingPage"
   ).style.display = "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
+  setActiveNavById(
+    "incidentReportsBtn"
+  );
 
  document.getElementById(
   "officerPortal"
 ).style.display = "none";
 
   document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "block";  
+  "officerIncidentReportPage"
+).style.display = "block";
 
-  document.getElementById(
+document.getElementById(
+  "incidentReportsPage"
+).style.display = "none";
+
+document.getElementById(
   "patrolsPage"
 ).style.display = "none";
 
 document.getElementById(
   "myPatrolsPage"
 ).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
+    document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
 
 };
 
@@ -5483,6 +5526,14 @@ document.getElementById(
   ).style.display =
     "none";
 
+    document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
 
@@ -5499,26 +5550,117 @@ function() {
     "schedulingPage"
   ).style.display = "none";
 
-  document.getElementById(
-    "officerPortal"
-  ).style.display = "none";
+  setActiveNavById(
+    "patrolExecutionBtn"
+  );
 
-   document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
+ document.getElementById(
+  "officerPortal"
+).style.display = "none";
 
   document.getElementById(
-    "myPatrolsPage"
+  "officerIncidentReportPage"
+).style.display = "none";
+
+document.getElementById(
+  "incidentReportsPage"
+).style.display = "none";
+
+document.getElementById(
+  "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
   ).style.display = "none";
 
   document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
+    document.getElementById(
     "patrolExecutionPage"
   ).style.display = "block";
 
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+};
+
+window.showIncidentReviewPage =
+async function () {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  setActiveNavById(
+    "incidentReviewBtn"
+  );
+
+ document.getElementById(
+  "officerPortal"
+).style.display = "none";
+
+  document.getElementById(
+  "officerIncidentReportPage"
+).style.display = "none";
+
+document.getElementById(
+  "incidentReportsPage"
+).style.display = "none";
+
+document.getElementById(
+  "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
+    document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "block";
+
+  await loadIncidentReviewQueue();
 };
 
 function populateScheduleDropdowns() {
@@ -5594,28 +5736,32 @@ function() {
     "schedulingPage"
   ).style.display = "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "officerPortal"
-  ).style.display = "none";
-
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "block";
-
   setActiveNavById(
-  "incidentReportsBtn"
-);
+    "incidentReportsBtn"
+  );
+
+ document.getElementById(
+  "officerPortal"
+).style.display = "none";
 
   document.getElementById(
+  "officerIncidentReportPage"
+).style.display = "none";
+
+document.getElementById(
+  "incidentReportsPage"
+).style.display = "block";
+
+document.getElementById(
   "patrolsPage"
 ).style.display = "none";
 
 document.getElementById(
-    "myPatrolsPage"
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
   ).style.display = "none";
 
   document.getElementById(
@@ -5630,6 +5776,14 @@ document.getElementById(
     "myReportsPage"
   ).style.display =
     "none";
+
+    document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
 
   loadIncidentReports();
 
@@ -8798,10 +8952,25 @@ async function () {
         "editingIncidentId"
       ).value;
 
-    const caseNumber =
-      await generateIncidentCaseNumber();
+    let caseNumber = null;
 
     if (editingId) {
+
+      const incidentSnap =
+  await getDoc(
+    doc(
+      db,
+      "incidentReports",
+      editingId
+    )
+  );
+
+const existingIncident =
+  incidentSnap.data();
+
+caseNumber =
+  existingIncident.caseNumber ||
+  await generateIncidentCaseNumber();
 
       await updateDoc(
         doc(
@@ -8827,29 +8996,45 @@ async function () {
 
     } else {
 
-      await addDoc(
-        collection(
-          db,
-          "incidentReports"
-        ),
-        {
-          ...incidentData,
+     await addDoc(
+  collection(
+    db,
+    "incidentReports"
+  ),
+  {
+    ...incidentData,
 
-          caseNumber,
+    caseNumber,
 
-          status:
-            "submitted",
+    status:
+      "submitted",
 
-          createdAt:
-            serverTimestamp(),
+    createdAt:
+      serverTimestamp(),
 
-          lastEdited:
-            serverTimestamp(),
+    lastEdited:
+      serverTimestamp(),
 
-          submittedAt:
-            serverTimestamp()
-        }
-      );
+    submittedAt:
+      serverTimestamp(),
+
+    approvedAt: null,
+    approvedBy: null,
+    approvedByName: null,
+
+    returnedAt: null,
+    returnedBy: null,
+    returnedByName: null,
+    returnComments: "",
+
+    voidedAt: null,
+    voidedBy: null,
+    voidedByName: null,
+    voidReason: "",
+
+    reviewHistory: []
+  }
+);
 
     }
 
@@ -9291,23 +9476,37 @@ async function () {
             "incidentReports"
           ),
           {
-            ...incidentData,
+  ...incidentData,
 
-            caseNumber:
-              null,
+  caseNumber: null,
 
-            status:
-              "draft",
+  status: "draft",
 
-            createdAt:
-              serverTimestamp(),
+  createdAt:
+    serverTimestamp(),
 
-            lastEdited:
-              serverTimestamp(),
+  lastEdited:
+    serverTimestamp(),
 
-            submittedAt:
-              null
-          }
+  submittedAt:
+    null,
+
+  approvedAt: null,
+  approvedBy: null,
+  approvedByName: null,
+
+  returnedAt: null,
+  returnedBy: null,
+  returnedByName: null,
+  returnComments: "",
+
+  voidedAt: null,
+  voidedBy: null,
+  voidedByName: null,
+  voidReason: "",
+
+  reviewHistory: []
+}
         );
 
       document.getElementById(
@@ -9431,7 +9630,9 @@ async function loadIncidentReports() {
           <br>
 
           Status:
-          ${incident.status}
+            ${getIncidentStatusBadge(
+              incident.status
+            )}
 
           <br>
 
@@ -9480,6 +9681,30 @@ function() {
 
 };
 
+function getIncidentStatusBadge(
+  status
+) {
+  switch (status) {
+    case "draft":
+      return "⚪ Draft";
+
+    case "submitted":
+      return "🔵 Submitted";
+
+    case "approved":
+      return "🟢 Approved";
+
+    case "returned":
+      return "🟠 Returned";
+
+    case "voided":
+      return "🔴 Voided";
+
+    default:
+      return status || "";
+  }
+}
+
 window.viewIncident =
 async function(id) {
   console.log("View clicked:", id);
@@ -9505,18 +9730,183 @@ async function(id) {
 window.currentIncident = incident;
 
   renderIncidentViewer(
-    incident
-  );
+  incident
+);
 
-  document
-    .getElementById(
-      "viewIncidentModal"
-    )
-    .classList.remove(
-      "hidden"
-    );
+renderIncidentActionButtons();
+
+document
+  .getElementById(
+    "viewIncidentModal"
+  )
+  .classList.remove(
+    "hidden"
+  );
 };
 
+function renderIncidentActionButtons() {
+
+  const container =
+    document.getElementById(
+      "incidentActionButtons"
+    );
+
+  if (
+    !container ||
+    !window.currentIncident
+  ) {
+    return;
+  }
+
+  const incident =
+    window.currentIncident;
+
+  const isSupervisor =
+    window.currentEmployee &&
+    window.currentEmployee.role !==
+      "Officer";
+
+  let html = `
+    <button
+      onclick="closeIncidentModal()"
+    >
+      Close
+    </button>
+  `;
+
+  //
+  // Officer buttons
+  //
+  if (!isSupervisor) {
+
+    html += `
+      <button
+        class="btn btn-secondary"
+        onclick="openSupplementModal()"
+      >
+        ➕ Create Supplement
+      </button>
+    `;
+  }
+
+  //
+  // Supervisor buttons
+  //
+  if (isSupervisor) {
+
+    switch (
+      incident.status
+    ) {
+
+      case "submitted":
+
+        html += `
+          <button
+            onclick="
+              approveIncident(
+                '${incident.id}'
+              )
+            "
+          >
+            ✅ Approve
+          </button>
+        `;
+
+        html += `
+          <button
+            onclick="
+              returnIncident(
+                '${incident.id}'
+              )
+            "
+          >
+            🟠 Return
+          </button>
+        `;
+
+        html += `
+          <button
+            onclick="
+              voidIncident(
+                '${incident.id}'
+              )
+            "
+          >
+            🔴 Void
+          </button>
+        `;
+
+        break;
+
+      case "approved":
+
+        html += `
+          <button disabled>
+            ✅ Approved
+          </button>
+        `;
+
+        break;
+
+      case "returned":
+
+        html += `
+          <button disabled>
+            🟠 Returned
+          </button>
+        `;
+
+        html += `
+          <button
+            onclick="
+              approveIncident(
+                '${incident.id}'
+              )
+            "
+          >
+            ✅ Approve
+          </button>
+        `;
+
+        html += `
+          <button
+            onclick="
+              voidIncident(
+                '${incident.id}'
+              )
+            "
+          >
+            🔴 Void
+          </button>
+        `;
+
+        break;
+
+      case "voided":
+
+        html += `
+          <button disabled>
+            🔴 Voided
+          </button>
+        `;
+
+        break;
+    }
+  }
+
+  html += `
+    <button
+      onclick="
+        downloadIncidentPdf()
+      "
+    >
+      📄 Download PDF
+    </button>
+  `;
+
+  container.innerHTML =
+    html;
+}
 function renderIncidentViewer(
   incident
 ) {
@@ -9873,6 +10263,10 @@ document.getElementById(
     "myReportsPage"
   ).style.display =
     "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
 
   const patrolPage =
     document.getElementById(
@@ -10506,6 +10900,10 @@ function() {
 
   document.getElementById(
     "officerIncidentReportPage"
+  ).style.display = "none";
+
+   document.getElementById(
+    "incidentReviewPage"
   ).style.display = "none";
 
   renderMyPatrols();
@@ -13982,8 +14380,168 @@ async function (
 
 };
 
+window.loadIncidentReviewQueue =
+async function () {
 
+  const container =
+    document.getElementById(
+      "incidentReviewList"
+    );
 
+  container.innerHTML =
+    "<p>Loading...</p>";
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          where(
+            "status",
+            "==",
+            "submitted"
+          ),
+          orderBy(
+            "submittedAt",
+            "desc"
+          )
+        )
+      );
+
+    if (snapshot.empty) {
+
+      container.innerHTML =
+        "<p>No reports awaiting review.</p>";
+
+      return;
+    }
+
+    container.innerHTML =
+      snapshot.docs
+        .map(doc => {
+
+          const incident =
+            doc.data();
+
+          return `
+
+            <div
+              class="dashboard-card"
+              style="
+                margin-bottom:12px;
+              "
+            >
+
+              <strong>
+                ${incident.caseNumber}
+              </strong>
+
+              <br>
+
+              Officer:
+              ${incident.officerName}
+
+              <br>
+
+              Type:
+              ${incident.incidentType}
+
+              <br>
+
+              Site:
+              ${incident.siteName}
+
+              <br>
+
+              Status:
+              ${getIncidentStatusBadge(
+                incident.status
+              )}
+
+              <br><br>
+
+              <button
+                onclick="viewIncident('${doc.id}')"
+              >
+                View
+              </button>
+
+            </div>
+
+          `;
+
+        })
+        .join("");
+
+  } catch (error) {
+
+    console.error(
+      "Review Queue Error:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Error loading review queue.</p>";
+  }
+};
+
+window.approveIncident =
+async function(id) {
+  try {
+
+    if (
+      !confirm(
+        "Approve this report?"
+      )
+    ) {
+      return;
+    }
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        id
+      ),
+      {
+        status:
+          "approved",
+
+        approvedAt:
+          serverTimestamp(),
+
+        approvedBy:
+          currentEmployee.id,
+
+        approvedByName:
+          currentEmployee.name
+      }
+    );
+
+    alert(
+      "Report approved."
+    );
+
+    closeIncidentModal();
+
+    await loadIncidentReviewQueue();
+
+  } catch (error) {
+
+    console.error(
+      "Approve Error:",
+      error
+    );
+
+    alert(
+      "Unable to approve report."
+    );
+  }
+};
 
 
 // ================= GLOBAL =================

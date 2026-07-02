@@ -170,6 +170,13 @@
 </button>
 
 <button
+  id="incidentReviewBtn"
+  onclick="showIncidentReviewPage()"
+>
+  Incident Review
+</button>
+
+<button
   id="patrolsBtn"
   onclick="showPatrolsPage()">
   Patrols
@@ -1402,6 +1409,21 @@
 </div>
 
 <div
+  id="incidentReviewPage"
+  style="display:none;"
+>
+
+  <h2>
+    Incident Review Queue
+  </h2>
+
+  <div id="incidentReviewList">
+    Loading...
+  </div>
+
+</div>
+
+<div
   id="companySettingsPage"
   style="display:none;">
 
@@ -1521,6 +1543,8 @@
   </div>
 
 </div>
+
+
 
 <div
   id="patrolDashboardPage"
@@ -2476,24 +2500,28 @@
 
     <br>
 
-    <button
-      onclick="closeIncidentModal()"
-    >
-      Close
-    </button>
+    <div id="incidentActionButtons">
 
-    <button
-      class="btn btn-secondary"
-      onclick="openSupplementModal()"
-    >
-      ➕ Create Supplement
-    </button>
+  <button
+    onclick="closeIncidentModal()"
+  >
+    Close
+  </button>
 
-    <button
-      onclick="downloadIncidentPdf()"
-    >
-      📄 Download PDF
-    </button>
+  <button
+    class="btn btn-secondary"
+    onclick="openSupplementModal()"
+  >
+    ➕ Create Supplement
+  </button>
+
+  <button
+    onclick="downloadIncidentPdf()"
+  >
+    📄 Download PDF
+  </button>
+
+</div>
 
   </div>
 </div>
