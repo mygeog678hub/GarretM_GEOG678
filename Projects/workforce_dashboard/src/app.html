@@ -1981,9 +1981,25 @@
   style="display:none;"
 >
 
+<div
+  id="supervisorCommentsCard"
+  class="dashboard-card"
+  style="display:none;"
+>
+  <h3>
+    Supervisor Comments
+  </h3>
+
+  <div
+    id="supervisorCommentsText"
+  ></div>
+</div>
+
   <h1>
     Incident Investigation Report
   </h1>
+
+  
 
   <button
     onclick="showOfficerPortal()"
@@ -2103,6 +2119,20 @@
   Add Vehicle
 </button>
 
+</div>
+
+<div
+  id="returnCommentsCard"
+  class="dashboard-card"
+  style="display:none;"
+>
+  <h3>
+    Supervisor Comments
+  </h3>
+
+  <div
+    id="returnCommentsText"
+  ></div>
 </div>
 
 <div class="dashboard-card">
@@ -2717,6 +2747,26 @@
 
   </div>
 
+</div>
+
+<div id="returnReportModal" class="hidden">
+  <div class="modal-content">
+    <h3>Return Report for Corrections</h3>
+
+    <textarea
+      id="returnComment"
+      rows="5"
+      placeholder="Describe what needs to be corrected..."
+    ></textarea>
+
+    <button onclick="submitReturnReport()">
+      Return Report
+    </button>
+
+    <button onclick="closeReturnReportModal()">
+      Cancel
+    </button>
+  </div>
 </div>
 
 <div

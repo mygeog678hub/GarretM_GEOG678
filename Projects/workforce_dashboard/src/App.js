@@ -9442,10 +9442,144 @@ function collectIncidentData() {
     )
     .forEach(card => {
 
-      persons.push({
-        // KEEP ALL OF YOUR
-        // PERSON FIELDS HERE
-      });
+     persons.push({
+
+  role:
+    card.querySelector(
+      ".personRole"
+    )?.value || "",
+
+  firstName:
+    card.querySelector(
+      ".personFirstName"
+    )?.value || "",
+
+  middleName:
+    card.querySelector(
+      ".personMiddleName"
+    )?.value || "",
+
+  lastName:
+    card.querySelector(
+      ".personLastName"
+    )?.value || "",
+
+  alias:
+    card.querySelector(
+      ".personAlias"
+    )?.value || "",
+
+  dob:
+    card.querySelector(
+      ".personDOB"
+    )?.value || "",
+
+  sex:
+    card.querySelector(
+      ".personSex"
+    )?.value || "",
+
+  heightFeet:
+    card.querySelector(
+      ".personHeightFeet"
+    )?.value || "",
+
+  heightInches:
+    card.querySelector(
+      ".personHeightInches"
+    )?.value || "",
+
+  weight:
+    card.querySelector(
+      ".personWeight"
+    )?.value || "",
+
+  race:
+    card.querySelector(
+      ".personRace"
+    )?.value || "",
+
+  ethnicity:
+    card.querySelector(
+      ".personEthnicity"
+    )?.value || "",
+
+  hairColor:
+    card.querySelector(
+      ".personHairColor"
+    )?.value || "",
+
+  eyeColor:
+    card.querySelector(
+      ".personEyeColor"
+    )?.value || "",
+
+  idType:
+    card.querySelector(
+      ".personIdType"
+    )?.value || "",
+
+  idState:
+    card.querySelector(
+      ".personIdState"
+    )?.value || "",
+
+  idNumber:
+    card.querySelector(
+      ".personIdNumber"
+    )?.value || "",
+
+  homePhone:
+    card.querySelector(
+      ".personHomePhone"
+    )?.value || "",
+
+  cellPhone:
+    card.querySelector(
+      ".personCellPhone"
+    )?.value || "",
+
+  workPhone:
+    card.querySelector(
+      ".personWorkPhone"
+    )?.value || "",
+
+  street:
+    card.querySelector(
+      ".personStreet"
+    )?.value || "",
+
+  city:
+    card.querySelector(
+      ".personCity"
+    )?.value || "",
+
+  addressState:
+    card.querySelector(
+      ".personAddressState"
+    )?.value || "",
+
+  zip:
+    card.querySelector(
+      ".personZip"
+    )?.value || "",
+
+  employer:
+    card.querySelector(
+      ".personEmployer"
+    )?.value || "",
+
+  email:
+    card.querySelector(
+      ".personEmail"
+    )?.value || "",
+
+  preferredContact:
+    card.querySelector(
+      ".personPreferredContact"
+    )?.value || ""
+
+});
 
     });
 
@@ -9458,11 +9592,79 @@ function collectIncidentData() {
     .forEach(card => {
 
       incidentVehicles.push({
-        // KEEP ALL OF YOUR
-        // VEHICLE FIELDS HERE
-      });
+
+  role:
+    card.querySelector(
+      ".vehicleRole"
+    )?.value || "",
+
+  owner:
+    card.querySelector(
+      ".vehicleOwner"
+    )?.value || "",
+
+  plate:
+    card.querySelector(
+      ".vehiclePlate"
+    )?.value || "",
+
+  state:
+    card.querySelector(
+      ".vehicleState"
+    )?.value || "",
+
+  year:
+    card.querySelector(
+      ".vehicleYear"
+    )?.value || "",
+
+  make:
+    card.querySelector(
+      ".vehicleMake"
+    )?.value || "",
+
+  model:
+    card.querySelector(
+      ".vehicleModel"
+    )?.value || "",
+
+  color:
+    card.querySelector(
+      ".vehicleColor"
+    )?.value || "",
+
+  vin:
+    card.querySelector(
+      ".vehicleVin"
+    )?.value || "",
+
+  insurance:
+    card.querySelector(
+      ".vehicleInsurance"
+    )?.value || "",
+
+  policy:
+    card.querySelector(
+      ".vehiclePolicy"
+    )?.value || "",
+
+  towed:
+    card.querySelector(
+      ".vehicleTowed"
+    )?.value || "",
+
+  notes:
+    card.querySelector(
+      ".vehicleNotes"
+    )?.value || ""
+
+});
 
     });
+    console.log(
+  "Persons:",
+  persons
+);
 
   return {
 
@@ -14315,22 +14517,31 @@ console.log(
   drafts
 );
 
-  const submitted =
-    incidentReports.filter(
-      r =>
-        r.officerId ===
-          currentOfficer.id &&
+ const activeReports =
+  incidentReports.filter(
+    r =>
+      r.officerId ===
+        currentOfficer.id &&
+      (
         r.status ===
-          "submitted"
-    );
-
-  renderDraftReports(
-    drafts
+          "submitted" ||
+        r.status ===
+          "returned"
+      )
+      
   );
+  console.log(
+  "Active Reports:",
+  activeReports
+);
 
-  /*renderSubmittedReports(
-    submitted
-  );*/
+renderDraftReports(
+  drafts
+);
+
+renderSubmittedReports(
+  activeReports
+);
 
 };
 
@@ -14450,7 +14661,280 @@ async function (
       "incidentAgencyCase"
     ).value =
       report.lawEnforcement
-        ?.caseNumber || "";            
+        ?.caseNumber || "";
+
+        document.getElementById(
+  "personsContainer"
+).innerHTML = "";
+
+report.persons?.forEach(
+  person => {
+
+    addPerson();
+
+    const cards =
+      document.querySelectorAll(
+        ".person-card"
+      );
+
+    const card =
+      cards[
+        cards.length - 1
+      ];
+
+    card.querySelector(
+      ".personRole"
+    ).value =
+      person.role || "";
+
+    card.querySelector(
+      ".personFirstName"
+    ).value =
+      person.firstName || "";
+
+    card.querySelector(
+      ".personMiddleName"
+    ).value =
+      person.middleName || "";
+
+    card.querySelector(
+      ".personLastName"
+    ).value =
+      person.lastName || "";
+
+    card.querySelector(
+      ".personAlias"
+    ).value =
+      person.alias || "";
+
+    card.querySelector(
+      ".personDOB"
+    ).value =
+      person.dob || "";
+
+    card.querySelector(
+      ".personSex"
+    ).value =
+      person.sex || "";
+
+    card.querySelector(
+      ".personHeightFeet"
+    ).value =
+      person.heightFeet || "";
+
+    card.querySelector(
+      ".personHeightInches"
+    ).value =
+      person.heightInches || "";
+
+    card.querySelector(
+      ".personWeight"
+    ).value =
+      person.weight || "";
+
+    card.querySelector(
+      ".personRace"
+    ).value =
+      person.race || "";
+
+    card.querySelector(
+      ".personEthnicity"
+    ).value =
+      person.ethnicity || "";
+
+    card.querySelector(
+      ".personHairColor"
+    ).value =
+      person.hairColor || "";
+
+    card.querySelector(
+      ".personEyeColor"
+    ).value =
+      person.eyeColor || "";
+
+    card.querySelector(
+      ".personIdType"
+    ).value =
+      person.idType || "";
+
+    card.querySelector(
+      ".personIdState"
+    ).value =
+      person.idState || "";
+
+    card.querySelector(
+      ".personIdNumber"
+    ).value =
+      person.idNumber || "";
+
+    card.querySelector(
+      ".personHomePhone"
+    ).value =
+      person.homePhone || "";
+
+    card.querySelector(
+      ".personCellPhone"
+    ).value =
+      person.cellPhone || "";
+
+    card.querySelector(
+      ".personWorkPhone"
+    ).value =
+      person.workPhone || "";
+
+    card.querySelector(
+      ".personStreet"
+    ).value =
+      person.street || "";
+
+    card.querySelector(
+      ".personCity"
+    ).value =
+      person.city || "";
+
+    card.querySelector(
+      ".personAddressState"
+    ).value =
+      person.addressState || "";
+
+    card.querySelector(
+      ".personZip"
+    ).value =
+      person.zip || "";
+
+    card.querySelector(
+      ".personEmployer"
+    ).value =
+      person.employer || "";
+
+    card.querySelector(
+      ".personEmail"
+    ).value =
+      person.email || "";
+
+    card.querySelector(
+      ".personPreferredContact"
+    ).value =
+      person.preferredContact || "";
+  }
+);
+
+document.getElementById(
+  "vehiclesContainer"
+).innerHTML = "";
+
+report.vehicles?.forEach(
+  vehicle => {
+
+    addIncidentVehicle();
+
+    const cards =
+      document.querySelectorAll(
+        ".vehicle-card"
+      );
+
+    const card =
+      cards[
+        cards.length - 1
+      ];
+
+    card.querySelector(
+      ".vehicleRole"
+    ).value =
+      vehicle.role || "";
+
+    card.querySelector(
+      ".vehicleOwner"
+    ).value =
+      vehicle.owner || "";
+
+    card.querySelector(
+      ".vehiclePlate"
+    ).value =
+      vehicle.plate || "";
+
+    card.querySelector(
+      ".vehicleState"
+    ).value =
+      vehicle.state || "";
+
+    card.querySelector(
+      ".vehicleYear"
+    ).value =
+      vehicle.year || "";
+
+    card.querySelector(
+      ".vehicleMake"
+    ).value =
+      vehicle.make || "";
+
+    card.querySelector(
+      ".vehicleModel"
+    ).value =
+      vehicle.model || "";
+
+    card.querySelector(
+      ".vehicleColor"
+    ).value =
+      vehicle.color || "";
+
+    card.querySelector(
+      ".vehicleVin"
+    ).value =
+      vehicle.vin || "";
+
+    card.querySelector(
+      ".vehicleInsurance"
+    ).value =
+      vehicle.insurance || "";
+
+    card.querySelector(
+      ".vehiclePolicy"
+    ).value =
+      vehicle.policy || "";
+
+    card.querySelector(
+      ".vehicleTowed"
+    ).value =
+      vehicle.towed || "";
+
+    card.querySelector(
+      ".vehicleNotes"
+    ).value =
+      vehicle.notes || "";
+  }
+);
+
+if (
+  report.supervisorComments
+) {
+  alert(
+    `Supervisor Comments:\n\n${report.returnComments}`
+  );
+}
+
+if (
+  report.supervisorComments
+) {
+
+  document.getElementById(
+    "supervisorCommentsCard"
+  ).style.display =
+    "block";
+
+  document.getElementById(
+    "supervisorCommentsText"
+  ).textContent =
+    report.supervisorComments;
+
+} else {
+
+  document.getElementById(
+    "supervisorCommentsCard"
+  ).style.display =
+    "none";
+
+}
 
               showOfficerIncidentReport();
 
@@ -14703,6 +15187,193 @@ async function(id) {
       "Unable to return report."
     );
   }
+};
+
+let returningIncidentId = null;
+
+window.openReturnReportModal =
+function (incidentId) {
+  returningIncidentId = incidentId;
+
+  document.getElementById(
+    "returnComment"
+  ).value = "";
+
+  document.getElementById(
+    "returnReportModal"
+  ).style.display = "flex";
+};
+
+window.closeReturnReportModal =
+function () {
+  document.getElementById(
+    "returnReportModal"
+  ).style.display = "none";
+
+  returningIncidentId = null;
+};
+
+window.submitReturnReport =
+async function () {
+
+  const comment =
+    document.getElementById(
+      "returnComment"
+    ).value.trim();
+
+  if (!comment) {
+    alert(
+      "Please provide correction instructions."
+    );
+    return;
+  }
+
+  try {
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        returningIncidentId
+      ),
+      {
+        status: "returned",
+        returnedAt:
+          serverTimestamp(),
+        returnComments: comment,
+        returnedBy:
+          auth.currentUser.uid,
+        returnedByName:
+          currentOfficer?.name ||
+          auth.currentUser.displayName ||
+          "Supervisor"
+      }
+    );
+
+    await addDoc(
+  collection(
+    db,
+    "notifications"
+  ),
+  {
+    userId:
+      report.officerId,
+
+    type:
+      "report_returned",
+
+    title:
+      "Incident Report Returned",
+
+    message:
+      `Case ${report.caseNumber} was returned for corrections.`,
+
+    incidentId:
+      returningIncidentId,
+
+    read: false,
+
+    createdAt:
+      serverTimestamp()
+  }
+);
+
+    closeReturnReportModal();
+
+    alert(
+      "Report returned for corrections."
+    );
+
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      "Unable to return report."
+    );
+  }
+};
+
+window.renderSubmittedReports =
+function (reports) {
+
+  const tbody =
+    document.getElementById(
+      "submittedReportsBody"
+    );
+
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!reports.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          No submitted reports.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  reports.forEach(report => {
+
+    const date =
+      report.submittedAt?.toDate
+        ? report
+            .submittedAt
+            .toDate()
+            .toLocaleDateString()
+        : "-";
+
+    const type =
+      report.status ===
+      "returned"
+        ? `
+          ${report.incidentType}
+          <br>
+          <small style="color:red;">
+            Returned for Corrections
+          </small>
+          ${
+            report.returnComments
+              ? `<br><small>
+                   Supervisor:
+                   ${report.returnComments}
+                 </small>`
+              : ""
+          }
+        `
+        : report.incidentType;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          ${report.caseNumber}
+        </td>
+
+        <td>
+          ${date}
+        </td>
+
+        <td>
+          ${type}
+        </td>
+
+        <td>
+        <button
+          onclick="
+            editDraft(
+              '${report.id}'
+            )
+          ">
+          Continue
+        </button>
+      </td>
+      </tr>
+    `;
+  });
+
 };
 
 
