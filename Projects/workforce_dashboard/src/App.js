@@ -10082,6 +10082,12 @@ window.currentIncident = incident;
   incident
 );
 
+document.getElementById(
+  "historyBtn"
+).onclick = function () {
+  viewReviewHistory(id);
+};
+
 renderIncidentActionButtons();
 
 document
@@ -10116,12 +10122,19 @@ function renderIncidentActionButtons() {
       "Officer";
 
   let html = `
-    <button
-      onclick="closeIncidentModal()"
-    >
-      Close
-    </button>
-  `;
+  <button
+    onclick="closeIncidentModal()"
+  >
+    Close
+  </button>
+
+  <button
+    id="historyBtn"
+    class="btn btn-secondary"
+  >
+    History
+  </button>
+`;
 
   //
   // Officer buttons
@@ -10257,6 +10270,14 @@ function renderIncidentActionButtons() {
 
   container.innerHTML =
     html;
+
+    document.getElementById(
+  "historyBtn"
+).onclick = function () {
+  viewReviewHistory(
+    incident.id
+  );
+};
 }
 
 function renderIncidentViewer(
@@ -10480,6 +10501,143 @@ ${
   loadSupplements(incident.id);
 
 }
+
+window.viewReviewHistory =
+async function(reportId) {
+
+  try {
+
+    const q = query(
+      collection(
+        db,
+        "incidentReports",
+        reportId,
+        "history"
+      ),
+      orderBy(
+        "createdAt",
+        "asc"
+      )
+    );
+
+    const snap =
+      await getDocs(q);
+
+    let html = "";
+
+    if (snap.empty) {
+
+      html = `
+        <p>
+          No review history found.
+        </p>
+      `;
+
+    } else {
+
+      snap.forEach(docSnap => {
+
+        const item =
+          docSnap.data();
+
+        const date =
+          item.createdAt
+            ?.toDate()
+            .toLocaleString()
+            || "";
+
+            let badgeClass = "";
+let badgeText = item.action;
+
+switch (item.action) {
+  case "Submitted":
+    badgeClass =
+      "history-submitted";
+    badgeText =
+      "📝 Submitted";
+    break;
+
+  case "Returned for Corrections":
+    badgeClass =
+      "history-returned";
+    badgeText =
+      "🟠 Returned";
+    break;
+
+  case "Resubmitted":
+    badgeClass =
+      "history-resubmitted";
+    badgeText =
+      "🔄 Resubmitted";
+    break;
+
+  case "Approved":
+    badgeClass =
+      "history-approved";
+    badgeText =
+      "✅ Approved";
+    break;
+
+  case "Voided":
+    badgeClass =
+      "history-voided";
+    badgeText =
+      "🔴 Voided";
+    break;
+
+  case "Supplement Added":
+    badgeClass =
+      "history-supplement";
+    badgeText =
+      "➕ Supplement Added";
+    break;
+}
+
+        html += `
+          <div class="history-item">
+
+            <div class="history-action">
+  <span
+    class="
+      history-badge
+      ${badgeClass}
+    ">
+    ${badgeText}
+  </span>
+</div>>
+
+            <div class="history-user">
+              ${item.by || ""}
+            </div>
+
+            <div class="history-date">
+              ${date}
+            </div>
+
+          </div>
+        `;
+      });
+
+    }
+
+    document.getElementById(
+      "historyTimeline"
+    ).innerHTML = html;
+
+    document.getElementById(
+      "reviewHistoryModal"
+    ).style.display = "flex";
+
+  } catch (err) {
+
+    console.error(
+      "Error loading history:",
+      err
+    );
+
+  }
+
+};
 
 window.populatePatrolSiteDropdown =
 function() {
@@ -15487,14 +15645,28 @@ function (reports) {
         </td>
 
         <td>
-        <button
-          onclick="
-            editDraft(
-              '${report.id}'
-            )
-          ">
-          Continue
-        </button>
+        <td>
+
+  <button
+    onclick="
+      editDraft(
+        '${report.id}'
+      )
+    ">
+    View
+  </button>
+
+  <button
+    class="btn btn-secondary"
+    onclick="
+      viewReviewHistory(
+        '${report.id}'
+      )
+    ">
+    History
+  </button>
+
+</td>
       </td>
       </tr>
     `;
@@ -15743,6 +15915,17 @@ function(status) {
   loadMyReports();
 };
 
+window.closeReviewHistoryModal =
+function() {
+
+  document.getElementById(
+    "reviewHistoryModal"
+  ).style.display = "none";
+
+  document.getElementById(
+    "historyTimeline"
+  ).innerHTML = "";
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

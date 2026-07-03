@@ -2456,6 +2456,41 @@
     </div>
 
     <div
+  id="reviewHistoryModal"
+  class="modal"
+  style="display:none;">
+
+  <div
+    class="modal-content"
+    style="max-width:700px;">
+
+    <div class="modal-header">
+      <h3>
+        Report Review History
+      </h3>
+
+      <button
+        class="close-btn"
+        onclick="closeReviewHistoryModal()">
+        ×
+      </button>
+    </div>
+
+    <div
+      id="historyTimeline"
+      class="history-timeline">
+
+      <p>
+        No history available.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+    <div
   id="viewSupplementModal"
   class="modal"
   style="display:none;"
@@ -2597,12 +2632,18 @@
     ➕ Create Supplement
   </button>
 
+   <button
+  class="btn btn-secondary"
+  id="historyBtn">
+  History
+</button>
+
   <button
     onclick="downloadIncidentPdf()"
   >
     📄 Download PDF
   </button>
-
+ 
 </div>
 
   </div>
