@@ -2021,6 +2021,10 @@
     Back to Officer Portal
   </button>
 
+  <button onclick="showMyReportsPage()">
+  My Reports
+</button>
+
   <div class="dashboard-card">
 
   <h2>Incident Information</h2>
@@ -2205,15 +2209,39 @@
   style="display:none;"
 >
 
-  <h2>My Reports</h2>
-
-  <button
+<button
     onclick="showOfficerPortal()"
   >
     Back to Officer Portal
   </button>
 
-  <h3>Draft Reports</h3>
+  <h2>My Reports</h2>
+
+  
+
+  <div class="report-filters">
+  <button onclick="filterMyReports('all')">
+    All
+  </button>
+
+  <button onclick="filterMyReports('submitted')">
+    Submitted
+  </button>
+
+  <button onclick="filterMyReports('returned')">
+    Returned
+  </button>
+
+  <button onclick="filterMyReports('approved')">
+    Approved
+  </button>
+
+  <button onclick="filterMyReports('voided')">
+    Voided
+  </button>
+</div>
+
+  <h3>Draft Reports</h3>  
 
   <table
     id="draftReportsTable"

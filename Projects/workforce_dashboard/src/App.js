@@ -194,6 +194,8 @@ window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
 window.activePatrols = [];
 window.patrolCompletions = [];
+window.currentReportFilter =
+  "all";
 let currentWeekStart = getStartOfWeek(new Date());
 
 function getStartOfWeek(date) {
@@ -934,6 +936,44 @@ function() {
       ? "block"
 
       : "none";
+};
+
+window.addReviewHistory =
+async function (
+  reportId,
+  action,
+  comments = ""
+) {
+  try {
+    await addDoc(
+      collection(
+        db,
+        "incidentReports",
+        reportId,
+        "history"
+      ),
+      {
+        action,
+        comments,
+
+        by:
+          currentEmployee?.name ||
+          currentEmployee?.fullName ||
+          "Unknown User",
+
+        byId:
+          currentEmployee?.id || "",
+
+        createdAt:
+          serverTimestamp()
+      }
+    );
+  } catch (err) {
+    console.error(
+      "Error adding history:",
+      err
+    );
+  }
 };
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
@@ -9076,7 +9116,7 @@ caseNumber =
           caseNumber,
 
           status:
-            "submitted",
+            "submitted",            
 
           lastEdited:
             serverTimestamp(),
@@ -9084,7 +9124,13 @@ caseNumber =
           submittedAt:
             serverTimestamp()
         }
+        
       );
+
+      await addReviewHistory(
+  editingId,
+  "Submitted"
+);
 
     } else {
 
@@ -14421,12 +14467,7 @@ async function () {
   const incidentId =
     document.getElementById(
       "supplementIncidentId"
-    ).value;
-
- /* const caseNumber =
-    document.getElementById(
-      "supplementCaseNumber"
-    ).value; */
+    ).value; 
 
   const supplementId =
     document.getElementById(
@@ -14460,6 +14501,12 @@ async function () {
       createdAt:
         serverTimestamp()
     }
+  );
+
+  await addReviewHistory(
+  incidentId,
+  "Supplement Added",
+  `Supplement ${supplementId}`
   );
 
   alert(
@@ -14508,15 +14555,16 @@ async function () {
 
 window.loadMyReports =
 function () {
-  console.log(
-  "All Incident Reports:",
-  incidentReports
-);
 
-console.log(
-  "Current Officer:",
-  currentOfficer.id
-);
+  console.log(
+    "All Incident Reports:",
+    incidentReports
+  );
+
+  console.log(
+    "Current Officer:",
+    currentOfficer.id
+  );
 
   const drafts =
     incidentReports.filter(
@@ -14527,37 +14575,44 @@ console.log(
           "draft"
     );
 
-    console.log(
-  "Drafts:",
-  drafts
-);
-
- const activeReports =
-  incidentReports.filter(
-    r =>
-      r.officerId ===
-        currentOfficer.id &&
-      (
-        r.status ===
-          "submitted" ||
-        r.status ===
-          "returned"
-      )
-      
-  );
   console.log(
-  "Active Reports:",
-  activeReports
-);
+    "Drafts:",
+    drafts
+  );
 
-renderDraftReports(
-  drafts
-);
+  let myReports =
+    incidentReports.filter(
+      r =>
+        r.officerId ===
+          currentOfficer.id &&
+        r.status !==
+          "draft"
+    );
 
-renderSubmittedReports(
-  activeReports
-);
+  if (
+    window.currentReportFilter !==
+      "all"
+  ) {
+    myReports =
+      myReports.filter(
+        r =>
+          r.status ===
+          window.currentReportFilter
+      );
+  }
 
+  console.log(
+    "My Reports:",
+    myReports
+  );
+
+  renderDraftReports(
+    drafts
+  );
+
+  renderSubmittedReports(
+    myReports
+  );
 };
 
 function renderDraftReports(
@@ -15110,6 +15165,11 @@ async function(id) {
       }
     );
 
+    await addReviewHistory(
+  id,
+  "Approved"
+);
+
     alert(
       "Report approved."
     );
@@ -15182,6 +15242,12 @@ async function(id) {
           window.currentEmployee.name
       }
     );
+
+    await addReviewHistory(
+  id,
+  "Returned for Corrections",
+  supervisorComments
+);
 
     const reportSnap =
   await getDoc(
@@ -15304,6 +15370,11 @@ async function () {
           "Supervisor"
       }
     );
+
+    await addReviewHistory(
+  returningIncidentId,
+  "Resubmitted"
+);
 
     await addDoc(
   collection(
@@ -15573,6 +15644,103 @@ async function (
       notification.incidentId
     );
   }
+};
+
+window.voidIncident =
+async function (
+  reportId
+) {
+  try {
+
+    const reason =
+      prompt(
+        "Enter reason for voiding this report:"
+      );
+
+    if (reason === null) {
+      return;
+    }
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        reportId
+      ),
+      {
+        status: "voided",
+
+        voidReason:
+          reason,
+
+        voidedAt:
+          serverTimestamp(),
+
+        voidedBy:
+          currentEmployee?.id ||
+          "",
+
+        voidedByName:
+          currentEmployee?.name ||
+          "Supervisor"
+      }
+    );
+
+    await addReviewHistory(
+      reportId,
+      "Voided",
+      reason
+    );
+
+    await addDoc(
+      collection(
+        db,
+        "activityLogs"
+      ),
+      {
+        type:
+          "Incident Report",
+
+        description:
+          `Incident report voided`,
+
+        timestamp:
+          serverTimestamp()
+      }
+    );
+
+    alert(
+      "Incident has been voided."
+    );
+
+    closeIncidentModal();
+
+    loadIncidentReports?.();
+    loadIncidentReviewQueue?.();
+
+  } catch (err) {
+
+    console.error(
+      "Void Incident Error:",
+      err
+    );
+
+    alert(
+      "Unable to void incident."
+    );
+  }
+};
+
+window.currentReportFilter =
+  "all";
+
+window.filterMyReports =
+function(status) {
+
+  window.currentReportFilter =
+    status;
+
+  loadMyReports();
 };
 
 
