@@ -2602,3 +2602,31 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   color: #fff;
   font-size: 12px;
 }
+#notificationBadge {
+  background: red;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.notification-item.unread {
+  background: rgba(255, 193, 7, 0.15);
+  border-left: 4px solid #ffc107;
+}
+
+.notification-item.read {
+  opacity: 0.75;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #777;
+}

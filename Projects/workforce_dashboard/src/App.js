@@ -45,23 +45,26 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
 // ================= AUTH =================
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(
+  auth,
+  (user) => {
 
-  if (!user) {
+    if (!user) {
+      window.location.href =
+        "index.html";
+      return;
+    }
 
-    window.location.href = "index.html";
-    return;
+    currentUser = user;
 
+    console.log(
+      "Authenticated:",
+      user.email
+    );
+
+    //listenForNotifications();
   }
-
-  currentUser = user;
-
-  console.log(
-    "Authenticated:",
-    user.email
-  );
-
-});
+);
 // ================= DOM =================
 const empName = document.getElementById("empName");
 const empRole = document.getElementById("empRole");
@@ -534,7 +537,18 @@ onSnapshot(collection(db, "employees"), snap => {
       employee.name
     );
 
+    console.log(
+  "Firebase UID:",
+  currentUser.uid
+);
+
+console.log(
+  "Employee ID:",
+  window.currentEmployee?.id
+);
+
     showOfficerPortal(); 
+listenForNotifications();
        
 
   } else {
@@ -548,6 +562,7 @@ onSnapshot(collection(db, "employees"), snap => {
   }
 
 });
+
 
 onSnapshot(
   collection(
@@ -4646,13 +4661,13 @@ let activeEntry = null;
 
 if (
   window.currentEmployee &&
-  currentEmployee.id
+  window.currentEmployee.id
 ) {
   activeEntry =
     timeEntries.find(
       entry =>
         entry.employeeId ===
-          currentEmployee.id &&
+          window.currentEmployee.id &&
         entry.status ===
           "Clocked In"
     );
@@ -15088,10 +15103,10 @@ async function(id) {
           serverTimestamp(),
 
         approvedBy:
-          currentEmployee.id,
+          window.currentEmployee.id,
 
         approvedByName:
-          currentEmployee.name
+          window.currentEmployee.name
       }
     );
 
@@ -15161,12 +15176,52 @@ async function(id) {
           serverTimestamp(),
 
         returnedBy:
-          currentEmployee.id,
+          window.currentEmployee.id,
 
         returnedByName:
-          currentEmployee.name
+          window.currentEmployee.name
       }
     );
+
+    const reportSnap =
+  await getDoc(
+    doc(
+      db,
+      "incidentReports",
+      id
+    )
+  );
+
+const report =
+  reportSnap.data();
+
+await addDoc(
+  collection(
+    db,
+    "notifications"
+  ),
+  {
+    officerId:
+      report.officerId,
+
+    incidentId:
+      id,
+
+    title:
+      "Report Returned",
+
+    message:
+      `Case ${
+        report.caseNumber ||
+        "Draft Report"
+      } was returned for corrections.`,
+
+    read: false,
+
+    createdAt:
+      serverTimestamp()
+  }
+);
 
     alert(
       "Report returned to officer."
@@ -15242,7 +15297,7 @@ async function () {
           serverTimestamp(),
         returnComments: comment,
         returnedBy:
-          auth.currentUser.uid,
+          window.currentEmployee.id,
         returnedByName:
           currentOfficer?.name ||
           auth.currentUser.displayName ||
@@ -15374,6 +15429,150 @@ function (reports) {
     `;
   });
 
+};
+
+window.listenForNotifications =
+function () {
+
+console.log(
+  "Current Employee:",
+  window.currentEmployee
+);
+
+  const user =
+    auth.currentUser;
+
+  if (!user) return;
+
+  onSnapshot(
+    query(
+      collection(
+        db,
+        "notifications"
+      ),
+where(
+  "officerId",
+  "==",
+  window.currentEmployee.id
+),
+      orderBy(
+        "createdAt",
+        "desc"
+      )
+    ),
+    (snapshot) => {
+
+      console.log(
+  "Notifications found:",
+  snapshot.size
+);
+
+      const container =
+  document.getElementById(
+    "notificationsList"
+  );
+      container.innerHTML =
+        "";
+
+      let unread = 0;
+
+      snapshot.forEach(
+        (docSnap) => {    
+
+          const n =
+            docSnap.data();
+
+          if (!n.read) {
+            unread++;
+          }
+
+          const div =
+            document.createElement(
+              "div"
+            );
+
+          div.className =
+            `notification-item ${
+              !n.read
+                ? "unread"
+                : ""
+            }`;
+
+          div.innerHTML = `
+            <strong>
+              ${n.title}
+            </strong>
+            <br>
+            ${n.message}
+            <div class="notification-time">
+              ${
+                n.createdAt
+                  ?.toDate()
+                  .toLocaleString() ||
+                ""
+              }
+            </div>
+          `;
+
+          div.onclick =
+            () =>
+              openNotification(
+                docSnap.id,
+                n
+              );
+
+          container.appendChild(
+            div
+          );
+        }
+      );
+
+      const badge =
+  document.getElementById(
+    "notificationBadge"
+  );
+
+badge.textContent =
+  unread;
+
+badge.style.display =
+  unread > 0
+    ? "inline-block"
+    : "none";
+    }
+  );
+};
+
+window.openNotification =
+async function (
+  notificationId,
+  notification
+) {
+
+  if (!notification.read) {
+
+    await updateDoc(
+      doc(
+        db,
+        "notifications",
+        notificationId
+      ),
+      {
+        read: true,
+        readAt:
+          serverTimestamp()
+      }
+    );
+  }
+
+  if (
+    notification.incidentId
+  ) {
+
+    editDraft(
+      notification.incidentId
+    );
+  }
 };
 
 
