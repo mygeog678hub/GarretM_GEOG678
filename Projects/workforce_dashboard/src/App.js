@@ -189,6 +189,8 @@ let analyticsEndDateFilter = "";
 let companyProfile = {};
 let incidentReports = [];
 let currentIncidentId = null;
+let photoGallery = [];
+let currentPhotoIndex = 0;
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
@@ -10128,7 +10130,7 @@ async function(id) {
     incident.id = id;
 window.currentIncident = incident;
 
-  renderIncidentViewer(
+ await renderIncidentViewer(
   incident
 );
 
@@ -10330,7 +10332,7 @@ function renderIncidentActionButtons() {
 };
 }
 
-function renderIncidentViewer(
+async function renderIncidentViewer(
   incident
 ) {
 
@@ -10549,6 +10551,56 @@ ${
 
   `;
   loadSupplements(incident.id);
+
+const attachmentsContainer =
+  document.getElementById(
+    "reviewAttachmentsContainer"
+  );
+
+const attachmentsSnap =
+  await getDocs(
+    collection(
+      db,
+      "incidentReports",
+      incident.id,
+      "attachments"
+    )
+  );
+
+const attachments =
+  attachmentsSnap.docs.map(
+    doc => ({
+      id: doc.id,
+      ...doc.data()
+    })
+  );
+
+if (!attachments.length) {
+
+  attachmentsContainer.innerHTML =
+    "<p>No attachments.</p>";
+
+} else {
+
+  photoGallery =
+  attachments.map(
+    a => a.downloadURL
+  );
+
+attachmentsContainer.innerHTML =
+  attachments.map(
+    (attachment, index) => `
+      <img
+        src="${attachment.downloadURL}"
+        class="evidence-thumbnail"
+        onclick="
+          openPhotoViewer(
+            ${index}
+          )
+        ">
+    `
+  ).join("");
+}
 
 }
 
@@ -12968,6 +13020,15 @@ async function(
       patrolSessionId
     );
 
+    patrolPhotoGallery =
+  events
+    .filter(
+      e => e.photoUrl
+    )
+    .map(
+      e => e.photoUrl
+    );
+
     console.log(
   "Timeline events:",
   events
@@ -12990,8 +13051,8 @@ async function(
   } else {
 
     container.innerHTML =
-      events.map(
-        event => {
+  events.map(
+    (event, index) => {
 
           let icon = "📍";
           let text = "";
@@ -13036,6 +13097,13 @@ async function(
                   .toLocaleString()
               : "-";
 
+              const photoIndex =
+  event.photoUrl
+    ? photoGallery.indexOf(
+        event.photoUrl
+      )
+    : -1;
+
           return `
   <div class="timeline-item">
 
@@ -13058,14 +13126,18 @@ async function(
         : ""
     }
 
-    ${
+${
   event.photoUrl
     ? `
       <div class="timeline-photo">
         <img
           src="${event.photoUrl}"
           class="evidence-thumbnail"
-          onclick="openPhotoViewer(this.src)">
+         onclick="
+  openPhotoViewer(
+    ${photoIndex}
+  )
+">
       </div>
     `
     : ""
@@ -13314,11 +13386,18 @@ function(lat, lng) {
 };
 
 window.openPhotoViewer =
-function(photoUrl) {
+function(index) {
+
+  currentPhotoIndex = index;
 
   document.getElementById(
     "photoViewerImage"
-  ).src = photoUrl;
+  ).src =
+    photoGallery[
+      currentPhotoIndex
+    ];
+
+  updatePhotoCounter();
 
   document.getElementById(
     "photoViewerModal"
@@ -13337,40 +13416,9 @@ function() {
   document.getElementById(
     "photoViewerImage"
   ).src = "";
+
+  currentPhotoIndex = 0;
 };
-
-window.addEventListener(
-  "click",
-  e => {
-
-    const modal =
-      document.getElementById(
-        "photoViewerModal"
-      );
-
-    if (e.target === modal) {
-      closePhotoViewer();
-    }
-  }
-);
-
-document.addEventListener(
-  "keydown",
-  e => {
-
-    const modal =
-      document.getElementById(
-        "photoViewerModal"
-      );
-
-    if (
-      e.key === "Escape" &&
-      modal.style.display === "flex"
-    ) {
-      closePhotoViewer();
-    }
-  }
-);
 
 window.showPatrolAnalytics =
 function() {
@@ -16017,6 +16065,12 @@ function previewIncidentPhotos() {
       img.src =
         e.target.result;
 
+        img.onclick =
+  () =>
+    openEvidenceViewer(
+      e.target.result
+    );
+
       img.style.width =
         "100px";
 
@@ -16135,15 +16189,45 @@ function renderIncidentAttachments(
   container.innerHTML = "";
 
   attachments.forEach(
-    photo => {
-
-      const img =
-        document.createElement(
-          "img"
-        );
-
+    photo => {  
+      
+       const img =
+  document.createElement(
+    "img"
+  );
       img.src =
         photo.downloadURL;
+
+        img.onclick =
+  () =>
+    openEvidenceViewer(
+      photo.downloadURL
+    );   
+
+img.src =
+  photo.downloadURL;
+
+img.style.width =
+  "100px";
+
+img.style.height =
+  "100px";
+
+img.style.objectFit =
+  "cover";
+
+img.style.cursor =
+  "pointer";
+
+img.onclick =
+  () =>
+    openEvidenceViewer(
+      photo.downloadURL
+    );
+
+container.appendChild(
+  img
+);
 
       img.style.width =
         "100px";
@@ -16169,6 +16253,95 @@ function renderIncidentAttachments(
     }
   );
 }
+
+window.openEvidenceViewer =
+function (imageUrl) {
+
+  document.getElementById(
+    "evidenceViewerImage"
+  ).src =
+    imageUrl;
+
+  document.getElementById(
+    "evidenceViewerModal"
+  ).style.display =
+    "block";
+
+};
+
+window.closeEvidenceViewer =
+function () {
+
+  document.getElementById(
+    "evidenceViewerModal"
+  ).style.display =
+    "none";
+
+  document.getElementById(
+    "evidenceViewerImage"
+  ).src =
+    "";
+
+};
+
+window.showNextPhoto =
+function() {
+
+  if (
+    !photoGallery.length
+  ) return;
+
+  currentPhotoIndex =
+    (currentPhotoIndex + 1) %
+    photoGallery.length;
+
+  document.getElementById(
+    "photoViewerImage"
+  ).src =
+    photoGallery[
+      currentPhotoIndex
+    ];
+
+  updatePhotoCounter();
+};
+
+window.showPreviousPhoto =
+function() {
+
+  if (
+    !photoGallery.length
+  ) return;
+
+  currentPhotoIndex =
+    currentPhotoIndex === 0
+      ? photoGallery.length - 1
+      : currentPhotoIndex - 1;
+
+  document.getElementById(
+    "photoViewerImage"
+  ).src =
+    photoGallery[
+      currentPhotoIndex
+    ];
+
+  updatePhotoCounter();
+};
+
+function updatePhotoCounter() {
+
+  const counter =
+    document.getElementById(
+      "photoCounter"
+    );
+
+  if (!counter) return;
+
+  counter.textContent =
+    `${currentPhotoIndex + 1}
+     of
+     ${photoGallery.length}`;
+}
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

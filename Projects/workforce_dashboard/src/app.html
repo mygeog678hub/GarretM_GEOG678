@@ -2470,6 +2470,31 @@
 </footer>
     </div>
 
+    <div id="evidenceViewerModal"
+     class="modal"
+     style="display:none;">
+
+  <div class="modal-content">
+
+    <span
+      class="close"
+      onclick="closeEvidenceViewer()">
+      &times;
+    </span>
+
+    <img
+      id="evidenceViewerImage"
+      style="
+        width:100%;
+        max-height:80vh;
+        object-fit:contain;
+      "
+    >
+
+  </div>
+
+</div>
+
     <div
   id="reviewHistoryModal"
   class="modal"
@@ -2602,6 +2627,19 @@
     <div
       id="incidentViewerContent"
     ></div>
+
+    <h3>
+  Evidence Photos
+</h3>
+
+<div
+  id="reviewAttachmentsContainer"
+  class="attachments-grid"
+>
+  No attachments.
+</div>
+
+<hr>
 
     <hr>
 
@@ -2908,11 +2946,31 @@
   <div
     class="modal-content photo-viewer-content">
 
-    <button
-      class="secondary-btn"
-      onclick="closePhotoViewer()">
-      Close
-    </button>
+    <div class="photo-viewer-toolbar">
+
+      <button
+        class="secondary-btn"
+        onclick="showPreviousPhoto()">
+        ❮ Previous
+      </button>
+
+      <span id="photoCounter">
+        1 of 1
+      </span>
+
+      <button
+        class="secondary-btn"
+        onclick="showNextPhoto()">
+        Next ❯
+      </button>
+
+      <button
+        class="secondary-btn"
+        onclick="closePhotoViewer()">
+        Close
+      </button>
+
+    </div>
 
     <img
       id="photoViewerImage"

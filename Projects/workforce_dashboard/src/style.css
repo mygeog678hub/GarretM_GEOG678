@@ -2525,16 +2525,28 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   transform: scale(1.05);
 }
 .photo-viewer-content {
-  width: auto;
-  max-width: 95%;
+  width: 95vw;
+  max-width: 95vw;
+  max-height: 95vh;
+
   background: transparent;
   box-shadow: none;
   text-align: center;
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .full-photo {
-  max-width: 100%;
-  max-height: 85vh;
+  display: block;
+  margin: 0 auto;
+  max-width: 90vw;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: 10px;
 }
 .chart-card {
@@ -2714,4 +2726,18 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+.photo-viewer-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+#photoCounter {
+  font-weight: 600;
+  min-width: 80px;
+  text-align: center;
 }
