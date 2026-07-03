@@ -5538,6 +5538,11 @@ document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
 
+    document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
   renderMySchedule();
   renderMySite();
   renderMyAttendanceStatus();
@@ -9896,6 +9901,27 @@ await saveIncidentAttachments(
   }
 
 };
+
+async function loadIncidentAttachments(
+  incidentId
+) {
+  const snap =
+    await getDocs(
+      collection(
+        db,
+        "incidentReports",
+        incidentId,
+        "attachments"
+      )
+    );
+
+  return snap.docs.map(
+    doc => ({
+      id: doc.id,
+      ...doc.data()
+    })
+  );
+}
 
 async function loadIncidentReports() {    
 
@@ -15187,6 +15213,13 @@ if (
     "none";
 
 }
+const attachments =
+  await loadIncidentAttachments(
+    reportId
+  );
+      renderIncidentAttachments(
+  attachments
+);
 
               showOfficerIncidentReport();
 
@@ -16087,6 +16120,54 @@ function clearIncidentPhotos() {
   document.getElementById(
     "photoPreviewContainer"
   ).innerHTML = "";
+}
+
+function renderIncidentAttachments(
+  attachments
+) {
+  const container =
+    document.getElementById(
+      "existingPhotoContainer"
+    );
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  attachments.forEach(
+    photo => {
+
+      const img =
+        document.createElement(
+          "img"
+        );
+
+      img.src =
+        photo.downloadURL;
+
+      img.style.width =
+        "100px";
+
+      img.style.height =
+        "100px";
+
+      img.style.objectFit =
+        "cover";
+
+      img.style.margin =
+        "5px";
+
+      img.style.borderRadius =
+        "8px";
+
+      img.style.cursor =
+        "pointer";
+
+      container.appendChild(
+        img
+      );
+    }
+  );
 }
 
 // ================= GLOBAL =================

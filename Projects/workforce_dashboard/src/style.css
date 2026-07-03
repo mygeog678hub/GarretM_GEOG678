@@ -2708,3 +2708,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   background: #e0f2fe;
   color: #0369a1;
 }
+#existingPhotoContainer,
+#photoPreviewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
