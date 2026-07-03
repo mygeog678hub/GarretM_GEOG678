@@ -9197,6 +9197,8 @@ caseNumber =
       `Incident ${caseNumber} submitted successfully.`
     );
 
+    clearIncidentPhotos();
+
     document.getElementById(
       "editingIncidentId"
     ).value = "";
@@ -9807,6 +9809,16 @@ async function () {
         }
       );
 
+      const photos =
+  await uploadIncidentPhotos(
+    editingId
+  );
+
+await saveIncidentAttachments(
+  editingId,
+  photos
+);
+
     } else {
 
       const docRef =
@@ -9853,11 +9865,22 @@ async function () {
         "editingIncidentId"
       ).value =
         docRef.id;
+
+        const photos =
+  await uploadIncidentPhotos(
+    docRef.id
+  );
+
+await saveIncidentAttachments(
+  docRef.id,
+  photos
+);
     }
 
     alert(
       "Draft saved."
     );
+    clearIncidentPhotos();
 
   } catch (error) {
 
@@ -9873,6 +9896,7 @@ async function () {
   }
 
 };
+
 async function loadIncidentReports() {    
 
   const container =
@@ -15926,6 +15950,144 @@ function() {
     "historyTimeline"
   ).innerHTML = "";
 };
+
+document.getElementById(
+  "incidentPhotos"
+).addEventListener(
+  "change",
+  previewIncidentPhotos
+);
+
+function previewIncidentPhotos() {
+  const files =
+    document.getElementById(
+      "incidentPhotos"
+    ).files;
+
+  const container =
+    document.getElementById(
+      "photoPreviewContainer"
+    );
+
+  container.innerHTML = "";
+
+  [...files].forEach(file => {
+    const reader =
+      new FileReader();
+
+    reader.onload = e => {
+      const img =
+        document.createElement(
+          "img"
+        );
+
+      img.src =
+        e.target.result;
+
+      img.style.width =
+        "100px";
+
+      img.style.height =
+        "100px";
+
+      img.style.objectFit =
+        "cover";
+
+      img.style.margin =
+        "5px";
+
+      img.style.borderRadius =
+        "8px";
+
+      container.appendChild(
+        img
+      );
+    };
+
+    reader.readAsDataURL(
+      file
+    );
+  });
+}
+
+async function uploadIncidentPhotos(
+  incidentId
+) {
+
+const files =
+    document.getElementById(
+      "incidentPhotos"
+    ).files;
+
+if (!files.length) {
+  return [];
+}
+  const uploadedPhotos = [];
+
+  for (const file of files) {
+    const fileName =
+      `${Date.now()}_${file.name}`;
+
+    const storageRef = ref(
+      storage,
+      `incident-evidence/${incidentId}/${fileName}`
+    );
+
+    await uploadBytes(
+      storageRef,
+      file
+    );
+
+    const downloadURL =
+      await getDownloadURL(
+        storageRef
+      );
+
+    uploadedPhotos.push({
+      type: "photo",
+      fileName,
+      originalName: file.name,
+      downloadURL,
+      uploadedBy:
+        currentOfficer.id,
+      uploadedAt:
+        serverTimestamp()
+    });
+  }
+
+  return uploadedPhotos;
+}
+
+async function saveIncidentAttachments(
+  incidentId,
+  photos
+) {
+  for (const photo of photos) {
+    await addDoc(
+      collection(
+        db,
+        "incidentReports",
+        incidentId,
+        "attachments"
+      ),
+      photo
+    );
+  }
+}
+
+function clearIncidentPhotos() {
+  console.log(
+    "Clearing incident photos..."
+  );
+
+  document.getElementById(
+    "incidentPhotos"
+  ).value = "";
+
+  document.getElementById(
+    "photoPreviewContainer"
+  ).innerHTML = "";
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

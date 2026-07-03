@@ -2172,6 +2172,19 @@
   Save Draft
 </button>
 
+<div class="form-group">
+  <label>Photo Evidence</label>
+
+  <input
+    type="file"
+    id="incidentPhotos"
+    accept="image/*"
+    multiple
+  />
+
+  <div id="photoPreviewContainer"></div>
+</div>
+
 <button
   type="button"
   onclick="submitIncidentReport()"
