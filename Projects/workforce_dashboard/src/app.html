@@ -1727,6 +1727,7 @@
 </button>
   </div>
 
+  
   <div class="dashboard-card">
 
     <h2>Officers On Duty</h2>
@@ -1921,7 +1922,7 @@
 </div>
 
 <div class="card">
-  <h3>Pre-Shift Uniform Photo (Optional)</h3>
+  <h3>Pre-Shift Uniform Photo</h3>
 
   <input
     type="file"
@@ -1940,6 +1941,28 @@
     "
   />
 </div>
+
+<div class="card">
+  <h3>Post-Shift Uniform Photo</h3>
+
+  <input
+    type="file"
+    id="postShiftPhoto"
+    accept="image/*"
+    capture="environment"
+  />
+
+  <img
+    id="postShiftPreview"
+    style="
+      display:none;
+      width:200px;
+      margin-top:10px;
+      border-radius:8px;
+    "
+  />
+</div>
+
 
 <div class="dashboard-card">
 

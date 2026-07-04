@@ -7103,6 +7103,24 @@ ${
 
 async function clockOut() {
 
+  let postShiftPhoto =
+  null;
+
+const photoInput =
+  document.getElementById(
+    "postShiftPhoto"
+  );
+
+if (
+  photoInput &&
+  photoInput.files.length
+) {
+  postShiftPhoto =
+    await fileToBase64(
+      photoInput.files[0]
+    );
+}
+
 if (!currentOfficer) {
 
   alert(
@@ -7263,7 +7281,21 @@ doc(
     Number(hoursWorked),
 
   status:
-    "Clocked Out"
+    "Clocked Out",
+
+   postShiftPhoto:
+  postShiftPhoto
+    ? {
+        imageBase64:
+          postShiftPhoto,
+        timestamp:
+          serverTimestamp(),
+        lat:
+          latitude,
+        lng:
+          longitude
+      }
+    : null,
 }
 
 );
@@ -7306,6 +7338,21 @@ alert(
   "Clock Out Successful"
 );
 
+}
+
+if (photoInput) {
+  photoInput.value = "";
+}
+
+const preview =
+  document.getElementById(
+    "postShiftPreview"
+  );
+
+if (preview) {
+  preview.src = "";
+  preview.style.display =
+    "none";
 }
 
 refreshSupervisorDashboard();
@@ -16564,6 +16611,41 @@ function (timeEntryId) {
   ).style.display =
     "flex";
 };
+
+document
+  .getElementById("postShiftPhoto")
+  ?.addEventListener(
+    "change",
+    function (e) {
+
+      const file =
+        e.target.files[0];
+
+      if (!file) return;
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        function (event) {
+
+          const img =
+            document.getElementById(
+              "postShiftPreview"
+            );
+
+          img.src =
+            event.target.result;
+
+          img.style.display =
+            "block";
+        };
+
+      reader.readAsDataURL(
+        file
+      );
+    }
+  );
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
