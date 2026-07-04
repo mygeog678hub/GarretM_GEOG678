@@ -1,12 +1,118 @@
+console.log(
+  "db:",
+  typeof db
+);
 
+console.log(
+  "collection:",
+  typeof collection
+);
+
+console.log(
+  "getDocs:",
+  typeof getDocs
+);
+
+async function imageUrlToDataUrl(
+  url
+) {
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
+
+      const img =
+        new Image();
+
+      img.crossOrigin =
+        "anonymous";
+
+      img.onload =
+        function () {
+
+          const canvas =
+            document.createElement(
+              "canvas"
+            );
+
+          canvas.width =
+            img.width;
+
+          canvas.height =
+            img.height;
+
+          const ctx =
+            canvas.getContext(
+              "2d"
+            );
+
+          ctx.drawImage(
+            img,
+            0,
+            0
+          );
+
+          resolve(
+            canvas.toDataURL(
+              "image/jpeg"
+            )
+          );
+        };
+
+      img.onerror = function (e) {
+  console.error(
+    "Image load failed:",
+    url
+  );
+  console.error(e);
+  reject(e);
+};
+
+      img.src = url;
+    }
+  );
+}
+
+async function getImageDimensions(
+  dataUrl
+) {
+  return new Promise(
+    (resolve, reject) => {
+      const img = new Image();
+
+      img.onload = () => {
+        resolve({
+          width: img.width,
+          height: img.height
+        });
+      };
+
+      img.onerror = err => {
+        reject(err);
+      };
+
+      img.src = dataUrl;
+    }
+  );
+}
 
 window.downloadIncidentPdf =
 async function() {
+ 
   let y = 20;
   
 
   const incident =
-    window.currentIncident;
+    window.currentIncident; 
+
+    const photos =
+  (
+    window.currentIncidentAttachments ||
+    []
+  ).filter(
+    a => a.type === "photo"
+  );   
 
   if (!incident) {
 
@@ -41,25 +147,9 @@ function checkPageBreak(
     y = 20;
   }
 }  
-
   
   const margin = 15;
 const contentWidth = 180;
-
-function checkPageBreak(
-  requiredSpace = 20
-) {
-
-  if (
-    y + requiredSpace > 250
-  ) {
-
-    doc.addPage();
-
-    y = 20;
-  }
-}
-
 
 function addSectionHeader(
   title
@@ -238,15 +328,6 @@ const logoWidth = 28;
 const logoHeight =
   (img.height * logoWidth) /
   img.width;
-
-doc.addImage(
-  window.companyProfile.logoBase64,
-  "PNG",
-  20,
-  headerTop - 2,
-  28,
-  12
-);
 
 headerTextX = 55;
 }
@@ -885,6 +966,147 @@ doc.text(
 );
 
 y += 15;
+
+if (photos.length) {
+  doc.addPage();
+  y = 20;
+
+  doc.setFont(
+    "helvetica",
+    "bold"
+  );
+
+  doc.text(
+    "Evidence Photos",
+    20,
+    y
+  );
+
+  y += 15;
+
+
+  let x = 20;
+
+  const maxWidth = 80;
+  const maxHeight = 60;
+
+ console.log(
+  "Raw photos:",
+  photos
+);
+
+photos.forEach((p, i) => {
+
+ 
+});
+
+  for (
+    const photo of photos
+  ) {
+    try {
+
+      if (!photo.imageBase64) {
+  
+  continue;
+}
+
+const dataUrl =
+  photo.imageBase64;
+
+      const dims =
+        await getImageDimensions(
+          dataUrl
+        );
+
+      let width =
+        maxWidth;
+
+      let height =
+        width *
+        (
+          dims.height /
+          dims.width
+        );
+
+      if (
+        height >
+        maxHeight
+      ) {
+        height =
+          maxHeight;
+
+        width =
+          height *
+          (
+            dims.width /
+            dims.height
+          );
+      }
+
+      if (
+        y +
+          height +
+          10 >
+        260
+      ) {
+        doc.addPage();
+
+        y = 20;
+        x = 20;
+      }
+
+console.log(
+  "Base64 starts with:",
+  photo.imageBase64.substring(
+    0,
+    50
+  )
+);   
+
+console.log(
+  "Drawing:",
+  photo.originalName,
+  {
+    x,
+    y,
+    width,
+    height
+  }
+);
+   console.log(
+  "Adding image:",
+  {
+    x,
+    y,
+    width,
+    height
+  }
+);
+
+doc.addImage(
+  dataUrl,
+  "JPEG",
+  x,
+  y,
+  width,
+  height
+);
+
+y += height + 10;     
+
+    } catch (error) {
+  console.error(
+    "Photo failed:",
+    photo.originalName,
+    error
+  );  
+}
+
+    
+  }
+
+  y += 70;
+}
   // ======================
   // Save PDF
   // ======================

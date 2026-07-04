@@ -193,6 +193,7 @@ let photoGallery = [];
 let currentPhotoIndex = 0;
 let currentGalleryImages = [];
 let currentGalleryIndex = 0;
+
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
@@ -9095,23 +9096,26 @@ async function () {
 
     let caseNumber = null;
 
+    //
+    // EXISTING DRAFT
+    //
     if (editingId) {
 
       const incidentSnap =
-  await getDoc(
-    doc(
-      db,
-      "incidentReports",
-      editingId
-    )
-  );
+        await getDoc(
+          doc(
+            db,
+            "incidentReports",
+            editingId
+          )
+        );
 
-const existingIncident =
-  incidentSnap.data();
+      const existingIncident =
+        incidentSnap.data();
 
-caseNumber =
-  existingIncident.caseNumber ||
-  await generateIncidentCaseNumber();
+      caseNumber =
+        existingIncident.caseNumber ||
+        await generateIncidentCaseNumber();
 
       await updateDoc(
         doc(
@@ -9125,7 +9129,7 @@ caseNumber =
           caseNumber,
 
           status:
-            "submitted",            
+            "submitted",
 
           lastEdited:
             serverTimestamp(),
@@ -9133,58 +9137,94 @@ caseNumber =
           submittedAt:
             serverTimestamp()
         }
-        
       );
 
       await addReviewHistory(
-  editingId,
-  "Submitted"
-);
+        editingId,
+        "Submitted"
+      );
 
-    } else {
+      //
+      // SAVE ATTACHMENTS
+      //
+      const photos =
+        await uploadIncidentPhotos(
+          editingId
+        );
 
-     await addDoc(
-  collection(
-    db,
-    "incidentReports"
-  ),
-  {
-    ...incidentData,
-
-    caseNumber,
-
-    status:
-      "submitted",
-
-    createdAt:
-      serverTimestamp(),
-
-    lastEdited:
-      serverTimestamp(),
-
-    submittedAt:
-      serverTimestamp(),
-
-    approvedAt: null,
-    approvedBy: null,
-    approvedByName: null,
-
-    returnedAt: null,
-    returnedBy: null,
-    returnedByName: null,
-    returnComments: "",
-
-    voidedAt: null,
-    voidedBy: null,
-    voidedByName: null,
-    voidReason: "",
-
-    reviewHistory: []
-  }
-);
+      await saveIncidentAttachments(
+        editingId,
+        photos
+      );
 
     }
 
+    //
+    // BRAND NEW REPORT
+    //
+    else {
+
+      caseNumber =
+        await generateIncidentCaseNumber();
+
+      const docRef =
+        await addDoc(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          {
+            ...incidentData,
+
+            caseNumber,
+
+            status:
+              "submitted",
+
+            createdAt:
+              serverTimestamp(),
+
+            lastEdited:
+              serverTimestamp(),
+
+            submittedAt:
+              serverTimestamp(),
+
+            approvedAt: null,
+            approvedBy: null,
+            approvedByName: null,
+
+            returnedAt: null,
+            returnedBy: null,
+            returnedByName: null,
+            returnComments: "",
+
+            voidedAt: null,
+            voidedBy: null,
+            voidedByName: null,
+            voidReason: "",
+
+            reviewHistory: []
+          }
+        );
+
+      //
+      // SAVE ATTACHMENTS
+      //
+      const photos =
+        await uploadIncidentPhotos(
+          docRef.id
+        );
+
+      await saveIncidentAttachments(
+        docRef.id,
+        photos
+      );
+    }
+
+    //
+    // ACTIVITY LOG
+    //
     await addDoc(
       collection(
         db,
@@ -9258,184 +9298,7 @@ caseNumber =
     alert(
       "Unable to save incident report."
     );
-
   }
-
-};   
-
-window.addIncidentVehicle = function() {
-
-  const container =
-    document.getElementById(
-      "vehiclesContainer"
-    );
-
-  const vehicleNumber =
-    container.children.length + 1;
-
-  container.insertAdjacentHTML(
-    "beforeend",
-
-    `
-<div class="dashboard-card vehicle-card">
-
-  <h3>
-    Vehicle ${vehicleNumber}
-  </h3>
-
-  <button
-    type="button"
-    onclick="this.parentElement.remove()"
-  >
-    Remove Vehicle
-  </button>
-
-  <div class="person-grid">
-
-    <div class="field-group">
-      <label>Vehicle Role</label>
-      <select class="vehicleRole">
-
-        <option value="">
-          Select Role
-        </option>
-
-        <option>
-          Suspect Vehicle
-        </option>
-
-        <option>
-          Victim Vehicle
-        </option>
-
-        <option>
-          Witness Vehicle
-        </option>
-
-        <option>
-          Employee Vehicle
-        </option>
-
-        <option>
-          Visitor Vehicle
-        </option>
-
-        <option>
-          Other
-        </option>
-
-      </select>
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleOwner"
-        placeholder="Owner"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehiclePlate"
-        placeholder="License Plate"
-      >
-    </div>
-
-    <div class="field-group">
-      <select class="vehicleState">
-
-        <option value="">
-          State
-        </option>
-
-        <option>TX</option>
-        <option>LA</option>
-        <option>OK</option>
-        <option>NM</option>
-
-      </select>
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleYear"
-        placeholder="Year"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleMake"
-        placeholder="Make"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleModel"
-        placeholder="Model"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleColor"
-        placeholder="Color"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleVin"
-        placeholder="VIN"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleInsurance"
-        placeholder="Insurance Company"
-      >
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehiclePolicy"
-        placeholder="Policy Number"
-      >
-    </div>
-
-    <div class="field-group">
-      <select class="vehicleTowed">
-
-        <option value="">
-          Towed?
-        </option>
-
-        <option>
-          Yes
-        </option>
-
-        <option>
-          No
-        </option>
-
-      </select>
-    </div>
-
-    <div class="field-group">
-      <input
-        class="vehicleNotes"
-        placeholder="Vehicle Notes"
-      >
-    </div>
-
-  </div>
-
-</div>
-`
-  );
-
 };
 
 function collectIncidentData() {
@@ -10576,6 +10439,13 @@ const attachments =
       ...doc.data()
     })
   );
+  window.currentIncidentAttachments =
+  attachments;
+
+  console.log(
+  "Current Incident Attachments:",
+  attachments
+);
 
 if (!attachments.length) {
 
@@ -16020,11 +15890,36 @@ function() {
   ).innerHTML = "";
 };
 
+let incidentPhotoFiles = [];
+
 document.getElementById(
   "incidentPhotos"
 ).addEventListener(
   "change",
-  previewIncidentPhotos
+  function (e) {
+
+    console.log(
+      "Photo input changed"
+    );
+
+    for (
+      const file of e.target.files
+    ) {
+      incidentPhotoFiles.push(
+        file
+      );
+    }
+
+    console.log(
+      "Incident photo count:",
+      incidentPhotoFiles.length
+    );
+
+    previewIncidentPhotos();
+
+    // allows selecting the same file again
+    e.target.value = "";
+  }
 );
 
 function previewIncidentPhotos() {
@@ -16089,10 +15984,36 @@ async function uploadIncidentPhotos(
   incidentId
 ) {
 
+  console.log(
+  "uploadIncidentPhotos called"
+);
+
+console.log(
+  "incidentPhotoFiles:",
+  incidentPhotoFiles
+);
+
+console.log(
+  "Length:",
+  incidentPhotoFiles.length
+);
+
+  console.log(
+  "incidentPhotoFiles:",
+  incidentPhotoFiles
+);
+
+console.log(
+  "Length:",
+  incidentPhotoFiles.length
+);
+
 const files =
-    document.getElementById(
-      "incidentPhotos"
-    ).files;
+  incidentPhotoFiles;
+  console.log(
+  "Files being uploaded:",
+  files
+);
 
 if (!files.length) {
   return [];
@@ -16118,42 +16039,72 @@ if (!files.length) {
         storageRef
       );
 
-    uploadedPhotos.push({
-      type: "photo",
-      fileName,
-      originalName: file.name,
-      downloadURL,
-      uploadedBy:
-        currentOfficer.id,
-      uploadedAt:
-        serverTimestamp()
-    });
+   const imageBase64 =
+  await fileToBase64(
+    file
+  );
+
+uploadedPhotos.push({
+  type: "photo",
+  fileName,
+  originalName:
+    file.name,
+  downloadURL,
+  imageBase64,
+  uploadedBy:
+    currentOfficer.id,
+  uploadedAt:
+    serverTimestamp()
+});
   }
 
   return uploadedPhotos;
 }
 
 async function saveIncidentAttachments(
+  
   incidentId,
   photos
 ) {
+
+  console.log(
+  "saveIncidentAttachments called"
+);
+
+console.log(
+  "Photo count:",
+  photos.length
+);
+
+console.log(
+  "Photos being saved:",
+  photos
+);
   for (const photo of photos) {
-    await addDoc(
-      collection(
-        db,
-        "incidentReports",
-        incidentId,
-        "attachments"
-      ),
-      photo
-    );
-  }
+
+  console.log(
+    "Saving:",
+    photo.originalName
+  );
+
+  await addDoc(
+    collection(
+      db,
+      "incidentReports",
+      incidentId,
+      "attachments"
+    ),
+    photo
+  );
+}
 }
 
 function clearIncidentPhotos() {
   console.log(
     "Clearing incident photos..."
   );
+
+  incidentPhotoFiles = [];
 
   document.getElementById(
     "incidentPhotos"
