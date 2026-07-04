@@ -191,6 +191,8 @@ let incidentReports = [];
 let currentIncidentId = null;
 let photoGallery = [];
 let currentPhotoIndex = 0;
+let currentGalleryImages = [];
+let currentGalleryIndex = 0;
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
 window.activeIncidentMarkers = activeIncidentMarkers;
@@ -10582,24 +10584,10 @@ if (!attachments.length) {
 
 } else {
 
-  photoGallery =
-  attachments.map(
-    a => a.downloadURL
-  );
+ photoGallery =
+  attachments;
 
-attachmentsContainer.innerHTML =
-  attachments.map(
-    (attachment, index) => `
-      <img
-        src="${attachment.downloadURL}"
-        class="evidence-thumbnail"
-        onclick="
-          openPhotoViewer(
-            ${index}
-          )
-        ">
-    `
-  ).join("");
+renderAttachments();
 }
 
 }
@@ -13391,11 +13379,11 @@ function(index) {
   currentPhotoIndex = index;
 
   document.getElementById(
-    "photoViewerImage"
-  ).src =
-    photoGallery[
-      currentPhotoIndex
-    ];
+  "photoViewerImage"
+).src =
+  photoGallery[
+    currentPhotoIndex
+  ].downloadURL;
 
   updatePhotoCounter();
 
@@ -16296,11 +16284,11 @@ function() {
     photoGallery.length;
 
   document.getElementById(
-    "photoViewerImage"
-  ).src =
-    photoGallery[
-      currentPhotoIndex
-    ];
+  "photoViewerImage"
+).src =
+  photoGallery[
+    currentPhotoIndex
+  ].downloadURL;
 
   updatePhotoCounter();
 };
@@ -16317,12 +16305,12 @@ function() {
       ? photoGallery.length - 1
       : currentPhotoIndex - 1;
 
-  document.getElementById(
-    "photoViewerImage"
-  ).src =
-    photoGallery[
-      currentPhotoIndex
-    ];
+document.getElementById(
+  "photoViewerImage"
+).src =
+  photoGallery[
+    currentPhotoIndex
+  ].downloadURL;
 
   updatePhotoCounter();
 };
@@ -16342,6 +16330,154 @@ function updatePhotoCounter() {
      ${photoGallery.length}`;
 }
 
+window.openCurrentPhoto =
+function () {
+
+  const imageUrl =
+  photoGallery[
+    currentPhotoIndex
+  ].downloadURL;
+
+  if (!imageUrl) return;
+
+  window.open(
+    imageUrl,
+    "_blank"
+  );
+};
+
+window.downloadCurrentPhoto =
+function () {
+
+  const imageUrl =
+  photoGallery[
+    currentPhotoIndex
+  ].downloadURL;
+
+  if (!imageUrl) return;
+
+  window.open(
+    imageUrl,
+    "_blank"
+  );
+};
+
+window.deleteCurrentPhoto =
+async function () {
+
+  if (
+    !confirm(
+      "Delete this photo?"
+    )
+  ) {
+    return;
+  }
+
+  try {
+
+    const photo =
+      photoGallery[
+        currentPhotoIndex
+      ];
+
+    await deleteDoc(
+      doc(
+        db,
+        "incidentReports",
+        currentIncidentId,
+        "attachments",
+        photo.id
+      )
+    );
+
+    photoGallery.splice(
+      currentPhotoIndex,
+      1
+    );  
+    console.log(
+  "photoGallery:",
+  photoGallery
+);
+    
+    renderAttachments();
+
+    if (
+      !photoGallery.length
+    ) {
+
+      closePhotoViewer();
+
+      document.getElementById(
+        "attachmentsContainer"
+      ).innerHTML =
+        "<p>No attachments.</p>";
+
+      return;
+    }
+
+    if (
+      currentPhotoIndex >=
+      photoGallery.length
+    ) {
+      currentPhotoIndex =
+        photoGallery.length - 1;
+    }
+
+    openPhotoViewer(
+      currentPhotoIndex
+    );
+
+  } catch (err) {
+
+    console.error(
+      "Delete attachment error:",
+      err
+    );
+
+    alert(
+      "Unable to delete photo."
+    );
+  }
+};
+
+function renderAttachments() {
+  console.log(
+  "Rendering:",
+  photoGallery
+);
+
+  const attachmentsContainer =
+  document.getElementById(
+    "reviewAttachmentsContainer"
+  );
+
+  if (!attachmentsContainer)
+    return;
+
+  if (!photoGallery.length) {
+
+    attachmentsContainer.innerHTML =
+      "<p>No attachments.</p>";
+
+    return;
+  }
+
+  attachmentsContainer.innerHTML =
+    photoGallery
+      .map(
+        (attachment, index) => `
+          <img
+            src="${attachment.downloadURL}"
+            class="evidence-thumbnail"
+            onclick="
+              openPhotoViewer(
+                ${index}
+              )
+            ">
+        `
+      )
+      .join("");
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
