@@ -6721,213 +6721,312 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 async function clockIn() {
 
   if (!currentOfficer) {
-
-  alert(
-    "Officer session not found."
-  );
-
-  return;
-}
-
-const employeeId =
-  currentOfficer.id;
-
-const employee =
-  currentOfficer;
-
-    const position = await new Promise((resolve, reject) => {
-
-  if (!navigator.geolocation) {
-
-    reject(
-      new Error(
-        "Geolocation not supported"
-      )
+    alert(
+      "Officer session not found."
     );
-
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    resolve,
-    reject,
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0
-    }
-  );
+  const employeeId =
+    currentOfficer.id;
 
-});
+  const employee =
+    currentOfficer;
 
-const officerLat =
-  position.coords.latitude;
+  const position =
+    await new Promise(
+      (resolve, reject) => {
 
-const officerLng =
-  position.coords.longitude;
+        if (
+          !navigator.geolocation
+        ) {
+          reject(
+            new Error(
+              "Geolocation not supported"
+            )
+          );
+          return;
+        }
 
-alert(
-  `GPS Acquired\n\nLat: ${officerLat}\nLng: ${officerLng}`
-);
-
-const now = new Date();
-
-const activeShift =
-  shifts.find(shift => {
-
-    if (
-      shift.employeeId !== employeeId
-    ) {
-      return false;
-    }
-
-    const start =
-      new Date(shift.startTime);
-
-    const end =
-      new Date(shift.endTime);
-
-    return (
-      now >= start &&
-      now <= end
+        navigator.geolocation
+          .getCurrentPosition(
+            resolve,
+            reject,
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            }
+          );
+      }
     );
 
-  });
+  const officerLat =
+    position.coords.latitude;
 
-if (!activeShift) {
+  const officerLng =
+    position.coords.longitude;
+
+  // =====================
+  // Optional Pre-Shift Photo
+  // =====================
+
+  let preShiftPhoto =
+    null;
+
+  const photoInput =
+    document.getElementById(
+      "preShiftPhoto"
+    );
+
+  if (
+    photoInput &&
+    photoInput.files.length
+  ) {
+    preShiftPhoto =
+      await fileToBase64(
+        photoInput.files[0]
+      );
+  }
 
   alert(
-    "No active shift available for clock-in."
+    `GPS Acquired\n\nLat: ${officerLat}\nLng: ${officerLng}`
   );
 
-  return;
-}
+  const now =
+    new Date();
+
+  const activeShift =
+    shifts.find(
+      shift => {
+
+        if (
+          shift.employeeId !==
+          employeeId
+        ) {
+          return false;
+        }
+
+        const start =
+          new Date(
+            shift.startTime
+          );
+
+        const end =
+          new Date(
+            shift.endTime
+          );
+
+        return (
+          now >= start &&
+          now <= end
+        );
+      }
+    );
+
+  if (!activeShift) {
+    alert(
+      "No active shift available for clock-in."
+    );
+    return;
+  }
 
   const site =
-  sites.find(
-    s => s.id === activeShift.siteId
+    sites.find(
+      s =>
+        s.id ===
+        activeShift.siteId
+    );
+
+  if (!site) {
+    alert(
+      "Assigned site not found."
+    );
+    return;
+  }
+
+  console.log(
+    "Officer Lat:",
+    officerLat
   );
 
-if (!site) {
-
-  alert(
-    "Assigned site not found."
+  console.log(
+    "Officer Lng:",
+    officerLng
   );
 
-  return;
-}
-console.log("Officer Lat:", officerLat);
-console.log("Officer Lng:", officerLng);
-console.log("Site Object:", site);
-console.log("Active Shift:", activeShift);
-
-const distance =
-  calculateDistance(
-    officerLat,
-    officerLng,
-    Number(site.lat),
-    Number(site.lng)
+  console.log(
+    "Site Object:",
+    site
   );
 
-const allowedRadiusFeet =
-  Number(site.geofenceRadius) || 150;
+  console.log(
+    "Active Shift:",
+    activeShift
+  );
 
-const allowedRadius =
-  allowedRadiusFeet * 0.3048;
-console.log(
-  "Distance:",
-  distance,
-  "Allowed Feet:",
-  allowedRadiusFeet,
-  "Allowed Meters:",
-  allowedRadius,
-  "Site:",
-  site.siteName,
-  "Lat:",
-  site.lat,
-  "Lng:",
-  site.lng
-);
-if (distance > allowedRadius) {
+  const distance =
+    calculateDistance(
+      officerLat,
+      officerLng,
+      Number(site.lat),
+      Number(site.lng)
+    );
 
-  alert(
-    `Clock In Denied   
+  const allowedRadiusFeet =
+    Number(
+      site.geofenceRadius
+    ) || 150;
+
+  const allowedRadius =
+    allowedRadiusFeet *
+    0.3048;
+
+  console.log(
+    "Distance:",
+    distance,
+    "Allowed Feet:",
+    allowedRadiusFeet,
+    "Allowed Meters:",
+    allowedRadius,
+    "Site:",
+    site.siteName,
+    "Lat:",
+    site.lat,
+    "Lng:",
+    site.lng
+  );
+
+  if (
+    distance >
+    allowedRadius
+  ) {
+    alert(
+      `Clock In Denied
 
 Assigned Site:
 ${site.siteName || activeShift.siteName}
 
 Distance:
 ${Math.round(distance)} meters
+
 Allowed Radius:
 ${allowedRadiusFeet} feet
+
 Allowed Radius:
 ${Math.round(allowedRadius)} meters`
-  );
-  alert(
-  `Accuracy: ${Math.round(
-    position.coords.accuracy
-  )} meters`
-);
-
-  return;
-}
-
-  const existingEntry =
-    timeEntries.find(
-      entry =>
-        entry.employeeId === employeeId &&
-        entry.status === "Clocked In"
-        
-    );    
-
-  if (existingEntry) {
+    );
 
     alert(
-      "Officer already clocked in."
+      `Accuracy: ${Math.round(
+        position.coords.accuracy
+      )} meters`
     );
 
     return;
   }
 
+  const existingEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId ===
+          employeeId &&
+        entry.status ===
+          "Clocked In"
+    );
+
+  if (existingEntry) {
+    alert(
+      "Officer already clocked in."
+    );
+    return;
+  }
+
   const employeeName =
-  employee.name;
+    employee.name;
 
-const siteId =
-  activeShift.siteId;
+  const siteId =
+    activeShift.siteId;
 
-const siteName =
-  activeShift.siteName;
+  const siteName =
+    activeShift.siteName;
 
-const shiftId =
-  activeShift.id;
+  const shiftId =
+    activeShift.id;
 
   await addDoc(
-  collection(db, "timeEntries"),
-  {
-    employeeId,
-    employeeName,
-    siteId,
-    siteName,
-    shiftId,
+    collection(
+      db,
+      "timeEntries"
+    ),
+    {
+      employeeId,
+      employeeName,
+      siteId,
+      siteName,
+      shiftId,
 
-    clockIn: serverTimestamp(),
-    status: "Clocked In",
+      clockIn:
+        serverTimestamp(),
 
-    monitoringActive: true,
-    lastGpsCheck: null,
-    gpsViolationCount: 0,
-    currentlyInsideGeofence: true
-  }
-);
-startPostMonitoring();
+      status:
+        "Clocked In",
+
+      preShiftPhoto:
+        preShiftPhoto
+          ? {
+              imageBase64:
+                preShiftPhoto,
+              timestamp:
+                serverTimestamp(),
+              lat:
+                officerLat,
+              lng:
+                officerLng
+            }
+          : null,
+
+      monitoringActive:
+        true,
+
+      lastGpsCheck:
+        null,
+
+      gpsViolationCount:
+        0,
+
+      currentlyInsideGeofence:
+        true
+    }
+  );
+
+  startPostMonitoring();
+
   alert(
     "Clock In Successful"
   );
 
   document.getElementById(
-  "clockEmployee"
-).value = "";
+    "clockEmployee"
+  ).value = "";
 
+  if (
+    photoInput
+  ) {
+    photoInput.value =
+      "";
+  }
+
+  const preview =
+    document.getElementById(
+      "preShiftPreview"
+    );
+
+  if (preview) {
+    preview.src = "";
+    preview.style.display =
+      "none";
+  }
 }
 
 function renderActiveTimeEntries() {
@@ -16429,6 +16528,39 @@ function renderAttachments() {
       )
       .join("");
 }
+
+document
+  .getElementById("preShiftPhoto")
+  ?.addEventListener(
+    "change",
+    function (e) {
+      const file =
+        e.target.files[0];
+
+      if (!file) return;
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        function (event) {
+          const img =
+            document.getElementById(
+              "preShiftPreview"
+            );
+
+          img.src =
+            event.target.result;
+
+          img.style.display =
+            "block";
+        };
+
+      reader.readAsDataURL(
+        file
+      );
+    }
+  );
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
