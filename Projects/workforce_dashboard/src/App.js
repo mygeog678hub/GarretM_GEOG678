@@ -193,6 +193,7 @@ let photoGallery = [];
 let currentPhotoIndex = 0;
 let currentGalleryImages = [];
 let currentGalleryIndex = 0;
+let patrolPhotoGallery = [];
 
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
@@ -7063,16 +7064,35 @@ function renderActiveTimeEntries() {
 
         <br>
 
-        ${entry.siteName}
+   ${entry.siteName}
 
-        <br>
+<br>
 
-        ${
+${
   entry.clockIn
     ? entry.clockIn
         .toDate()
         .toLocaleTimeString()
     : "Unknown"
+}
+
+<br><br>
+
+${
+  entry.preShiftPhoto
+    ? `
+      <button
+        class="btn btn-sm btn-primary"
+        onclick="viewPreShiftPhoto('${entry.id}')"
+      >
+        View Uniform Photo
+      </button>
+    `
+    : `
+      <span style="color:#94a3b8;">
+        No Uniform Photo
+      </span>
+    `
 }
 
       </div>
@@ -16399,95 +16419,45 @@ function () {
 window.downloadCurrentPhoto =
 function () {
 
-  const imageUrl =
-  photoGallery[
-    currentPhotoIndex
-  ].downloadURL;
+  const photo =
+    photoGallery[
+      currentPhotoIndex
+    ];
 
-  if (!imageUrl) return;
+  if (!photo) return;
 
-  window.open(
-    imageUrl,
-    "_blank"
-  );
-};
-
-window.deleteCurrentPhoto =
-async function () {
-
-  if (
-    !confirm(
-      "Delete this photo?"
-    )
-  ) {
+  // Incident photo
+  if (photo.downloadURL) {
+    window.open(
+      photo.downloadURL,
+      "_blank"
+    );
     return;
   }
 
-  try {
+  // Base64 photo
+  const image =
+    photo.imageBase64 ||
+    photo;
 
-    const photo =
-      photoGallery[
-        currentPhotoIndex
-      ];
+  if (!image) return;
 
-    await deleteDoc(
-      doc(
-        db,
-        "incidentReports",
-        currentIncidentId,
-        "attachments",
-        photo.id
-      )
-    );
+  const a =
+    document.createElement("a");
 
-    photoGallery.splice(
-      currentPhotoIndex,
-      1
-    );  
-    console.log(
-  "photoGallery:",
-  photoGallery
-);
-    
-    renderAttachments();
+  a.href = image;
+  a.download =
+    "photo.jpg";
 
-    if (
-      !photoGallery.length
-    ) {
+  document.body.appendChild(
+    a
+  );
 
-      closePhotoViewer();
+  a.click();
 
-      document.getElementById(
-        "attachmentsContainer"
-      ).innerHTML =
-        "<p>No attachments.</p>";
-
-      return;
-    }
-
-    if (
-      currentPhotoIndex >=
-      photoGallery.length
-    ) {
-      currentPhotoIndex =
-        photoGallery.length - 1;
-    }
-
-    openPhotoViewer(
-      currentPhotoIndex
-    );
-
-  } catch (err) {
-
-    console.error(
-      "Delete attachment error:",
-      err
-    );
-
-    alert(
-      "Unable to delete photo."
-    );
-  }
+  document.body.removeChild(
+    a
+  );
 };
 
 function renderAttachments() {
@@ -16561,6 +16531,39 @@ document
       );
     }
   );
+
+  window.viewPreShiftPhoto =
+function (timeEntryId) {
+
+  const entry =
+    timeEntries.find(
+      t => t.id === timeEntryId
+    );
+
+  if (
+    !entry ||
+    !entry.preShiftPhoto
+  ) {
+    return;
+  }
+
+  photoGallery = [
+    entry.preShiftPhoto
+  ];
+
+  currentPhotoIndex = 0;
+
+  document.getElementById(
+    "photoViewerImage"
+  ).src =
+    entry.preShiftPhoto
+      .imageBase64;
+
+  document.getElementById(
+    "photoViewerModal"
+  ).style.display =
+    "flex";
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
