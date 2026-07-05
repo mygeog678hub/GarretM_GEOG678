@@ -9716,9 +9716,9 @@ console.log(
       );
 
       await addReviewHistory(
-        editingId,
-        "Submitted"
-      );
+  editingId,
+  "submit"
+);
 
       //
       // SAVE ATTACHMENTS
@@ -9796,6 +9796,11 @@ console.log(
         docRef.id,
         photos
       );
+
+      await addReviewHistory(
+  docRef.id,
+  "submit"
+);
     }
 
     //
@@ -11004,53 +11009,65 @@ async function(reportId) {
           item.createdAt
             ?.toDate()
             .toLocaleString()
-            || "";
+            || "";     
 
-            let badgeClass = "";
+
+const action =
+  (item.action || "")
+    .toLowerCase();
+
+let badgeClass = "";
 let badgeText = item.action;
 
-switch (item.action) {
-  case "Submitted":
+switch (action) {
+
+  case "submit":
+  case "submitted":
     badgeClass =
       "history-submitted";
     badgeText =
-      "📝 Submitted";
+      "📨 Submitted";
     break;
 
-  case "Returned for Corrections":
+  case "returned":
+  case "returned for corrections":
     badgeClass =
       "history-returned";
     badgeText =
       "🟠 Returned";
     break;
 
-  case "Resubmitted":
+  case "resubmitted":
     badgeClass =
       "history-resubmitted";
     badgeText =
       "🔄 Resubmitted";
     break;
 
-  case "Approved":
+  case "approved":
     badgeClass =
       "history-approved";
     badgeText =
       "✅ Approved";
     break;
 
-  case "Voided":
+  case "voided":
     badgeClass =
       "history-voided";
     badgeText =
       "🔴 Voided";
     break;
 
-  case "Supplement Added":
+  case "supplement added":
     badgeClass =
       "history-supplement";
     badgeText =
       "➕ Supplement Added";
     break;
+
+  default:
+    badgeText =
+      `📝 ${item.action}`;
 }
 
         html += `
@@ -11064,7 +11081,7 @@ switch (item.action) {
     ">
     ${badgeText}
   </span>
-</div>>
+</div>
 
             <div class="history-user">
               ${item.by || ""}
@@ -15707,7 +15724,7 @@ async function(id) {
 
     await addReviewHistory(
   id,
-  "Approved"
+  "approved"
 );
 
     alert(
@@ -15759,34 +15776,27 @@ async function(id) {
       return;
     }
 
-    await updateDoc(
-      doc(
-        db,
-        "incidentReports",
-        id
-      ),
-      {
-        status:
-          "returned",
+   await updateDoc(
+  doc(
+    db,
+    "incidentReports",
+    id
+  ),
+  {
+    status: "returned",
+    supervisorComments: comments,
+    returnedAt: serverTimestamp(),
+    returnedBy:
+      window.currentEmployee.id,
+    returnedByName:
+      window.currentEmployee.name
+  }
+);
 
-        supervisorComments:
-          comments,
-
-        returnedAt:
-          serverTimestamp(),
-
-        returnedBy:
-          window.currentEmployee.id,
-
-        returnedByName:
-          window.currentEmployee.name
-      }
-    );
-
-    await addReviewHistory(
+await addReviewHistory(
   id,
-  "Returned for Corrections",
-  supervisorComments
+  "returned",
+  comments
 );
 
     const reportSnap =
