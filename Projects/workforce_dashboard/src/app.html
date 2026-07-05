@@ -830,12 +830,14 @@
        background-color:rgba(0,0,0,0.45);
      ">
 
-  <div style="
+<div style="
   background:white;
-  margin:5vh auto;
+  color:black;
+  margin:2vh auto;
   padding:20px;
-  width:400px;
-  max-height:85vh;
+  width:500px;
+  max-width:90%;
+  max-height:95vh;
   overflow-y:auto;
   border-radius:8px;
 ">
@@ -911,20 +913,101 @@
     type="date"
     id="editEmployeeLicenseExpiration"
   >
+  </div>
+
+  <h4>Employee Information</h4>
+
+<input
+  id="editEmployeeId"
+  placeholder="Employee ID"
+  readonly
+>
+
+<br><br>
+
+<input
+  id="editEmployeeEmail"
+  placeholder="Email"
+>
+
+<br><br>
+
+<input
+  id="editEmployeePhone"
+  placeholder="Cell Phone"
+>
+
+<br><br>
+
+<label>Hire Date</label>
+<input
+  type="date"
+  id="editEmployeeHireDate"
+>
+
+<br><br>
+
+<h4>Home Address</h4>
+
+<input
+  id="editEmployeeHomeAddress"
+  placeholder="123 Main St, Houston, TX"
+>
+
+<br><br>
+
+<input
+  id="editEmployeeHomeLat"
+  placeholder="Latitude"
+  readonly
+>
+
+<br><br>
+
+<input
+  id="editEmployeeHomeLng"
+  placeholder="Longitude"
+  readonly
+>
+
+<br><br>
+
+<h4>Emergency Contact</h4>
+
+<input
+  id="editEmployeeEmergencyName"
+  placeholder="Contact Name"
+>
+
+<br><br>
+
+<input
+  id="editEmployeeEmergencyPhone"
+  placeholder="Contact Phone"
+>
+
+<br><br>
+    
+
+    <div
+  style="
+    position:sticky;
+    bottom:0;
+    background:white;
+    padding-top:15px;
+    border-top:1px solid #ddd;
+  "
+>
+
+  <button onclick="saveEmployeeEdit()">
+    Save
+  </button>
+
+  <button onclick="closeEditEmployeeModal()">
+    Cancel
+  </button>
 
 </div>
-
-<br>
-
-    <br><br>
-
-    <button onclick="saveEmployeeEdit()">
-      Save
-    </button>
-
-    <button onclick="closeEditEmployeeModal()">
-      Cancel
-    </button>
 
   </div>
 
@@ -2176,8 +2259,7 @@
 
   <button
   type="button"
-  onclick="addIncidentVehicle()"
->
+  onclick="addIncidentVehicle()">
   Add Vehicle
 </button>
 

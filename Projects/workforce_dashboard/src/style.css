@@ -2741,3 +2741,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   min-width: 80px;
   text-align: center;
 }
+#editEmployeeModal h2,
+#editEmployeeModal h4,
+#editEmployeeModal label {
+  color: #000 !important;
+}
+
+#editEmployeeModal input,
+#editEmployeeModal select {
+  background: #fff !important;
+  color: #000 !important;
+  border: 1px solid #cbd5e1;
+}
+
+#editEmployeeModal input::placeholder {
+  color: #64748b !important;
+}
+#editEmployeeModal button {
+  color: #fff !important;
+}

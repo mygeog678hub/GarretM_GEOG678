@@ -194,6 +194,7 @@ let currentPhotoIndex = 0;
 let currentGalleryImages = [];
 let currentGalleryIndex = 0;
 let patrolPhotoGallery = [];
+window.incidentVehicles = [];
 
 //window.markers = markers;
 window.geofenceCircles = geofenceCircles;
@@ -885,6 +886,292 @@ if (editRole) {
   );
 }
 
+window.addIncidentVehicle =
+function () {
+  incidentVehicles.push({
+    role: "",
+    owner: "",
+    plate: "",
+    plateState: "",
+    year: "",
+    make: "",
+    model: "",
+    color: "",
+    towed: false,
+    notes: ""
+  });
+
+  console.log(
+  "After push:",
+  incidentVehicles
+);
+
+  renderIncidentVehicles();
+};
+
+window.renderIncidentVehicles =
+function () {
+
+  const container =
+    document.getElementById(
+      "vehiclesContainer"
+    );
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  incidentVehicles.forEach(
+    (vehicle, index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "dashboard-card";
+
+     card.innerHTML = `
+  <h3>Vehicle ${index + 1}</h3>
+
+  <div class="person-grid">
+  <div class="field-group">
+
+  <label>Role</label>
+  <select
+    oninput="
+      incidentVehicles[${index}].role =
+      this.value
+    "
+  >
+    <option value="">Select Role</option>
+    <option value="Suspect Vehicle"
+      ${vehicle.role === "Suspect Vehicle" ? "selected" : ""}>
+      Suspect Vehicle
+    </option>
+    <option value="Victim Vehicle"
+      ${vehicle.role === "Victim Vehicle" ? "selected" : ""}>
+      Victim Vehicle
+    </option>
+    <option value="Witness Vehicle"
+      ${vehicle.role === "Witness Vehicle" ? "selected" : ""}>
+      Witness Vehicle
+    </option>
+    <option value="Other"
+      ${vehicle.role === "Other" ? "selected" : ""}>
+      Other
+    </option>
+  </select>
+  </div>
+
+     <div class="field-group">
+  <label>Owner</label>
+  <input
+  type="text"
+  value="${vehicle.owner || ""}"
+  oninput="
+    incidentVehicles[${index}].owner =
+      this.value;
+
+    console.log(
+      'Vehicles:',
+      incidentVehicles
+    );
+  "
+>
+  </div>
+
+ <div class="field-group">
+  <label>Plate</label>
+  <input
+    type="text"
+    value="${vehicle.plate || ""}"
+    oninput="
+      incidentVehicles[${index}].plate =
+      this.value
+    "
+  >
+  </div>
+
+  <div class="field-group">
+
+  <label>
+    Plate State
+  </label>
+
+  <select
+    oninput="
+      incidentVehicles[${index}].plateState =
+      this.value
+    "
+  >
+
+    <option value="">
+      State
+    </option>
+
+    <option ${vehicle.plateState === "AL" ? "selected" : ""}>AL</option>
+    <option ${vehicle.plateState === "AK" ? "selected" : ""}>AK</option>
+    <option ${vehicle.plateState === "AZ" ? "selected" : ""}>AZ</option>
+    <option ${vehicle.plateState === "AR" ? "selected" : ""}>AR</option>
+    <option ${vehicle.plateState === "CA" ? "selected" : ""}>CA</option>
+    <option ${vehicle.plateState === "CO" ? "selected" : ""}>CO</option>
+    <option ${vehicle.plateState === "CT" ? "selected" : ""}>CT</option>
+    <option ${vehicle.plateState === "DE" ? "selected" : ""}>DE</option>
+    <option ${vehicle.plateState === "FL" ? "selected" : ""}>FL</option>
+    <option ${vehicle.plateState === "GA" ? "selected" : ""}>GA</option>
+    <option ${vehicle.plateState === "HI" ? "selected" : ""}>HI</option>
+    <option ${vehicle.plateState === "ID" ? "selected" : ""}>ID</option>
+    <option ${vehicle.plateState === "IL" ? "selected" : ""}>IL</option>
+    <option ${vehicle.plateState === "IN" ? "selected" : ""}>IN</option>
+    <option ${vehicle.plateState === "IA" ? "selected" : ""}>IA</option>
+    <option ${vehicle.plateState === "KS" ? "selected" : ""}>KS</option>
+    <option ${vehicle.plateState === "KY" ? "selected" : ""}>KY</option>
+    <option ${vehicle.plateState === "LA" ? "selected" : ""}>LA</option>
+    <option ${vehicle.plateState === "ME" ? "selected" : ""}>ME</option>
+    <option ${vehicle.plateState === "MD" ? "selected" : ""}>MD</option>
+    <option ${vehicle.plateState === "MA" ? "selected" : ""}>MA</option>
+    <option ${vehicle.plateState === "MI" ? "selected" : ""}>MI</option>
+    <option ${vehicle.plateState === "MN" ? "selected" : ""}>MN</option>
+    <option ${vehicle.plateState === "MS" ? "selected" : ""}>MS</option>
+    <option ${vehicle.plateState === "MO" ? "selected" : ""}>MO</option>
+    <option ${vehicle.plateState === "MT" ? "selected" : ""}>MT</option>
+    <option ${vehicle.plateState === "NE" ? "selected" : ""}>NE</option>
+    <option ${vehicle.plateState === "NV" ? "selected" : ""}>NV</option>
+    <option ${vehicle.plateState === "NH" ? "selected" : ""}>NH</option>
+    <option ${vehicle.plateState === "NJ" ? "selected" : ""}>NJ</option>
+    <option ${vehicle.plateState === "NM" ? "selected" : ""}>NM</option>
+    <option ${vehicle.plateState === "NY" ? "selected" : ""}>NY</option>
+    <option ${vehicle.plateState === "NC" ? "selected" : ""}>NC</option>
+    <option ${vehicle.plateState === "ND" ? "selected" : ""}>ND</option>
+    <option ${vehicle.plateState === "OH" ? "selected" : ""}>OH</option>
+    <option ${vehicle.plateState === "OK" ? "selected" : ""}>OK</option>
+    <option ${vehicle.plateState === "OR" ? "selected" : ""}>OR</option>
+    <option ${vehicle.plateState === "PA" ? "selected" : ""}>PA</option>
+    <option ${vehicle.plateState === "RI" ? "selected" : ""}>RI</option>
+    <option ${vehicle.plateState === "SC" ? "selected" : ""}>SC</option>
+    <option ${vehicle.plateState === "SD" ? "selected" : ""}>SD</option>
+    <option ${vehicle.plateState === "TN" ? "selected" : ""}>TN</option>
+    <option ${vehicle.plateState === "TX" ? "selected" : ""}>TX</option>
+    <option ${vehicle.plateState === "UT" ? "selected" : ""}>UT</option>
+    <option ${vehicle.plateState === "VT" ? "selected" : ""}>VT</option>
+    <option ${vehicle.plateState === "VA" ? "selected" : ""}>VA</option>
+    <option ${vehicle.plateState === "WA" ? "selected" : ""}>WA</option>
+    <option ${vehicle.plateState === "WV" ? "selected" : ""}>WV</option>
+    <option ${vehicle.plateState === "WI" ? "selected" : ""}>WI</option>
+    <option ${vehicle.plateState === "WY" ? "selected" : ""}>WY</option>
+
+  </select>
+
+</div>
+ <div class="field-group">
+
+  <label>Year</label>
+  <input
+    type="text"
+    value="${vehicle.year || ""}"
+    oninput="
+      incidentVehicles[${index}].year =
+      this.value
+    "
+  >
+  </div>
+ <div class="field-group">
+  <label>Make</label>
+  <input
+    type="text"
+    value="${vehicle.make || ""}"
+    oninput="
+      incidentVehicles[${index}].make =
+      this.value
+    "
+  >
+  </div>
+  <div class="field-group">
+
+  <label>Model</label>
+  <input
+    type="text"
+    value="${vehicle.model || ""}"
+    oninput="
+      incidentVehicles[${index}].model =
+      this.value
+    "
+  >
+  </div>
+ <div class="field-group">
+  <label>Color</label>
+  <input
+    type="text"
+    value="${vehicle.color || ""}"
+    oninput="
+      incidentVehicles[${index}].color =
+      this.value
+    "
+  >
+  </div>
+ <div class="field-group">
+  <label>Towed</label>
+  <select
+    oninput="
+      incidentVehicles[${index}].towed =
+      this.value === 'true'
+    "
+  >  
+    <option
+      value="false"
+      ${!vehicle.towed ? "selected" : ""}
+    >
+      No
+    </option>
+
+    <option
+      value="true"
+      ${vehicle.towed ? "selected" : ""}
+    >
+      Yes
+    </option>
+  </select>
+</div>
+
+ <div class="field-group">
+  <label>Notes</label>
+  <textarea
+    oninput="
+      incidentVehicles[${index}].notes =
+      this.value
+    "
+  >${vehicle.notes || ""}</textarea>
+</div>
+ <div class="field-group">
+  <button
+    type="button"
+    onclick="
+      removeIncidentVehicle(${index})
+    "
+  >
+    Remove Vehicle
+  </button>
+  </div>
+  </div>
+`;
+
+      container.appendChild(
+        card
+      );
+    }
+  );
+};
+
+window.removeIncidentVehicle =
+function (index) {
+  incidentVehicles.splice(
+    index,
+    1
+  );
+
+  renderIncidentVehicles();
+};
+
 window.renderPatrolDashboard =
 function() {
 
@@ -1160,20 +1447,39 @@ async function addEmployee() {
     return;
   }
 
-  await addDoc(collection(db, "employees"), {
+await addDoc(collection(db, "employees"), {
   name,
   designation: role,
-  role: "Officer",
+
+  role:
+    role === "Dispatcher"
+      ? "Dispatcher"
+      : "Officer",
+
   securityLevel:
-  role ===
-  "Security Officer"
+    role === "Security Officer"
+      ? securityLevel
+      : "",
 
-    ? securityLevel
+  employeeId: "",
+  email: "",
+  phone: "",
 
-    : "",
-  createdAt: new Date().toISOString()
+  homeAddress: "",
+  homeLat: null,
+  homeLng: null,
+
+  securityLicenseNumber: "",
+  securityLicenseExpiration: "",
+
+  emergencyContactName: "",
+  emergencyContactPhone: "",
+
+  hireDate: "",
+
+  createdAt:
+    new Date().toISOString()
 });
-
   empName.value = "";
   empRole.value = "";
   empName.focus();
@@ -2938,35 +3244,20 @@ function outsideModalClick(event) {
 
 function filterEmployees() {
   const search =
-    document.getElementById("employeeSearch")
-      .value
-      .toLowerCase();
+    document.getElementById(
+      "employeeSearch"
+    ).value.toLowerCase();
 
-  const filtered = employees.filter(e =>
-    e.name.toLowerCase().includes(search)
-  );
+  const filtered =
+    employees.filter(e =>
+      e.name
+        .toLowerCase()
+        .includes(search)
+    );
 
-  const rows = filtered.map(e => `
-    <tr>
-      <td>${e.name}</td>
-      <td>${e.designation || ""}</td>
-      <td>
-        <button onclick="deleteEmployee('${e.id}')">
-          Delete
-        </button>
-      </td>
-    </tr>
-  `).join("");
-
-  document.getElementById("employeeTable").innerHTML = `
-    <tr>
-      <th>Name</th>
-      <th>Position</th>
-      <th>Action</th>
-    </tr>
-    ${rows}
-  `;
+  renderEmployees(filtered);
 }
+
 function closeEmployeeModal() {
   const modal = document.getElementById("employeeModal");
 
@@ -3668,7 +3959,7 @@ document.getElementById(
 document.getElementById(
   "editEmployeeLicenseExpiration"
 ).value =
-  emp.licenseExpiration || "";
+  emp.licenseExpiration || "";  
 
 document.getElementById(
   "editLicenseSection"
@@ -3676,6 +3967,51 @@ document.getElementById(
   emp.type === "Security Officer"
     ? "block"
     : "none";
+
+    document.getElementById(
+  "editEmployeeId"
+).value =
+  emp.employeeId || "";
+
+document.getElementById(
+  "editEmployeeEmail"
+).value =
+  emp.email || "";
+
+document.getElementById(
+  "editEmployeePhone"
+).value =
+  emp.phone || "";
+
+document.getElementById(
+  "editEmployeeHireDate"
+).value =
+  emp.hireDate || "";
+
+  document.getElementById(
+  "editEmployeeHomeAddress"
+).value =
+  emp.homeAddress || "";
+
+document.getElementById(
+  "editEmployeeHomeLat"
+).value =
+  emp.homeLat || "";
+
+document.getElementById(
+  "editEmployeeHomeLng"
+).value =
+  emp.homeLng || "";
+
+  document.getElementById(
+  "editEmployeeEmergencyName"
+).value =
+  emp.emergencyContactName || "";
+
+document.getElementById(
+  "editEmployeeEmergencyPhone"
+).value =
+  emp.emergencyContactPhone || "";
 
   document.getElementById(
     "editEmployeeModal"
@@ -3712,6 +4048,51 @@ const licenseExpiration =
     "editEmployeeLicenseExpiration"
   ).value;
 
+  const employeeId =
+  document.getElementById(
+    "editEmployeeId"
+  ).value.trim();
+
+const email =
+  document.getElementById(
+    "editEmployeeEmail"
+  ).value.trim();
+
+const phone =
+  document.getElementById(
+    "editEmployeePhone"
+  ).value.trim();
+
+const hireDate =
+  document.getElementById(
+    "editEmployeeHireDate"
+  ).value;
+
+const homeAddress =
+  document.getElementById(
+    "editEmployeeHomeAddress"
+  ).value.trim();
+
+const homeLat =
+  document.getElementById(
+    "editEmployeeHomeLat"
+  ).value || null;
+
+const homeLng =
+  document.getElementById(
+    "editEmployeeHomeLng"
+  ).value || null;
+
+const emergencyContactName =
+  document.getElementById(
+    "editEmployeeEmergencyName"
+  ).value.trim();
+
+const emergencyContactPhone =
+  document.getElementById(
+    "editEmployeeEmergencyPhone"
+  ).value.trim();
+
   if (!name) {
 
     alert("Enter employee name");
@@ -3729,12 +4110,25 @@ const licenseExpiration =
     editingEmployeeId
   ),
   {
-    name,
-    designation,    
-    licenseLevel,
-    licenseNumber,
-    licenseExpiration
-  }
+  name,
+  designation,
+
+  licenseLevel,
+  licenseNumber,
+  licenseExpiration,
+
+  employeeId,
+  email,
+  phone,
+  hireDate,
+
+  homeAddress,
+  homeLat,
+  homeLng,
+
+  emergencyContactName,
+  emergencyContactPhone
+}
 );
 
     closeEditEmployeeModal();
@@ -9245,6 +9639,20 @@ async function () {
     const incidentData =
       collectIncidentData();
 
+         console.log(
+  "incidentVehicles at submit:",
+  incidentVehicles
+);
+
+console.log(
+  "incidentVehicles JSON:",
+  JSON.stringify(
+    incidentVehicles,
+    null,
+    2
+  )
+);
+
     if (
       !incidentData.incidentType ||
       !incidentData.narrative
@@ -9252,6 +9660,8 @@ async function () {
       alert(
         "Please complete all required fields."
       );
+
+   
       return;
     }
 
@@ -9684,84 +10094,8 @@ function collectIncidentData() {
 
     });
 
-  const incidentVehicles = [];
-
-  document
-    .querySelectorAll(
-      ".vehicle-card"
-    )
-    .forEach(card => {
-
-      incidentVehicles.push({
-
-  role:
-    card.querySelector(
-      ".vehicleRole"
-    )?.value || "",
-
-  owner:
-    card.querySelector(
-      ".vehicleOwner"
-    )?.value || "",
-
-  plate:
-    card.querySelector(
-      ".vehiclePlate"
-    )?.value || "",
-
-  state:
-    card.querySelector(
-      ".vehicleState"
-    )?.value || "",
-
-  year:
-    card.querySelector(
-      ".vehicleYear"
-    )?.value || "",
-
-  make:
-    card.querySelector(
-      ".vehicleMake"
-    )?.value || "",
-
-  model:
-    card.querySelector(
-      ".vehicleModel"
-    )?.value || "",
-
-  color:
-    card.querySelector(
-      ".vehicleColor"
-    )?.value || "",
-
-  vin:
-    card.querySelector(
-      ".vehicleVin"
-    )?.value || "",
-
-  insurance:
-    card.querySelector(
-      ".vehicleInsurance"
-    )?.value || "",
-
-  policy:
-    card.querySelector(
-      ".vehiclePolicy"
-    )?.value || "",
-
-  towed:
-    card.querySelector(
-      ".vehicleTowed"
-    )?.value || "",
-
-  notes:
-    card.querySelector(
-      ".vehicleNotes"
-    )?.value || ""
-
-});
-
-    });
+const vehicles =
+  window.incidentVehicles || [];
     console.log(
   "Persons:",
   persons
@@ -9788,7 +10122,7 @@ function collectIncidentData() {
     persons,
 
     vehicles:
-      incidentVehicles,
+  vehicles,
 
     lawEnforcement: {
       agency:
@@ -15169,91 +15503,10 @@ report.persons?.forEach(
   }
 );
 
-document.getElementById(
-  "vehiclesContainer"
-).innerHTML = "";
+incidentVehicles =
+  report.vehicles || [];
 
-report.vehicles?.forEach(
-  vehicle => {
-
-    addIncidentVehicle();
-
-    const cards =
-      document.querySelectorAll(
-        ".vehicle-card"
-      );
-
-    const card =
-      cards[
-        cards.length - 1
-      ];
-
-    card.querySelector(
-      ".vehicleRole"
-    ).value =
-      vehicle.role || "";
-
-    card.querySelector(
-      ".vehicleOwner"
-    ).value =
-      vehicle.owner || "";
-
-    card.querySelector(
-      ".vehiclePlate"
-    ).value =
-      vehicle.plate || "";
-
-    card.querySelector(
-      ".vehicleState"
-    ).value =
-      vehicle.state || "";
-
-    card.querySelector(
-      ".vehicleYear"
-    ).value =
-      vehicle.year || "";
-
-    card.querySelector(
-      ".vehicleMake"
-    ).value =
-      vehicle.make || "";
-
-    card.querySelector(
-      ".vehicleModel"
-    ).value =
-      vehicle.model || "";
-
-    card.querySelector(
-      ".vehicleColor"
-    ).value =
-      vehicle.color || "";
-
-    card.querySelector(
-      ".vehicleVin"
-    ).value =
-      vehicle.vin || "";
-
-    card.querySelector(
-      ".vehicleInsurance"
-    ).value =
-      vehicle.insurance || "";
-
-    card.querySelector(
-      ".vehiclePolicy"
-    ).value =
-      vehicle.policy || "";
-
-    card.querySelector(
-      ".vehicleTowed"
-    ).value =
-      vehicle.towed || "";
-
-    card.querySelector(
-      ".vehicleNotes"
-    ).value =
-      vehicle.notes || "";
-  }
-);
+renderIncidentVehicles();
 
 if (
   report.supervisorComments
@@ -16658,7 +16911,6 @@ window.deleteAssignment = deleteAssignment;
 window.deleteEmployee = deleteEmployee;
 window.openEmployeeModal = openEmployeeModal;
 window.closeEmployeeModal = closeEmployeeModal;
-window.exportExcel = exportExcel;
 window.viewEmployees = viewEmployees;
 window.filterEmployees = filterEmployees;
 window.outsideModalClick = outsideModalClick;
