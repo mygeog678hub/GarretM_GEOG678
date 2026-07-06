@@ -1546,6 +1546,10 @@ async function addAsset() {
 
 // ================= ASSIGN =================
 async function assign() {
+
+  console.log(
+  "ASSIGN FUNCTION FIRED"
+);
   alert(
   `Employee: ${
     assignEmployee.options[
@@ -1591,11 +1595,6 @@ if (
 const siteId = assignSite.value;
 
 console.log(
-  "User Email:",
-  user.email
-);
-
-console.log(
   "Employees Loaded:",
   employees.length
 );
@@ -1610,18 +1609,82 @@ const site =
     s => s.id === siteId
   );
 
-  console.log("employeeId:", employeeId);
-console.log("employee:", employee);
-console.log("site:", site);
+  let mileageDistance = 0;
+let mileageIncentive = false;
+let mileageStatus =
+  "Coordinates Missing";
 
-await addDoc(collection(db, "assignments"), {
-  employeeId,
-  siteId,
-  assetId: assignAsset.value || null,
-  vehicleId: assignVehicle.value || null,
-  startTime: new Date().toISOString(),
-  endTime: null
+const mileageThreshold =
+  companyProfile
+    ?.mileageThreshold || 25;
+
+if (
+  employee?.homeLat &&
+  employee?.homeLng &&
+  site?.lat &&
+  site?.lng
+) {
+  const distanceMeters =
+    calculateDistance(
+      employee.homeLat,
+      employee.homeLng,
+      site.lat,
+      site.lng
+    );
+
+  mileageDistance =
+    Number(
+      (
+        distanceMeters *
+        0.000621371
+      ).toFixed(1)
+    );
+
+  mileageIncentive =
+    mileageDistance >
+    mileageThreshold;
+
+  mileageStatus =
+    "Calculated";
+}
+
+ console.log("Mileage Values", {
+  mileageDistance,
+  mileageThreshold,
+  mileageIncentive,
+  mileageStatus
 });
+const docRef =
+await addDoc(
+  collection(db, "assignments"),
+  {
+    employeeId,
+    siteId,
+
+    assetId:
+      assignAsset.value || null,
+
+    vehicleId:
+      assignVehicle.value || null,
+
+    mileageDistance,
+    mileageThreshold,
+    mileageIncentive,
+    mileageStatus,
+
+    startTime:
+      new Date().toISOString(),
+
+    endTime: null
+  }
+
+  
+);
+
+console.log(
+  "Assignment created:",
+  docRef.id
+);
 
 await logActivity(
   siteId,
@@ -3993,6 +4056,21 @@ document.getElementById(
 ).value =
   emp.homeAddress || "";
 
+  document.getElementById(
+  "editEmployeeHomeCity"
+).value =
+  emp.homeCity || "";
+
+document.getElementById(
+  "editEmployeeHomeState"
+).value =
+  emp.homeState || "";
+
+document.getElementById(
+  "editEmployeeHomeZip"
+).value =
+  emp.homeZip || "";
+
 document.getElementById(
   "editEmployeeHomeLat"
 ).value =
@@ -4022,6 +4100,9 @@ document.getElementById(
 async function saveEmployeeEdit() {
 
   if (!editingEmployeeId) return;
+
+  let newHomeLat = null;
+  let newHomeLng = null;
 
   const name =
     document.getElementById(
@@ -4071,17 +4152,22 @@ const hireDate =
 const homeAddress =
   document.getElementById(
     "editEmployeeHomeAddress"
+  ).value.trim();  
+
+  const homeCity =
+  document.getElementById(
+    "editEmployeeHomeCity"
   ).value.trim();
 
-const homeLat =
+const homeState =
   document.getElementById(
-    "editEmployeeHomeLat"
-  ).value || null;
+    "editEmployeeHomeState"
+  ).value;
 
-const homeLng =
+const homeZip =
   document.getElementById(
-    "editEmployeeHomeLng"
-  ).value || null;
+    "editEmployeeHomeZip"
+  ).value.trim();
 
 const emergencyContactName =
   document.getElementById(
@@ -4091,17 +4177,59 @@ const emergencyContactName =
 const emergencyContactPhone =
   document.getElementById(
     "editEmployeeEmergencyPhone"
-  ).value.trim();
+  ).value.trim();  
+
+const fullAddress =
+  `${homeAddress}, ${homeCity}, ${homeState} ${homeZip}, USA`;
+
+   if (
+  homeAddress &&
+  homeCity &&
+  homeState &&
+  homeZip
+) {
+  try {
+
+    const response =
+      await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          fullAddress
+        )}`
+      );
+
+    const results =
+      await response.json();
+
+    if (results.length) {
+
+      newHomeLat =
+        parseFloat(
+          results[0].lat
+        );
+
+      newHomeLng =
+        parseFloat(
+          results[0].lon
+        );  
+    } 
+
+  } catch (err) {
+
+    console.error(
+      "Address geocoding failed:",
+      err
+    );
+  }
+}
 
   if (!name) {
 
     alert("Enter employee name");
 
     return;
-
   }
 
-  try {
+  try { 
 
     await updateDoc(
   doc(
@@ -4123,13 +4251,28 @@ const emergencyContactPhone =
   hireDate,
 
   homeAddress,
-  homeLat,
-  homeLng,
+  homeCity,
+  homeState,
+  homeZip,
+  homeLat:
+  newHomeLat,
+  homeLng:
+  newHomeLng,
 
   emergencyContactName,
   emergencyContactPhone
 }
 );
+
+document.getElementById(
+  "editEmployeeHomeLat"
+).value =
+  newHomeLat || "";
+
+document.getElementById(
+  "editEmployeeHomeLng"
+).value =
+  newHomeLng || ""; 
 
     closeEditEmployeeModal();
 
@@ -6375,12 +6518,51 @@ console.log("All Shifts:", shifts);
   const employee =
     employees.find(
       e => e.id === employeeId
-    );
-
+    ); 
+    
   const site =
     sites.find(
       s => s.id === siteId
     );
+
+       let mileageDistance = 0;
+let mileageIncentive = false;
+let mileageStatus =
+  "Coordinates Missing";
+
+const mileageThreshold =
+  companyProfile
+    ?.mileageThreshold || 25;
+
+if (
+  employee?.homeLat &&
+  employee?.homeLng &&
+  site?.lat &&
+  site?.lng
+) {
+  const distanceMeters =
+    calculateDistance(
+      employee.homeLat,
+      employee.homeLng,
+      site.lat,
+      site.lng
+    );
+
+  mileageDistance =
+    Number(
+      (
+        distanceMeters *
+        0.000621371
+      ).toFixed(1)
+    );
+
+  mileageIncentive =
+    mileageDistance >
+    mileageThreshold;
+
+  mileageStatus =
+    "Calculated";
+}
 
     const duplicate =
   shifts.some(
@@ -6430,17 +6612,16 @@ if (conflict) {
 
 }
 
-  await addDoc(
+await addDoc(
   collection(db, "shifts"),
   {
-
     employeeId,
 
     employeeName:
       employee.name,
 
-      securityLevel:
-  employee.securityLevel || "",
+    licenseLevel:
+  employee.licenseLevel || "",
 
     siteId,
 
@@ -6458,12 +6639,16 @@ if (conflict) {
 
     shiftPay,
 
+    mileageDistance,
+    mileageThreshold,
+    mileageIncentive,
+    mileageStatus,
+
     status:
       "Scheduled",
 
     createdAt:
       new Date().toISOString()
-
   }
 );
 
@@ -6569,14 +6754,33 @@ function renderSchedules() {
       <br>
 
       <strong>
-        Shift Pay:
-      </strong>
+  Shift Pay:
+</strong>
 
-      $${Number(
-        shift.shiftPay || 0
-      ).toFixed(2)}
+$${Number(
+  shift.shiftPay || 0
+).toFixed(2)}
 
-      <br><br>
+<br>
+
+<strong>
+  🚗 Mileage:
+</strong>
+
+${shift.mileageDistance || 0} mi
+
+${
+  shift.mileageIncentive
+    ? `
+      <br>
+      <span class="mileage-badge">
+        🚗 Incentive Pay
+      </span>
+      `
+    : ""
+}
+
+<br><br>
 
       <button onclick="editShift('${shift.id}')">
         Edit Shift
@@ -6767,21 +6971,47 @@ async function saveShiftEdit() {
     e => e.id === employeeId
   );
 
-  const levels = {
+  console.log(employee);
+console.log(
+  "securityLevel:",
+  employee.securityLevel
+);
+console.log(
+  "licenseLevel:",
+  employee.licenseLevel
+);
+
+ const levels = {
   "LVL 2": 2,
   "LVL 3": 3,
   "LVL 4": 4
 };
 
+const licenseMap = {
+  "Non-Commissioned (Level II)": 2,
+  "Commissioned (Level III)": 3,
+  "Personal Protection (Level IV)": 4
+};
+
 const officerLevel =
-  levels[
-    employee.securityLevel
+  licenseMap[
+    employee.licenseLevel
   ] || 0;
 
 const shiftLevel =
   levels[
     classification
   ] || 0;
+
+console.log(
+  "Officer Level:",
+  officerLevel
+);
+
+console.log(
+  "Shift Level:",
+  shiftLevel
+);
 
 if (
   officerLevel <
@@ -14643,6 +14873,13 @@ if (patchFile) {
         logoBase64,
         patchUrl,
 
+            mileageThreshold:
+      Number(
+        document.getElementById(
+          "mileageThreshold"
+        ).value
+      ) || 25,
+
         createdAt:
     companyProfile.createdAt ??
     serverTimestamp(),
@@ -14650,11 +14887,6 @@ if (patchFile) {
       updatedAt:
         serverTimestamp()
     };
-
-    console.log(
-  "Saving profile:",
-  profile
-);
 
     await setDoc(
       doc(
@@ -14711,7 +14943,12 @@ async function () {
       docSnap.data();
 
       window.companyProfile =
-  companyProfile;
+      companyProfile;  
+      
+      console.log(
+  "COMPANY PROFILE:",
+  companyProfile
+);
 
     document.getElementById(
       "companyName"
@@ -14757,6 +14994,11 @@ async function () {
       "companyZip"
     ).value =
       companyProfile.zip || "";
+
+      document.getElementById(
+      "mileageThreshold"
+    ).value =
+      companyProfile.mileageThreshold || 25;
 
   } catch (error) {
 
