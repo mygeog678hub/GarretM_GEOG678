@@ -2798,3 +2798,23 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   align-items: center;
   gap: 4px;
 }
+.repeat-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #1f8b4c;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ends-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #f39c12;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}

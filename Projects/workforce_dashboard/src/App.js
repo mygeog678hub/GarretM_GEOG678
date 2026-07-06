@@ -887,6 +887,21 @@ if (editRole) {
   );
 }
 
+function formatLocalDateTime(
+  date
+) {
+  const pad = n =>
+    String(n).padStart(2, "0");
+
+  return (
+    `${date.getFullYear()}-` +
+    `${pad(date.getMonth() + 1)}-` +
+    `${pad(date.getDate())}T` +
+    `${pad(date.getHours())}:` +
+    `${pad(date.getMinutes())}`
+  );
+}
+
 window.addIncidentVehicle =
 function () {
   incidentVehicles.push({
@@ -6590,6 +6605,50 @@ async function createShift() {
     "shiftClassification"
   ).value;
 
+  const repeatEnabled =
+  document.getElementById(
+    "repeatSchedule"
+  ).checked;
+
+const repeatDays =
+  getRepeatDays();
+
+const repeatEndDate =
+  document.getElementById(
+    "repeatEndDate"
+  ).value;
+
+let generatedDates = [];
+
+if (repeatEnabled) {
+
+  generatedDates =
+    generateRecurringDates(
+      startTime,
+      repeatDays,
+      repeatEndDate
+    );
+
+  console.log(
+    "Recurring dates:",
+    generatedDates
+  );
+
+}
+
+  if (
+  repeatEnabled &&
+  (
+    !repeatDays.length ||
+    !repeatEndDate
+  )
+) {
+  alert(
+    "Select repeat days and an end date."
+  );
+  return;
+}
+
   if (
     !employeeId ||
     !siteId ||
@@ -6761,46 +6820,136 @@ if (conflict) {
 
 }
 
-await addDoc(
+console.log({
+  repeatEnabled,
+  repeatDays,
+  repeatEndDate
+});
+
+const shiftData = {
+
+  employeeId,
+
+  employeeName:
+    employee.name,
+
+  licenseLevel:
+    employee.licenseLevel || "",
+
+  siteId,
+
+  siteName:
+    site.name,
+
+  siteCategory:
+    site.siteCategory || "other",
+
+  classification,
+
+  shiftPay,
+
+  mileageDistance,
+  mileageThreshold,
+  mileageIncentive,
+  mileageStatus,
+
+  repeatEnabled,
+  repeatDays,
+  repeatEndDate,
+
+  status:
+    "Scheduled",
+
+  createdAt:
+    new Date().toISOString()
+
+};
+
+if (!repeatEnabled) {
+
+  await addDoc(
+    collection(db, "shifts"),
+    {
+      ...shiftData,
+
+      startTime,
+
+      endTime
+    }
+  );
+
+  alert(
+    "Shift created successfully."
+  );
+
+
+} else {  
+
+  const seriesId =
+    crypto.randomUUID();
+
+  console.log(
+    `Creating ${generatedDates.length} recurring shifts`
+  );
+
+  for (const date of generatedDates) {
+
+    const newStart =
+      applyTimeToDate(
+        startTime,
+        date
+      );
+
+    const newEnd =
+      applyTimeToDate(
+        endTime,
+        date
+      );
+
+      console.log(
+  "New Start:",
+  newStart
+);
+
+console.log(
+  "New End:",
+  newEnd
+);
+
+console.log(
+  "Saving recurring shift..."
+);
+
+   await addDoc(
   collection(db, "shifts"),
   {
-    employeeId,
+    ...shiftData,
 
-    employeeName:
-      employee.name,
+    startTime:
+  formatLocalDateTime(
+    newStart
+  ),
 
-    licenseLevel:
-  employee.licenseLevel || "",
+endTime:
+  formatLocalDateTime(
+    newEnd
+  ),
 
-    siteId,
-
-    siteName:
-      site.name,
-
-    siteCategory:
-      site.siteCategory || "other",
-
-    startTime,
-
-    endTime,
-
-    classification,
-
-    shiftPay,
-
-    mileageDistance,
-    mileageThreshold,
-    mileageIncentive,
-    mileageStatus,
-
-    status:
-      "Scheduled",
-
-    createdAt:
-      new Date().toISOString()
+    seriesId
   }
 );
 
+console.log(
+  "Recurring shift saved."
+);
+
+console.log(
+  `${generatedDates.length} recurring shifts created.`
+);
+
+  }
+
+}
   document.getElementById(
   "scheduleEmployee"
 ).value = "";
@@ -6852,6 +7001,28 @@ document
 document.getElementById(
   "repeatOptions"
 ).classList.add("hidden");
+}
+
+function formatRepeatDays(
+  days
+) {
+  const names = [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ];
+
+  return (
+    days || []
+  )
+    .map(
+      d => names[d]
+    )
+    .join(", ");
 }
 
 function timesOverlap(
@@ -6938,7 +7109,11 @@ $${Number(
   🚗 Mileage:
 </strong>
 
-${shift.mileageDistance || 0} mi
+${
+  shift.mileageDistance != null
+    ? `${shift.mileageDistance} mi`
+    : "Not Available"
+}
 
 ${
   shift.mileageIncentive
@@ -6946,6 +7121,33 @@ ${
       <br>
       <span class="mileage-badge">
         🚗 Incentive Pay
+      </span>
+      `
+    : ""
+}
+
+${
+  shift.repeatEnabled
+    ? `
+      <br>
+
+      <span
+        class="repeat-badge"
+      >
+        🔁 
+        ${formatRepeatDays(
+          shift.repeatDays
+        )}
+      </span>
+
+      <br>
+
+      <span
+        class="repeat-badge">
+        Ends
+        ${new Date(
+          shift.repeatEndDate
+        ).toLocaleDateString()}
       </span>
       `
     : ""
@@ -17568,6 +17770,66 @@ function getRepeatDays() {
       ".repeatDay:checked"
     )
   ).map(cb => Number(cb.value));
+}
+
+function generateRecurringDates(
+  startTime,
+  repeatDays,
+  repeatEndDate
+) {
+
+  const dates = [];
+
+  const start =
+    new Date(startTime);
+
+  const end =
+    new Date(repeatEndDate);
+
+  const current =
+    new Date(start);
+
+  while (current <= end) {
+
+    if (
+      repeatDays.includes(
+        current.getDay()
+      )
+    ) {
+
+      dates.push(
+        new Date(current)
+      );
+
+    }
+
+    current.setDate(
+      current.getDate() + 1
+    );
+  }
+
+  return dates;
+
+}
+
+function applyTimeToDate(
+  templateDateTime,
+  targetDate
+) {
+  const template =
+    new Date(templateDateTime);
+
+  const result =
+    new Date(targetDate);
+
+  result.setHours(
+    template.getHours(),
+    template.getMinutes(),
+    template.getSeconds(),
+    template.getMilliseconds()
+  );
+
+  return result;
 }
 
 
