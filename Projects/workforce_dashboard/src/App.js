@@ -4180,10 +4180,7 @@ const emergencyContactPhone =
     "editEmployeeEmergencyPhone"
   ).value.trim();  
 
-const fullAddress =
-  `${homeAddress}, ${homeCity}, ${homeState} ${homeZip}, USA`;
-
-   if (
+if (
   homeAddress &&
   homeCity &&
   homeState &&
@@ -4191,15 +4188,40 @@ const fullAddress =
 ) {
   try {
 
-    const response =
-      await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          fullAddress
-        )}`
+    const addresses = [
+      `${homeAddress}, ${homeCity}, ${homeState} ${homeZip}, USA`,
+      `${homeAddress}, ${homeCity}, ${homeState}, USA`,
+      `${homeAddress}, ${homeZip}, USA`
+    ];
+
+    let results = [];
+
+    for (const address of addresses) {
+
+      console.log(
+        "Trying address:",
+        address
       );
 
-    const results =
-      await response.json();
+      const response =
+        await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            address
+          )}`
+        );
+
+      results =
+        await response.json();
+
+      console.log(
+        "Results:",
+        results
+      );
+
+      if (results.length) {
+        break;
+      }
+    }
 
     if (results.length) {
 
@@ -4211,8 +4233,8 @@ const fullAddress =
       newHomeLng =
         parseFloat(
           results[0].lon
-        );  
-    } 
+        );
+    }
 
   } catch (err) {
 
@@ -6586,6 +6608,25 @@ console.log("All Shifts:", shifts);
       e => e.id === employeeId
     ); 
 
+    console.log(
+  "Employee object:",
+  employee
+);
+
+console.log(
+  "Address:",
+  employee?.homeAddress,
+  employee?.homeCity,
+  employee?.homeState,
+  employee?.homeZip
+);
+
+console.log(
+  "Coordinates:",
+  employee?.homeLat,
+  employee?.homeLng
+);
+
   const site =
     sites.find(
       s => s.id === siteId
@@ -6629,6 +6670,20 @@ if (
   mileageStatus =
     "Calculated";
 
+  console.log(
+    "Mileage calculated:",
+    {
+      employee:
+        employee.name,
+      site:
+        site.name,
+      miles:
+        mileageDistance,
+      incentive:
+        mileageIncentive
+    }
+  );
+
 } else {
 
   console.warn(
@@ -6652,44 +6707,11 @@ if (
       }
     }
   );
-} {
-  const distanceMeters =
-    calculateDistance(
-      employee.homeLat,
-      employee.homeLng,
-      site.lat,
-      site.lng
-    );
 
-  mileageDistance =
-    Number(
-      (
-        distanceMeters *
-        0.000621371
-      ).toFixed(1)
-    );
-
- console.log(
-  "Mileage calculated:",
-  {
-    employee:
-      employee.name,
-    site:
-      site.name,
-    miles:
-      mileageDistance,
-    incentive:
-      mileageIncentive
-  }
-);
-
-  mileageIncentive =
-    mileageDistance >
-    mileageThreshold;
-
-  mileageStatus =
-    "Calculated";
-}
+  mileageDistance = null;
+  mileageIncentive = false;
+  mileageStatus = "Unavailable";
+}     
 
     const duplicate =
   shifts.some(
@@ -6808,6 +6830,28 @@ console.log("Fields cleared");
 document.getElementById(
   "schedulePay"
 ).value = "";
+
+document.getElementById(
+  "repeatSchedule"
+).checked = false;
+
+document.getElementById(
+  "repeatEndDate"
+).value = "";
+
+document.getElementById(
+  "shiftClassification"
+).selectedIndex = 0;
+
+document
+  .querySelectorAll(".repeatDay")
+  .forEach(cb => {
+    cb.checked = false;
+  });
+
+document.getElementById(
+  "repeatOptions"
+).classList.add("hidden");
 }
 
 function timesOverlap(
@@ -17498,6 +17542,33 @@ document.getElementById(
 ).innerHTML = html;
 
 };
+
+window.toggleRepeatOptions =
+function () {
+
+  const section =
+    document.getElementById(
+      "repeatOptions"
+    );
+
+  const checked =
+    document.getElementById(
+      "repeatSchedule"
+    ).checked;
+
+  section.classList.toggle(
+    "hidden",
+    !checked
+  );
+};
+
+function getRepeatDays() {
+  return Array.from(
+    document.querySelectorAll(
+      ".repeatDay:checked"
+    )
+  ).map(cb => Number(cb.value));
+}
 
 
 
