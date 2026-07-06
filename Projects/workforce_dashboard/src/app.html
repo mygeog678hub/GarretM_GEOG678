@@ -120,6 +120,7 @@
   <main class="main-content">
 
     <div class="dashboard-container">
+      <div class="dashboard-card brand-card">
 
   <!-- HEADER -->
 
@@ -140,10 +141,20 @@
       </div>
 
     </div>
+  </div>
 
-    <div class="header-right">
+  <div class="header-right">
 
-  <div class="nav-buttons">
+  <img
+    id="clientLogoHeader"
+    class="client-logo hidden"
+  >
+
+</div>
+
+    <div class="nav-card">
+
+  <div class="nav-left">
 
 <button
   id="companySettingsBtn"
@@ -194,6 +205,19 @@
   📊 Patrol Analytics
 </button>
 
+<button
+  id="mileageReportBtn"
+  onclick="showMileageReportPage()">
+  🚗 Mileage Report
+</button>
+
+ <div class="nav-right">
+<button
+  id="myPortalBtn"
+  onclick="showMyPortalPage()">
+  👤 My Portal
+</button>
+
   <button
   id="logoutBtn"
   class="logout-btn"
@@ -203,8 +227,72 @@
 
 </div>
 </div>
+</div>
 
   </header>
+
+  <div
+  id="mileageReportPage"
+  class="page none"
+>
+  <h1>Mileage Incentive Report</h1>
+
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <h3>Total Incentive Shifts</h3>
+      <span id="totalMileageShifts">0</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Total Incentive Miles</h3>
+      <span id="totalMileageMiles">0</span>
+    </div>
+
+    <div class="stat-card">
+      <h3>Total Incentive Officers</h3>
+      <span id="totalMileageOfficers">0</span>
+    </div>
+
+  </div>
+
+  <div class="dashboard-card">
+
+    <div class="filter-row">
+
+      <select
+  id="mileageReportFilter"
+  onchange="renderMileageReport()"
+>
+        <option value="all">
+          All Shifts
+        </option>
+
+        <option value="incentive">
+          Incentive Only
+        </option>
+
+        <option value="week">
+          This Week
+        </option>
+
+        <option value="month">
+          This Month
+        </option>
+      </select>
+
+      <button
+        onclick="loadMileageReport()"
+      >
+        Refresh
+      </button>
+
+    </div>
+
+    <div id="mileageReportTable"></div>
+
+  </div>
+</div>
 
   <div id="dashboardPage">
 

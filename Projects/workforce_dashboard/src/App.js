@@ -194,6 +194,7 @@ let currentPhotoIndex = 0;
 let currentGalleryImages = [];
 let currentGalleryIndex = 0;
 let patrolPhotoGallery = [];
+let mileageReportShifts = [];
 window.incidentVehicles = [];
 
 //window.markers = markers;
@@ -5929,11 +5930,7 @@ function () {
 
   document.getElementById(
     "companySettingsPage"
-  ).style.display = "block";
-
-  setActiveNavById(
-    "companySettingsBtn"
-  );
+  ).style.display = "block";  
 
   document.getElementById(
     "dashboardPage"
@@ -5979,6 +5976,9 @@ document.getElementById(
      document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
 
 
 };
@@ -5987,11 +5987,7 @@ function showDashboard() {
 
   document.getElementById(
     "dashboardPage"
-  ).style.display = "block";
-
-  setActiveNavById(
-    "dashboardBtn"
-  );
+  ).style.display = "block";  
 
   document.getElementById(
     "schedulingPage"
@@ -6036,6 +6032,10 @@ document.getElementById(
 
      document.getElementById(
     "incidentReviewPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "mileageReportPage"
   ).style.display = "none";
 
   refreshSupervisorDashboard();
@@ -6086,6 +6086,10 @@ document.getElementById(
   ).style.display =
     "none";
 
+    document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
   renderMySchedule();
   renderMySite();
   renderMyAttendanceStatus();
@@ -6102,11 +6106,7 @@ function() {
 
   document.getElementById(
     "schedulingPage"
-  ).style.display = "none";
-
-  setActiveNavById(
-    "incidentReportsBtn"
-  );
+  ).style.display = "none";  
 
  document.getElementById(
   "officerPortal"
@@ -6153,6 +6153,10 @@ document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
 };
 
 function showSchedulingPage() {
@@ -6163,11 +6167,7 @@ function showSchedulingPage() {
 
   document.getElementById(
     "schedulingPage"
-  ).style.display = "block";
-
-  setActiveNavById(
-    "schedulingBtn"
-  );
+  ).style.display = "block";  
 
  document.getElementById(
   "officerPortal"
@@ -6212,6 +6212,9 @@ document.getElementById(
 
      document.getElementById(
     "incidentReviewPage"
+  ).style.display = "none";
+  document.getElementById(
+    "mileageReportPage"
   ).style.display = "none";
 
   populateScheduleDropdowns();
@@ -6228,11 +6231,7 @@ function() {
 
   document.getElementById(
     "schedulingPage"
-  ).style.display = "none";
-
-  setActiveNavById(
-    "patrolExecutionBtn"
-  );
+  ).style.display = "none"; 
 
  document.getElementById(
   "officerPortal"
@@ -6277,6 +6276,10 @@ document.getElementById(
 
      document.getElementById(
     "incidentReviewPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "mileageReportPage"
   ).style.display = "none";
 };
 
@@ -6289,11 +6292,7 @@ async function () {
 
   document.getElementById(
     "schedulingPage"
-  ).style.display = "none";
-
-  setActiveNavById(
-    "incidentReviewBtn"
-  );
+  ).style.display = "none";  
 
  document.getElementById(
   "officerPortal"
@@ -6340,7 +6339,70 @@ document.getElementById(
     "incidentReviewPage"
   ).style.display = "block";
 
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
   await loadIncidentReviewQueue();
+};
+
+window.showMileageReportPage =
+async function () {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";  
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerPortal"
+  ).style.display = "none"; 
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+  "patrolsPage"
+).style.display = "none";
+
+document.getElementById(
+  "myPatrolsPage"
+).style.display = "none";
+
+document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+   document.getElementById(
+    "myReportsPage"
+  ).style.display =
+    "none";
+
+     document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "block";
+
+  await loadMileageReport();
 };
 
 function populateScheduleDropdowns() {
@@ -6464,6 +6526,10 @@ document.getElementById(
      document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
+  
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
 
   loadIncidentReports();
 
@@ -6519,7 +6585,7 @@ console.log("All Shifts:", shifts);
     employees.find(
       e => e.id === employeeId
     ); 
-    
+
   const site =
     sites.find(
       s => s.id === siteId
@@ -6535,10 +6601,10 @@ const mileageThreshold =
     ?.mileageThreshold || 25;
 
 if (
-  employee?.homeLat &&
-  employee?.homeLng &&
-  site?.lat &&
-  site?.lng
+  employee?.homeLat != null &&
+  employee?.homeLng != null &&
+  site?.lat != null &&
+  site?.lng != null
 ) {
   const distanceMeters =
     calculateDistance(
@@ -6555,6 +6621,67 @@ if (
         0.000621371
       ).toFixed(1)
     );
+
+  mileageIncentive =
+    mileageDistance >
+    mileageThreshold;
+
+  mileageStatus =
+    "Calculated";
+
+} else {
+
+  console.warn(
+    "Mileage calculation skipped.",
+    {
+      employee:
+        employee?.name,
+      employeeCoords: {
+        lat:
+          employee?.homeLat,
+        lng:
+          employee?.homeLng
+      },
+      site:
+        site?.name,
+      siteCoords: {
+        lat:
+          site?.lat,
+        lng:
+          site?.lng
+      }
+    }
+  );
+} {
+  const distanceMeters =
+    calculateDistance(
+      employee.homeLat,
+      employee.homeLng,
+      site.lat,
+      site.lng
+    );
+
+  mileageDistance =
+    Number(
+      (
+        distanceMeters *
+        0.000621371
+      ).toFixed(1)
+    );
+
+ console.log(
+  "Mileage calculated:",
+  {
+    employee:
+      employee.name,
+    site:
+      site.name,
+    miles:
+      mileageDistance,
+    incentive:
+      mileageIncentive
+  }
+);
 
   mileageIncentive =
     mileageDistance >
@@ -11485,6 +11612,10 @@ document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
 
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
   const patrolPage =
     document.getElementById(
       "patrolsPage"
@@ -13454,6 +13585,10 @@ document.getElementById(
   ).style.display =
     "none";
 
+    document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
   refreshPatrolDashboard();
 };
 
@@ -14080,6 +14215,10 @@ function() {
     "myReportsPage"
   ).style.display =
     "none";
+
+    document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
 
   renderPatrolAnalytics();
 };
@@ -17151,6 +17290,216 @@ document
       );
     }
   );
+
+  window.loadMileageReport =
+async function () {
+  console.log(
+  "Mileage Report:",
+  mileageReportShifts
+);
+  try {
+    const q = query(
+  collection(db, "shifts"),
+  orderBy("startTime", "desc")
+);
+
+const snapshot =
+  await getDocs(q);
+
+    mileageReportShifts =
+  snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+window.mileageReportShifts =
+  mileageReportShifts;
+
+console.log(
+  "Mileage Report Shifts:",
+  mileageReportShifts
+);
+
+renderMileageReport();
+
+  } catch (error) {
+    console.error(
+      "Mileage Report Error:",
+      error
+    );
+  }
+};
+
+window.renderMileageReport =
+function () {
+
+  console.log(
+    "Mileage Report Shifts:",
+    mileageReportShifts
+  );
+
+  let filteredShifts =
+  mileageReportShifts.filter(
+    shift =>
+      shift.mileageStatus ===
+      "Calculated"
+  );
+
+  const filter =
+  document.getElementById(
+    "mileageReportFilter"
+  ).value;
+
+if (filter === "incentive") {
+  filteredShifts =
+    filteredShifts.filter(
+      shift =>
+        shift.mileageIncentive
+    );
+}
+
+if (filter === "week") {
+
+  const today =
+    new Date();
+
+  const weekAgo =
+    new Date();
+
+  weekAgo.setDate(
+    today.getDate() - 7
+  );
+
+  filteredShifts =
+    filteredShifts.filter(
+      shift =>
+        new Date(
+          shift.startTime
+        ) >= weekAgo
+    );
+}
+
+if (filter === "month") {
+
+  const now =
+    new Date();
+
+  filteredShifts =
+    filteredShifts.filter(
+      shift => {
+
+        const shiftDate =
+          new Date(
+            shift.startTime
+          );
+
+        return (
+          shiftDate.getMonth() ===
+            now.getMonth() &&
+          shiftDate.getFullYear() ===
+            now.getFullYear()
+        );
+      }
+    );
+}
+
+const incentiveShifts =
+  filteredShifts.filter(
+    shift =>
+      shift.mileageIncentive
+  );
+
+const totalMiles =
+  incentiveShifts.reduce(
+    (sum, shift) =>
+      sum +
+      Number(
+        shift.mileageDistance || 0
+      ),
+    0
+  );
+
+const uniqueOfficers =
+  new Set(
+    incentiveShifts.map(
+      shift => shift.employeeId
+    )
+  );
+
+  document.getElementById(
+  "totalMileageShifts"
+).textContent =
+  incentiveShifts.length;
+
+document.getElementById(
+  "totalMileageMiles"
+).textContent =
+  totalMiles.toFixed(1);
+
+document.getElementById(
+  "totalMileageOfficers"
+).textContent =
+  uniqueOfficers.size;
+
+  let html = `
+<table class="dashboard-table">
+<thead>
+<tr>
+<th>Employee</th>
+<th>Site</th>
+<th>Date</th>
+<th>Distance</th>
+<th>Threshold</th>
+<th>Incentive</th>
+</tr>
+</thead>
+<tbody>
+`;
+
+filteredShifts.forEach(
+  shift => {
+
+    html += `
+      <tr>
+        <td>${shift.employeeName}</td>
+        <td>${shift.siteName}</td>
+        <td>
+          ${new Date(
+            shift.startTime
+          ).toLocaleDateString()}
+        </td>
+        <td>
+          ${Number(
+            shift.mileageDistance || 0
+          ).toFixed(1)} mi
+        </td>
+        <td>
+          ${shift.mileageThreshold} mi
+        </td>
+        <td>
+          ${
+            shift.mileageIncentive
+              ? "🚗 Yes"
+              : "—"
+          }
+        </td>
+      </tr>
+    `;
+  }
+);
+
+html += `
+</tbody>
+</table>
+`;
+
+document.getElementById(
+  "mileageReportTable"
+).innerHTML = html;
+
+};
+
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
