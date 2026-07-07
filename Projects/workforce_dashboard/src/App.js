@@ -15,7 +15,8 @@ import {
   increment,
   query,
   where,
-  orderBy  
+  orderBy,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import {
@@ -195,6 +196,11 @@ let currentGalleryImages = [];
 let currentGalleryIndex = 0;
 let patrolPhotoGallery = [];
 let mileageReportShifts = [];
+let editingSeriesId = null;
+let editingRecurring = false;
+let deletingShiftId = null;
+let deletingSeriesId = null;
+let deletingRecurring = false;
 window.incidentVehicles = [];
 
 //window.markers = markers;
@@ -207,18 +213,18 @@ window.currentReportFilter =
 let currentWeekStart = getStartOfWeek(new Date());
 
 function getStartOfWeek(date) {
-    const d = new Date(date);
+  const d = new Date(date);
 
-    const day = d.getDay();
+  const day = d.getDay();
 
-    const diff = day === 0
-        ? -6
-        : 1 - day;
+  const diff = day === 0
+    ? -6
+    : 1 - day;
 
-    d.setDate(d.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
 
-    return d;
+  return d;
 }
 
 let incidents = [];
@@ -301,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ================= DEFAULT MAP =================
 
-  osm.addTo(window.map); 
+  osm.addTo(window.map);
 
   // ================= HOME BUTTON =================
 
@@ -311,9 +317,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   homeControl.onAdd = function () {
 
-  const div = L.DomUtil.create(
-  "div"
-);
+    const div = L.DomUtil.create(
+      "div"
+    );
 
     div.innerHTML =
       '<button style="padding:5px;">🏠</button>';
@@ -334,18 +340,18 @@ document.addEventListener("DOMContentLoaded", () => {
   homeControl.addTo(window.map);
   // ================= ADDRESS SEARCH CONTROL =================
 
-const searchControl = L.control({
-  position: "topright"
-});
+  const searchControl = L.control({
+    position: "topright"
+  });
 
-searchControl.onAdd = function () {
+  searchControl.onAdd = function () {
 
-  const div = L.DomUtil.create(
-    "div",
-    "leaflet-bar"
-  );
+    const div = L.DomUtil.create(
+      "div",
+      "leaflet-bar"
+    );
 
-  div.innerHTML = `
+    div.innerHTML = `
 
     <div style="
       background:rgba(255,255,255,0.96);
@@ -393,22 +399,22 @@ font-weight:600;
 
   `;
 
-  // prevent map dragging while typing
-  L.DomEvent.disableClickPropagation(div);
+    // prevent map dragging while typing
+    L.DomEvent.disableClickPropagation(div);
 
-  return div;
+    return div;
 
-};
+  };
 
-searchControl.addTo(window.map);
+  searchControl.addTo(window.map);
 
- // ================= LAYER SWITCHER =================
+  // ================= LAYER SWITCHER =================
 
- L.control.layers({
-  "Street Map": osm,
-  "Light Canvas": lightMap,
-  "Dark Mode": darkMap
-}).addTo(window.map);
+  L.control.layers({
+    "Street Map": osm,
+    "Light Canvas": lightMap,
+    "Dark Mode": darkMap
+  }).addTo(window.map);
 
   // ================= FORCE RESIZE =================
 
@@ -429,19 +435,19 @@ function refreshActivityFeed() {
 
   if (!feed) return;
 
- const dashboardLogs =
-  activityLogs.filter(
-    log =>
-      ( !log.scope ||
-        log.scope === "site" ) &&
-      log.type !== "Post Abandonment" &&
-      log.type !== "Returned To Post"
-  );
+  const dashboardLogs =
+    activityLogs.filter(
+      log =>
+        (!log.scope ||
+          log.scope === "site") &&
+        log.type !== "Post Abandonment" &&
+        log.type !== "Returned To Post"
+    );
 
-const filteredLogs =
-  activityFilter === "all"
-    ? dashboardLogs
-    : dashboardLogs.filter(
+  const filteredLogs =
+    activityFilter === "all"
+      ? dashboardLogs
+      : dashboardLogs.filter(
         log => log.type === activityFilter
       );
 
@@ -451,11 +457,11 @@ const filteredLogs =
 
       const time = log.timestamp
         ? new Date(
-            log.timestamp.seconds * 1000
-          ).toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-          })
+          log.timestamp.seconds * 1000
+        ).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit"
+        })
         : "";
 
       return `
@@ -527,8 +533,8 @@ onSnapshot(collection(db, "employees"), snap => {
         e.email.toLowerCase() ===
         currentUser.email.toLowerCase()
     );
-    window.currentEmployee =
-  employee;
+  window.currentEmployee =
+    employee;
 
   console.log(
     "Matched Employee:",
@@ -548,18 +554,18 @@ onSnapshot(collection(db, "employees"), snap => {
     );
 
     console.log(
-  "Firebase UID:",
-  currentUser.uid
-);
+      "Firebase UID:",
+      currentUser.uid
+    );
 
-console.log(
-  "Employee ID:",
-  window.currentEmployee?.id
-);
+    console.log(
+      "Employee ID:",
+      window.currentEmployee?.id
+    );
 
-    showOfficerPortal(); 
-listenForNotifications();
-       
+    showOfficerPortal();
+    listenForNotifications();
+
 
   } else {
 
@@ -614,11 +620,11 @@ onSnapshot(
 
 onSnapshot(collection(db, "assignments"), snap => {
   assignments = snap.docs
-  .map(d => ({
-    id: d.id,
-    ...d.data()
-  }))
-  .filter(a => !a.archived);
+    .map(d => ({
+      id: d.id,
+      ...d.data()
+    }))
+    .filter(a => !a.archived);
   refresh();
   updateDailySummary();
 });
@@ -824,46 +830,46 @@ document.getElementById(
 document.getElementById(
   "companyLogoUpload"
 ).onchange =
-function(e) {
+  function (e) {
 
-  const file =
-    e.target.files[0];
+    const file =
+      e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  const preview =
-    document.getElementById(
-      "companyLogoPreview"
-    );
+    const preview =
+      document.getElementById(
+        "companyLogoPreview"
+      );
 
-  preview.src =
-    URL.createObjectURL(file);
+    preview.src =
+      URL.createObjectURL(file);
 
-  preview.style.display =
-    "block";
-};
+    preview.style.display =
+      "block";
+  };
 
 document.getElementById(
   "companyPatchUpload"
 ).onchange =
-function(e) {
+  function (e) {
 
-  const file =
-    e.target.files[0];
+    const file =
+      e.target.files[0];
 
-  if (!file) return;
+    if (!file) return;
 
-  const preview =
-    document.getElementById(
-      "companyPatchPreview"
-    );
+    const preview =
+      document.getElementById(
+        "companyPatchPreview"
+      );
 
-  preview.src =
-    URL.createObjectURL(file);
+    preview.src =
+      URL.createObjectURL(file);
 
-  preview.style.display =
-    "block";
-};
+    preview.style.display =
+      "block";
+  };
 
 const editRole =
   document.getElementById(
@@ -879,7 +885,7 @@ if (editRole) {
         "editLicenseSection"
       ).style.display =
         this.value ===
-        "Security Officer"
+          "Security Officer"
           ? "block"
           : "none";
 
@@ -903,50 +909,50 @@ function formatLocalDateTime(
 }
 
 window.addIncidentVehicle =
-function () {
-  incidentVehicles.push({
-    role: "",
-    owner: "",
-    plate: "",
-    plateState: "",
-    year: "",
-    make: "",
-    model: "",
-    color: "",
-    towed: false,
-    notes: ""
-  });
+  function () {
+    incidentVehicles.push({
+      role: "",
+      owner: "",
+      plate: "",
+      plateState: "",
+      year: "",
+      make: "",
+      model: "",
+      color: "",
+      towed: false,
+      notes: ""
+    });
 
-  console.log(
-  "After push:",
-  incidentVehicles
-);
-
-  renderIncidentVehicles();
-};
-
-window.renderIncidentVehicles =
-function () {
-
-  const container =
-    document.getElementById(
-      "vehiclesContainer"
+    console.log(
+      "After push:",
+      incidentVehicles
     );
 
-  if (!container) return;
+    renderIncidentVehicles();
+  };
 
-  container.innerHTML = "";
+window.renderIncidentVehicles =
+  function () {
 
-  incidentVehicles.forEach(
-    (vehicle, index) => {
+    const container =
+      document.getElementById(
+        "vehiclesContainer"
+      );
 
-      const card =
-        document.createElement("div");
+    if (!container) return;
 
-      card.className =
-        "dashboard-card";
+    container.innerHTML = "";
 
-     card.innerHTML = `
+    incidentVehicles.forEach(
+      (vehicle, index) => {
+
+        const card =
+          document.createElement("div");
+
+        card.className =
+          "dashboard-card";
+
+        card.innerHTML = `
   <h3>Vehicle ${index + 1}</h3>
 
   <div class="person-grid">
@@ -1171,31 +1177,31 @@ function () {
   </div>
 `;
 
-      container.appendChild(
-        card
-      );
-    }
-  );
-};
+        container.appendChild(
+          card
+        );
+      }
+    );
+  };
 
 window.removeIncidentVehicle =
-function (index) {
-  incidentVehicles.splice(
-    index,
-    1
-  );
+  function (index) {
+    incidentVehicles.splice(
+      index,
+      1
+    );
 
-  renderIncidentVehicles();
-};
+    renderIncidentVehicles();
+  };
 
 window.renderPatrolDashboard =
-function() {
+  function () {
 
-  refreshPatrolMetrics();
-  renderActivePatrolTable();
-  renderCompletedPatrolHistory();
+    refreshPatrolMetrics();
+    renderActivePatrolTable();
+    renderCompletedPatrolHistory();
 
-};
+  };
 
 onSnapshot(
   collection(db, "activePatrols"),
@@ -1224,89 +1230,89 @@ setInterval(() => {
     ).style.display !== "none"
   ) {
     renderPatrolDashboard();
-    
+
   }
 }, 10000);
 
 document.getElementById(
   "employeeRole"
 ).onchange =
-function() {
+  function () {
 
-  const section =
-    document.getElementById(
-      "securityLicenseSection"
-    );
+    const section =
+      document.getElementById(
+        "securityLicenseSection"
+      );
 
-  section.style.display =
-    this.value ===
-    "Security Officer"
+    section.style.display =
+      this.value ===
+        "Security Officer"
 
-      ? "block"
+        ? "block"
 
-      : "none";
-};
+        : "none";
+  };
 
 window.addReviewHistory =
-async function (
-  reportId,
-  action,
-  comments = ""
-) {
-  try {
-    await addDoc(
-      collection(
-        db,
-        "incidentReports",
-        reportId,
-        "history"
-      ),
-      {
-        action,
-        comments,
+  async function (
+    reportId,
+    action,
+    comments = ""
+  ) {
+    try {
+      await addDoc(
+        collection(
+          db,
+          "incidentReports",
+          reportId,
+          "history"
+        ),
+        {
+          action,
+          comments,
 
-        by:
-          currentEmployee?.name ||
-          currentEmployee?.fullName ||
-          "Unknown User",
+          by:
+            currentEmployee?.name ||
+            currentEmployee?.fullName ||
+            "Unknown User",
 
-        byId:
-          currentEmployee?.id || "",
+          byId:
+            currentEmployee?.id || "",
 
-        createdAt:
-          serverTimestamp()
-      }
-    );
-  } catch (err) {
-    console.error(
-      "Error adding history:",
-      err
-    );
-  }
-};
+          createdAt:
+            serverTimestamp()
+        }
+      );
+    } catch (err) {
+      console.error(
+        "Error adding history:",
+        err
+      );
+    }
+  };
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
   const name = siteName.value.trim();
   const address =
-  siteAddress.value.trim();
+    siteAddress.value.trim();
 
-const city =
-  siteCity.value.trim();
+  const city =
+    siteCity.value.trim();
 
-const state =
-  siteState.value.trim().toUpperCase();
+  const state =
+    siteState.value.trim().toUpperCase();
 
   const zip =
-  siteZip.value.trim();
+    siteZip.value.trim();
 
   const geofenceRadius =
-  Number(
-    document.getElementById(
-      "siteGeofenceRadius"
-    ).value
-  ) || 150;
+    Number(
+      document.getElementById(
+        "siteGeofenceRadius"
+      ).value
+    ) || 150;
 
- if (!name || !address || !city || !state || !zip) {
+  if (!name || !address || !city || !state || !zip) {
     alert("Enter site name, address, city, state, and ZIP");
     return;
   }
@@ -1322,136 +1328,136 @@ const state =
     alert("Site already exists");
     return;
   }
-  
-try {
 
- let coords = [];
+  try {
 
-// FIRST ATTEMPT
-const fullQuery = encodeURIComponent(
-  `${address}, ${city}, ${state} ${zip}, USA`
-);
+    let coords = [];
 
-console.log("Primary Query:", fullQuery);
-console.log(
-  `${address}, ${city}, ${state} ${zip}, USA`
-);
+    // FIRST ATTEMPT
+    const fullQuery = encodeURIComponent(
+      `${address}, ${city}, ${state} ${zip}, USA`
+    );
 
-let response = await fetch(
-  `https://nominatim.openstreetmap.org/search?q=${fullQuery}&format=json&limit=1`
-);
+    console.log("Primary Query:", fullQuery);
+    console.log(
+      `${address}, ${city}, ${state} ${zip}, USA`
+    );
 
-coords = await response.json();
-console.log("Geocode Results:", coords);
+    let response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${fullQuery}&format=json&limit=1`
+    );
 
-// FALLBACK ATTEMPT
-if (!coords.length) {
+    coords = await response.json();
+    console.log("Geocode Results:", coords);
 
-  const fallbackQuery = encodeURIComponent(
-    `${address}, ${city}, ${state}, USA`
-  );
+    // FALLBACK ATTEMPT
+    if (!coords.length) {
 
-  console.log("Fallback Query:", fallbackQuery);
+      const fallbackQuery = encodeURIComponent(
+        `${address}, ${city}, ${state}, USA`
+      );
 
-  response = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${fallbackQuery}&format=json&limit=1`
-  );
+      console.log("Fallback Query:", fallbackQuery);
 
-  coords = await response.json();
+      response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${fallbackQuery}&format=json&limit=1`
+      );
 
-}
+      coords = await response.json();
 
-console.log("Geocode Result:", coords);
+    }
 
-if (!coords.length) {
+    console.log("Geocode Result:", coords);
 
-  const position =
-    await new Promise(
-      (resolve, reject) => {
+    if (!coords.length) {
 
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          reject,
-          {
-            enableHighAccuracy: true,
-            timeout: 10000
+      const position =
+        await new Promise(
+          (resolve, reject) => {
+
+            navigator.geolocation.getCurrentPosition(
+              resolve,
+              reject,
+              {
+                enableHighAccuracy: true,
+                timeout: 10000
+              }
+            );
+
           }
         );
 
-      }
-    );
+      coords = [{
+        lat: position.coords.latitude,
+        lon: position.coords.longitude
+      }];
 
-  coords = [{
-    lat: position.coords.latitude,
-    lon: position.coords.longitude
-  }];
+      alert(
+        "Address not found. Using current GPS location."
+      );
 
-  alert(
-    "Address not found. Using current GPS location."
-  );
+    }
 
-}
+    await addDoc(collection(db, "sites"), {
 
-await addDoc(collection(db, "sites"), {
+      name,
+      address,
+      city,
+      state,
+      zip,
 
-  name,
-  address,
-  city,
-  state,
-  zip,
+      siteCategory: siteCategory.value,
+      siteSubtype: siteSubtype.value,
 
-  siteCategory: siteCategory.value,
-  siteSubtype: siteSubtype.value,
+      status: "Active",
 
-  status: "Active",
+      geofenceRadius,
 
-  geofenceRadius,
+      lat: +coords[0].lat,
+      lng: +coords[0].lon,
 
-  lat: +coords[0].lat,
-  lng: +coords[0].lon,
+      activeEmployees: [],
+      defaultCrew: []
 
-  activeEmployees: [],
-  defaultCrew: []
+    });
 
-});
+    siteName.value = "";
+    siteAddress.value = "";
+    siteCity.value = "";
+    siteState.value = "";
+    siteZip.value = "";
 
-  siteName.value = "";
-  siteAddress.value = "";
-  siteCity.value = "";
-  siteState.value = "";
-  siteZip.value = "";
+    document.getElementById(
+      "siteGeofenceRadius"
+    ).value = 150;
 
-  document.getElementById(
-  "siteGeofenceRadius"
-).value = 150;
+    siteName.focus();
 
-  siteName.focus();
+  } catch (err) {
 
-} catch (err) {
+    console.error("Geocoding Error:", err);
 
-  console.error("Geocoding Error:", err);
+    alert("Geocoding failed");
 
-  alert("Geocoding failed");
-
-} 
+  }
 }
 // ================= ADD EMPLOYEE=================
 async function addEmployee() {
   const name = empName.value.trim();
   const role =
-  document.getElementById(
-    "employeeRole"
-  ).value;
+    document.getElementById(
+      "employeeRole"
+    ).value;
 
   const securityLevel =
-  document.getElementById(
-    "employeeSecurityLevel"
-  ).value;
+    document.getElementById(
+      "employeeSecurityLevel"
+    ).value;
 
   if (!name) {
     alert("Enter employee name");
     return;
-  } 
+  }
 
   // 🔥 Prevent duplicates
   const exists = employees.some(e =>
@@ -1463,39 +1469,39 @@ async function addEmployee() {
     return;
   }
 
-await addDoc(collection(db, "employees"), {
-  name,
-  designation: role,
+  await addDoc(collection(db, "employees"), {
+    name,
+    designation: role,
 
-  role:
-    role === "Dispatcher"
-      ? "Dispatcher"
-      : "Officer",
+    role:
+      role === "Dispatcher"
+        ? "Dispatcher"
+        : "Officer",
 
-  securityLevel:
-    role === "Security Officer"
-      ? securityLevel
-      : "",
+    securityLevel:
+      role === "Security Officer"
+        ? securityLevel
+        : "",
 
-  employeeId: "",
-  email: "",
-  phone: "",
+    employeeId: "",
+    email: "",
+    phone: "",
 
-  homeAddress: "",
-  homeLat: null,
-  homeLng: null,
+    homeAddress: "",
+    homeLat: null,
+    homeLng: null,
 
-  securityLicenseNumber: "",
-  securityLicenseExpiration: "",
+    securityLicenseNumber: "",
+    securityLicenseExpiration: "",
 
-  emergencyContactName: "",
-  emergencyContactPhone: "",
+    emergencyContactName: "",
+    emergencyContactPhone: "",
 
-  hireDate: "",
+    hireDate: "",
 
-  createdAt:
-    new Date().toISOString()
-});
+    createdAt:
+      new Date().toISOString()
+  });
   empName.value = "";
   empRole.value = "";
   empName.focus();
@@ -1512,7 +1518,7 @@ async function deleteEmployee(id) {
   if (!confirm("Delete this employee?")) return;
 
   try {
-    await deleteDoc(doc(db, "employees", id));    
+    await deleteDoc(doc(db, "employees", id));
   } catch (err) {
     console.error("Delete failed:", err);
   }
@@ -1564,19 +1570,17 @@ async function addAsset() {
 async function assign() {
 
   console.log(
-  "ASSIGN FUNCTION FIRED"
-);
+    "ASSIGN FUNCTION FIRED"
+  );
   alert(
-  `Employee: ${
-    assignEmployee.options[
+    `Employee: ${assignEmployee.options[
       assignEmployee.selectedIndex
     ]?.text
-  }\nSite: ${
-    assignSite.options[
+    }\nSite: ${assignSite.options[
       assignSite.selectedIndex
     ]?.text
-  }`
-);
+    }`
+  );
   if (!assignEmployee.value || !assignSite.value) {
     alert("Select employee and site");
     return;
@@ -1591,123 +1595,123 @@ async function assign() {
     return;
   }
   const selectedAsset =
-  assets.find(
-    a => a.id === assignAsset.value
-  );
-    console.log("Asset Selected:", assignAsset.value);
-    console.log("Vehicle Selected:", assignVehicle.value);
-if (
-  selectedAsset &&
-  selectedAsset.status === "maintenance"
-) {
+    assets.find(
+      a => a.id === assignAsset.value
+    );
+  console.log("Asset Selected:", assignAsset.value);
+  console.log("Vehicle Selected:", assignVehicle.value);
+  if (
+    selectedAsset &&
+    selectedAsset.status === "maintenance"
+  ) {
 
-  alert(
-    "This asset is currently under maintenance"
-  );
+    alert(
+      "This asset is currently under maintenance"
+    );
 
-  return;
-}
+    return;
+  }
   const employeeId = assignEmployee.value;
-const siteId = assignSite.value;
+  const siteId = assignSite.value;
 
-console.log(
-  "Employees Loaded:",
-  employees.length
-);
-
-const employee =
-  employees.find(
-    e => e.id === employeeId
+  console.log(
+    "Employees Loaded:",
+    employees.length
   );
 
-const site =
-  sites.find(
-    s => s.id === siteId
-  );
+  const employee =
+    employees.find(
+      e => e.id === employeeId
+    );
+
+  const site =
+    sites.find(
+      s => s.id === siteId
+    );
 
   let mileageDistance = 0;
-let mileageIncentive = false;
-let mileageStatus =
-  "Coordinates Missing";
+  let mileageIncentive = false;
+  let mileageStatus =
+    "Coordinates Missing";
 
-const mileageThreshold =
-  companyProfile
-    ?.mileageThreshold || 25;
+  const mileageThreshold =
+    companyProfile
+      ?.mileageThreshold || 25;
 
-if (
-  employee?.homeLat &&
-  employee?.homeLng &&
-  site?.lat &&
-  site?.lng
-) {
-  const distanceMeters =
-    calculateDistance(
-      employee.homeLat,
-      employee.homeLng,
-      site.lat,
-      site.lng
-    );
+  if (
+    employee?.homeLat &&
+    employee?.homeLng &&
+    site?.lat &&
+    site?.lng
+  ) {
+    const distanceMeters =
+      calculateDistance(
+        employee.homeLat,
+        employee.homeLng,
+        site.lat,
+        site.lng
+      );
 
-  mileageDistance =
-    Number(
-      (
-        distanceMeters *
-        0.000621371
-      ).toFixed(1)
-    );
+    mileageDistance =
+      Number(
+        (
+          distanceMeters *
+          0.000621371
+        ).toFixed(1)
+      );
 
-  mileageIncentive =
-    mileageDistance >
-    mileageThreshold;
+    mileageIncentive =
+      mileageDistance >
+      mileageThreshold;
 
-  mileageStatus =
-    "Calculated";
-}
+    mileageStatus =
+      "Calculated";
+  }
 
- console.log("Mileage Values", {
-  mileageDistance,
-  mileageThreshold,
-  mileageIncentive,
-  mileageStatus
-});
-const docRef =
-await addDoc(
-  collection(db, "assignments"),
-  {
-    employeeId,
-    siteId,
-
-    assetId:
-      assignAsset.value || null,
-
-    vehicleId:
-      assignVehicle.value || null,
-
+  console.log("Mileage Values", {
     mileageDistance,
     mileageThreshold,
     mileageIncentive,
-    mileageStatus,
+    mileageStatus
+  });
+  const docRef =
+    await addDoc(
+      collection(db, "assignments"),
+      {
+        employeeId,
+        siteId,
 
-    startTime:
-      new Date().toISOString(),
+        assetId:
+          assignAsset.value || null,
 
-    endTime: null
-  }
+        vehicleId:
+          assignVehicle.value || null,
 
-  
-);
+        mileageDistance,
+        mileageThreshold,
+        mileageIncentive,
+        mileageStatus,
 
-console.log(
-  "Assignment created:",
-  docRef.id
-);
+        startTime:
+          new Date().toISOString(),
 
-await logActivity(
-  siteId,
-  "assignment",
-  `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
-  "Dispatcher"
-);   
+        endTime: null
+      }
+
+
+    );
+
+  console.log(
+    "Assignment created:",
+    docRef.id
+  );
+
+  await logActivity(
+    siteId,
+    "assignment",
+    `${employee?.name || "Employee"} assigned to ${site?.name || "site"}`,
+    "Dispatcher"
+  );
 }
 
 async function logActivity(
@@ -1754,8 +1758,8 @@ async function endBusinessDay() {
   const activeAssignments =
     assignments.filter(a => !a.endTime);
 
-    console.log(assignments);
-    console.log(activeAssignments);
+  console.log(assignments);
+  console.log(activeAssignments);
 
   if (!activeAssignments.length) {
 
@@ -1775,36 +1779,36 @@ async function endBusinessDay() {
 
     for (const assignment of activeAssignments) {
 
-  const employee =
-    employees.find(
-      e => e.id === assignment.employeeId
-    );
+      const employee =
+        employees.find(
+          e => e.id === assignment.employeeId
+        );
 
-  const site =
-    sites.find(
-      s => s.id === assignment.siteId
-    );
+      const site =
+        sites.find(
+          s => s.id === assignment.siteId
+        );
 
-  await updateDoc(
-    doc(
-      db,
-      "assignments",
-      assignment.id
-    ),
-    {
-      endTime:
-        new Date().toISOString()
+      await updateDoc(
+        doc(
+          db,
+          "assignments",
+          assignment.id
+        ),
+        {
+          endTime:
+            new Date().toISOString()
+        }
+      );
+
+      await logActivity(
+        assignment.siteId,
+        "unassignment",
+        `${employee?.name || "Employee"} removed from ${site?.name || "site"} during End Business Day`,
+        "System"
+      );
+
     }
-  );
-
-  await logActivity(
-    assignment.siteId,
-    "unassignment",
-    `${employee?.name || "Employee"} removed from ${site?.name || "site"} during End Business Day`,
-    "System"
-  );
-
-}
 
     alert(
       "Business day ended"
@@ -1839,7 +1843,7 @@ async function unassign(empId) {
   const site =
     sites.find(
       s => s.id === a.siteId
-    );  
+    );
 
   await updateDoc(
     doc(db, "assignments", a.id),
@@ -1855,8 +1859,8 @@ async function unassign(empId) {
     "Dispatcher"
   );
   alert(
-  `${employee?.name || "Employee"} unassigned successfully`
-);
+    `${employee?.name || "Employee"} unassigned successfully`
+  );
 
 }
 
@@ -1991,24 +1995,24 @@ function renderSites(filteredSites = sites) {
 
   const rows = filteredSites.map(s => {
 
-  const activeEmployees = assignments.filter(a =>
-    a.siteId === s.id && !a.endTime
-  ).length;
+    const activeEmployees = assignments.filter(a =>
+      a.siteId === s.id && !a.endTime
+    ).length;
 
-  const status =
-  s.status || "Active";
+    const status =
+      s.status || "Active";
 
-  let statusBadge = "🟢 Active";
+    let statusBadge = "🟢 Active";
 
-if (status === "Inactive") {
-  statusBadge = "🟡 Inactive";
-}
+    if (status === "Inactive") {
+      statusBadge = "🟡 Inactive";
+    }
 
-if (status === "Closed") {
-  statusBadge = "🔴 Closed";
-}
+    if (status === "Closed") {
+      statusBadge = "🔴 Closed";
+    }
 
-  return `
+    return `
 
     <tr>
 
@@ -2032,11 +2036,10 @@ if (status === "Closed") {
 
       <td>${statusBadge}</td>
       <td>
-  ${
-    activeEmployees > 0
-      ? `${activeEmployees} Active`
-      : "Empty"
-  }
+  ${activeEmployees > 0
+        ? `${activeEmployees} Active`
+        : "Empty"
+      }
 </td>
 
   <td>
@@ -2063,7 +2066,7 @@ if (status === "Closed") {
 
 `;
 
-}).join("");
+  }).join("");
 
   document.getElementById("siteTable").innerHTML = `
 
@@ -2096,42 +2099,40 @@ if (status === "Closed") {
 function render() {
   const rows = [...assignments]
 
-  .sort((a, b) =>
-    new Date(b.startTime || 0) -
-    new Date(a.startTime || 0)
-  )
+    .sort((a, b) =>
+      new Date(b.startTime || 0) -
+      new Date(a.startTime || 0)
+    )
 
-  .map(a => {
-    const emp = employees.find(e => e.id === a.employeeId);
-    const site = sites.find(s => s.id === a.siteId);
-    const asset = assets.find(
-  x => x.id === a.assetId
-);
+    .map(a => {
+      const emp = employees.find(e => e.id === a.employeeId);
+      const site = sites.find(s => s.id === a.siteId);
+      const asset = assets.find(
+        x => x.id === a.assetId
+      );
 
-const vehicle = vehicles.find(
-  v => v.id === a.vehicleId
-);
- return `
+      const vehicle = vehicles.find(
+        v => v.id === a.vehicleId
+      );
+      return `
   <tr>
 
     <td>
-      ${
-        a.startTime
+      ${a.startTime
           ? new Date(a.startTime).toLocaleDateString() +
-            " " +
-            new Date(a.startTime).toLocaleTimeString()
+          " " +
+          new Date(a.startTime).toLocaleTimeString()
           : ""
-      }
+        }
     </td>
 
     <td>
-  ${
-    a.endTime
-      ? new Date(a.endTime).toLocaleDateString() +
-        " " +
-        new Date(a.endTime).toLocaleTimeString()
-      : ""
-  }
+  ${a.endTime
+          ? new Date(a.endTime).toLocaleDateString() +
+          " " +
+          new Date(a.endTime).toLocaleTimeString()
+          : ""
+        }
 </td>
 
     <td>
@@ -2151,24 +2152,21 @@ const vehicle = vehicles.find(
     </td>
 
     <td>
-      <span class="${
-        a.endTime
+      <span class="${a.endTime
           ? 'status-completed'
           : 'status-active'
-      }">
+        }">
 
-        ${
-          a.endTime
-            ? "Completed"
-            : "Active"
+        ${a.endTime
+          ? "Completed"
+          : "Active"
         }
 
       </span>
     </td>
 
     <td>
-      ${
-        !a.endTime
+      ${!a.endTime
           ? `<button onclick="unassign('${a.employeeId}')">
                Unassign
              </button>`
@@ -2176,12 +2174,12 @@ const vehicle = vehicles.find(
           : `<button onclick="deleteAssignment('${a.id}')">
                Delete
              </button>`
-      }
+        }
     </td>
 
   </tr>
 `;
-  }).join("");
+    }).join("");
 
   document.getElementById("reportTable").innerHTML = `
   <thead>
@@ -2231,27 +2229,27 @@ function updateDailySummary() {
       ).toDateString() === today
     ).length;
 
- const staffedSites =
-[
-  ...new Set(
-    assignments
-      .filter(
-        a => !a.endTime
+  const staffedSites =
+    [
+      ...new Set(
+        assignments
+          .filter(
+            a => !a.endTime
+          )
+          .map(
+            a => a.siteId
+          )
       )
-      .map(
-        a => a.siteId
-      )
-  )
-].length;
+    ].length;
 
-const activeEmployees =
-  assignments.filter(
-    a => !a.endTime
-  ).length;
+  const activeEmployees =
+    assignments.filter(
+      a => !a.endTime
+    ).length;
 
-const availableEmployees =
-  employees.length -
-  activeEmployees;
+  const availableEmployees =
+    employees.length -
+    activeEmployees;
 
   summary.innerHTML = `
 
@@ -2282,9 +2280,9 @@ const availableEmployees =
 
 function updateMap() {
   console.log(
-  "updateMap:",
-  incidents.length
-);
+    "updateMap:",
+    incidents.length
+  );
 
   if (!window.map) return;
 
@@ -2306,330 +2304,330 @@ function updateMap() {
     if (!site.lat || !site.lng) return;
 
     const active = timeEntries.filter(
-  entry =>
-    entry.siteId === site.id &&
-    entry.status === "Clocked In"
-);
+      entry =>
+        entry.siteId === site.id &&
+        entry.status === "Clocked In"
+    );
     const siteStatus =
-  site.status || "Active";
+      site.status || "Active";
 
-   let label = "SITE";
-let color = "#6b7280";
-let symbol = "📍";
+    let label = "SITE";
+    let color = "#6b7280";
+    let symbol = "📍";
 
-if (siteStatus === "Inactive") {
-  color = "#f59e0b";
-}
+    if (siteStatus === "Inactive") {
+      color = "#f59e0b";
+    }
 
-if (siteStatus === "Closed") {
-  color = "#6b7280";
-}
+    if (siteStatus === "Closed") {
+      color = "#6b7280";
+    }
 
-// ACTIVE STATUS
+    // ACTIVE STATUS
 
-console.log(
-  "SITE:",
-  site.name,
-  site.id
-);
+    console.log(
+      "SITE:",
+      site.name,
+      site.id
+    );
 
-console.log(
-  "TIME ENTRIES:",
-  timeEntries
-);
+    console.log(
+      "TIME ENTRIES:",
+      timeEntries
+    );
 
-console.log(
-  "MATCHING ENTRIES:",
-  timeEntries.filter(
-    entry =>
-      entry.siteId === site.id &&
-      entry.status === "Clocked In"
-  )
-);
+    console.log(
+      "MATCHING ENTRIES:",
+      timeEntries.filter(
+        entry =>
+          entry.siteId === site.id &&
+          entry.status === "Clocked In"
+      )
+    );
 
-if (
-  siteStatus === "Active" &&
-  active.length > 0
-) {
-  color = "#16a34a";
-}
+    if (
+      siteStatus === "Active" &&
+      active.length > 0
+    ) {
+      color = "#16a34a";
+    }
 
-// MAINTENANCE
-if (site.maintenance) {
-  color = "#eab308";
-}
-console.log(
-  "SITE:",
-  site.name,
-  site.id
-);
+    // MAINTENANCE
+    if (site.maintenance) {
+      color = "#eab308";
+    }
+    console.log(
+      "SITE:",
+      site.name,
+      site.id
+    );
 
-console.log(
-  "INCIDENTS:",
-  incidents.map(i => ({
-    siteName: i.siteName,
-    siteId: i.siteId,
-    severity: i.severity,
-    status: i.status
-  }))
-);
+    console.log(
+      "INCIDENTS:",
+      incidents.map(i => ({
+        siteName: i.siteName,
+        siteId: i.siteId,
+        severity: i.severity,
+        status: i.status
+      }))
+    );
 
-// CRITICAL INCIDENT
-const hasCriticalIncident =
-  incidents.some(i =>
-    i.siteId === site.id &&
-    i.severity === "Critical" &&
-    i.status !== "Resolved"
-  );
+    // CRITICAL INCIDENT
+    const hasCriticalIncident =
+      incidents.some(i =>
+        i.siteId === site.id &&
+        i.severity === "Critical" &&
+        i.status !== "Resolved"
+      );
 
-if (hasCriticalIncident) {
+    if (hasCriticalIncident) {
 
-  color = "#dc2626";
+      color = "#dc2626";
 
-  highlightIncidentSite(
-    site.id
-  );
+      highlightIncidentSite(
+        site.id
+      );
 
-} else {
+    } else {
 
-  clearIncidentHighlight(
-    site.id
-  );
+      clearIncidentHighlight(
+        site.id
+      );
 
-}
+    }
 
-// ================= SCHOOLS =================
-if (site.siteCategory === "school") {
-  symbol = "🏫";
+    // ================= SCHOOLS =================
+    if (site.siteCategory === "school") {
+      symbol = "🏫";
 
-  if (site.siteSubtype === "elementary") {
-    label = "ES";
-  }
+      if (site.siteSubtype === "elementary") {
+        label = "ES";
+      }
 
-  else if (site.siteSubtype === "middle") {
-    label = "MS";
-  }
+      else if (site.siteSubtype === "middle") {
+        label = "MS";
+      }
 
-  else if (site.siteSubtype === "high") {
-    label = "HS";
-  }
+      else if (site.siteSubtype === "high") {
+        label = "HS";
+      }
 
-  else if (site.siteSubtype === "admin") {
-    label = "ADM";
-  }
+      else if (site.siteSubtype === "admin") {
+        label = "ADM";
+      }
 
-}
+    }
 
-// ================= CONSTRUCTION =================
-else if (
-  site.siteCategory === "construction"
-) {
-  symbol = "🚧";
+    // ================= CONSTRUCTION =================
+    else if (
+      site.siteCategory === "construction"
+    ) {
+      symbol = "🚧";
 
-  label = "CON";
+      label = "CON";
 
-}
+    }
 
-// ================= WAREHOUSE =================
-else if (
-  site.siteCategory === "warehouse"
-) {
-  symbol = "🏭";
+    // ================= WAREHOUSE =================
+    else if (
+      site.siteCategory === "warehouse"
+    ) {
+      symbol = "🏭";
 
-  label = "WH";
+      label = "WH";
 
-}
+    }
 
-// ================= GOVERNMENT =================
-else if (
-  site.siteCategory === "government"
-) {
-  symbol = "🏛️";
+    // ================= GOVERNMENT =================
+    else if (
+      site.siteCategory === "government"
+    ) {
+      symbol = "🏛️";
 
-  label = "GOV";
+      label = "GOV";
 
-}
-// ================= CONSTRUCTION =================
-else if (
-  site.siteCategory === "construction"
-) {
+    }
+    // ================= CONSTRUCTION =================
+    else if (
+      site.siteCategory === "construction"
+    ) {
 
-  label = "CON";
+      label = "CON";
 
-}
+    }
 
-// ================= WAREHOUSE =================
-else if (
-  site.siteCategory === "warehouse"
-) {
+    // ================= WAREHOUSE =================
+    else if (
+      site.siteCategory === "warehouse"
+    ) {
 
-  label = "WH";
+      label = "WH";
 
-}
+    }
 
-// ================= GOVERNMENT =================
-else if (
-  site.siteCategory === "government"
-) {
+    // ================= GOVERNMENT =================
+    else if (
+      site.siteCategory === "government"
+    ) {
 
-  label = "GOV";
+      label = "GOV";
 
-}
+    }
 
-const icon =
-  createSiteIcon(
-  label,
-  color,
-  symbol
-);
+    const icon =
+      createSiteIcon(
+        label,
+        color,
+        symbol
+      );
 
     // create marker
     if (!markers[site.id]) {
 
       markers[site.id] = L.marker(
-  [site.lat, site.lng],
-  {
-    icon,
-    draggable: markerEditMode
-  }
-).addTo(window.map);
+        [site.lat, site.lng],
+        {
+          icon,
+          draggable: markerEditMode
+        }
+      ).addTo(window.map);
 
-markers[site.id].siteType =
-  site.siteCategory === "school"
-    ? `school-${site.siteSubtype}`
-    : site.siteCategory;
+      markers[site.id].siteType =
+        site.siteCategory === "school"
+          ? `school-${site.siteSubtype}`
+          : site.siteCategory;
 
-    markers[site.id].siteId = site.id;
+      markers[site.id].siteId = site.id;
 
-// SAVE NEW POSITION
-markers[site.id].on("dragend", async (e) => {
+      // SAVE NEW POSITION
+      markers[site.id].on("dragend", async (e) => {
 
-  const marker = e.target;
+        const marker = e.target;
 
-  const position = marker.getLatLng();
+        const position = marker.getLatLng();
 
-  try {
+        try {
 
-    await updateDoc(
-      doc(db, "sites", site.id),
-      {
-        lat: position.lat,
-        lng: position.lng
-      }
-    );
+          await updateDoc(
+            doc(db, "sites", site.id),
+            {
+              lat: position.lat,
+              lng: position.lng
+            }
+          );
 
-    console.log(
-      `Updated ${site.name}:`,
-      position
-    );
+          console.log(
+            `Updated ${site.name}:`,
+            position
+          );
 
-  } catch (err) {
+        } catch (err) {
 
-    console.error(
-      "Marker update failed:",
-      err
-    );
+          console.error(
+            "Marker update failed:",
+            err
+          );
 
-    alert("Failed to save location");
+          alert("Failed to save location");
 
-  }
+        }
 
-});
+      });
 
-  } else {
+    } else {
 
-  markers[site.id].setIcon(icon);
+      markers[site.id].setIcon(icon);
 
-  markers[site.id].setLatLng([
-    site.lat,
-    site.lng
-  ]);
+      markers[site.id].setLatLng([
+        site.lat,
+        site.lng
+      ]);
 
-}
-// ================= GEOFENCE =================
-
-const radius =
-  site.geofenceRadius ?? 150;
-
-// Remove old circle
-if (geofenceCircles[site.id]) {
-
-  window.map.removeLayer(
-    geofenceCircles[site.id]
-  );
-
-}
-
-let circleColor = "#38bdf8";
-
-if (site.status === "Inactive") {
-  circleColor = "#9ca3af";
-}
-
-if (site.status === "Closed") {
-  circleColor = "#dc2626";
-}
-
-geofenceCircles[site.id] =
-  L.circle(
-    [site.lat, site.lng],
-    {
-      radius:
-        radius * 0.3048,
-
-      color:
-        circleColor,
-
-      weight: 2,
-
-      fillOpacity: 0.08
     }
-  ).addTo(window.map);
+    // ================= GEOFENCE =================
 
-// APPLY TO ALL MARKERS
-applyMarkerVisibility(
-  markers[site.id]
-);
+    const radius =
+      site.geofenceRadius ?? 150;
+
+    // Remove old circle
+    if (geofenceCircles[site.id]) {
+
+      window.map.removeLayer(
+        geofenceCircles[site.id]
+      );
+
+    }
+
+    let circleColor = "#38bdf8";
+
+    if (site.status === "Inactive") {
+      circleColor = "#9ca3af";
+    }
+
+    if (site.status === "Closed") {
+      circleColor = "#dc2626";
+    }
+
+    geofenceCircles[site.id] =
+      L.circle(
+        [site.lat, site.lng],
+        {
+          radius:
+            radius * 0.3048,
+
+          color:
+            circleColor,
+
+          weight: 2,
+
+          fillOpacity: 0.08
+        }
+      ).addTo(window.map);
+
+    // APPLY TO ALL MARKERS
+    applyMarkerVisibility(
+      markers[site.id]
+    );
 
     const marker = markers[site.id];
 
     console.log(
-  "Notes for site:",
-  site.name,
-  siteNotes
-    .filter(
-      n => n.siteId === site.id
-    )
-);
+      "Notes for site:",
+      site.name,
+      siteNotes
+        .filter(
+          n => n.siteId === site.id
+        )
+    );
 
     const latestNote =
-  siteNotes
-  
-    .filter(n =>
-      n.siteId === site.id
-    )
-    .sort((a, b) =>
-      new Date(b.createdAt) -
-      new Date(a.createdAt)
-    )[0];
+      siteNotes
+
+        .filter(n =>
+          n.siteId === site.id
+        )
+        .sort((a, b) =>
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+        )[0];
 
     const activeCriticalIncident =
-  incidents
-    .filter(i =>
-      i.siteId === site.id &&
-      i.severity === "Critical" &&
-      i.status !== "Resolved"
-    )
-    .sort((a, b) =>
-      new Date(b.createdAt) -
-      new Date(a.createdAt)
-    )[0];
+      incidents
+        .filter(i =>
+          i.siteId === site.id &&
+          i.severity === "Critical" &&
+          i.status !== "Resolved"
+        )
+        .sort((a, b) =>
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+        )[0];
 
     let popup = "";
 
-if (activeCriticalIncident) {
+    if (activeCriticalIncident) {
 
-  popup = `
+      popup = `
     <div
       style="
         border-left:4px solid #dc2626;
@@ -2663,13 +2661,13 @@ if (activeCriticalIncident) {
     <hr>
   `;
 
-} else {
+    } else {
 
-  popup =
-    `<b>${site.name}</b><br>` +
-    `${site.city}, ${site.state}<br><br>`;
+      popup =
+        `<b>${site.name}</b><br>` +
+        `${site.city}, ${site.state}<br><br>`;
 
-}
+    }
 
     if (!active.length) {
 
@@ -2678,7 +2676,7 @@ if (activeCriticalIncident) {
     } else {
 
       popup +=
-  "<b>Assigned Resources:</b><br>";
+        "<b>Assigned Resources:</b><br>";
 
       active.forEach(a => {
 
@@ -2717,26 +2715,26 @@ if (activeCriticalIncident) {
 
     }
 
-  const officersOnDuty =
-  timeEntries.filter(entry =>
-    entry.siteId === site.id &&
-    entry.status === "Clocked In"
-  );
+    const officersOnDuty =
+      timeEntries.filter(entry =>
+        entry.siteId === site.id &&
+        entry.status === "Clocked In"
+      );
 
-const activeViolations =
-  officersOnDuty.filter(
-    officer =>
-      officer.currentlyInsideGeofence === false
-  );
+    const activeViolations =
+      officersOnDuty.filter(
+        officer =>
+          officer.currentlyInsideGeofence === false
+      );
 
-popup += "<hr>";
+    popup += "<hr>";
 
-popup +=
-  "<b>Security Officers On Duty:</b><br>";
+    popup +=
+      "<b>Security Officers On Duty:</b><br>";
 
-  if (activeViolations.length) {
+    if (activeViolations.length) {
 
-  popup += `
+      popup += `
     <div
       style="
         border-left:4px solid #dc2626;
@@ -2749,10 +2747,10 @@ popup +=
       </b><br>
   `;
 
-  activeViolations.forEach(
-    officer => {
+      activeViolations.forEach(
+        officer => {
 
-      popup += `
+          popup += `
         Officer:
         ${officer.employeeName}<br>
 
@@ -2761,24 +2759,24 @@ popup +=
         <br><br>
       `;
 
+        }
+      );
+
+      popup += "</div>";
+
     }
-  );
 
-  popup += "</div>";
+    if (!officersOnDuty.length) {
 
-}
+      popup +=
+        "No officers currently clocked in";
 
-if (!officersOnDuty.length) {
+    } else {
 
-  popup +=
-    "No officers currently clocked in";
+      officersOnDuty.forEach(
+        officer => {
 
-} else {
-
-  officersOnDuty.forEach(
-    officer => {
-
-      popup += `
+          popup += `
         <div
           style="
             margin-bottom:6px;
@@ -2789,10 +2787,10 @@ if (!officersOnDuty.length) {
         </div>
       `;
 
-    }
-  );
+        }
+      );
 
-}
+    }
 
     if (site.maintenance) {
 
@@ -2802,7 +2800,7 @@ if (!officersOnDuty.length) {
     }
     if (latestNote) {
 
-  popup += `
+      popup += `
     <hr>
 
     <b>Latest Note</b><br>
@@ -2812,18 +2810,18 @@ if (!officersOnDuty.length) {
     <small>
   Updated:
   ${new Date(
-    latestNote.createdAt
-  ).toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  })}
+        latestNote.createdAt
+      ).toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      })}
 </small>
   `;
 
-}
+    }
 
     marker.bindPopup(popup);
 
@@ -2929,7 +2927,7 @@ function clearIncidentHighlight(
 
   const active =
     activeIncidentMarkers[
-      siteId
+    siteId
     ];
 
   if (!active) return;
@@ -3136,21 +3134,21 @@ function refresh() {
   );
 
   // ================= EMPLOYEE DROPDOWN =================
- // only employees without active assignments
-const availableEmployees =
-  employees.filter(e =>
+  // only employees without active assignments
+  const availableEmployees =
+    employees.filter(e =>
 
-    !assignments.find(a =>
+      !assignments.find(a =>
 
-      a.employeeId === e.id &&
-      !a.endTime
+        a.employeeId === e.id &&
+        !a.endTime
 
-    )
+      )
 
-  );
+    );
 
-assignEmployee.innerHTML =
-  availableEmployees.map(e => `
+  assignEmployee.innerHTML =
+    availableEmployees.map(e => `
     <option value="${e.id}">
       ${e.name}
     </option>
@@ -3158,33 +3156,33 @@ assignEmployee.innerHTML =
 
   // ================= SITE DROPDOWN =================
   assignSite.innerHTML =
-  sites
-    .filter(s =>
-      (s.status || "Active") === "Active"
-    )
-    .map(s => `
+    sites
+      .filter(s =>
+        (s.status || "Active") === "Active"
+      )
+      .map(s => `
       <option value="${s.id}">
         ${s.name}
       </option>
     `)
-    .join("");
+      .join("");
 
-    // ================= INCIDENT SITE DROPDOWN =================
-const incidentSite =
-  document.getElementById(
-    "incidentSite"
-  );
+  // ================= INCIDENT SITE DROPDOWN =================
+  const incidentSite =
+    document.getElementById(
+      "incidentSite"
+    );
 
-if (incidentSite) {
+  if (incidentSite) {
 
-  incidentSite.innerHTML =
-    sites.map(s => `
+    incidentSite.innerHTML =
+      sites.map(s => `
       <option value="${s.id}">
         ${s.name}
       </option>
     `).join("");
 
-}
+  }
 
   // ================= ASSET DROPDOWN =================
   const selectedAsset =
@@ -3195,18 +3193,16 @@ if (incidentSite) {
     assets.map(a => `
      <option
   value="${a.id}"
-  ${
-    a.status === "maintenance"
-      ? "disabled"
-      : ""
-  }
+  ${a.status === "maintenance"
+        ? "disabled"
+        : ""
+      }
 >
   ${a.id} - ${a.type}
-  ${
-    a.status === "maintenance"
-      ? "(MAINTENANCE)"
-      : "(ACTIVE)"
-  }
+  ${a.status === "maintenance"
+        ? "(MAINTENANCE)"
+        : "(ACTIVE)"
+      }
 </option>
     `).join("");
 
@@ -3240,12 +3236,12 @@ if (incidentSite) {
       maintenanceAssetSelect.value;
 
     maintenanceAssetSelect.innerHTML =
-  `
+      `
     <option value="">
       -- Select Asset For Maintenance --
     </option>
   ` +
-  assets.map(a => `
+      assets.map(a => `
     <option value="${a.id}">
       ${a.id} - ${a.type || "Unknown Type"}
     </option>
@@ -3254,32 +3250,32 @@ if (incidentSite) {
     maintenanceAssetSelect.value =
       selectedMaintenanceAsset;
   }
- 
+
   document.getElementById("employeeCount").textContent =
-  employees.length;
+    employees.length;
 
-document.getElementById("assignmentCount").textContent =
-  assignments.filter(a => !a.endTime).length;
+  document.getElementById("assignmentCount").textContent =
+    assignments.filter(a => !a.endTime).length;
 
-document.getElementById("siteCount").textContent =
-  sites.length;
+  document.getElementById("siteCount").textContent =
+    sites.length;
 
-document.getElementById("maintenanceCount").textContent =
-  assets.filter(
-    a => a.status === "maintenance"
-  ).length;
-
- const incidentCountEl =
-  document.getElementById(
-    "incidentCount"
-  );
-
-if (incidentCountEl) {
-  incidentCountEl.textContent =
-    incidents.filter(i =>
-      i.status !== "Resolved"
+  document.getElementById("maintenanceCount").textContent =
+    assets.filter(
+      a => a.status === "maintenance"
     ).length;
-}
+
+  const incidentCountEl =
+    document.getElementById(
+      "incidentCount"
+    );
+
+  if (incidentCountEl) {
+    incidentCountEl.textContent =
+      incidents.filter(i =>
+        i.status !== "Resolved"
+      ).length;
+  }
 
   renderIncidents();
 
@@ -3287,14 +3283,14 @@ if (incidentCountEl) {
 
   updateMap();
   const siteModal =
-  document.getElementById("siteModal");
+    document.getElementById("siteModal");
 
-if (
-  siteModal &&
-  siteModal.style.display === "block"
-) {
-  renderSites();
-}
+  if (
+    siteModal &&
+    siteModal.style.display === "block"
+  ) {
+    renderSites();
+  }
 }
 
 // ================= EMPLOYEE MODAL =================
@@ -3367,7 +3363,7 @@ function openSiteNoteModal() {
       option.textContent = site.name;
 
       select.appendChild(option);
-    });        
+    });
 
   document.getElementById(
     "siteNote"
@@ -3383,7 +3379,7 @@ function closeSiteNoteModal() {
   document.getElementById(
     "siteNoteModal"
   ).style.display = "none";
-}    
+}
 
 async function saveSiteNote() {
 
@@ -3404,7 +3400,7 @@ async function saveSiteNote() {
     );
 
     return;
-  }  
+  }
 
   const site =
     sites.find(
@@ -3423,15 +3419,15 @@ async function saveSiteNote() {
 
       createdAt:
         new Date().toISOString()
-    }    
-  );  
+    }
+  );
 
- await logActivity(
-  siteId,
-  "note",
-  `Site note added for ${site.name}`,
-  auth.currentUser?.email || "Unknown"
-);
+  await logActivity(
+    siteId,
+    "note",
+    `Site note added for ${site.name}`,
+    auth.currentUser?.email || "Unknown"
+  );
 
   closeSiteNoteModal();
 
@@ -3759,32 +3755,32 @@ function searchSite() {
 
     const match = matches[0];
 
-   window.map.flyTo(
-  [match.lat, match.lng],
-  16
-);
+    window.map.flyTo(
+      [match.lat, match.lng],
+      16
+    );
 
-window.map.once("moveend", () => {
-  document.getElementById(
-    "siteSearch"
-  ).value = "";
-});
+    window.map.once("moveend", () => {
+      document.getElementById(
+        "siteSearch"
+      ).value = "";
+    });
 
     const marker = markers[match.id];
 
-   if (marker) {
-  marker.openPopup();
-}
+    if (marker) {
+      marker.openPopup();
+    }
 
-document.getElementById(
-  "siteSearch"
-).value = "";
+    document.getElementById(
+      "siteSearch"
+    ).value = "";
 
   } else if (matches.length > 1) {
 
-    } else if (matches.length > 1) {
+  } else if (matches.length > 1) {
 
-  return;
+    return;
 
   } else {
 
@@ -3833,8 +3829,8 @@ function filterSites() {
     document.getElementById(
       "siteSearchModal"
     )
-    .value
-    .toLowerCase();
+      .value
+      .toLowerCase();
 
   const filtered = sites.filter(s =>
 
@@ -3887,8 +3883,7 @@ async function searchAddress() {
   try {
 
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${
-        encodeURIComponent(query)
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)
       }&format=json&limit=1`
     );
 
@@ -3915,25 +3910,25 @@ async function searchAddress() {
     );
 
     // optional temporary marker
-   // remove old search marker
-if (searchMarker) {
+    // remove old search marker
+    if (searchMarker) {
 
-  window.map.removeLayer(
-    searchMarker
-  );
+      window.map.removeLayer(
+        searchMarker
+      );
 
-}
+    }
 
-// create new temporary marker
-searchMarker = L.marker(
-  [lat, lng]
-)
-.addTo(window.map)
-.bindPopup(query)
-.openPopup();
-      document.getElementById(
-  "mapAddressSearch"
-).value = "";
+    // create new temporary marker
+    searchMarker = L.marker(
+      [lat, lng]
+    )
+      .addTo(window.map)
+      .bindPopup(query)
+      .openPopup();
+    document.getElementById(
+      "mapAddressSearch"
+    ).value = "";
 
   } catch (err) {
 
@@ -4015,97 +4010,97 @@ function editEmployee(id) {
 
   document.getElementById(
     "editEmpRole"
-  ).value = emp.designation || "Worker"; 
+  ).value = emp.designation || "Worker";
 
   document.getElementById(
-  "editLicenseSection"
-).style.display =
-  emp.designation ===
-  "Security Officer"
-    ? "block"
-    : "none";
-
-document.getElementById(
-  "editEmployeeLicenseLevel"
-).value =
-  emp.licenseLevel || "";
-
-document.getElementById(
-  "editEmployeeLicenseNumber"
-).value =
-  emp.licenseNumber || "";
-
-document.getElementById(
-  "editEmployeeLicenseExpiration"
-).value =
-  emp.licenseExpiration || "";  
-
-document.getElementById(
-  "editLicenseSection"
-).style.display =
-  emp.type === "Security Officer"
-    ? "block"
-    : "none";
-
-    document.getElementById(
-  "editEmployeeId"
-).value =
-  emp.employeeId || "";
-
-document.getElementById(
-  "editEmployeeEmail"
-).value =
-  emp.email || "";
-
-document.getElementById(
-  "editEmployeePhone"
-).value =
-  emp.phone || "";
-
-document.getElementById(
-  "editEmployeeHireDate"
-).value =
-  emp.hireDate || "";
+    "editLicenseSection"
+  ).style.display =
+    emp.designation ===
+      "Security Officer"
+      ? "block"
+      : "none";
 
   document.getElementById(
-  "editEmployeeHomeAddress"
-).value =
-  emp.homeAddress || "";
+    "editEmployeeLicenseLevel"
+  ).value =
+    emp.licenseLevel || "";
 
   document.getElementById(
-  "editEmployeeHomeCity"
-).value =
-  emp.homeCity || "";
-
-document.getElementById(
-  "editEmployeeHomeState"
-).value =
-  emp.homeState || "";
-
-document.getElementById(
-  "editEmployeeHomeZip"
-).value =
-  emp.homeZip || "";
-
-document.getElementById(
-  "editEmployeeHomeLat"
-).value =
-  emp.homeLat || "";
-
-document.getElementById(
-  "editEmployeeHomeLng"
-).value =
-  emp.homeLng || "";
+    "editEmployeeLicenseNumber"
+  ).value =
+    emp.licenseNumber || "";
 
   document.getElementById(
-  "editEmployeeEmergencyName"
-).value =
-  emp.emergencyContactName || "";
+    "editEmployeeLicenseExpiration"
+  ).value =
+    emp.licenseExpiration || "";
 
-document.getElementById(
-  "editEmployeeEmergencyPhone"
-).value =
-  emp.emergencyContactPhone || "";
+  document.getElementById(
+    "editLicenseSection"
+  ).style.display =
+    emp.type === "Security Officer"
+      ? "block"
+      : "none";
+
+  document.getElementById(
+    "editEmployeeId"
+  ).value =
+    emp.employeeId || "";
+
+  document.getElementById(
+    "editEmployeeEmail"
+  ).value =
+    emp.email || "";
+
+  document.getElementById(
+    "editEmployeePhone"
+  ).value =
+    emp.phone || "";
+
+  document.getElementById(
+    "editEmployeeHireDate"
+  ).value =
+    emp.hireDate || "";
+
+  document.getElementById(
+    "editEmployeeHomeAddress"
+  ).value =
+    emp.homeAddress || "";
+
+  document.getElementById(
+    "editEmployeeHomeCity"
+  ).value =
+    emp.homeCity || "";
+
+  document.getElementById(
+    "editEmployeeHomeState"
+  ).value =
+    emp.homeState || "";
+
+  document.getElementById(
+    "editEmployeeHomeZip"
+  ).value =
+    emp.homeZip || "";
+
+  document.getElementById(
+    "editEmployeeHomeLat"
+  ).value =
+    emp.homeLat || "";
+
+  document.getElementById(
+    "editEmployeeHomeLng"
+  ).value =
+    emp.homeLng || "";
+
+  document.getElementById(
+    "editEmployeeEmergencyName"
+  ).value =
+    emp.emergencyContactName || "";
+
+  document.getElementById(
+    "editEmployeeEmergencyPhone"
+  ).value =
+    emp.emergencyContactPhone || "";
 
   document.getElementById(
     "editEmployeeModal"
@@ -4128,137 +4123,137 @@ async function saveEmployeeEdit() {
   const designation =
     document.getElementById(
       "editEmpRole"
-    ).value.trim();  
+    ).value.trim();
 
-const licenseLevel =
-  document.getElementById(
-    "editEmployeeLicenseLevel"
-  ).value;
+  const licenseLevel =
+    document.getElementById(
+      "editEmployeeLicenseLevel"
+    ).value;
 
-const licenseNumber =
-  document.getElementById(
-    "editEmployeeLicenseNumber"
-  ).value.trim();
+  const licenseNumber =
+    document.getElementById(
+      "editEmployeeLicenseNumber"
+    ).value.trim();
 
-const licenseExpiration =
-  document.getElementById(
-    "editEmployeeLicenseExpiration"
-  ).value;
+  const licenseExpiration =
+    document.getElementById(
+      "editEmployeeLicenseExpiration"
+    ).value;
 
   const employeeId =
-  document.getElementById(
-    "editEmployeeId"
-  ).value.trim();
+    document.getElementById(
+      "editEmployeeId"
+    ).value.trim();
 
-const email =
-  document.getElementById(
-    "editEmployeeEmail"
-  ).value.trim();
+  const email =
+    document.getElementById(
+      "editEmployeeEmail"
+    ).value.trim();
 
-const phone =
-  document.getElementById(
-    "editEmployeePhone"
-  ).value.trim();
+  const phone =
+    document.getElementById(
+      "editEmployeePhone"
+    ).value.trim();
 
-const hireDate =
-  document.getElementById(
-    "editEmployeeHireDate"
-  ).value;
+  const hireDate =
+    document.getElementById(
+      "editEmployeeHireDate"
+    ).value;
 
-const homeAddress =
-  document.getElementById(
-    "editEmployeeHomeAddress"
-  ).value.trim();  
+  const homeAddress =
+    document.getElementById(
+      "editEmployeeHomeAddress"
+    ).value.trim();
 
   const homeCity =
-  document.getElementById(
-    "editEmployeeHomeCity"
-  ).value.trim();
+    document.getElementById(
+      "editEmployeeHomeCity"
+    ).value.trim();
 
-const homeState =
-  document.getElementById(
-    "editEmployeeHomeState"
-  ).value;
+  const homeState =
+    document.getElementById(
+      "editEmployeeHomeState"
+    ).value;
 
-const homeZip =
-  document.getElementById(
-    "editEmployeeHomeZip"
-  ).value.trim();
+  const homeZip =
+    document.getElementById(
+      "editEmployeeHomeZip"
+    ).value.trim();
 
-const emergencyContactName =
-  document.getElementById(
-    "editEmployeeEmergencyName"
-  ).value.trim();
+  const emergencyContactName =
+    document.getElementById(
+      "editEmployeeEmergencyName"
+    ).value.trim();
 
-const emergencyContactPhone =
-  document.getElementById(
-    "editEmployeeEmergencyPhone"
-  ).value.trim();  
+  const emergencyContactPhone =
+    document.getElementById(
+      "editEmployeeEmergencyPhone"
+    ).value.trim();
 
-if (
-  homeAddress &&
-  homeCity &&
-  homeState &&
-  homeZip
-) {
-  try {
+  if (
+    homeAddress &&
+    homeCity &&
+    homeState &&
+    homeZip
+  ) {
+    try {
 
-    const addresses = [
-      `${homeAddress}, ${homeCity}, ${homeState} ${homeZip}, USA`,
-      `${homeAddress}, ${homeCity}, ${homeState}, USA`,
-      `${homeAddress}, ${homeZip}, USA`
-    ];
+      const addresses = [
+        `${homeAddress}, ${homeCity}, ${homeState} ${homeZip}, USA`,
+        `${homeAddress}, ${homeCity}, ${homeState}, USA`,
+        `${homeAddress}, ${homeZip}, USA`
+      ];
 
-    let results = [];
+      let results = [];
 
-    for (const address of addresses) {
+      for (const address of addresses) {
 
-      console.log(
-        "Trying address:",
-        address
-      );
-
-      const response =
-        await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-            address
-          )}`
+        console.log(
+          "Trying address:",
+          address
         );
 
-      results =
-        await response.json();
+        const response =
+          await fetch(
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+              address
+            )}`
+          );
 
-      console.log(
-        "Results:",
-        results
-      );
+        results =
+          await response.json();
+
+        console.log(
+          "Results:",
+          results
+        );
+
+        if (results.length) {
+          break;
+        }
+      }
 
       if (results.length) {
-        break;
+
+        newHomeLat =
+          parseFloat(
+            results[0].lat
+          );
+
+        newHomeLng =
+          parseFloat(
+            results[0].lon
+          );
       }
+
+    } catch (err) {
+
+      console.error(
+        "Address geocoding failed:",
+        err
+      );
     }
-
-    if (results.length) {
-
-      newHomeLat =
-        parseFloat(
-          results[0].lat
-        );
-
-      newHomeLng =
-        parseFloat(
-          results[0].lon
-        );
-    }
-
-  } catch (err) {
-
-    console.error(
-      "Address geocoding failed:",
-      err
-    );
   }
-}
 
   if (!name) {
 
@@ -4267,50 +4262,50 @@ if (
     return;
   }
 
-  try { 
+  try {
 
     await updateDoc(
-  doc(
-    db,
-    "employees",
-    editingEmployeeId
-  ),
-  {
-  name,
-  designation,
+      doc(
+        db,
+        "employees",
+        editingEmployeeId
+      ),
+      {
+        name,
+        designation,
 
-  licenseLevel,
-  licenseNumber,
-  licenseExpiration,
+        licenseLevel,
+        licenseNumber,
+        licenseExpiration,
 
-  employeeId,
-  email,
-  phone,
-  hireDate,
+        employeeId,
+        email,
+        phone,
+        hireDate,
 
-  homeAddress,
-  homeCity,
-  homeState,
-  homeZip,
-  homeLat:
-  newHomeLat,
-  homeLng:
-  newHomeLng,
+        homeAddress,
+        homeCity,
+        homeState,
+        homeZip,
+        homeLat:
+          newHomeLat,
+        homeLng:
+          newHomeLng,
 
-  emergencyContactName,
-  emergencyContactPhone
-}
-);
+        emergencyContactName,
+        emergencyContactPhone
+      }
+    );
 
-document.getElementById(
-  "editEmployeeHomeLat"
-).value =
-  newHomeLat || "";
+    document.getElementById(
+      "editEmployeeHomeLat"
+    ).value =
+      newHomeLat || "";
 
-document.getElementById(
-  "editEmployeeHomeLng"
-).value =
-  newHomeLng || ""; 
+    document.getElementById(
+      "editEmployeeHomeLng"
+    ).value =
+      newHomeLng || "";
 
     closeEditEmployeeModal();
 
@@ -4363,23 +4358,23 @@ function editSite(id) {
     "editSiteZip"
   ).value = site.zip || "";
   document.getElementById(
-  "editSiteRadius"
-).value =
-  site.geofenceRadius ?? 150;
+    "editSiteRadius"
+  ).value =
+    site.geofenceRadius ?? 150;
   document.getElementById(
-  "editSiteCategory"
-).value =
-  site.siteCategory || "school";
-
-document.getElementById(
-  "editSiteSubtype"
-).value =
-  site.siteSubtype || "elementary";
+    "editSiteCategory"
+  ).value =
+    site.siteCategory || "school";
 
   document.getElementById(
-  "editSiteStatus"
-).value =
-  site.status || "Active";
+    "editSiteSubtype"
+  ).value =
+    site.siteSubtype || "elementary";
+
+  document.getElementById(
+    "editSiteStatus"
+  ).value =
+    site.status || "Active";
 
   document.getElementById(
     "editSiteModal"
@@ -4422,32 +4417,32 @@ async function saveSiteEdit() {
     ).value.trim();
 
   const zip =
-  
+
     document.getElementById(
       "editSiteZip"
     ).value.trim();
 
-   const geofenceRadius =
-  Number(
-    document.getElementById(
-      "editSiteRadius"
-    ).value
-  ) || 150;
+  const geofenceRadius =
+    Number(
+      document.getElementById(
+        "editSiteRadius"
+      ).value
+    ) || 150;
 
-    const siteCategory =
-  document.getElementById(
-    "editSiteCategory"
-  ).value;
+  const siteCategory =
+    document.getElementById(
+      "editSiteCategory"
+    ).value;
 
   const status =
-  document.getElementById(
-    "editSiteStatus"
-  ).value;
+    document.getElementById(
+      "editSiteStatus"
+    ).value;
 
-const siteSubtype =
-  document.getElementById(
-    "editSiteSubtype"
-  ).value;
+  const siteSubtype =
+    document.getElementById(
+      "editSiteSubtype"
+    ).value;
   if (
     !name ||
     !address ||
@@ -4497,61 +4492,61 @@ const siteSubtype =
 
     }
 
-   if (!coords.length) {
+    if (!coords.length) {
 
-  const existingSite =
-    sites.find(
-      s => s.id === editingSiteId
-    );
+      const existingSite =
+        sites.find(
+          s => s.id === editingSiteId
+        );
 
-  if (!existingSite) {
+      if (!existingSite) {
 
-    alert(
-      "Address not found and existing site could not be loaded."
-    );
+        alert(
+          "Address not found and existing site could not be loaded."
+        );
 
-    return;
+        return;
 
-  }
+      }
 
-  coords = [{
-    lat: existingSite.lat,
-    lon: existingSite.lng
-  }];
+      coords = [{
+        lat: existingSite.lat,
+        lon: existingSite.lng
+      }];
 
-  alert(
-    "Address not found. Existing coordinates will be retained."
-  );
+      alert(
+        "Address not found. Existing coordinates will be retained."
+      );
 
-}
-    
+    }
+
     // ================= UPDATE =================
 
     await updateDoc(
-  doc(
-    db,
-    "sites",
-    editingSiteId
-  ),
-  {
+      doc(
+        db,
+        "sites",
+        editingSiteId
+      ),
+      {
 
-    name,
-    address,
-    city,
-    state,
-    zip,
+        name,
+        address,
+        city,
+        state,
+        zip,
 
-    siteCategory,
-    siteSubtype,
-    status,
+        siteCategory,
+        siteSubtype,
+        status,
 
-    geofenceRadius,
+        geofenceRadius,
 
-    lat: +coords[0].lat,
-    lng: +coords[0].lon
+        lat: +coords[0].lat,
+        lng: +coords[0].lon
 
-  }
-);
+      }
+    );
 
     closeEditSiteModal();
 
@@ -4583,13 +4578,13 @@ async function saveDefaultCrew(siteId) {
     // extract employee IDs
     const employeeIds = [
 
-  ...new Set(
-    crewAssignments.map(
-      a => a.employeeId
-    )
-  )
+      ...new Set(
+        crewAssignments.map(
+          a => a.employeeId
+        )
+      )
 
-];
+    ];
 
     // update site
     await updateDoc(
@@ -4667,21 +4662,21 @@ async function deployDefaultCrews() {
         );
 
         const employee =
-  employees.find(
-    e => e.id === employeeId
-  );
+          employees.find(
+            e => e.id === employeeId
+          );
 
-const site =
-  sites.find(
-    s => s.id === siteDoc.id
-  );
+        const site =
+          sites.find(
+            s => s.id === siteDoc.id
+          );
 
-await logActivity(
-  siteDoc.id,
-  "assignment",
-  `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
-  "Dispatcher"
-);
+        await logActivity(
+          siteDoc.id,
+          "assignment",
+          `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
+          "Dispatcher"
+        );
         deployedCount++;
 
       }
@@ -4887,27 +4882,27 @@ function renderDeploymentPreview() {
     );
 
   // GROUP BY SITE
-const grouped = {};
+  const grouped = {};
 
-const site =
-  sites.find(s => s.id === previewSiteId);
+  const site =
+    sites.find(s => s.id === previewSiteId);
 
-if (site) {
+  if (site) {
 
-  grouped[site.id] = {
-    siteName: site.name,
-    employees: []
-  };
+    grouped[site.id] = {
+      siteName: site.name,
+      employees: []
+    };
 
-}
-// populate employees
-pendingDeployments.forEach(d => {
+  }
+  // populate employees
+  pendingDeployments.forEach(d => {
 
-  if (!grouped[d.siteId]) return;
+    if (!grouped[d.siteId]) return;
 
-  grouped[d.siteId].employees.push(d);
+    grouped[d.siteId].employees.push(d);
 
-});
+  });
 
   body.innerHTML = Object.entries(grouped)
     .map(([siteId, group]) => `
@@ -4937,11 +4932,10 @@ pendingDeployments.forEach(d => {
             <br>
 
             Status:
-            ${
-              emp.alreadyAssigned
-                ? "Already Assigned"
-                : "Ready"
-            }
+            ${emp.alreadyAssigned
+        ? "Already Assigned"
+        : "Ready"
+      }
 
             <br><br>
 
@@ -4968,15 +4962,14 @@ pendingDeployments.forEach(d => {
               Add Employee
             </option>
 
-            ${
-              employees.map(e => `
+            ${employees.map(e => `
 
                 <option value="${e.id}">
                   ${e.name}
                 </option>
 
               `).join("")
-            }
+      }
 
           </select>
 
@@ -5026,56 +5019,56 @@ function closeDeployPreview() {
 }
 
 async function confirmDeployment() {
-  
+
   try {
 
     let deployedCount = 0;
 
     for (const d of pendingDeployments) {
 
-     const activeAssignment =
-  assignments.find(a =>
+      const activeAssignment =
+        assignments.find(a =>
 
-    a.employeeId === d.employeeId &&
-    !a.endTime
+          a.employeeId === d.employeeId &&
+          !a.endTime
 
-  );
+        );
 
-if (activeAssignment) {
-  continue;
-}
+      if (activeAssignment) {
+        continue;
+      }
 
       await addDoc(
-  collection(db, "assignments"),
-  {
-    employeeId: d.employeeId,
-    siteId: d.siteId,
-    assetId: null,
-    vehicleId: null,
-    startTime:
-      new Date().toISOString(),
-    endTime: null
-  }
-);
+        collection(db, "assignments"),
+        {
+          employeeId: d.employeeId,
+          siteId: d.siteId,
+          assetId: null,
+          vehicleId: null,
+          startTime:
+            new Date().toISOString(),
+          endTime: null
+        }
+      );
 
-const employee =
-  employees.find(
-    e => e.id === d.employeeId
-  );
+      const employee =
+        employees.find(
+          e => e.id === d.employeeId
+        );
 
-const site =
-  sites.find(
-    s => s.id === d.siteId
-  );
+      const site =
+        sites.find(
+          s => s.id === d.siteId
+        );
 
-await logActivity(
-  d.siteId,
-  "assignment",
-  `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
-  "Dispatcher"
-);
+      await logActivity(
+        d.siteId,
+        "assignment",
+        `${employee?.name || "Employee"} deployed to ${site?.name || "site"}`,
+        "Dispatcher"
+      );
 
-deployedCount++;
+      deployedCount++;
 
     }
 
@@ -5097,7 +5090,7 @@ deployedCount++;
 
 }
 
-function filterMapSites(type, button){
+function filterMapSites(type, button) {
 
   currentMapFilter = type;
 
@@ -5107,7 +5100,7 @@ function filterMapSites(type, button){
       btn.classList.remove("active-filter")
     );
 
-  if(button){
+  if (button) {
     button.classList.add("active-filter");
   }
 
@@ -5119,7 +5112,7 @@ function filterMapSites(type, button){
 
 }
 
-function applyMarkerVisibility(marker){
+function applyMarkerVisibility(marker) {
 
   const site =
     sites.find(
@@ -5134,7 +5127,7 @@ function applyMarkerVisibility(marker){
     status === "Active" &&
     !showActiveSites
   ) {
-    if(window.map.hasLayer(marker)){
+    if (window.map.hasLayer(marker)) {
       window.map.removeLayer(marker);
     }
     return;
@@ -5144,7 +5137,7 @@ function applyMarkerVisibility(marker){
     status === "Inactive" &&
     !showInactiveSites
   ) {
-    if(window.map.hasLayer(marker)){
+    if (window.map.hasLayer(marker)) {
       window.map.removeLayer(marker);
     }
     return;
@@ -5154,16 +5147,16 @@ function applyMarkerVisibility(marker){
     status === "Closed" &&
     !showClosedSites
   ) {
-    if(window.map.hasLayer(marker)){
+    if (window.map.hasLayer(marker)) {
       window.map.removeLayer(marker);
     }
     return;
   }
 
   // SHOW ALL
-  if(currentMapFilter === "all"){
+  if (currentMapFilter === "all") {
 
-    if(!window.map.hasLayer(marker)){
+    if (!window.map.hasLayer(marker)) {
       marker.addTo(window.map);
     }
 
@@ -5172,9 +5165,9 @@ function applyMarkerVisibility(marker){
   }
 
   // MATCH FILTER
-  if(marker.siteType === currentMapFilter){
+  if (marker.siteType === currentMapFilter) {
 
-    if(!window.map.hasLayer(marker)){
+    if (!window.map.hasLayer(marker)) {
       marker.addTo(window.map);
     }
 
@@ -5183,7 +5176,7 @@ function applyMarkerVisibility(marker){
   // HIDE NON-MATCHING
   else {
 
-    if(window.map.hasLayer(marker)){
+    if (window.map.hasLayer(marker)) {
       window.map.removeLayer(marker);
     }
 
@@ -5219,12 +5212,12 @@ function addEmployeeToSite(siteId) {
 
   // prevent duplicates
   const exists =
-  pendingDeployments.some(d =>
+    pendingDeployments.some(d =>
 
-    d.siteId === siteId &&
-    d.employeeId === employeeId
+      d.siteId === siteId &&
+      d.employeeId === employeeId
 
-  );
+    );
 
   if (exists) {
 
@@ -5260,7 +5253,7 @@ function openViewNotesModal() {
   select.innerHTML = "";
 
   sites
-    .sort((a,b) =>
+    .sort((a, b) =>
       a.name.localeCompare(b.name)
     )
     .forEach(site => {
@@ -5278,36 +5271,36 @@ function openViewNotesModal() {
 
     });
 
-let activeEntry = null;
+  let activeEntry = null;
 
-if (
-  window.currentEmployee &&
-  window.currentEmployee.id
-) {
-  activeEntry =
-    timeEntries.find(
-      entry =>
-        entry.employeeId ===
+  if (
+    window.currentEmployee &&
+    window.currentEmployee.id
+  ) {
+    activeEntry =
+      timeEntries.find(
+        entry =>
+          entry.employeeId ===
           window.currentEmployee.id &&
-        entry.status ===
+          entry.status ===
           "Clocked In"
+      );
+  }
+
+  if (activeEntry) {
+
+    select.value =
+      activeEntry.siteId;
+
+  }
+  select.onchange = function () {
+    console.log(
+      "Site changed:",
+      this.value
     );
-}
 
-if (activeEntry) {
-
-  select.value =
-    activeEntry.siteId;
-
-}
-select.onchange = function () {
-  console.log(
-    "Site changed:",
-    this.value
-  );
-
-  loadSiteHistory();
-};
+    loadSiteHistory();
+  };
 
   loadSiteHistory();
 
@@ -5331,20 +5324,20 @@ function loadSiteNotes() {
     document.getElementById(
       "viewNotesSite"
     ).value;
-    console.log("Selected Site:", siteId);
-console.log("All Notes:", siteNotes);
+  console.log("Selected Site:", siteId);
+  console.log("All Notes:", siteNotes);
 
   const notes =
     siteNotes
       .filter(
         n => n.siteId === siteId
       )
-      
-      .sort((a,b) =>
+
+      .sort((a, b) =>
         new Date(b.createdAt) -
         new Date(a.createdAt)
       );
-console.log("Matching Notes:", notes);
+  console.log("Matching Notes:", notes);
   const container =
     document.getElementById(
       "siteNotesList"
@@ -5358,10 +5351,10 @@ console.log("Matching Notes:", notes);
     return;
 
   }
-console.log("Container:", container);
-console.log("First Note:", notes[0]);
+  console.log("Container:", container);
+  console.log("First Note:", notes[0]);
   container.innerHTML =
-  notes.map(note => `
+    notes.map(note => `
 
     <div style="
       background:#ffffff;
@@ -5376,8 +5369,8 @@ console.log("First Note:", notes[0]);
   Entered by: ${note.createdBy}
   <br>
   ${new Date(
-    note.createdAt
-  ).toLocaleString()}
+      note.createdAt
+    ).toLocaleString()}
 </small>
 
 <br><br>
@@ -5397,150 +5390,150 @@ ${JSON.stringify(note, null, 2)}
 
 function loadSiteHistory() {
   console.log(
-  "loadSiteHistory fired:",
-  document.getElementById(
-    "viewNotesSite"
-  ).value
-);
-
- const select =
-  document.getElementById(
-    "viewNotesSite"
+    "loadSiteHistory fired:",
+    document.getElementById(
+      "viewNotesSite"
+    ).value
   );
 
-console.log(
-  "Dropdown Element:",
-  select
-);
+  const select =
+    document.getElementById(
+      "viewNotesSite"
+    );
 
-console.log(
-  "Selected Index:",
-  select.selectedIndex
-);
+  console.log(
+    "Dropdown Element:",
+    select
+  );
 
-console.log(
-  "Selected Value:",
-  select.value
-);
-
-console.log(
-  "Selected Text:",
-  select.options[
+  console.log(
+    "Selected Index:",
     select.selectedIndex
-  ]?.text
-);
+  );
 
-console.log(
-  "Duplicate Elements:",
-  document.querySelectorAll(
-    "#viewNotesSite"
-  ).length
-);
+  console.log(
+    "Selected Value:",
+    select.value
+  );
+
+  console.log(
+    "Selected Text:",
+    select.options[
+      select.selectedIndex
+    ]?.text
+  );
+
+  console.log(
+    "Duplicate Elements:",
+    document.querySelectorAll(
+      "#viewNotesSite"
+    ).length
+  );
   console.log("Activity Reports Count:", activityReports.length);
-console.log("Latest Report:", activityReports[0]);
+  console.log("Latest Report:", activityReports[0]);
 
   const siteId =
     document.getElementById(
       "viewNotesSite"
     ).value;
-    console.log("Selected Site:", siteId);
-console.log("All Notes:", siteNotes);
+  console.log("Selected Site:", siteId);
+  console.log("All Notes:", siteNotes);
 
   const notes = siteNotes
-  .filter(
-    n => n.siteId === siteId
-  )
-  .map(note => ({
-    type: "Site Note",
-    createdBy: note.createdBy,
-    createdAt: note.createdAt,
-    text: note.note || "",
-    raw: note
-  }));
-console.log(
-  "activityReports variable:",
-  activityReports
-);
+    .filter(
+      n => n.siteId === siteId
+    )
+    .map(note => ({
+      type: "Site Note",
+      createdBy: note.createdBy,
+      createdAt: note.createdAt,
+      text: note.note || "",
+      raw: note
+    }));
+  console.log(
+    "activityReports variable:",
+    activityReports
+  );
 
-console.log(
-  "activityReports length:",
-  activityReports?.length
-);
-console.log(
-  "Selected Site ID:",
-  siteId
-);
+  console.log(
+    "activityReports length:",
+    activityReports?.length
+  );
+  console.log(
+    "Selected Site ID:",
+    siteId
+  );
 
-console.log(
-  "All Report Site IDs:",
-  activityReports.map(
-    r => ({
-      siteId: r.siteId,
-      siteName: r.siteName,
-      activityType: r.activityType
-    })
-  )
-);
+  console.log(
+    "All Report Site IDs:",
+    activityReports.map(
+      r => ({
+        siteId: r.siteId,
+        siteName: r.siteName,
+        activityType: r.activityType
+      })
+    )
+  );
 
-console.log(
-  "Matching Reports:",
-  activityReports.filter(
-    r => r.siteId === siteId
-  )
-);
+  console.log(
+    "Matching Reports:",
+    activityReports.filter(
+      r => r.siteId === siteId
+    )
+  );
 
-const reports = activityReports
-  .filter(
-    r => r.siteId === siteId
-  )
-  .map(report => ({
-    type: "Activity Report",
-    createdBy:
-  report.officerName ||
-  report.employeeName ||
-  report.createdBy ||
-  "Officer",
-    createdAt: report.timestamp,
-    text: `
+  const reports = activityReports
+    .filter(
+      r => r.siteId === siteId
+    )
+    .map(report => ({
+      type: "Activity Report",
+      createdBy:
+        report.officerName ||
+        report.employeeName ||
+        report.createdBy ||
+        "Officer",
+      createdAt: report.timestamp,
+      text: `
 ${report.activityType || "Activity"}
 
 ${report.description || ""}
     `.trim(),
-    raw: report
-  }));
+      raw: report
+    }));
 
-const history = [
-  ...notes,
-  ...reports
-].sort(
-  (a, b) =>
-    new Date(b.createdAt) -
-    new Date(a.createdAt)
-);
-
-  const container =
-  document.getElementById(
-    "siteNotesList"
+  const history = [
+    ...notes,
+    ...reports
+  ].sort(
+    (a, b) =>
+      new Date(b.createdAt) -
+      new Date(a.createdAt)
   );
 
-if (!history.length) {
+  const container =
+    document.getElementById(
+      "siteNotesList"
+    );
+
+  if (!history.length) {
+
+    container.innerHTML =
+      "<p>No history found.</p>";
+
+    return;
+
+  }
 
   container.innerHTML =
-    "<p>No history found.</p>";
+    history.map(item => {
 
-  return;
+      const icon =
+        item.type === "Activity Report"
+          ? "📋"
+          : "📝";
 
-}
-
-container.innerHTML =
-  history.map(item => {
-
-    const icon =
-      item.type === "Activity Report"
-        ? "📋"
-        : "📝";
-
-    return `
+      return `
 
       <div style="
         background:#ffffff;
@@ -5564,8 +5557,8 @@ container.innerHTML =
           <br>
 
           ${new Date(
-            item.createdAt
-          ).toLocaleString()}
+        item.createdAt
+      ).toLocaleString()}
 
         </small>
 
@@ -5581,7 +5574,7 @@ container.innerHTML =
 
     `;
 
-  }).join("");
+    }).join("");
 }
 
 
@@ -5625,7 +5618,7 @@ async function saveIncident() {
 
     return;
 
-  }  
+  }
 
   const site =
     sites.find(
@@ -5656,93 +5649,93 @@ async function saveIncident() {
         new Date().toISOString()
 
     }
-    
+
   );
-  
 
- await logActivity(
-  siteId,
-  "incident",
-  `🚨 ${severity} Incident - ${site.name}`,
-  auth.currentUser?.email ||
-  "Unknown"
-);
 
-if (
-  severity?.toLowerCase() === "critical"
-) {
-
-  playCriticalAlert();
-
-  console.log("Site:", site);
+  await logActivity(
+    siteId,
+    "incident",
+    `🚨 ${severity} Incident - ${site.name}`,
+    auth.currentUser?.email ||
+    "Unknown"
+  );
 
   if (
-    site &&
-    window.map
+    severity?.toLowerCase() === "critical"
   ) {
 
-    document
-      .getElementById(
-        "operationsMapPanel"
-      )
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
+    playCriticalAlert();
 
-    setTimeout(() => {
+    console.log("Site:", site);
 
-  window.map.flyTo(
-    [site.lat, site.lng],
-    16,
-    {
-      duration: 1.5
+    if (
+      site &&
+      window.map
+    ) {
+
+      document
+        .getElementById(
+          "operationsMapPanel"
+        )
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+      setTimeout(() => {
+
+        window.map.flyTo(
+          [site.lat, site.lng],
+          16,
+          {
+            duration: 1.5
+          }
+        );
+
+      }, 500);
+
+      setTimeout(() => {
+
+        const marker =
+          markers[site.id];
+
+        if (
+          marker &&
+          marker.openPopup
+        ) {
+
+          marker.openPopup();
+
+          window.map.panBy(
+            [0, 150]
+          );
+
+        }
+
+      }, 1800);
+
     }
+
+  }
+
+  alert(
+    "Incident reported."
   );
-
-}, 500);
-
-setTimeout(() => {
-
-  const marker =
-    markers[site.id];
-
-  if (
-    marker &&
-    marker.openPopup
-  ) {
-
-    marker.openPopup();
-
-    window.map.panBy(
-      [0, 150]
-    );
-
-  }
-
-}, 1800);
-
-  }
-
-}
-
-alert(
-  "Incident reported."
-);
-document.getElementById(
-  "incidentDescription"
-).value = "";
-document.getElementById(
-  "incidentSeverity"
-).selectedIndex = 0;
+  document.getElementById(
+    "incidentDescription"
+  ).value = "";
+  document.getElementById(
+    "incidentSeverity"
+  ).selectedIndex = 0;
 
 }
 
 function renderIncidents() {
   console.log(
-  "renderIncidents:",
-  incidents.length
-);
+    "renderIncidents:",
+    incidents.length
+  );
 
   const container =
     document.getElementById(
@@ -5752,26 +5745,25 @@ function renderIncidents() {
   if (!container) return;
 
   document.getElementById(
-  "openIncidentCount"
-).textContent =
-  incidents.filter(i =>
-    i.status !== "Resolved"
-  ).length;
+    "openIncidentCount"
+  ).textContent =
+    incidents.filter(i =>
+      i.status !== "Resolved"
+    ).length;
 
   const openIncidents =
-  incidents.filter(i =>
-    i.status !== "Resolved"
-  );
+    incidents.filter(i =>
+      i.status !== "Resolved"
+    );
 
-const resolvedIncidents =
-  incidents.filter(i =>
-    i.status === "Resolved"
-  );
+  const resolvedIncidents =
+    incidents.filter(i =>
+      i.status === "Resolved"
+    );
 
-container.innerHTML = `  
+  container.innerHTML = `  
 
-  ${
-    openIncidents.length
+  ${openIncidents.length
       ? openIncidents.map(i => `
 
         <div class="incident-card">
@@ -5804,7 +5796,7 @@ container.innerHTML = `
 
       `).join("")
       : "<p>No open incidents.</p>"
-  }
+    }
 
  <h3 class="resolved-incidents-title" style="margin-top:20px;">
   ✅ Resolved Incidents
@@ -5812,9 +5804,8 @@ container.innerHTML = `
 
 <div class="resolved-incidents">
 
-${
-  resolvedIncidents.length
-    ? resolvedIncidents.map(i => `
+${resolvedIncidents.length
+      ? resolvedIncidents.map(i => `
 
         <div class="incident-card resolved-card">
 
@@ -5844,13 +5835,12 @@ ${
             <br>
 
             <small>
-              ${
-                i.resolvedAt
-                  ? new Date(
-                      i.resolvedAt
-                    ).toLocaleString()
-                  : ""
-              }
+              ${i.resolvedAt
+          ? new Date(
+            i.resolvedAt
+          ).toLocaleString()
+          : ""
+        }
             </small>
 
             <br>
@@ -5866,7 +5856,7 @@ ${
 
       `).join("")
       : "<p>No resolved incidents.</p>"
-  }
+    }
 </div>
 `;
 }
@@ -5963,68 +5953,68 @@ function playCriticalAlert() {
 }
 
 window.showCompanySettingsPage =
-function () {  
+  function () {
 
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "block";  
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "block";
 
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";  
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerPortal"
-  ).style.display = "none"; 
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
 
-  document.getElementById(
-  "patrolsPage"
-).style.display = "none";
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
 
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
 
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
 
 
-};
+  };
 
 function showDashboard() {
 
   document.getElementById(
     "dashboardPage"
-  ).style.display = "block";  
+  ).style.display = "block";
 
   document.getElementById(
     "schedulingPage"
@@ -6036,21 +6026,21 @@ function showDashboard() {
 
   document.getElementById(
     "officerPortal"
-  ).style.display = "none"; 
+  ).style.display = "none";
 
   document.getElementById(
     "incidentReportsPage"
   ).style.display = "none";
 
   document.getElementById(
-  "patrolsPage"
-).style.display = "none";
+    "patrolsPage"
+  ).style.display = "none";
 
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display = "none";
 
-document.getElementById(
+  document.getElementById(
     "patrolDashboardPage"
   ).style.display = "none";
 
@@ -6062,12 +6052,12 @@ document.getElementById(
     "companySettingsPage"
   ).style.display = "none";
 
-   document.getElementById(
+  document.getElementById(
     "myReportsPage"
   ).style.display =
     "none";
 
-     document.getElementById(
+  document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
 
@@ -6080,121 +6070,121 @@ document.getElementById(
 }
 
 window.showOfficerPortal =
-async function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
-
-  document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "none";
-
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "none";
-
-  document.getElementById(
-  "officerPortal"
-).style.display = "block";
-
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
-
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-   document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
+  async function () {
 
     document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+      "dashboardPage"
+    ).style.display = "none";
 
     document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+      "schedulingPage"
+    ).style.display = "none";
 
-  renderMySchedule();
-  renderMySite();
-  renderMyAttendanceStatus();
-  await resumeActivePatrol();
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
 
-};
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "block";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    renderMySchedule();
+    renderMySite();
+    renderMyAttendanceStatus();
+    await resumeActivePatrol();
+
+  };
 
 window.showOfficerIncidentReport =
-function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";  
-
- document.getElementById(
-  "officerPortal"
-).style.display = "none";
-
-  document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "block";
-
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "none";
-
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
-
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+  function () {
 
     document.getElementById(
-    "patrolExecutionPage"
-  ).style.display = "none";
+      "dashboardPage"
+    ).style.display = "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
 
-};
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "block";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+  };
 
 function showSchedulingPage() {
 
@@ -6204,29 +6194,29 @@ function showSchedulingPage() {
 
   document.getElementById(
     "schedulingPage"
-  ).style.display = "block";  
-
- document.getElementById(
-  "officerPortal"
-).style.display = "none";
+  ).style.display = "block";
 
   document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "none";
+    "officerPortal"
+  ).style.display = "none";
 
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "none";
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
 
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
 
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
+  document.getElementById(
+    "patrolsPage"
+  ).style.display = "none";
 
-document.getElementById(
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
     "patrolDashboardPage"
   ).style.display = "none";
 
@@ -6243,11 +6233,11 @@ document.getElementById(
   ).style.display =
     "none";
 
-    document.getElementById(
+  document.getElementById(
     "patrolExecutionPage"
   ).style.display = "none";
 
-     document.getElementById(
+  document.getElementById(
     "incidentReviewPage"
   ).style.display = "none";
   document.getElementById(
@@ -6260,187 +6250,187 @@ document.getElementById(
 }
 
 window.showPatrolExecution =
-function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none"; 
-
- document.getElementById(
-  "officerPortal"
-).style.display = "none";
-
-  document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "none";
-
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "none";
-
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
-
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+  function () {
 
     document.getElementById(
-    "patrolExecutionPage"
-  ).style.display = "block";
+      "dashboardPage"
+    ).style.display = "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
-};
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "block";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+  };
 
 window.showIncidentReviewPage =
-async function () {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";  
-
- document.getElementById(
-  "officerPortal"
-).style.display = "none";
-
-  document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "none";
-
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "none";
-
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
-
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+  async function () {
 
     document.getElementById(
-    "patrolExecutionPage"
-  ).style.display = "none";
+      "dashboardPage"
+    ).style.display = "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "block";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
 
-  await loadIncidentReviewQueue();
-};
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "block";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    await loadIncidentReviewQueue();
+  };
 
 window.showMileageReportPage =
-async function () {
+  async function () {
 
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";  
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerPortal"
-  ).style.display = "none"; 
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
 
-  document.getElementById(
-  "patrolsPage"
-).style.display = "none";
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
 
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
 
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
 
-   document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "block";
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "block";
 
-  await loadMileageReport();
-};
+    await loadMileageReport();
+  };
 
 function populateScheduleDropdowns() {
 
@@ -6454,43 +6444,43 @@ function populateScheduleDropdowns() {
       "scheduleSite"
     );
 
-    const clockSelect =
-  document.getElementById(
-    "clockEmployee"
-  );
+  const clockSelect =
+    document.getElementById(
+      "clockEmployee"
+    );
 
- if (!employeeSelect || !siteSelect) {
-  return;
-}
+  if (!employeeSelect || !siteSelect) {
+    return;
+  }
 
   employeeSelect.innerHTML =
     '<option value="">Select Officer</option>';
 
-    employeeSelect.innerHTML =
-  '<option value="">Select Officer</option>';
+  employeeSelect.innerHTML =
+    '<option value="">Select Officer</option>';
 
   siteSelect.innerHTML =
     '<option value="">Select Site</option>';
 
-employees.forEach(emp => {
+  employees.forEach(emp => {
 
-  employeeSelect.innerHTML += `
+    employeeSelect.innerHTML += `
     <option value="${emp.id}">
       ${emp.name}
     </option>
   `;
 
-  if (clockSelect) {
+    if (clockSelect) {
 
-    clockSelect.innerHTML += `
+      clockSelect.innerHTML += `
       <option value="${emp.id}">
         ${emp.name}
       </option>
     `;
 
-  }
+    }
 
-});
+  });
 
   sites.forEach(site => {
 
@@ -6505,72 +6495,72 @@ employees.forEach(emp => {
 }
 
 window.showIncidentReportsPage =
-function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
-
-  setActiveNavById(
-    "incidentReportsBtn"
-  );
-
- document.getElementById(
-  "officerPortal"
-).style.display = "none";
-
-  document.getElementById(
-  "officerIncidentReportPage"
-).style.display = "none";
-
-document.getElementById(
-  "incidentReportsPage"
-).style.display = "block";
-
-document.getElementById(
-  "patrolsPage"
-).style.display = "none";
-
-document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+  function () {
 
     document.getElementById(
-    "patrolExecutionPage"
-  ).style.display = "none";
+      "dashboardPage"
+    ).style.display = "none";
 
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
-  
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  loadIncidentReports();
+    setActiveNavById(
+      "incidentReportsBtn"
+    );
 
-};
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "block";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    loadIncidentReports();
+
+  };
 async function createShift() {
 
   const employeeId =
@@ -6591,63 +6581,63 @@ async function createShift() {
   const endTime =
     document.getElementById(
       "scheduleEnd"
-    ).value;    
+    ).value;
 
- const shiftPay =
-  Number(
-    document.getElementById(
-      "schedulePay"
-    ).value
-  ) || 0;
+  const shiftPay =
+    Number(
+      document.getElementById(
+        "schedulePay"
+      ).value
+    ) || 0;
 
   const classification =
-  document.getElementById(
-    "shiftClassification"
-  ).value;
+    document.getElementById(
+      "shiftClassification"
+    ).value;
 
   const repeatEnabled =
-  document.getElementById(
-    "repeatSchedule"
-  ).checked;
+    document.getElementById(
+      "repeatSchedule"
+    ).checked;
 
-const repeatDays =
-  getRepeatDays();
+  const repeatDays =
+    getRepeatDays();
 
-const repeatEndDate =
-  document.getElementById(
-    "repeatEndDate"
-  ).value;
+  const repeatEndDate =
+    document.getElementById(
+      "repeatEndDate"
+    ).value;
 
-let generatedDates = [];
+  let generatedDates = [];
 
-if (repeatEnabled) {
+  if (repeatEnabled) {
 
-  generatedDates =
-    generateRecurringDates(
-      startTime,
-      repeatDays,
-      repeatEndDate
+    generatedDates =
+      generateRecurringDates(
+        startTime,
+        repeatDays,
+        repeatEndDate
+      );
+
+    console.log(
+      "Recurring dates:",
+      generatedDates
     );
 
-  console.log(
-    "Recurring dates:",
-    generatedDates
-  );
-
-}
+  }
 
   if (
-  repeatEnabled &&
-  (
-    !repeatDays.length ||
-    !repeatEndDate
-  )
-) {
-  alert(
-    "Select repeat days and an end date."
-  );
-  return;
-}
+    repeatEnabled &&
+    (
+      !repeatDays.length ||
+      !repeatEndDate
+    )
+  ) {
+    alert(
+      "Select repeat days and an end date."
+    );
+    return;
+  }
 
   if (
     !employeeId ||
@@ -6658,134 +6648,137 @@ if (repeatEnabled) {
     alert(
       "Complete all fields."
     );
-    
+
     return;
   }
-console.log("All Shifts:", shifts);
+  console.log("All Shifts:", shifts);
   const employee =
     employees.find(
       e => e.id === employeeId
-    ); 
+    );
 
-    console.log(
-  "Employee object:",
-  employee
-);
+  console.log(
+    "Employee object:",
+    employee
+  );
 
-console.log(
-  "Address:",
-  employee?.homeAddress,
-  employee?.homeCity,
-  employee?.homeState,
-  employee?.homeZip
-);
+  console.log(
+    "Address:",
+    employee?.homeAddress,
+    employee?.homeCity,
+    employee?.homeState,
+    employee?.homeZip
+  );
 
-console.log(
-  "Coordinates:",
-  employee?.homeLat,
-  employee?.homeLng
-);
+  console.log(
+    "Coordinates:",
+    employee?.homeLat,
+    employee?.homeLng
+  );
 
   const site =
     sites.find(
       s => s.id === siteId
     );
 
-       let mileageDistance = 0;
-let mileageIncentive = false;
-let mileageStatus =
-  "Coordinates Missing";
+  let mileageDistance = 0;
+  let mileageIncentive = false;
+  let mileageStatus =
+    "Coordinates Missing";
 
-const mileageThreshold =
-  companyProfile
-    ?.mileageThreshold || 25;
+  const mileageThreshold =
+    companyProfile
+      ?.mileageThreshold || 25;
 
-if (
-  employee?.homeLat != null &&
-  employee?.homeLng != null &&
-  site?.lat != null &&
-  site?.lng != null
-) {
-  const distanceMeters =
-    calculateDistance(
-      employee.homeLat,
-      employee.homeLng,
-      site.lat,
-      site.lng
-    );
+  if (
+    employee?.homeLat != null &&
+    employee?.homeLng != null &&
+    site?.lat != null &&
+    site?.lng != null
+  ) {
+    const distanceMeters =
+      calculateDistance(
+        employee.homeLat,
+        employee.homeLng,
+        site.lat,
+        site.lng
+      );
 
-  mileageDistance =
-    Number(
-      (
-        distanceMeters *
-        0.000621371
-      ).toFixed(1)
-    );
+    mileageDistance =
+      Number(
+        (
+          distanceMeters *
+          0.000621371
+        ).toFixed(1)
+      );
 
-  mileageIncentive =
-    mileageDistance >
-    mileageThreshold;
+    mileageIncentive =
+      mileageDistance >
+      mileageThreshold;
 
-  mileageStatus =
-    "Calculated";
+    mileageStatus =
+      "Calculated";
 
-  console.log(
-    "Mileage calculated:",
-    {
-      employee:
-        employee.name,
-      site:
-        site.name,
-      miles:
-        mileageDistance,
-      incentive:
-        mileageIncentive
-    }
-  );
-
-} else {
-
-  console.warn(
-    "Mileage calculation skipped.",
-    {
-      employee:
-        employee?.name,
-      employeeCoords: {
-        lat:
-          employee?.homeLat,
-        lng:
-          employee?.homeLng
-      },
-      site:
-        site?.name,
-      siteCoords: {
-        lat:
-          site?.lat,
-        lng:
-          site?.lng
+    console.log(
+      "Mileage calculated:",
+      {
+        employee:
+          employee.name,
+        site:
+          site.name,
+        miles:
+          mileageDistance,
+        incentive:
+          mileageIncentive
       }
-    }
-  );
+    );
 
-  mileageDistance = null;
-  mileageIncentive = false;
-  mileageStatus = "Unavailable";
-}     
+  } else {
 
-    const duplicate =
-  shifts.some(
-    shift =>
+    console.warn(
+      "Mileage calculation skipped.",
+      {
+        employee:
+          employee?.name,
+        employeeCoords: {
+          lat:
+            employee?.homeLat,
+          lng:
+            employee?.homeLng
+        },
+        site:
+          site?.name,
+        siteCoords: {
+          lat:
+            site?.lat,
+          lng:
+            site?.lng
+        }
+      }
+    );
 
-      shift.employeeId === employeeId &&
+    mileageDistance = null;
+    mileageIncentive = false;
+    mileageStatus = "Unavailable";
+  }
 
-      shift.siteId === siteId &&
+  const duplicate =
+    shifts.some(
+      shift =>
 
-      shift.startTime === startTime &&
+        shift.employeeId === employeeId &&
 
-      shift.endTime === endTime
-  );
+        shift.siteId === siteId &&
 
-if (duplicate) {
+        shift.startTime === startTime &&
+
+        shift.endTime === endTime
+    );
+
+  if (
+  !repeatEnabled &&
+  duplicate
+) {
 
   alert(
     "This shift already exists."
@@ -6795,22 +6788,25 @@ if (duplicate) {
 
 }
 
-const conflict =
-  shifts.some(
-    shift =>
+  const conflict =
+    shifts.some(
+      shift =>
 
-      shift.employeeId ===
-      employeeId &&
+        shift.employeeId ===
+        employeeId &&
 
-      timesOverlap(
-        startTime,
-        endTime,
-        shift.startTime,
-        shift.endTime
-      )
-  );
+        timesOverlap(
+          startTime,
+          endTime,
+          shift.startTime,
+          shift.endTime
+        )
+    );
 
-if (conflict) {
+ if (
+  !repeatEnabled &&
+  conflict
+) {
 
   alert(
     "Officer already scheduled during this time."
@@ -6820,187 +6816,266 @@ if (conflict) {
 
 }
 
-console.log({
-  repeatEnabled,
-  repeatDays,
-  repeatEndDate
+  console.log({
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate
+  });
+
+  const shiftData = {
+
+    employeeId,
+
+    employeeName:
+      employee.name,
+
+    licenseLevel:
+      employee.licenseLevel || "",
+
+    siteId,
+
+    siteName:
+      site.name,
+
+    siteCategory:
+      site.siteCategory || "other",
+
+    classification,
+
+    shiftPay,
+
+    mileageDistance,
+    mileageThreshold,
+    mileageIncentive,
+    mileageStatus,
+
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate,
+
+    status:
+      "Scheduled",
+
+    createdAt:
+      new Date().toISOString()
+
+  };
+
+  if (!repeatEnabled) {
+
+    await addDoc(
+      collection(db, "shifts"),
+      {
+        ...shiftData,
+
+        startTime,
+
+        endTime
+      }
+    );
+
+    alert(
+      "Shift created successfully."
+    );
+
+
+  } else {
+
+    const seriesId =
+      crypto.randomUUID();
+
+    console.log(
+      `Creating ${generatedDates.length} recurring shifts`
+    );
+
+    for (const date of generatedDates) {
+
+      const newStart =
+        applyTimeToDate(
+          startTime,
+          date
+        );
+
+      const newEnd =
+        applyTimeToDate(
+          endTime,
+          date
+        );
+
+        const occurrenceStart =
+  formatLocalDateTime(
+    newStart
+  );
+
+const occurrenceEnd =
+  formatLocalDateTime(
+    newEnd
+  );
+
+  console.log("Checking:", {
+  employeeId,
+  occurrenceStart,
+  occurrenceEnd
 });
 
-const shiftData = {
-
-  employeeId,
-
-  employeeName:
-    employee.name,
-
-  licenseLevel:
-    employee.licenseLevel || "",
-
-  siteId,
-
-  siteName:
-    site.name,
-
-  siteCategory:
-    site.siteCategory || "other",
-
-  classification,
-
-  shiftPay,
-
-  mileageDistance,
-  mileageThreshold,
-  mileageIncentive,
-  mileageStatus,
-
-  repeatEnabled,
-  repeatDays,
-  repeatEndDate,
-
-  status:
-    "Scheduled",
-
-  createdAt:
-    new Date().toISOString()
-
-};
-
-if (!repeatEnabled) {
-
-  await addDoc(
-    collection(db, "shifts"),
-    {
-      ...shiftData,
-
-      startTime,
-
-      endTime
-    }
+const existing =
+  shifts.filter(
+    s => s.employeeId === employeeId
   );
 
-  alert(
-    "Shift created successfully."
+console.table(
+  existing.map(s => ({
+    start: s.startTime,
+    end: s.endTime,
+    site: s.siteId
+  }))
+);
+
+  const duplicate =
+  shifts.some(
+    shift =>
+
+      shift.employeeId ===
+        employeeId &&
+
+      shift.siteId ===
+        siteId &&
+
+      shift.startTime ===
+        occurrenceStart &&
+
+      shift.endTime ===
+        occurrenceEnd
   );
 
-
-} else {  
-
-  const seriesId =
-    crypto.randomUUID();
+if (duplicate) {
 
   console.log(
-    `Creating ${generatedDates.length} recurring shifts`
+    "Skipping duplicate:",
+    occurrenceStart
   );
 
-  for (const date of generatedDates) {
+  continue;
 
-    const newStart =
-      applyTimeToDate(
-        startTime,
-        date
-      );
+}
 
-    const newEnd =
-      applyTimeToDate(
-        endTime,
-        date
+const conflict =
+  shifts.some(
+    shift =>
+
+      shift.employeeId ===
+        employeeId &&
+
+      timesOverlap(
+        occurrenceStart,
+        occurrenceEnd,
+        shift.startTime,
+        shift.endTime
+      )
+  );
+
+if (conflict) {
+
+  console.log(
+    "Skipping conflict:",
+    occurrenceStart
+  );
+
+  continue;
+
+}
+
+      console.log(
+        "New Start:",
+        newStart
       );
 
       console.log(
-  "New Start:",
-  newStart
-);
+        "New End:",
+        newEnd
+      );
 
-console.log(
-  "New End:",
-  newEnd
-);
+      console.log(
+        "Saving recurring shift..."
+      );
 
-console.log(
-  "Saving recurring shift..."
-);
-
-   await addDoc(
+      await addDoc(
   collection(db, "shifts"),
   {
     ...shiftData,
 
     startTime:
-  formatLocalDateTime(
-    newStart
-  ),
+      occurrenceStart,
 
-endTime:
-  formatLocalDateTime(
-    newEnd
-  ),
+    endTime:
+      occurrenceEnd,
 
     seriesId
   }
 );
 
-console.log(
-  "Recurring shift saved."
-);
+      console.log(
+        "Recurring shift saved."
+      );
 
-console.log(
-  `${generatedDates.length} recurring shifts created.`
-);
+      console.log(
+        `${generatedDates.length} recurring shifts created.`
+      );
+
+    }
 
   }
-
-}
   document.getElementById(
-  "scheduleEmployee"
-).value = "";
+    "scheduleEmployee"
+  ).value = "";
 
-document.getElementById(
-  "scheduleSite"
-).value = "";
+  document.getElementById(
+    "scheduleSite"
+  ).value = "";
 
   console.log("Shift saved");
   document.getElementById(
-  "scheduleEmployee"
-).value = "";
+    "scheduleEmployee"
+  ).value = "";
 
-document.getElementById(
-  "scheduleSite"
-).value = "";
+  document.getElementById(
+    "scheduleSite"
+  ).value = "";
 
-document.getElementById(
-  "scheduleStart"
-).value = "";
+  document.getElementById(
+    "scheduleStart"
+  ).value = "";
 
-document.getElementById(
-  "scheduleEnd"
-).value = "";
-console.log("Fields cleared");
+  document.getElementById(
+    "scheduleEnd"
+  ).value = "";
+  console.log("Fields cleared");
 
-document.getElementById(
-  "schedulePay"
-).value = "";
+  document.getElementById(
+    "schedulePay"
+  ).value = "";
 
-document.getElementById(
-  "repeatSchedule"
-).checked = false;
+  document.getElementById(
+    "repeatSchedule"
+  ).checked = false;
 
-document.getElementById(
-  "repeatEndDate"
-).value = "";
+  document.getElementById(
+    "repeatEndDate"
+  ).value = "";
 
-document.getElementById(
-  "shiftClassification"
-).selectedIndex = 0;
+  document.getElementById(
+    "shiftClassification"
+  ).selectedIndex = 0;
 
-document
-  .querySelectorAll(".repeatDay")
-  .forEach(cb => {
-    cb.checked = false;
-  });
+  document
+    .querySelectorAll(".repeatDay")
+    .forEach(cb => {
+      cb.checked = false;
+    });
 
-document.getElementById(
-  "repeatOptions"
-).classList.add("hidden");
+  document.getElementById(
+    "repeatOptions"
+  ).classList.add("hidden");
 }
 
 function formatRepeatDays(
@@ -7036,10 +7111,10 @@ function timesOverlap(
     new Date(start1) <
     new Date(end2)
   ) &&
-  (
-    new Date(end1) >
-    new Date(start2)
-  );
+    (
+      new Date(end1) >
+      new Date(start2)
+    );
 
 }
 
@@ -7064,7 +7139,7 @@ function renderSchedules() {
 
   sortedShifts.forEach(shift => {
 
-  container.innerHTML += `
+    container.innerHTML += `
 
     <div class="shift-card">
 
@@ -7084,14 +7159,14 @@ function renderSchedules() {
       </span>
 
       ${new Date(
-        shift.startTime
-      ).toLocaleString()}
+      shift.startTime
+    ).toLocaleString()}
 
       -
 
       ${new Date(
-        shift.endTime
-      ).toLocaleString()}
+      shift.endTime
+    ).toLocaleString()}
 
       <br>
 
@@ -7100,8 +7175,8 @@ function renderSchedules() {
 </strong>
 
 $${Number(
-  shift.shiftPay || 0
-).toFixed(2)}
+      shift.shiftPay || 0
+    ).toFixed(2)}
 
 <br>
 
@@ -7109,26 +7184,23 @@ $${Number(
   🚗 Mileage:
 </strong>
 
-${
-  shift.mileageDistance != null
-    ? `${shift.mileageDistance} mi`
-    : "Not Available"
-}
+${shift.mileageDistance != null
+        ? `${shift.mileageDistance} mi`
+        : "Not Available"
+      }
 
-${
-  shift.mileageIncentive
-    ? `
+${shift.mileageIncentive
+        ? `
       <br>
       <span class="mileage-badge">
         🚗 Incentive Pay
       </span>
       `
-    : ""
-}
+        : ""
+      }
 
-${
-  shift.repeatEnabled
-    ? `
+${shift.repeatEnabled
+        ? `
       <br>
 
       <span
@@ -7150,8 +7222,8 @@ ${
         ).toLocaleDateString()}
       </span>
       `
-    : ""
-}
+        : ""
+      }
 
 <br><br>
 
@@ -7167,27 +7239,44 @@ ${
 
   `;
 
-});
-renderWeeklyScheduleBoard();
+  });
+  renderWeeklyScheduleBoard();
 }
 
-async function deleteShift(id) {
+function deleteShift(id) {
 
-  if (
-    !confirm(
-      "Delete this shift?"
-    )
-  ) {
-    return;
-  }
+  const shift =
+    shifts.find(
+      s => s.id === id
+    );
 
-  await deleteDoc(
-    doc(
-      db,
-      "shifts",
-      id
+  if (!shift) return;
+
+  deletingShiftId =
+    shift.id;
+
+  deletingSeriesId =
+    shift.seriesId || null;
+
+  deletingRecurring =
+    !!shift.seriesId;
+
+  document
+    .getElementById(
+      "deleteRecurringOptions"
     )
-  );
+    .classList.toggle(
+      "hidden",
+      !deletingRecurring
+    );
+
+  document
+    .getElementById(
+      "deleteShiftModal"
+    )
+    .classList.remove(
+      "hidden"
+    );
 
 }
 
@@ -7205,7 +7294,7 @@ function closeEditShiftModal() {
 
 window.closeEditShiftModal =
   closeEditShiftModal;
-  
+
 
 function editShift(id) {
 
@@ -7215,6 +7304,12 @@ function editShift(id) {
     );
 
   if (!shift) return;
+
+  editingSeriesId =
+    shift.seriesId || null;
+
+  editingRecurring =
+    !!shift.seriesId;
 
   populateEditShiftDropdowns();
 
@@ -7239,14 +7334,23 @@ function editShift(id) {
   ).value = shift.endTime;
 
   document.getElementById(
-  "editShiftPay"
-).value =
-  shift.shiftPay || 0;
+    "editShiftPay"
+  ).value =
+    shift.shiftPay || 0;
 
   document.getElementById(
-  "editShiftClassification"
-).value =
-  shift.classification || "";
+    "editShiftClassification"
+  ).value =
+    shift.classification || "";
+
+  document
+    .getElementById(
+      "editRecurringOptions"
+    )
+    .classList.toggle(
+      "hidden",
+      !editingRecurring
+    );
 
   document
     .getElementById(
@@ -7327,94 +7431,94 @@ async function saveShiftEdit() {
       "editShiftEnd"
     ).value;
 
-    const shiftPay =
-  Number(
-    document.getElementById(
-      "editShiftPay"
-    ).value
-  ) || 0;
+  const shiftPay =
+    Number(
+      document.getElementById(
+        "editShiftPay"
+      ).value
+    ) || 0;
 
   const classification =
-  document.getElementById(
-    "editShiftClassification"
-  ).value; 
+    document.getElementById(
+      "editShiftClassification"
+    ).value;
 
   const employee =
-  employees.find(
-    e => e.id === employeeId
-  );
+    employees.find(
+      e => e.id === employeeId
+    );
 
   console.log(employee);
-console.log(
-  "securityLevel:",
-  employee.securityLevel
-);
-console.log(
-  "licenseLevel:",
-  employee.licenseLevel
-);
-
- const levels = {
-  "LVL 2": 2,
-  "LVL 3": 3,
-  "LVL 4": 4
-};
-
-const licenseMap = {
-  "Non-Commissioned (Level II)": 2,
-  "Commissioned (Level III)": 3,
-  "Personal Protection (Level IV)": 4
-};
-
-const officerLevel =
-  licenseMap[
+  console.log(
+    "securityLevel:",
+    employee.securityLevel
+  );
+  console.log(
+    "licenseLevel:",
     employee.licenseLevel
-  ] || 0;
-
-const shiftLevel =
-  levels[
-    classification
-  ] || 0;
-
-console.log(
-  "Officer Level:",
-  officerLevel
-);
-
-console.log(
-  "Shift Level:",
-  shiftLevel
-);
-
-if (
-  officerLevel <
-  shiftLevel
-) {
-  alert(
-    `${employee.name} is not licensed for this assignment.`
   );
 
-  return;
-}
+  const levels = {
+    "LVL 2": 2,
+    "LVL 3": 3,
+    "LVL 4": 4
+  };
+
+  const licenseMap = {
+    "Non-Commissioned (Level II)": 2,
+    "Commissioned (Level III)": 3,
+    "Personal Protection (Level IV)": 4
+  };
+
+  const officerLevel =
+    licenseMap[
+    employee.licenseLevel
+    ] || 0;
+
+  const shiftLevel =
+    levels[
+    classification
+    ] || 0;
+
+  console.log(
+    "Officer Level:",
+    officerLevel
+  );
+
+  console.log(
+    "Shift Level:",
+    shiftLevel
+  );
 
   if (
-  !employeeId ||
-  !siteId ||
-  !startTime ||
-  !endTime
-) {
-  console.log({
-    employeeId,
-    siteId,
-    startTime,
-    endTime
-  });
+    officerLevel <
+    shiftLevel
+  ) {
+    alert(
+      `${employee.name} is not licensed for this assignment.`
+    );
 
-  alert(
-    "Complete all fields."
-  );
-  return;
-}
+    return;
+  }
+
+  if (
+    !employeeId ||
+    !siteId ||
+    !startTime ||
+    !endTime
+  ) {
+    console.log({
+      employeeId,
+      siteId,
+      startTime,
+      endTime
+    });
+
+    alert(
+      "Complete all fields."
+    );
+    return;
+  }
 
   if (
     new Date(endTime) <=
@@ -7455,22 +7559,45 @@ if (
 
   }
 
+  console.log("Checking occurrence:", {
+  employeeId,
+  siteId,
+  occurrenceStart,
+  occurrenceEnd
+});
+
+console.log(
+  "Existing shifts:",
+  shifts
+    .filter(s => s.employeeId === employeeId)
+    .map(s => ({
+      start: s.startTime,
+      end: s.endTime,
+      site: s.siteId
+    }))
+);
+
   const conflict =
-    shifts.some(
-      shift =>
+  shifts.some(shift => {
 
-        shift.id !== id &&
+    if (shift.employeeId !== employeeId) {
+      return false;
+    }
 
-        shift.employeeId ===
-        employeeId &&
-
-        timesOverlap(
-          startTime,
-          endTime,
-          shift.startTime,
-          shift.endTime
-        )
+    console.log(
+      "Comparing against:",
+      shift.startTime,
+      shift.endTime
     );
+
+    return timesOverlap(
+      occurrenceStart,
+      occurrenceEnd,
+      shift.startTime,
+      shift.endTime
+    );
+
+  });
 
   if (conflict) {
 
@@ -7480,20 +7607,14 @@ if (
 
     return;
 
-  }  
+  }
 
   const site =
     sites.find(
       s => s.id === siteId
     );
 
-  await updateDoc(
-  doc(
-    db,
-    "shifts",
-    id
-  ),
-  {
+  const updateData = {
 
     employeeId,
 
@@ -7513,36 +7634,139 @@ if (
 
     classification
 
+  };
+
+  const editMode =
+    document.querySelector(
+      'input[name="editRecurringMode"]:checked'
+    )?.value || "occurrence";
+
+  if (
+    !editingRecurring ||
+    editMode === "occurrence"
+  ) {
+
+    await updateDoc(
+      doc(db, "shifts", id),
+      updateData
+    );
+
+  } else {
+
+    const batch =
+      writeBatch(db);
+
+    const seriesQuery =
+      query(
+        collection(
+          db,
+          "shifts"
+        ),
+        where(
+          "seriesId",
+          "==",
+          editingSeriesId
+        )
+      );
+
+    const snapshot =
+      await getDocs(
+        seriesQuery
+      );
+
+    const now =
+      new Date();
+
+    for (
+      const shiftDoc of
+      snapshot.docs
+    ) {
+
+      const shift =
+        shiftDoc.data();
+
+      // Preserve history
+      if (
+        new Date(
+          shift.startTime
+        ) < now
+      ) {
+        continue;
+      }
+
+      // Keep the original date for this occurrence
+      const shiftDate =
+        shift.startTime.split("T")[0];
+
+      // Use the new times selected in the edit form
+      const newStartTime =
+        startTime.split("T")[1];
+
+      const newEndTime =
+        endTime.split("T")[1];
+
+      const seriesUpdate = {
+
+        employeeId,
+
+        employeeName:
+          employee.name,
+
+        siteId,
+
+        siteName:
+          site.name,
+
+        shiftPay,
+
+        classification,
+
+        startTime:
+          `${shiftDate}T${newStartTime}`,
+
+        endTime:
+          `${shiftDate}T${newEndTime}`
+
+      };
+
+      batch.update(
+        shiftDoc.ref,
+        seriesUpdate
+      );
+
+    }
+
+    await batch.commit();
+
   }
-);
 
   closeEditShiftModal();
 
 }
 
-function renderWeeklyScheduleBoard(){
-const weekEnd = getEndOfWeek(currentWeekStart);
+function renderWeeklyScheduleBoard() {
+  const weekEnd = getEndOfWeek(currentWeekStart);
 
-document.getElementById("weekRangeLabel").textContent =
+  document.getElementById("weekRangeLabel").textContent =
     `${currentWeekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`;
   const board =
     document.getElementById(
       "weeklyScheduleBoard"
     );
 
-  if(!board) return;
+  if (!board) return;
 
-const weekShifts = shifts.filter(shift => {
+  const weekShifts = shifts.filter(shift => {
 
-  const shiftDate =
-    new Date(shift.startTime);
+    const shiftDate =
+      new Date(shift.startTime);
 
-  return (
-    shiftDate >= currentWeekStart &&
-    shiftDate <= weekEnd
-  );
+    return (
+      shiftDate >= currentWeekStart &&
+      shiftDate <= weekEnd
+    );
 
-});
+  });
 
   const dayNames = [
     "Sun",
@@ -7576,13 +7800,13 @@ const weekShifts = shifts.filter(shift => {
       </div>
     `;
 
-    for(let day = 1; day <= 7; day++){
+    for (let day = 1; day <= 7; day++) {
 
       const actualDay =
         day === 7 ? 0 : day;
 
       const dayShifts =
-  weekShifts.filter(shift => {
+        weekShifts.filter(shift => {
 
           return (
             shift.employeeId === employee.id &&
@@ -7597,38 +7821,38 @@ const weekShifts = shifts.filter(shift => {
         <div class="weekly-cell">
       `;
 
-     dayShifts.forEach(shift => {
+      dayShifts.forEach(shift => {
 
-      const categoryColors = {
-  school: "#2196F3",
-  government: "#4CAF50",
-  construction: "#FF9800",
-  warehouse: "#9C27B0"
-};
+        const categoryColors = {
+          school: "#2196F3",
+          government: "#4CAF50",
+          construction: "#FF9800",
+          warehouse: "#9C27B0"
+        };
 
-const blockColor =
-  categoryColors[
-    (shift.siteCategory || "other")
-      .toLowerCase()
-  ] || "#607D8B";
+        const blockColor =
+          categoryColors[
+          (shift.siteCategory || "other")
+            .toLowerCase()
+          ] || "#607D8B";
 
-  const startTime =
-    new Date(shift.startTime)
-      .toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
+        const startTime =
+          new Date(shift.startTime)
+            .toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false
+            });
 
-  const endTime =
-    new Date(shift.endTime)
-      .toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-      });
+        const endTime =
+          new Date(shift.endTime)
+            .toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false
+            });
 
-  html += `
+        html += `
     <div
       class="schedule-block"
       style="background:${blockColor}"
@@ -7642,8 +7866,8 @@ const blockColor =
     </div>
   `;
 
-});
-html += `
+      });
+      html += `
         </div>
       `;
 
@@ -7661,30 +7885,30 @@ html += `
 }
 
 function getEndOfWeek(startDate) {
-    const end = new Date(startDate);
+  const end = new Date(startDate);
 
-    end.setDate(end.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
+  end.setDate(end.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
 
-    return end;
+  return end;
 }
 
 function previousWeek() {
 
-    currentWeekStart.setDate(
-        currentWeekStart.getDate() - 7
-    );
+  currentWeekStart.setDate(
+    currentWeekStart.getDate() - 7
+  );
 
-    renderWeeklyScheduleBoard();
+  renderWeeklyScheduleBoard();
 }
 
 function nextWeek() {
 
-    currentWeekStart.setDate(
-        currentWeekStart.getDate() + 7
-    );
+  currentWeekStart.setDate(
+    currentWeekStart.getDate() + 7
+  );
 
-    renderWeeklyScheduleBoard();
+  renderWeeklyScheduleBoard();
 }
 
 function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -7928,9 +8152,9 @@ ${Math.round(allowedRadius)} meters`
     timeEntries.find(
       entry =>
         entry.employeeId ===
-          employeeId &&
+        employeeId &&
         entry.status ===
-          "Clocked In"
+        "Clocked In"
     );
 
   if (existingEntry) {
@@ -7973,15 +8197,15 @@ ${Math.round(allowedRadius)} meters`
       preShiftPhoto:
         preShiftPhoto
           ? {
-              imageBase64:
-                preShiftPhoto,
-              timestamp:
-                serverTimestamp(),
-              lat:
-                officerLat,
-              lng:
-                officerLng
-            }
+            imageBase64:
+              preShiftPhoto,
+            timestamp:
+              serverTimestamp(),
+            lat:
+              officerLat,
+            lng:
+              officerLng
+          }
           : null,
 
       monitoringActive:
@@ -8065,19 +8289,17 @@ function renderActiveTimeEntries() {
 
 <br>
 
-${
-  entry.clockIn
-    ? entry.clockIn
-        .toDate()
-        .toLocaleTimeString()
-    : "Unknown"
-}
+${entry.clockIn
+        ? entry.clockIn
+          .toDate()
+          .toLocaleTimeString()
+        : "Unknown"
+      }
 
 <br><br>
 
-${
-  entry.preShiftPhoto
-    ? `
+${entry.preShiftPhoto
+        ? `
       <button
         class="btn btn-sm btn-primary"
         onclick="viewPreShiftPhoto('${entry.id}')"
@@ -8085,12 +8307,12 @@ ${
         View Uniform Photo
       </button>
     `
-    : `
+        : `
       <span style="color:#94a3b8;">
         No Uniform Photo
       </span>
     `
-}
+      }
 
       </div>
 
@@ -8101,223 +8323,223 @@ ${
 async function clockOut() {
 
   let postShiftPhoto =
-  null;
+    null;
 
-const photoInput =
-  document.getElementById(
-    "postShiftPhoto"
-  );
-
-if (
-  photoInput &&
-  photoInput.files.length
-) {
-  postShiftPhoto =
-    await fileToBase64(
-      photoInput.files[0]
+  const photoInput =
+    document.getElementById(
+      "postShiftPhoto"
     );
-}
 
-if (!currentOfficer) {
+  if (
+    photoInput &&
+    photoInput.files.length
+  ) {
+    postShiftPhoto =
+      await fileToBase64(
+        photoInput.files[0]
+      );
+  }
 
-  alert(
-    "Officer session not found."
-  );
+  if (!currentOfficer) {
 
-  return;
-}
+    alert(
+      "Officer session not found."
+    );
 
-const employeeId =
-  currentOfficer.id;
+    return;
+  }
 
-const position =
-await new Promise(
-(resolve, reject) => {
+  const employeeId =
+    currentOfficer.id;
 
-    navigator.geolocation.getCurrentPosition(
-      resolve,
-      reject,
-      {
-        enableHighAccuracy: true,
-        timeout: 10000
+  const position =
+    await new Promise(
+      (resolve, reject) => {
+
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000
+          }
+        );
+
       }
     );
 
+  const latitude =
+    position.coords.latitude;
+
+  const longitude =
+    position.coords.longitude;
+
+  const activeEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId === employeeId &&
+        entry.status === "Clocked In"
+    );
+
+  if (!activeEntry) {
+
+    alert(
+      "No active clock-in found."
+    );
+
+    return;
+
   }
-);
 
-const latitude =
-position.coords.latitude;
+  const site =
+    sites.find(
+      s =>
+        s.id ===
+        activeEntry.siteId
+    );
 
-const longitude =
-position.coords.longitude;
+  if (!site) {
 
-const activeEntry =
-timeEntries.find(
-entry =>
-entry.employeeId === employeeId &&
-entry.status === "Clocked In"
-);
+    alert(
+      "Assigned site not found."
+    );
 
-if (!activeEntry) {
+    return;
 
-alert(
-  "No active clock-in found."
-);
+  }
 
-return;
+  const distance =
+    calculateDistance(
+      latitude,
+      longitude,
+      site.lat,
+      site.lng
+    );
 
-}
+  const allowedRadiusFeet =
+    Number(
+      site.geofenceRadius
+    ) || 150;
 
-const site =
-sites.find(
-s =>
-s.id ===
-activeEntry.siteId
-);
+  const allowedRadius =
+    allowedRadiusFeet * 0.3048;
 
-if (!site) {
+  const outsideGeofence =
+    distance > allowedRadius;
 
-alert(
-  "Assigned site not found."
-);
+  if (outsideGeofence) {
 
-return;
-
-}
-
-const distance =
-calculateDistance(
-latitude,
-longitude,
-site.lat,
-site.lng
-);
-
-const allowedRadiusFeet =
-Number(
-site.geofenceRadius
-) || 150;
-
-const allowedRadius =
-allowedRadiusFeet * 0.3048;
-
-const outsideGeofence =
-distance > allowedRadius;
-
-if (outsideGeofence) {
-
-await addDoc(
-  collection(
-    db,
-    "activityLogs"
-  ),
-  {
-    type:
-      "gpsViolation",
-
-    message:
-      `${activeEntry.employeeName} clocked out outside assigned geofence.`,
-
-    employeeId:
-      activeEntry.employeeId,
-
-    employeeName:
-      activeEntry.employeeName,
-
-    siteId:
-      activeEntry.siteId,
-
-    siteName:
-      activeEntry.siteName,
-
-    distanceMeters:
-      Math.round(distance),
-
-    distanceFeet:
-      Math.round(
-        distance * 3.28084
+    await addDoc(
+      collection(
+        db,
+        "activityLogs"
       ),
+      {
+        type:
+          "gpsViolation",
 
-    timestamp:
-      serverTimestamp()
-  }
-);
+        message:
+          `${activeEntry.employeeName} clocked out outside assigned geofence.`,
 
-}
+        employeeId:
+          activeEntry.employeeId,
 
-const clockOutTime =
-new Date();
+        employeeName:
+          activeEntry.employeeName,
 
-const clockInTime =
-  activeEntry.clockIn?.toDate
-    ? activeEntry.clockIn.toDate()
-    : new Date(activeEntry.clockIn);
+        siteId:
+          activeEntry.siteId,
 
-const hoursWorked =
-(
-(clockOutTime - clockInTime)
-/ 1000
-/ 60
-/ 60
-).toFixed(2);
+        siteName:
+          activeEntry.siteName,
 
-await updateDoc(
+        distanceMeters:
+          Math.round(distance),
 
-doc(
-  db,
-  "timeEntries",
-  activeEntry.id
-),
+        distanceFeet:
+          Math.round(
+            distance * 3.28084
+          ),
 
-{
-  clockOut:
-    clockOutTime.toISOString(),
-
-  hoursWorked:
-    Number(hoursWorked),
-
-  status:
-    "Clocked Out",
-
-   postShiftPhoto:
-  postShiftPhoto
-    ? {
-        imageBase64:
-          postShiftPhoto,
         timestamp:
-          serverTimestamp(),
-        lat:
-          latitude,
-        lng:
-          longitude
+          serverTimestamp()
       }
-    : null,
-}
+    );
 
-);
+  }
 
-const remainingActiveEntries =
-  timeEntries.filter(
-    entry =>
-      entry.status ===
-      "Clocked In" &&
-      entry.employeeId !==
-      employeeId
+  const clockOutTime =
+    new Date();
+
+  const clockInTime =
+    activeEntry.clockIn?.toDate
+      ? activeEntry.clockIn.toDate()
+      : new Date(activeEntry.clockIn);
+
+  const hoursWorked =
+    (
+      (clockOutTime - clockInTime)
+      / 1000
+      / 60
+      / 60
+    ).toFixed(2);
+
+  await updateDoc(
+
+    doc(
+      db,
+      "timeEntries",
+      activeEntry.id
+    ),
+
+    {
+      clockOut:
+        clockOutTime.toISOString(),
+
+      hoursWorked:
+        Number(hoursWorked),
+
+      status:
+        "Clocked Out",
+
+      postShiftPhoto:
+        postShiftPhoto
+          ? {
+            imageBase64:
+              postShiftPhoto,
+            timestamp:
+              serverTimestamp(),
+            lat:
+              latitude,
+            lng:
+              longitude
+          }
+          : null,
+    }
+
   );
 
-if (
-  remainingActiveEntries.length === 0
-) {
+  const remainingActiveEntries =
+    timeEntries.filter(
+      entry =>
+        entry.status ===
+        "Clocked In" &&
+        entry.employeeId !==
+        employeeId
+    );
 
-  stopPostMonitoring();
+  if (
+    remainingActiveEntries.length === 0
+  ) {
 
-}
+    stopPostMonitoring();
 
-if (outsideGeofence) {
+  }
 
-alert(
-  `Clock Out Completed
+  if (outsideGeofence) {
+
+    alert(
+      `Clock Out Completed
 
 WARNING:
 You were outside the assigned geofence.
@@ -8326,51 +8548,51 @@ Distance:
 ${Math.round(distance * 3.28084)} feet
 
 This event has been logged.`
-);
+    );
+
+  }
+  else {
+
+    alert(
+      "Clock Out Successful"
+    );
+
+  }
+
+  if (photoInput) {
+    photoInput.value = "";
+  }
+
+  const preview =
+    document.getElementById(
+      "postShiftPreview"
+    );
+
+  if (preview) {
+    preview.src = "";
+    preview.style.display =
+      "none";
+  }
+
+  refreshSupervisorDashboard();
 
 }
-else {
-
-alert(
-  "Clock Out Successful"
-);
-
-}
-
-if (photoInput) {
-  photoInput.value = "";
-}
-
-const preview =
-  document.getElementById(
-    "postShiftPreview"
-  );
-
-if (preview) {
-  preview.src = "";
-  preview.style.display =
-    "none";
-}
-
-refreshSupervisorDashboard();
-
-}
 
 
-async function refreshSupervisorDashboard() {  
+async function refreshSupervisorDashboard() {
 
   const today = new Date();
-  today.setHours(0,0,0,0);
+  today.setHours(0, 0, 0, 0);
 
   const attendanceSnapshot =
-  await getDocs(
-    collection(db, "timeEntries")
-  );
+    await getDocs(
+      collection(db, "timeEntries")
+    );
 
-const scheduleSnapshot =
-  await getDocs(
-    collection(db, "shifts")
-  );
+  const scheduleSnapshot =
+    await getDocs(
+      collection(db, "shifts")
+    );
 
   const attendance = attendanceSnapshot.docs.map(doc => ({
     id: doc.id,
@@ -8383,104 +8605,104 @@ const scheduleSnapshot =
     ...doc.data()
   }));
 
-let onDuty = 0;
-let clockedOut = 0;
-let activeViolations = 0;
-let criticalCompliance = 0;
+  let onDuty = 0;
+  let clockedOut = 0;
+  let activeViolations = 0;
+  let criticalCompliance = 0;
 
-attendance.forEach(entry => {
+  attendance.forEach(entry => {
 
-  if (entry.status === "Clocked In") {
-    onDuty++;
-  }
+    if (entry.status === "Clocked In") {
+      onDuty++;
+    }
 
-  if (entry.status === "Clocked Out") {
-    clockedOut++;
-  }
+    if (entry.status === "Clocked Out") {
+      clockedOut++;
+    }
 
-  if (
-    entry.status === "Clocked In" &&
-    entry.currentlyInsideGeofence === false
-  ) {
-    activeViolations++;
-  }
-  if (
-  entry.status === "Clocked In" &&
-  (entry.gpsViolationCount || 0) >= 4
-) {
-  criticalCompliance++;
-}
+    if (
+      entry.status === "Clocked In" &&
+      entry.currentlyInsideGeofence === false
+    ) {
+      activeViolations++;
+    }
+    if (
+      entry.status === "Clocked In" &&
+      (entry.gpsViolationCount || 0) >= 4
+    ) {
+      criticalCompliance++;
+    }
 
-});
+  });
 
   document.getElementById("onDutyCount").textContent = onDuty;
   document.getElementById("clockedOutCount").textContent = clockedOut;
 
   document.getElementById(
-  "activeViolationsCount"
-).textContent = activeViolations;
+    "activeViolationsCount"
+  ).textContent = activeViolations;
 
-document.getElementById(
-  "criticalComplianceCount"
-).textContent =
-  criticalCompliance;
+  document.getElementById(
+    "criticalComplianceCount"
+  ).textContent =
+    criticalCompliance;
 
-const scheduledToday = schedules.filter(shift => {
+  const scheduledToday = schedules.filter(shift => {
 
-  if (!shift.startTime) return false;
+    if (!shift.startTime) return false;
 
-  const start = new Date(shift.startTime);
+    const start = new Date(shift.startTime);
 
-  return (
-    start.getFullYear() === today.getFullYear() &&
-    start.getMonth() === today.getMonth() &&
-    start.getDate() === today.getDate()
-  );
+    return (
+      start.getFullYear() === today.getFullYear() &&
+      start.getMonth() === today.getMonth() &&
+      start.getDate() === today.getDate()
+    );
 
-});
+  });
 
-document.getElementById("scheduledTodayCount").textContent =
-  scheduledToday.length;
+  document.getElementById("scheduledTodayCount").textContent =
+    scheduledToday.length;
 
   let missingClockIns = 0;
   missingClockInList = [];
 
-scheduledToday.forEach(shift => {
+  scheduledToday.forEach(shift => {
 
-  const hasTimeEntry = attendance.some(entry =>
-    entry.shiftId === shift.id
-  );
+    const hasTimeEntry = attendance.some(entry =>
+      entry.shiftId === shift.id
+    );
 
-  const shiftStart = new Date(shift.startTime);
+    const shiftStart = new Date(shift.startTime);
 
- if (
-  shiftStart < new Date() &&
-  !hasTimeEntry
-) {
+    if (
+      shiftStart < new Date() &&
+      !hasTimeEntry
+    ) {
 
-  missingClockIns++;
+      missingClockIns++;
 
-  missingClockInList.push({
+      missingClockInList.push({
 
-    officerName:
-      shift.employeeName || "Unknown",
+        officerName:
+          shift.employeeName || "Unknown",
 
-    siteName:
-      shift.siteName || "Unknown",
+        siteName:
+          shift.siteName || "Unknown",
 
-    startTime:
-      shift.startTime
+        startTime:
+          shift.startTime
+
+      });
+
+    }
 
   });
 
-}
+  document.getElementById("missingClockInCount").textContent =
+    missingClockIns;
 
-});
-
-document.getElementById("missingClockInCount").textContent =
-  missingClockIns;
-
-let html = `
+  let html = `
 <div class="report-wrapper">
   <div class="table-wrapper">
     <table class="report-table">
@@ -8499,39 +8721,39 @@ let html = `
   <tbody>
 `;
 
-attendance.forEach(entry => {
-  const rowClass =
+  attendance.forEach(entry => {
+    const rowClass =
 
-  entry.status === "Clocked In" &&
-  entry.currentlyInsideGeofence === false
+      entry.status === "Clocked In" &&
+        entry.currentlyInsideGeofence === false
 
-    ? "violation-row"
+        ? "violation-row"
 
-    : "";
+        : "";
 
     const escalationLevel =
-  getEscalationLevel(
-    entry.gpsViolationCount || 0
-  );
+      getEscalationLevel(
+        entry.gpsViolationCount || 0
+      );
 
-console.log(
-  entry.employeeName,
-  escalationLevel
-);
+    console.log(
+      entry.employeeName,
+      escalationLevel
+    );
 
- const clockInTime = entry.clockIn
-  ? entry.clockIn.toDate
-    ? entry.clockIn.toDate().toLocaleTimeString()
-    : new Date(entry.clockIn).toLocaleTimeString()
-  : "-";
+    const clockInTime = entry.clockIn
+      ? entry.clockIn.toDate
+        ? entry.clockIn.toDate().toLocaleTimeString()
+        : new Date(entry.clockIn).toLocaleTimeString()
+      : "-";
 
-const clockOutTime = entry.clockOut
-  ? entry.clockOut.toDate
-    ? entry.clockOut.toDate().toLocaleTimeString()
-    : new Date(entry.clockOut).toLocaleTimeString()
-  : "-";
+    const clockOutTime = entry.clockOut
+      ? entry.clockOut.toDate
+        ? entry.clockOut.toDate().toLocaleTimeString()
+        : new Date(entry.clockOut).toLocaleTimeString()
+      : "-";
 
-  html += `
+    html += `
     <tr class="${rowClass}">
       <td>${entry.employeeName || "-"}</td>
       <td>${entry.siteName || "-"}</td>
@@ -8557,21 +8779,21 @@ const clockOutTime = entry.clockOut
 </td>
     </tr>
   `;
-});
+  });
 
-html += `
+  html += `
   </tbody>
 </table>
   </div>
 </div>
 `;
-console.log(html);
-document.getElementById("attendanceRoster").innerHTML = html;
-renderComplianceFeed();
+  console.log(html);
+  document.getElementById("attendanceRoster").innerHTML = html;
+  renderComplianceFeed();
 
-if (typeof renderMyAttendanceStatus === "function") {
-  renderMyAttendanceStatus();
-}
+  if (typeof renderMyAttendanceStatus === "function") {
+    renderMyAttendanceStatus();
+  }
 }
 
 function showMissingClockIns() {
@@ -8603,8 +8825,8 @@ function showMissingClockIns() {
 
           Shift Start:
           ${new Date(
-            item.startTime
-          ).toLocaleString()}
+        item.startTime
+      ).toLocaleString()}
 
         </div>
       `;
@@ -8626,20 +8848,20 @@ function showMissingClockIns() {
 async function checkPostAbandonment() {
 
   const snapshot =
-  await getDocs(
-    collection(db, "timeEntries")
-  ); 
-
-const activeEntries =
-  snapshot.docs
-    .map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }))
-    .filter(
-      entry =>
-        entry.status === "Clocked In"
+    await getDocs(
+      collection(db, "timeEntries")
     );
+
+  const activeEntries =
+    snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .filter(
+        entry =>
+          entry.status === "Clocked In"
+      );
 
   if (!activeEntries.length) {
 
@@ -8717,147 +8939,147 @@ ${Math.round(radiusMeters)} meters`
 
     // OFFICER LEFT POST
 
-if (
-  !isInsideGeofence &&
-  entry.currentlyInsideGeofence === true
-) {
+    if (
+      !isInsideGeofence &&
+      entry.currentlyInsideGeofence === true
+    ) {
 
-  await addDoc(
-    collection(
-      db,
-      "activityLogs"
-    ),
-  {
-  type: "Post Abandonment",
-  employeeId: entry.employeeId,
-  employeeName: entry.employeeName,
-  siteId: entry.siteId,
-  siteName: entry.siteName,
-  description:
-    `Left post at ${entry.siteName}`,
-  timestamp: serverTimestamp()
-}
-  );
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type: "Post Abandonment",
+          employeeId: entry.employeeId,
+          employeeName: entry.employeeName,
+          siteId: entry.siteId,
+          siteName: entry.siteName,
+          description:
+            `Left post at ${entry.siteName}`,
+          timestamp: serverTimestamp()
+        }
+      );
 
-  await updateDoc(
-    entryRef,
-    {
-      currentlyInsideGeofence: false,
-      gpsViolationCount: increment(1),
-      lastGpsCheck: serverTimestamp()
+      await updateDoc(
+        entryRef,
+        {
+          currentlyInsideGeofence: false,
+          gpsViolationCount: increment(1),
+          lastGpsCheck: serverTimestamp()
+        }
+      );
+
+      if (
+        typeof updateMap ===
+        "function"
+      ) {
+        updateMap();
+      }
+
+      showDashboard();
+
+      flyToViolationSite(
+        entry.siteId
+      );
+
+      const violationAudio =
+        new Audio(
+          "assets/gps-violation.mp3"
+        );
+
+      violationAudio.play();
+
+      if (
+        typeof refreshSupervisorDashboard ===
+        "function"
+      ) {
+        refreshSupervisorDashboard();
+      }
+
+      console.log(
+        `${entry.employeeName} is outside geofence`
+      );
+
     }
-  );
 
-  if (
-  typeof updateMap ===
-  "function"
-) {
-  updateMap();
-}
+    // RETURNED TO POST
 
-  showDashboard();
+    else if (
+      isInsideGeofence &&
+      entry.currentlyInsideGeofence === false
+    ) {
 
-flyToViolationSite(
-  entry.siteId
-);
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type: "Returned To Post",
+          employeeId: entry.employeeId,
+          employeeName: entry.employeeName,
+          siteId: entry.siteId,
+          siteName: entry.siteName,
+          description:
+            `Returned to ${entry.siteName}`,
+          timestamp: serverTimestamp()
+        }
+      );
 
-  const violationAudio =
-  new Audio(
-    "assets/gps-violation.mp3"
-  );
+      await updateDoc(
+        entryRef,
+        {
+          currentlyInsideGeofence: true,
+          lastGpsCheck: serverTimestamp()
+        }
+      );
 
-violationAudio.play();
+      if (
+        typeof refreshSupervisorDashboard ===
+        "function"
+      ) {
+        refreshSupervisorDashboard();
+      }
 
-  if (
-    typeof refreshSupervisorDashboard ===
-    "function"
-  ) {
-    refreshSupervisorDashboard();
-  }
+      console.log(
+        `${entry.employeeName} has returned to post`
+      );
 
- console.log(
-  `${entry.employeeName} is outside geofence`
-);
-
-}
-
-// RETURNED TO POST
-
-else if (
-  isInsideGeofence &&
-  entry.currentlyInsideGeofence === false
-) {
-
-  await addDoc(
-    collection(
-      db,
-      "activityLogs"
-    ),
-   {
-  type: "Returned To Post",
-  employeeId: entry.employeeId,
-  employeeName: entry.employeeName,
-  siteId: entry.siteId,
-  siteName: entry.siteName,
-  description:
-    `Returned to ${entry.siteName}`,
-  timestamp: serverTimestamp()
-}
-  );
-
-  await updateDoc(
-    entryRef,
-    {
-      currentlyInsideGeofence: true,
-      lastGpsCheck: serverTimestamp()
     }
-  );
 
-  if (
-    typeof refreshSupervisorDashboard ===
-    "function"
-  ) {
-    refreshSupervisorDashboard();
-  }
+    // NO STATE CHANGE
 
- console.log(
-  `${entry.employeeName} has returned to post`
-);
+    else {
 
-}
+      await updateDoc(
+        entryRef,
+        {
+          lastGpsCheck:
+            serverTimestamp()
+        }
+      );
 
-// NO STATE CHANGE
+      if (
+        isInsideGeofence
+      ) {
 
-else {
+        console.log(
+          `${entry.employeeName} is currently on post`
+        );
 
-  await updateDoc(
-    entryRef,
-    {
-      lastGpsCheck:
-        serverTimestamp()
+      }
+      else {
+
+        console.log(
+          `${entry.employeeName} remains outside geofence`
+        );
+
+      }
+
     }
-  );
 
-  if (
-    isInsideGeofence
-  ) {
-
-    console.log(
-      `${entry.employeeName} is currently on post`
-    );
-
-  }
-  else {
-
-    console.log(
-      `${entry.employeeName} remains outside geofence`
-    );
-
-  }
-
-}
-
-} // end for loop
+  } // end for loop
 
 } // end checkPostAbandonment
 
@@ -8885,7 +9107,7 @@ function startPostMonitoring() {
 
   postMonitoringTimer =
     setInterval(
-      async () => { 
+      async () => {
 
         try {
 
@@ -8903,7 +9125,7 @@ function startPostMonitoring() {
 
       },
       30000
-    ); 
+    );
 
 }
 
@@ -8918,7 +9140,7 @@ function stopPostMonitoring() {
   );
 
   postMonitoringTimer =
-    null; 
+    null;
 
 }
 
@@ -8995,12 +9217,12 @@ function renderComplianceFeed() {
       .filter(log =>
 
         log.type ===
-          "Post Abandonment"
+        "Post Abandonment"
 
         ||
 
         log.type ===
-          "Returned To Post"
+        "Returned To Post"
 
       )
 
@@ -9035,13 +9257,13 @@ function renderComplianceFeed() {
         const time =
           log.timestamp?.toDate
             ? log.timestamp
-                .toDate()
-                .toLocaleTimeString()
+              .toDate()
+              .toLocaleTimeString()
             : "";
 
         const icon =
           log.type ===
-          "Post Abandonment"
+            "Post Abandonment"
 
             ? "🚨"
 
@@ -9057,15 +9279,14 @@ function renderComplianceFeed() {
 
             <br>
 
-            ${
-  log.description ||
+            ${log.description ||
 
-  (
-    log.type === "Post Abandonment"
-      ? `Left post at ${log.siteName || "Unknown Site"}`
-      : `Returned to ${log.siteName || "Unknown Site"}`
-  )
-}
+          (
+            log.type === "Post Abandonment"
+              ? `Left post at ${log.siteName || "Unknown Site"}`
+              : `Returned to ${log.siteName || "Unknown Site"}`
+          )
+          }
 
             <br>
 
@@ -9128,10 +9349,10 @@ function renderMySchedule() {
   if (
     !container ||
     !currentOfficer
-  ) return; 
+  ) return;
 
   const myShifts =
-  
+
     shifts
       .filter(
         shift =>
@@ -9173,8 +9394,8 @@ function renderMySchedule() {
           <br>
 
           ${new Date(
-            shift.startTime
-          ).toLocaleString()}
+        shift.startTime
+      ).toLocaleString()}
 
           <br>
 
@@ -9183,15 +9404,15 @@ function renderMySchedule() {
           <br>
 
           ${new Date(
-            shift.endTime
-          ).toLocaleString()}          
+        shift.endTime
+      ).toLocaleString()}          
 
 <br>
 
 Pay:
 $${Number(
-  shift.shiftPay || 0
-).toFixed(2)}
+        shift.shiftPay || 0
+      ).toFixed(2)}
 
 <br>
 
@@ -9220,68 +9441,68 @@ function renderMySite() {
     !currentOfficer
   ) return;
 
-const activeEntry = timeEntries.find(
-  entry =>
-    entry.employeeId === currentOfficer.id &&
-    entry.status === "Clocked In"
-);
-
-let siteId = null;
-
-if (activeEntry) {
-
-  siteId = activeEntry.siteId;
-
-} else {
-
-  const now = new Date();
-
-const currentShift = shifts.find(
-  shift =>
-    shift.employeeId === currentOfficer.id &&
-    new Date(shift.startTime) <= now &&
-    new Date(shift.endTime) >= now
-);
-
-if (!currentShift) {
-
-  container.innerHTML =
-    "<p>No site assigned.</p>";
-
-  return;
-
-}
-
-const assignedSite =
-  sites.find(
-    site =>
-      site.id === currentShift.siteId
+  const activeEntry = timeEntries.find(
+    entry =>
+      entry.employeeId === currentOfficer.id &&
+      entry.status === "Clocked In"
   );
 
-  if (currentShift) {
-    siteId = currentShift.siteId;
+  let siteId = null;
+
+  if (activeEntry) {
+
+    siteId = activeEntry.siteId;
+
+  } else {
+
+    const now = new Date();
+
+    const currentShift = shifts.find(
+      shift =>
+        shift.employeeId === currentOfficer.id &&
+        new Date(shift.startTime) <= now &&
+        new Date(shift.endTime) >= now
+    );
+
+    if (!currentShift) {
+
+      container.innerHTML =
+        "<p>No site assigned.</p>";
+
+      return;
+
+    }
+
+    const assignedSite =
+      sites.find(
+        site =>
+          site.id === currentShift.siteId
+      );
+
+    if (currentShift) {
+      siteId = currentShift.siteId;
+    }
   }
-}
 
-if (!siteId) {
+  if (!siteId) {
 
-  container.innerHTML =
-    "<p>No site assigned.</p>";
+    container.innerHTML =
+      "<p>No site assigned.</p>";
 
-  return;
-}
+    return;
+  }
 
-const site = sites.find(
-  s => s.id === siteId
-);
+  const site = sites.find(
+    s => s.id === siteId
+  );
 
-if (!site) {
+  if (!site) {
 
-  container.innerHTML =
-    "<p>No site assigned.</p>";
+    container.innerHTML =
+      "<p>No site assigned.</p>";
 
-  return;  
-}
+    return;
+  }
 
   container.innerHTML = `
 
@@ -9469,36 +9690,36 @@ function renderMyAttendanceStatus() {
   const clockInTime =
     latest.clockIn
       ? (
-          latest.clockIn.toDate
-            ? latest.clockIn.toDate()
-            : new Date(latest.clockIn)
-        ).toLocaleTimeString()
+        latest.clockIn.toDate
+          ? latest.clockIn.toDate()
+          : new Date(latest.clockIn)
+      ).toLocaleTimeString()
       : "-";
 
-      let displayHours = 0;
+  let displayHours = 0;
 
-if (latest.status === "Clocked In") {
+  if (latest.status === "Clocked In") {
 
-  const clockInDate =
-    latest.clockIn?.toDate
-      ? latest.clockIn.toDate()
-      : new Date(latest.clockIn);
+    const clockInDate =
+      latest.clockIn?.toDate
+        ? latest.clockIn.toDate()
+        : new Date(latest.clockIn);
 
-  displayHours =
-    (
-      (new Date() - clockInDate)
-      / 1000
-      / 60
-      / 60
-    ).toFixed(2);
+    displayHours =
+      (
+        (new Date() - clockInDate)
+        / 1000
+        / 60
+        / 60
+      ).toFixed(2);
 
-}
-else {
+  }
+  else {
 
-  displayHours =
-    latest.hoursWorked || 0;
+    displayHours =
+      latest.hoursWorked || 0;
 
-}
+  }
 
   container.innerHTML = `
 
@@ -9508,11 +9729,10 @@ else {
         Status:
       </strong>
 
-      ${
-        status === "Clocked In"
-          ? "🟢 Clocked In"
-          : "⚪ Clocked Out"
-      }
+      ${status === "Clocked In"
+      ? "🟢 Clocked In"
+      : "⚪ Clocked Out"
+    }
 
       <br><br>
 
@@ -9545,8 +9765,8 @@ else {
       </strong>
 
       ${getEscalationLevel(
-        latest.gpsViolationCount || 0
-      )}
+      latest.gpsViolationCount || 0
+    )}
 
     </div>
 
@@ -9575,7 +9795,7 @@ async function submitActivityReport() {
     document.getElementById(
       "activityDescription"
     ).value
-    .trim();
+      .trim();
 
   if (
     !activityType ||
@@ -9594,9 +9814,9 @@ async function submitActivityReport() {
     timeEntries.find(
       entry =>
         entry.employeeId ===
-          currentOfficer.id &&
+        currentOfficer.id &&
         entry.status ===
-          "Clocked In"
+        "Clocked In"
     );
 
   if (!activeEntry) {
@@ -9639,32 +9859,32 @@ async function submitActivityReport() {
   );
 
   await addDoc(
-  collection(
-    db,
-    "activityLogs"
-  ),
-  {
-    type: "Activity Report",
+    collection(
+      db,
+      "activityLogs"
+    ),
+    {
+      type: "Activity Report",
 
-    employeeId:
-      currentOfficer.id,
+      employeeId:
+        currentOfficer.id,
 
-    employeeName:
-      currentOfficer.name,
+      employeeName:
+        currentOfficer.name,
 
-    siteId:
-      activeEntry.siteId,
+      siteId:
+        activeEntry.siteId,
 
-    siteName:
-      activeEntry.siteName,
+      siteName:
+        activeEntry.siteName,
 
-    description:
-      `${activityType}: ${description}`,
+      description:
+        `${activityType}: ${description}`,
 
-    timestamp:
-      serverTimestamp()
-  }
-);
+      timestamp:
+        serverTimestamp()
+    }
+  );
 
   alert(
     "Activity Report Submitted"
@@ -9732,15 +9952,15 @@ async function generateIncidentCaseNumber() {
   return caseNumber;
 }
 
-window.addPerson = function() {
+window.addPerson = function () {
 
   const container =
     document.getElementById(
       "personsContainer"
     );
 
-    const personNumber =
-  container.children.length + 1;
+  const personNumber =
+    container.children.length + 1;
 
   container.insertAdjacentHTML(
     "beforeend",
@@ -10235,122 +10455,72 @@ window.addPerson = function() {
 };
 
 window.submitIncidentReport =
-async function () {
+  async function () {
 
-  try {
+    try {
 
-    const incidentData =
-      collectIncidentData();
+      const incidentData =
+        collectIncidentData();
 
-         console.log(
-  "incidentVehicles at submit:",
-  incidentVehicles
-);
-
-console.log(
-  "incidentVehicles JSON:",
-  JSON.stringify(
-    incidentVehicles,
-    null,
-    2
-  )
-);
-
-    if (
-      !incidentData.incidentType ||
-      !incidentData.narrative
-    ) {
-      alert(
-        "Please complete all required fields."
+      console.log(
+        "incidentVehicles at submit:",
+        incidentVehicles
       );
 
-   
-      return;
-    }
+      console.log(
+        "incidentVehicles JSON:",
+        JSON.stringify(
+          incidentVehicles,
+          null,
+          2
+        )
+      );
 
-    const editingId =
-      document.getElementById(
-        "editingIncidentId"
-      ).value;
+      if (
+        !incidentData.incidentType ||
+        !incidentData.narrative
+      ) {
+        alert(
+          "Please complete all required fields."
+        );
 
-    let caseNumber = null;
 
-    //
-    // EXISTING DRAFT
-    //
-    if (editingId) {
+        return;
+      }
 
-      const incidentSnap =
-        await getDoc(
+      const editingId =
+        document.getElementById(
+          "editingIncidentId"
+        ).value;
+
+      let caseNumber = null;
+
+      //
+      // EXISTING DRAFT
+      //
+      if (editingId) {
+
+        const incidentSnap =
+          await getDoc(
+            doc(
+              db,
+              "incidentReports",
+              editingId
+            )
+          );
+
+        const existingIncident =
+          incidentSnap.data();
+
+        caseNumber =
+          existingIncident.caseNumber ||
+          await generateIncidentCaseNumber();
+
+        await updateDoc(
           doc(
             db,
             "incidentReports",
             editingId
-          )
-        );
-
-      const existingIncident =
-        incidentSnap.data();
-
-      caseNumber =
-        existingIncident.caseNumber ||
-        await generateIncidentCaseNumber();
-
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          editingId
-        ),
-        {
-          ...incidentData,
-
-          caseNumber,
-
-          status:
-            "submitted",
-
-          lastEdited:
-            serverTimestamp(),
-
-          submittedAt:
-            serverTimestamp()
-        }
-      );
-
-      await addReviewHistory(
-  editingId,
-  "submit"
-);
-
-      //
-      // SAVE ATTACHMENTS
-      //
-      const photos =
-        await uploadIncidentPhotos(
-          editingId
-        );
-
-      await saveIncidentAttachments(
-        editingId,
-        photos
-      );
-
-    }
-
-    //
-    // BRAND NEW REPORT
-    //
-    else {
-
-      caseNumber =
-        await generateIncidentCaseNumber();
-
-      const docRef =
-        await addDoc(
-          collection(
-            db,
-            "incidentReports"
           ),
           {
             ...incidentData,
@@ -10360,130 +10530,180 @@ console.log(
             status:
               "submitted",
 
-            createdAt:
-              serverTimestamp(),
-
             lastEdited:
               serverTimestamp(),
 
             submittedAt:
-              serverTimestamp(),
-
-            approvedAt: null,
-            approvedBy: null,
-            approvedByName: null,
-
-            returnedAt: null,
-            returnedBy: null,
-            returnedByName: null,
-            returnComments: "",
-
-            voidedAt: null,
-            voidedBy: null,
-            voidedByName: null,
-            voidReason: "",
-
-            reviewHistory: []
+              serverTimestamp()
           }
         );
 
-      //
-      // SAVE ATTACHMENTS
-      //
-      const photos =
-        await uploadIncidentPhotos(
-          docRef.id
+        await addReviewHistory(
+          editingId,
+          "submit"
         );
 
-      await saveIncidentAttachments(
-        docRef.id,
-        photos
+        //
+        // SAVE ATTACHMENTS
+        //
+        const photos =
+          await uploadIncidentPhotos(
+            editingId
+          );
+
+        await saveIncidentAttachments(
+          editingId,
+          photos
+        );
+
+      }
+
+      //
+      // BRAND NEW REPORT
+      //
+      else {
+
+        caseNumber =
+          await generateIncidentCaseNumber();
+
+        const docRef =
+          await addDoc(
+            collection(
+              db,
+              "incidentReports"
+            ),
+            {
+              ...incidentData,
+
+              caseNumber,
+
+              status:
+                "submitted",
+
+              createdAt:
+                serverTimestamp(),
+
+              lastEdited:
+                serverTimestamp(),
+
+              submittedAt:
+                serverTimestamp(),
+
+              approvedAt: null,
+              approvedBy: null,
+              approvedByName: null,
+
+              returnedAt: null,
+              returnedBy: null,
+              returnedByName: null,
+              returnComments: "",
+
+              voidedAt: null,
+              voidedBy: null,
+              voidedByName: null,
+              voidReason: "",
+
+              reviewHistory: []
+            }
+          );
+
+        //
+        // SAVE ATTACHMENTS
+        //
+        const photos =
+          await uploadIncidentPhotos(
+            docRef.id
+          );
+
+        await saveIncidentAttachments(
+          docRef.id,
+          photos
+        );
+
+        await addReviewHistory(
+          docRef.id,
+          "submit"
+        );
+      }
+
+      //
+      // ACTIVITY LOG
+      //
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type:
+            "Incident Report",
+
+          description:
+            `${caseNumber} created`,
+
+          timestamp:
+            serverTimestamp()
+        }
       );
 
-      await addReviewHistory(
-  docRef.id,
-  "submit"
-);
+      alert(
+        `Incident ${caseNumber} submitted successfully.`
+      );
+
+      clearIncidentPhotos();
+
+      document.getElementById(
+        "editingIncidentId"
+      ).value = "";
+
+      document.getElementById(
+        "incidentType"
+      ).value = "";
+
+      document.getElementById(
+        "incidentSeverity"
+      ).selectedIndex = 0;
+
+      document.getElementById(
+        "incidentNarrative"
+      ).value = "";
+
+      document.getElementById(
+        "personsContainer"
+      ).innerHTML = "";
+
+      document.getElementById(
+        "vehiclesContainer"
+      ).innerHTML = "";
+
+      document.getElementById(
+        "incidentAgency"
+      ).value = "";
+
+      document.getElementById(
+        "incidentAgencyOfficer"
+      ).value = "";
+
+      document.getElementById(
+        "incidentAgencyBadge"
+      ).value = "";
+
+      document.getElementById(
+        "incidentAgencyCase"
+      ).value = "";
+
+    } catch (error) {
+
+      console.error(
+        "Incident Save Error:",
+        error
+      );
+
+      alert(
+        "Unable to save incident report."
+      );
     }
-
-    //
-    // ACTIVITY LOG
-    //
-    await addDoc(
-      collection(
-        db,
-        "activityLogs"
-      ),
-      {
-        type:
-          "Incident Report",
-
-        description:
-          `${caseNumber} created`,
-
-        timestamp:
-          serverTimestamp()
-      }
-    );
-
-    alert(
-      `Incident ${caseNumber} submitted successfully.`
-    );
-
-    clearIncidentPhotos();
-
-    document.getElementById(
-      "editingIncidentId"
-    ).value = "";
-
-    document.getElementById(
-      "incidentType"
-    ).value = "";
-
-    document.getElementById(
-      "incidentSeverity"
-    ).selectedIndex = 0;
-
-    document.getElementById(
-      "incidentNarrative"
-    ).value = "";
-
-    document.getElementById(
-      "personsContainer"
-    ).innerHTML = "";
-
-    document.getElementById(
-      "vehiclesContainer"
-    ).innerHTML = "";
-
-    document.getElementById(
-      "incidentAgency"
-    ).value = "";
-
-    document.getElementById(
-      "incidentAgencyOfficer"
-    ).value = "";
-
-    document.getElementById(
-      "incidentAgencyBadge"
-    ).value = "";
-
-    document.getElementById(
-      "incidentAgencyCase"
-    ).value = "";
-
-  } catch (error) {
-
-    console.error(
-      "Incident Save Error:",
-      error
-    );
-
-    alert(
-      "Unable to save incident report."
-    );
-  }
-};
+  };
 
 function collectIncidentData() {
 
@@ -10514,9 +10734,9 @@ function collectIncidentData() {
     timeEntries.find(
       entry =>
         entry.employeeId ===
-          currentOfficer.id &&
+        currentOfficer.id &&
         entry.status ===
-          "Clocked In"
+        "Clocked In"
     );
 
   if (activeEntry) {
@@ -10533,7 +10753,7 @@ function collectIncidentData() {
       shifts.find(
         shift =>
           shift.employeeId ===
-            currentOfficer.id &&
+          currentOfficer.id &&
           new Date(
             shift.startTime
           ) <= now &&
@@ -10561,153 +10781,153 @@ function collectIncidentData() {
     )
     .forEach(card => {
 
-     persons.push({
+      persons.push({
 
-  role:
-    card.querySelector(
-      ".personRole"
-    )?.value || "",
+        role:
+          card.querySelector(
+            ".personRole"
+          )?.value || "",
 
-  firstName:
-    card.querySelector(
-      ".personFirstName"
-    )?.value || "",
+        firstName:
+          card.querySelector(
+            ".personFirstName"
+          )?.value || "",
 
-  middleName:
-    card.querySelector(
-      ".personMiddleName"
-    )?.value || "",
+        middleName:
+          card.querySelector(
+            ".personMiddleName"
+          )?.value || "",
 
-  lastName:
-    card.querySelector(
-      ".personLastName"
-    )?.value || "",
+        lastName:
+          card.querySelector(
+            ".personLastName"
+          )?.value || "",
 
-  alias:
-    card.querySelector(
-      ".personAlias"
-    )?.value || "",
+        alias:
+          card.querySelector(
+            ".personAlias"
+          )?.value || "",
 
-  dob:
-    card.querySelector(
-      ".personDOB"
-    )?.value || "",
+        dob:
+          card.querySelector(
+            ".personDOB"
+          )?.value || "",
 
-  sex:
-    card.querySelector(
-      ".personSex"
-    )?.value || "",
+        sex:
+          card.querySelector(
+            ".personSex"
+          )?.value || "",
 
-  heightFeet:
-    card.querySelector(
-      ".personHeightFeet"
-    )?.value || "",
+        heightFeet:
+          card.querySelector(
+            ".personHeightFeet"
+          )?.value || "",
 
-  heightInches:
-    card.querySelector(
-      ".personHeightInches"
-    )?.value || "",
+        heightInches:
+          card.querySelector(
+            ".personHeightInches"
+          )?.value || "",
 
-  weight:
-    card.querySelector(
-      ".personWeight"
-    )?.value || "",
+        weight:
+          card.querySelector(
+            ".personWeight"
+          )?.value || "",
 
-  race:
-    card.querySelector(
-      ".personRace"
-    )?.value || "",
+        race:
+          card.querySelector(
+            ".personRace"
+          )?.value || "",
 
-  ethnicity:
-    card.querySelector(
-      ".personEthnicity"
-    )?.value || "",
+        ethnicity:
+          card.querySelector(
+            ".personEthnicity"
+          )?.value || "",
 
-  hairColor:
-    card.querySelector(
-      ".personHairColor"
-    )?.value || "",
+        hairColor:
+          card.querySelector(
+            ".personHairColor"
+          )?.value || "",
 
-  eyeColor:
-    card.querySelector(
-      ".personEyeColor"
-    )?.value || "",
+        eyeColor:
+          card.querySelector(
+            ".personEyeColor"
+          )?.value || "",
 
-  idType:
-    card.querySelector(
-      ".personIdType"
-    )?.value || "",
+        idType:
+          card.querySelector(
+            ".personIdType"
+          )?.value || "",
 
-  idState:
-    card.querySelector(
-      ".personIdState"
-    )?.value || "",
+        idState:
+          card.querySelector(
+            ".personIdState"
+          )?.value || "",
 
-  idNumber:
-    card.querySelector(
-      ".personIdNumber"
-    )?.value || "",
+        idNumber:
+          card.querySelector(
+            ".personIdNumber"
+          )?.value || "",
 
-  homePhone:
-    card.querySelector(
-      ".personHomePhone"
-    )?.value || "",
+        homePhone:
+          card.querySelector(
+            ".personHomePhone"
+          )?.value || "",
 
-  cellPhone:
-    card.querySelector(
-      ".personCellPhone"
-    )?.value || "",
+        cellPhone:
+          card.querySelector(
+            ".personCellPhone"
+          )?.value || "",
 
-  workPhone:
-    card.querySelector(
-      ".personWorkPhone"
-    )?.value || "",
+        workPhone:
+          card.querySelector(
+            ".personWorkPhone"
+          )?.value || "",
 
-  street:
-    card.querySelector(
-      ".personStreet"
-    )?.value || "",
+        street:
+          card.querySelector(
+            ".personStreet"
+          )?.value || "",
 
-  city:
-    card.querySelector(
-      ".personCity"
-    )?.value || "",
+        city:
+          card.querySelector(
+            ".personCity"
+          )?.value || "",
 
-  addressState:
-    card.querySelector(
-      ".personAddressState"
-    )?.value || "",
+        addressState:
+          card.querySelector(
+            ".personAddressState"
+          )?.value || "",
 
-  zip:
-    card.querySelector(
-      ".personZip"
-    )?.value || "",
+        zip:
+          card.querySelector(
+            ".personZip"
+          )?.value || "",
 
-  employer:
-    card.querySelector(
-      ".personEmployer"
-    )?.value || "",
+        employer:
+          card.querySelector(
+            ".personEmployer"
+          )?.value || "",
 
-  email:
-    card.querySelector(
-      ".personEmail"
-    )?.value || "",
+        email:
+          card.querySelector(
+            ".personEmail"
+          )?.value || "",
 
-  preferredContact:
-    card.querySelector(
-      ".personPreferredContact"
-    )?.value || ""
+        preferredContact:
+          card.querySelector(
+            ".personPreferredContact"
+          )?.value || ""
 
-});
+      });
 
     });
 
-const vehicles =
-  window.incidentVehicles || [];
-    console.log(
-  "Persons:",
-  persons
-);
+  const vehicles =
+    window.incidentVehicles || [];
+  console.log(
+    "Persons:",
+    persons
+  );
 
   return {
 
@@ -10730,7 +10950,7 @@ const vehicles =
     persons,
 
     vehicles:
-  vehicles,
+      vehicles,
 
     lawEnforcement: {
       agency:
@@ -10758,124 +10978,124 @@ const vehicles =
 }
 
 window.saveIncidentDraft =
-async function () {
+  async function () {
 
-  try {
+    try {
 
-    const incidentData =
-      collectIncidentData();
+      const incidentData =
+        collectIncidentData();
 
-    const editingId =
-      document.getElementById(
-        "editingIncidentId"
-      ).value;
+      const editingId =
+        document.getElementById(
+          "editingIncidentId"
+        ).value;
 
-    if (editingId) {
+      if (editingId) {
 
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          editingId
-        ),
-        {
-          ...incidentData,
-
-          status:
-            "draft",
-
-          lastEdited:
-            serverTimestamp()
-        }
-      );
-
-      const photos =
-  await uploadIncidentPhotos(
-    editingId
-  );
-
-await saveIncidentAttachments(
-  editingId,
-  photos
-);
-
-    } else {
-
-      const docRef =
-        await addDoc(
-          collection(
+        await updateDoc(
+          doc(
             db,
-            "incidentReports"
+            "incidentReports",
+            editingId
           ),
           {
-  ...incidentData,
+            ...incidentData,
 
-  caseNumber: null,
+            status:
+              "draft",
 
-  status: "draft",
-
-  createdAt:
-    serverTimestamp(),
-
-  lastEdited:
-    serverTimestamp(),
-
-  submittedAt:
-    null,
-
-  approvedAt: null,
-  approvedBy: null,
-  approvedByName: null,
-
-  returnedAt: null,
-  returnedBy: null,
-  returnedByName: null,
-  returnComments: "",
-
-  voidedAt: null,
-  voidedBy: null,
-  voidedByName: null,
-  voidReason: "",
-
-  reviewHistory: []
-}
+            lastEdited:
+              serverTimestamp()
+          }
         );
 
-      document.getElementById(
-        "editingIncidentId"
-      ).value =
-        docRef.id;
+        const photos =
+          await uploadIncidentPhotos(
+            editingId
+          );
+
+        await saveIncidentAttachments(
+          editingId,
+          photos
+        );
+
+      } else {
+
+        const docRef =
+          await addDoc(
+            collection(
+              db,
+              "incidentReports"
+            ),
+            {
+              ...incidentData,
+
+              caseNumber: null,
+
+              status: "draft",
+
+              createdAt:
+                serverTimestamp(),
+
+              lastEdited:
+                serverTimestamp(),
+
+              submittedAt:
+                null,
+
+              approvedAt: null,
+              approvedBy: null,
+              approvedByName: null,
+
+              returnedAt: null,
+              returnedBy: null,
+              returnedByName: null,
+              returnComments: "",
+
+              voidedAt: null,
+              voidedBy: null,
+              voidedByName: null,
+              voidReason: "",
+
+              reviewHistory: []
+            }
+          );
+
+        document.getElementById(
+          "editingIncidentId"
+        ).value =
+          docRef.id;
 
         const photos =
-  await uploadIncidentPhotos(
-    docRef.id
-  );
+          await uploadIncidentPhotos(
+            docRef.id
+          );
 
-await saveIncidentAttachments(
-  docRef.id,
-  photos
-);
+        await saveIncidentAttachments(
+          docRef.id,
+          photos
+        );
+      }
+
+      alert(
+        "Draft saved."
+      );
+      clearIncidentPhotos();
+
+    } catch (error) {
+
+      console.error(
+        "Draft Save Error:",
+        error
+      );
+
+      alert(
+        "Unable to save draft."
+      );
+
     }
 
-    alert(
-      "Draft saved."
-    );
-    clearIncidentPhotos();
-
-  } catch (error) {
-
-    console.error(
-      "Draft Save Error:",
-      error
-    );
-
-    alert(
-      "Unable to save draft."
-    );
-
-  }
-
-};
+  };
 
 async function loadIncidentAttachments(
   incidentId
@@ -10898,68 +11118,68 @@ async function loadIncidentAttachments(
   );
 }
 
-async function loadIncidentReports() {    
+async function loadIncidentReports() {
 
   const container =
     document.getElementById(
       "incidentReportsList"
-    );  
+    );
 
   if (!container) return;
 
   container.innerHTML =
     "<p>Loading...</p>";
 
- try {
+  try {
 
-  const snapshot =
-    await getDocs(
-      query(
-        collection(
-          db,
-          "incidentReports"
-        ),
-        orderBy(
-          "createdAt",
-          "desc"
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          orderBy(
+            "createdAt",
+            "desc"
+          )
         )
-      )
-    ); 
-    
-    incidentReports =
-  snapshot.docs.map(
-    doc => ({
-      id: doc.id,
-      ...doc.data()
-    })
-  );
+      );
 
-  if (
-    snapshot.empty
-  ) {
+    incidentReports =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    if (
+      snapshot.empty
+    ) {
+
+      container.innerHTML =
+        "<p>No incident reports found.</p>";
+
+      return;
+
+    }
 
     container.innerHTML =
-      "<p>No incident reports found.</p>";
+      snapshot.docs
+        .map(doc => {
 
-    return;
+          const incident =
+            doc.data();
 
-  }
+          const created =
+            incident.createdAt?.toDate
+              ? incident.createdAt
+                .toDate()
+                .toLocaleString()
+              : "Pending";
 
- container.innerHTML =
-  snapshot.docs
-    .map(doc => {
-
-      const incident =
-        doc.data();
-
-      const created =
-        incident.createdAt?.toDate
-          ? incident.createdAt
-              .toDate()
-              .toLocaleString()
-          : "Pending";
-
-      return `
+          return `
 
         <div
           class="dashboard-card"
@@ -10996,8 +11216,8 @@ async function loadIncidentReports() {
 
           Status:
             ${getIncidentStatusBadge(
-              incident.status
-            )}
+            incident.status
+          )}
 
           <br>
 
@@ -11016,35 +11236,35 @@ async function loadIncidentReports() {
 
       `;
 
-    })
-    .join(""); 
+        })
+        .join("");
 
-} catch (error) {
+  } catch (error) {
 
-  console.error(
-    "Error loading incidents:",
-    error
-  );
+    console.error(
+      "Error loading incidents:",
+      error
+    );
 
-  container.innerHTML =
-    "<p>Error loading incident reports.</p>";
+    container.innerHTML =
+      "<p>Error loading incident reports.</p>";
 
-}
+  }
 
 }
 
 window.closeIncidentModal =
-function() {
+  function () {
 
-  document
-    .getElementById(
-      "viewIncidentModal"
-    )
-    .classList.add(
-      "hidden"
-    );
+    document
+      .getElementById(
+        "viewIncidentModal"
+      )
+      .classList.add(
+        "hidden"
+      );
 
-};
+  };
 
 function getIncidentStatusBadge(
   status
@@ -11070,59 +11290,59 @@ function getIncidentStatusBadge(
   }
 
   const comments =
-  document.getElementById(
-    "supervisorComments"
-  );
+    document.getElementById(
+      "supervisorComments"
+    );
 
-if (comments) {
-  comments.value = "";
-}
+  if (comments) {
+    comments.value = "";
+  }
 }
 
 window.viewIncident =
-async function(id) {
-  console.log("View clicked:", id);
+  async function (id) {
+    console.log("View clicked:", id);
 
-  currentIncidentId = id;
+    currentIncidentId = id;
 
-  const snap =
-    await getDoc(
-   doc(
-  db,
-  "incidentReports",
-  id
-)
-    );
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          id
+        )
+      );
     console.log("Document exists:", snap.exists());
 
-  if (!snap.exists()) return;
+    if (!snap.exists()) return;
 
-  const incident =
-    snap.data();
+    const incident =
+      snap.data();
 
     incident.id = id;
-window.currentIncident = incident;
+    window.currentIncident = incident;
 
- await renderIncidentViewer(
-  incident
-);
+    await renderIncidentViewer(
+      incident
+    );
 
-document.getElementById(
-  "historyBtn"
-).onclick = function () {
-  viewReviewHistory(id);
-};
+    document.getElementById(
+      "historyBtn"
+    ).onclick = function () {
+      viewReviewHistory(id);
+    };
 
-renderIncidentActionButtons();
+    renderIncidentActionButtons();
 
-document
-  .getElementById(
-    "viewIncidentModal"
-  )
-  .classList.remove(
-    "hidden"
-  );
-};
+    document
+      .getElementById(
+        "viewIncidentModal"
+      )
+      .classList.remove(
+        "hidden"
+      );
+  };
 
 function renderIncidentActionButtons() {
 
@@ -11144,7 +11364,7 @@ function renderIncidentActionButtons() {
   const isSupervisor =
     window.currentEmployee &&
     window.currentEmployee.role !==
-      "Officer";
+    "Officer";
 
   let html = `
   <button
@@ -11182,7 +11402,7 @@ function renderIncidentActionButtons() {
   if (isSupervisor) {
 
     switch (
-      incident.status
+    incident.status
     ) {
 
       case "submitted":
@@ -11296,13 +11516,13 @@ function renderIncidentActionButtons() {
   container.innerHTML =
     html;
 
-    document.getElementById(
-  "historyBtn"
-).onclick = function () {
-  viewReviewHistory(
-    incident.id
-  );
-};
+  document.getElementById(
+    "historyBtn"
+  ).onclick = function () {
+    viewReviewHistory(
+      incident.id
+    );
+  };
 }
 
 async function renderIncidentViewer(
@@ -11314,8 +11534,8 @@ async function renderIncidentViewer(
       "incidentViewerContent"
     );
 
-    const law =
-  incident.lawEnforcement || {};
+  const law =
+    incident.lawEnforcement || {};
 
   container.innerHTML = `
 
@@ -11377,11 +11597,10 @@ async function renderIncidentViewer(
   Persons Involved
 </h3>
 
-${
-  incident.persons &&
-  incident.persons.length
+${incident.persons &&
+      incident.persons.length
 
-    ? incident.persons.map(
+      ? incident.persons.map(
         person => `
 
         <div class="person-card">
@@ -11394,12 +11613,12 @@ ${
         <p>
   <strong>Name:</strong>
   ${[
-    person.firstName,
-    person.middleName,
-    person.lastName
-  ]
-    .filter(Boolean)
-    .join(" ")}
+            person.firstName,
+            person.middleName,
+            person.lastName
+          ]
+            .filter(Boolean)
+            .join(" ")}
 </p>
 
           <p>
@@ -11409,24 +11628,23 @@ ${
 
           <p>
   <strong>Phone:</strong>
-  ${
-    person.cellPhone ||
-    person.homePhone ||
-    person.workPhone ||
-    ""
-  }
+  ${person.cellPhone ||
+          person.homePhone ||
+          person.workPhone ||
+          ""
+          }
 </p>          
 
           <p>
   <strong>Address:</strong>
   ${[
-    person.street,
-    person.city,
-    person.state,
-    person.zip
-  ]
-    .filter(Boolean)
-    .join(", ")}
+            person.street,
+            person.city,
+            person.state,
+            person.zip
+          ]
+            .filter(Boolean)
+            .join(", ")}
 </p>
 
         </div>
@@ -11434,16 +11652,15 @@ ${
       `
       ).join("")
 
-    : "<p>No persons listed.</p>"
-}
+      : "<p>No persons listed.</p>"
+    }
 
-${
-  law.agency ||
-  law.officer ||
-  law.badge ||
-  law.caseNumber
+${law.agency ||
+      law.officer ||
+      law.badge ||
+      law.caseNumber
 
-    ? `
+      ? `
 
     <hr>
   <h4>🚔 Law Enforcement Information</h4>
@@ -11475,11 +11692,10 @@ ${
   Vehicles Involved
 </h3>
 
-${
-  incident.vehicles &&
-  incident.vehicles.length
+${incident.vehicles &&
+      incident.vehicles.length
 
-    ? incident.vehicles.map(
+      ? incident.vehicles.map(
         vehicle => `
 
         <div class="vehicle-card">
@@ -11519,161 +11735,161 @@ ${
       `
       ).join("")
 
-    : "<p>No vehicles listed.</p>"
-}
+      : "<p>No vehicles listed.</p>"
+    }
 
   `;
   loadSupplements(incident.id);
 
-const attachmentsContainer =
-  document.getElementById(
-    "reviewAttachmentsContainer"
-  );
+  const attachmentsContainer =
+    document.getElementById(
+      "reviewAttachmentsContainer"
+    );
 
-const attachmentsSnap =
-  await getDocs(
-    collection(
-      db,
-      "incidentReports",
-      incident.id,
-      "attachments"
-    )
-  );
+  const attachmentsSnap =
+    await getDocs(
+      collection(
+        db,
+        "incidentReports",
+        incident.id,
+        "attachments"
+      )
+    );
 
-const attachments =
-  attachmentsSnap.docs.map(
-    doc => ({
-      id: doc.id,
-      ...doc.data()
-    })
-  );
+  const attachments =
+    attachmentsSnap.docs.map(
+      doc => ({
+        id: doc.id,
+        ...doc.data()
+      })
+    );
   window.currentIncidentAttachments =
-  attachments;
+    attachments;
 
   console.log(
-  "Current Incident Attachments:",
-  attachments
-);
+    "Current Incident Attachments:",
+    attachments
+  );
 
-if (!attachments.length) {
+  if (!attachments.length) {
 
-  attachmentsContainer.innerHTML =
-    "<p>No attachments.</p>";
+    attachmentsContainer.innerHTML =
+      "<p>No attachments.</p>";
 
-} else {
+  } else {
 
- photoGallery =
-  attachments;
+    photoGallery =
+      attachments;
 
-renderAttachments();
-}
+    renderAttachments();
+  }
 
 }
 
 window.viewReviewHistory =
-async function(reportId) {
+  async function (reportId) {
 
-  try {
+    try {
 
-    const q = query(
-      collection(
-        db,
-        "incidentReports",
-        reportId,
-        "history"
-      ),
-      orderBy(
-        "createdAt",
-        "asc"
-      )
-    );
+      const q = query(
+        collection(
+          db,
+          "incidentReports",
+          reportId,
+          "history"
+        ),
+        orderBy(
+          "createdAt",
+          "asc"
+        )
+      );
 
-    const snap =
-      await getDocs(q);
+      const snap =
+        await getDocs(q);
 
-    let html = "";
+      let html = "";
 
-    if (snap.empty) {
+      if (snap.empty) {
 
-      html = `
+        html = `
         <p>
           No review history found.
         </p>
       `;
 
-    } else {
+      } else {
 
-      snap.forEach(docSnap => {
+        snap.forEach(docSnap => {
 
-        const item =
-          docSnap.data();
+          const item =
+            docSnap.data();
 
-        const date =
-          item.createdAt
-            ?.toDate()
-            .toLocaleString()
-            || "";     
+          const date =
+            item.createdAt
+              ?.toDate()
+              .toLocaleString()
+            || "";
 
 
-const action =
-  (item.action || "")
-    .toLowerCase();
+          const action =
+            (item.action || "")
+              .toLowerCase();
 
-let badgeClass = "";
-let badgeText = item.action;
+          let badgeClass = "";
+          let badgeText = item.action;
 
-switch (action) {
+          switch (action) {
 
-  case "submit":
-  case "submitted":
-    badgeClass =
-      "history-submitted";
-    badgeText =
-      "📨 Submitted";
-    break;
+            case "submit":
+            case "submitted":
+              badgeClass =
+                "history-submitted";
+              badgeText =
+                "📨 Submitted";
+              break;
 
-  case "returned":
-  case "returned for corrections":
-    badgeClass =
-      "history-returned";
-    badgeText =
-      "🟠 Returned";
-    break;
+            case "returned":
+            case "returned for corrections":
+              badgeClass =
+                "history-returned";
+              badgeText =
+                "🟠 Returned";
+              break;
 
-  case "resubmitted":
-    badgeClass =
-      "history-resubmitted";
-    badgeText =
-      "🔄 Resubmitted";
-    break;
+            case "resubmitted":
+              badgeClass =
+                "history-resubmitted";
+              badgeText =
+                "🔄 Resubmitted";
+              break;
 
-  case "approved":
-    badgeClass =
-      "history-approved";
-    badgeText =
-      "✅ Approved";
-    break;
+            case "approved":
+              badgeClass =
+                "history-approved";
+              badgeText =
+                "✅ Approved";
+              break;
 
-  case "voided":
-    badgeClass =
-      "history-voided";
-    badgeText =
-      "🔴 Voided";
-    break;
+            case "voided":
+              badgeClass =
+                "history-voided";
+              badgeText =
+                "🔴 Voided";
+              break;
 
-  case "supplement added":
-    badgeClass =
-      "history-supplement";
-    badgeText =
-      "➕ Supplement Added";
-    break;
+            case "supplement added":
+              badgeClass =
+                "history-supplement";
+              badgeText =
+                "➕ Supplement Added";
+              break;
 
-  default:
-    badgeText =
-      `📝 ${item.action}`;
-}
+            default:
+              badgeText =
+                `📝 ${item.action}`;
+          }
 
-        html += `
+          html += `
           <div class="history-item">
 
             <div class="history-action">
@@ -11696,53 +11912,53 @@ switch (action) {
 
           </div>
         `;
-      });
+        });
+
+      }
+
+      document.getElementById(
+        "historyTimeline"
+      ).innerHTML = html;
+
+      document.getElementById(
+        "reviewHistoryModal"
+      ).style.display = "flex";
+
+    } catch (err) {
+
+      console.error(
+        "Error loading history:",
+        err
+      );
 
     }
 
-    document.getElementById(
-      "historyTimeline"
-    ).innerHTML = html;
-
-    document.getElementById(
-      "reviewHistoryModal"
-    ).style.display = "flex";
-
-  } catch (err) {
-
-    console.error(
-      "Error loading history:",
-      err
-    );
-
-  }
-
-};
+  };
 
 window.populatePatrolSiteDropdown =
-function() {
+  function () {
 
-  const select =
-    document.getElementById(
-      "patrolSite"
-    );
+    const select =
+      document.getElementById(
+        "patrolSite"
+      );
 
-  if (!select) return;
+    if (!select) return;
 
-  select.innerHTML =
-    '<option value="">Select Site</option>';
+    select.innerHTML =
+      '<option value="">Select Site</option>';
 
-  sites.forEach(
-    site => {
+    sites.forEach(
+      site => {
 
-      select.innerHTML += `
+        select.innerHTML += `
         <option value="${site.id}">
           ${site.name}
         </option>
       `;
-    }
-  );
-};
+      }
+    );
+  };
 
 async function createPatrolTemplate() {
 
@@ -11796,86 +12012,86 @@ async function createPatrolTemplate() {
 }
 
 window.showPatrolsPage =
-function() {
+  function () {
 
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerPortal"
-  ).style.display =
-  "none";
+    document.getElementById(
+      "officerPortal"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display =
-  "none";
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-  "patrolsPage"
-).style.display =
-  "block";
-
-    setActiveNavById(
-    "patrolsBtn"
-  );
-
-  document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-  "patrolExecutionPage"
-).style.display = "none";
-
-  document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
-
-     document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
-
-  const patrolPage =
     document.getElementById(
       "patrolsPage"
+    ).style.display =
+      "block";
+
+    setActiveNavById(
+      "patrolsBtn"
     );
 
-  patrolPage.style.display =
-    "block";
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
 
-  patrolPage.classList.remove(
-    "hidden"
-  );
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
 
-  populatePatrolSiteDropdown();
-};
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    const patrolPage =
+      document.getElementById(
+        "patrolsPage"
+      );
+
+    patrolPage.style.display =
+      "block";
+
+    patrolPage.classList.remove(
+      "hidden"
+    );
+
+    populatePatrolSiteDropdown();
+  };
 window.createPatrolTemplate =
   createPatrolTemplate;
 
@@ -11892,22 +12108,22 @@ function renderPatrolTemplates() {
     patrolTemplates.length
 
       ? patrolTemplates.map(
-          patrol => {
+        patrol => {
 
-            const patrolCheckpoints =
-  checkpoints
-    .filter(
-      cp =>
-        cp.patrolId ===
-        patrol.id
-    )
-    .sort(
-      (a, b) =>
-        (a.sequence || 0) -
-        (b.sequence || 0)
-    );
+          const patrolCheckpoints =
+            checkpoints
+              .filter(
+                cp =>
+                  cp.patrolId ===
+                  patrol.id
+              )
+              .sort(
+                (a, b) =>
+                  (a.sequence || 0) -
+                  (b.sequence || 0)
+              );
 
-            return `
+          return `
 
               <div class="patrol-card">
 
@@ -11939,11 +12155,11 @@ function renderPatrolTemplates() {
                 >
 
                   ${patrolCheckpoints
-                    .map(
-  (
-    cp,
-    index
-  ) => `
+              .map(
+                (
+                  cp,
+                  index
+                ) => `
 
                         <div
                           class="checkpoint-card"
@@ -11965,27 +12181,24 @@ function renderPatrolTemplates() {
 
 </div>
 
-                          ${
-                            cp.description
-                              ? `<br>${cp.description}`
-                              : ""
-                          }
+                          ${cp.description
+                    ? `<br>${cp.description}`
+                    : ""
+                  }
 
                           <br><br>
 
                           <div class="checkpoint-tags">
 
-  ${
-    cp.requiresPhoto
-      ? '<span class="checkpoint-tag">📷 Photo Required</span>'
-      : ''
-  }
+  ${cp.requiresPhoto
+                    ? '<span class="checkpoint-tag">📷 Photo Required</span>'
+                    : ''
+                  }
 
-  ${
-    cp.requiresNotes
-      ? '<span class="checkpoint-tag">📝 Notes Required</span>'
-      : ''
-  }
+  ${cp.requiresNotes
+                    ? '<span class="checkpoint-tag">📝 Notes Required</span>'
+                    : ''
+                  }
 
 </div>
 
@@ -12020,8 +12233,8 @@ function renderPatrolTemplates() {
 </div>
 
                       `
-                    )
-                    .join("")}
+              )
+              .join("")}
 
                 </div>
 
@@ -12029,8 +12242,8 @@ function renderPatrolTemplates() {
 
             `;
 
-          }
-        ).join("")
+        }
+      ).join("")
 
       : `
 
@@ -12069,199 +12282,199 @@ function hideAllPages() {
 
 }
 window.openCheckpointModal =
-function(patrolId) {  
+  function (patrolId) {
 
-  currentPatrolId =
-    patrolId;
+    currentPatrolId =
+      patrolId;
 
-  const modal =
-    document.getElementById(
-      "checkpointModal"
-    );  
+    const modal =
+      document.getElementById(
+        "checkpointModal"
+      );
 
-  modal.classList.remove(
-    "hidden"
-  );
-
-};
-
-window.closeCheckpointModal =
-function() {
-
-  document
-    .getElementById(
-      "checkpointModal"
-    )
-    .classList
-    .add(
+    modal.classList.remove(
       "hidden"
     );
 
-};
+  };
+
+window.closeCheckpointModal =
+  function () {
+
+    document
+      .getElementById(
+        "checkpointModal"
+      )
+      .classList
+      .add(
+        "hidden"
+      );
+
+  };
 
 window.saveCheckpoint =
-async function() {
+  async function () {
 
-  const checkpointName =
+    const checkpointName =
+      document.getElementById(
+        "checkpointName"
+      ).value.trim();
+
+    const description =
+      document.getElementById(
+        "checkpointDescription"
+      ).value.trim();
+
+    const requiresPhoto =
+      document.getElementById(
+        "requiresPhoto"
+      ).checked;
+
+    const requiresNotes =
+      document.getElementById(
+        "requiresNotes"
+      ).checked;
+
+    if (!checkpointName) {
+
+      alert(
+        "Checkpoint name required."
+      );
+
+      return;
+    }
+
+    const patrolCheckpoints =
+      checkpoints.filter(
+        cp =>
+          cp.patrolId ===
+          currentPatrolId
+      );
+
+    const nextSequence =
+      patrolCheckpoints.length + 1;
+
+    await addDoc(
+
+      collection(
+        db,
+        "checkpoints"
+      ),
+
+      {
+        patrolId:
+          currentPatrolId,
+
+        checkpointName,
+
+        description,
+
+        requiresPhoto,
+
+        requiresNotes,
+
+        sequence:
+          nextSequence,
+
+        createdAt:
+          serverTimestamp()
+      }
+
+    );
     document.getElementById(
       "checkpointName"
-    ).value.trim();
+    ).value = "";
 
-  const description =
     document.getElementById(
       "checkpointDescription"
-    ).value.trim();
+    ).value = "";
 
-  const requiresPhoto =
     document.getElementById(
       "requiresPhoto"
-    ).checked;
+    ).checked = false;
 
-  const requiresNotes =
     document.getElementById(
       "requiresNotes"
-    ).checked;
+    ).checked = false;
 
-  if (!checkpointName) {
+    document.getElementById(
+      "checkpointName"
+    ).focus();
 
-  alert(
-    "Checkpoint name required."
-  );
-
-  return;
-}
-
-const patrolCheckpoints =
-  checkpoints.filter(
-    cp =>
-      cp.patrolId ===
-      currentPatrolId
-  );
-
-const nextSequence =
-  patrolCheckpoints.length + 1; 
-
-await addDoc(
-
-    collection(
-      db,
-      "checkpoints"
-    ),
-
-    {
-  patrolId:
-    currentPatrolId,
-
-  checkpointName,
-
-  description,
-
-  requiresPhoto,
-
-  requiresNotes,
-
-  sequence:
-    nextSequence,
-
-  createdAt:
-    serverTimestamp()
-}
-
-  );
-document.getElementById(
-  "checkpointName"
-).value = "";
-
-document.getElementById(
-  "checkpointDescription"
-).value = "";
-
-document.getElementById(
-  "requiresPhoto"
-).checked = false;
-
-document.getElementById(
-  "requiresNotes"
-).checked = false;
-
-document.getElementById(
-  "checkpointName"
-).focus();
-
-};
+  };
 
 window.deleteCheckpoint =
-async function(id) {
+  async function (id) {
 
-  const confirmed =
-    confirm(
-      "Delete this checkpoint?"
+    const confirmed =
+      confirm(
+        "Delete this checkpoint?"
+      );
+
+    if (!confirmed) return;
+
+    await deleteDoc(
+      doc(
+        db,
+        "checkpoints",
+        id
+      )
     );
 
-  if (!confirmed) return;
-
-  await deleteDoc(
-    doc(
-      db,
-      "checkpoints",
-      id
-    )
-  );
-
-};
+  };
 
 
 window.saveCheckpointEdit =
-async function() {
+  async function () {
 
-  if (!editingCheckpointId)
-    return;
+    if (!editingCheckpointId)
+      return;
 
-  await updateDoc(
-  doc(
-    db,
-    "checkpoints",
-    editingCheckpointId
-  ),
-  {
-    checkpointName:
-      document.getElementById(
-        "editCheckpointName"
-      ).value,
+    await updateDoc(
+      doc(
+        db,
+        "checkpoints",
+        editingCheckpointId
+      ),
+      {
+        checkpointName:
+          document.getElementById(
+            "editCheckpointName"
+          ).value,
 
-    description:
-      document.getElementById(
-        "editCheckpointDescription"
-      ).value,
+        description:
+          document.getElementById(
+            "editCheckpointDescription"
+          ).value,
 
-    requiresPhoto:
-      document.getElementById(
-        "editRequirePhoto"
-      ).checked,
+        requiresPhoto:
+          document.getElementById(
+            "editRequirePhoto"
+          ).checked,
 
-    requiresNotes:
-      document.getElementById(
-        "editRequireNotes"
-      ).checked
-  }
-);
+        requiresNotes:
+          document.getElementById(
+            "editRequireNotes"
+          ).checked
+      }
+    );
 
-  closeEditCheckpointModal();
+    closeEditCheckpointModal();
 
-};
+  };
 
 window.closeEditCheckpointModal =
-function() {
+  function () {
 
-  editingCheckpointId = null;
+    editingCheckpointId = null;
 
-  document.getElementById(
-    "editCheckpointModal"
-  ).classList.add(
-    "hidden"
-  );
+    document.getElementById(
+      "editCheckpointModal"
+    ).classList.add(
+      "hidden"
+    );
 
-};
+  };
 
 document.addEventListener(
   "keydown",
@@ -12289,7 +12502,7 @@ document.addEventListener(
 
 window.addEventListener(
   "click",
-  function(event) {
+  function (event) {
 
     const modal =
       document.getElementById(
@@ -12310,267 +12523,312 @@ window.addEventListener(
 );
 
 window.moveCheckpointUp =
-async function(id) {
+  async function (id) {
 
-  const checkpoint =
-    checkpoints.find(
-      cp => cp.id === id
-    );
+    const checkpoint =
+      checkpoints.find(
+        cp => cp.id === id
+      );
 
-  if (!checkpoint)
-    return;
+    if (!checkpoint)
+      return;
 
-  const aboveCheckpoint =
-    checkpoints.find(
-      cp =>
-        cp.patrolId ===
+    const aboveCheckpoint =
+      checkpoints.find(
+        cp =>
+          cp.patrolId ===
           checkpoint.patrolId &&
-        cp.sequence ===
+          cp.sequence ===
           checkpoint.sequence - 1
+      );
+
+    if (!aboveCheckpoint)
+      return;
+
+    const currentSequence =
+      checkpoint.sequence;
+
+    const aboveSequence =
+      aboveCheckpoint.sequence;
+
+    await updateDoc(
+      doc(
+        db,
+        "checkpoints",
+        checkpoint.id
+      ),
+      {
+        sequence:
+          aboveSequence
+      }
     );
 
-  if (!aboveCheckpoint)
-    return;
+    await updateDoc(
+      doc(
+        db,
+        "checkpoints",
+        aboveCheckpoint.id
+      ),
+      {
+        sequence:
+          currentSequence
+      }
+    );
 
-  const currentSequence =
-    checkpoint.sequence;
-
-  const aboveSequence =
-    aboveCheckpoint.sequence;
-
-  await updateDoc(
-    doc(
-      db,
-      "checkpoints",
-      checkpoint.id
-    ),
-    {
-      sequence:
-        aboveSequence
-    }
-  );
-
-  await updateDoc(
-    doc(
-      db,
-      "checkpoints",
-      aboveCheckpoint.id
-    ),
-    {
-      sequence:
-        currentSequence
-    }
-  );
-
-};
+  };
 
 window.moveCheckpointDown =
-async function(id) {
+  async function (id) {
 
-  const checkpoint =
-    checkpoints.find(
-      cp => cp.id === id
-    );
+    const checkpoint =
+      checkpoints.find(
+        cp => cp.id === id
+      );
 
-  if (!checkpoint)
-    return;
+    if (!checkpoint)
+      return;
 
-  const belowCheckpoint =
-    checkpoints.find(
-      cp =>
-        cp.patrolId ===
+    const belowCheckpoint =
+      checkpoints.find(
+        cp =>
+          cp.patrolId ===
           checkpoint.patrolId &&
-        cp.sequence ===
+          cp.sequence ===
           checkpoint.sequence + 1
+      );
+
+    if (!belowCheckpoint)
+      return;
+
+    const currentSequence =
+      checkpoint.sequence;
+
+    const belowSequence =
+      belowCheckpoint.sequence;
+
+    await updateDoc(
+      doc(
+        db,
+        "checkpoints",
+        checkpoint.id
+      ),
+      {
+        sequence:
+          belowSequence
+      }
     );
 
-  if (!belowCheckpoint)
-    return;
+    await updateDoc(
+      doc(
+        db,
+        "checkpoints",
+        belowCheckpoint.id
+      ),
+      {
+        sequence:
+          currentSequence
+      }
+    );
 
-  const currentSequence =
-    checkpoint.sequence;
-
-  const belowSequence =
-    belowCheckpoint.sequence;
-
-  await updateDoc(
-    doc(
-      db,
-      "checkpoints",
-      checkpoint.id
-    ),
-    {
-      sequence:
-        belowSequence
-    }
-  );
-
-  await updateDoc(
-    doc(
-      db,
-      "checkpoints",
-      belowCheckpoint.id
-    ),
-    {
-      sequence:
-        currentSequence
-    }
-  );
-
-};
+  };
 
 window.showMyReportsPage =
-async function () {
-  await loadIncidentReports();
+  async function () {
+    await loadIncidentReports();
 
-  hideAllPages();
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "block";
+    hideAllPages();
 
     document.getElementById(
-    "officerPortal"
-  ).style.display =
-    "none";
+      "myReportsPage"
+    ).style.display =
+      "block";
 
     document.getElementById(
-  "patrolExecutionPage"
-).style.display = "none";
-
-  document.getElementById(
-    "myPatrolsPage"
-  ).style.display =
-    "none";
+      "officerPortal"
+    ).style.display =
+      "none";
 
     document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
+      "patrolExecutionPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none"; 
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-  loadMyReports();
-};
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+    loadMyReports();
+  };
 
 window.showMyPatrols =
-function() {
-
-  document.getElementById(
-    "officerPortal"
-  ).style.display =
-    "none";
+  function () {
 
     document.getElementById(
-  "patrolExecutionPage"
-).style.display = "none";
-
-  document.getElementById(
-    "myPatrolsPage"
-  ).style.display =
-    "block";
+      "officerPortal"
+    ).style.display =
+      "none";
 
     document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
+      "patrolExecutionPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display =
+      "block";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none"; 
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-   document.getElementById(
-    "incidentReviewPage"
-  ).style.display = "none";
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
 
-  renderMyPatrols();
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
 
-};
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+
+    renderMyPatrols();
+
+  };
 
 window.startPatrol =
-async function(patrolId) {
+  async function (patrolId) {
 
-  const patrol =
-    patrolTemplates.find(
-      p => p.id === patrolId
-    );
+    const patrol =
+      patrolTemplates.find(
+        p => p.id === patrolId
+      );
 
     const patrolCheckpointList =
-  checkpoints
-    .filter(
-      cp =>
-        cp.patrolId ===
-        patrolId
-    )
-    .sort(
-      (a, b) =>
-        (a.sequence || 0) -
-        (b.sequence || 0)
-    );
+      checkpoints
+        .filter(
+          cp =>
+            cp.patrolId ===
+            patrolId
+        )
+        .sort(
+          (a, b) =>
+            (a.sequence || 0) -
+            (b.sequence || 0)
+        );
 
-  if (!patrol) {
+    if (!patrol) {
 
-    alert(
-      "Patrol not found."
-    );
+      alert(
+        "Patrol not found."
+      );
 
-    return;
-  }
+      return;
+    }
 
-  //
-  // RESUME EXISTING PATROL
-  //
-  const existingPatrol =
-    await findActivePatrol(
-      currentOfficer.id
-    );
+    //
+    // RESUME EXISTING PATROL
+    //
+    const existingPatrol =
+      await findActivePatrol(
+        currentOfficer.id
+      );
 
-  if (existingPatrol) {
+    if (existingPatrol) {
+
+      currentActivePatrolId =
+        existingPatrol.id;
+
+      showPatrolExecution();
+
+      await loadCurrentCheckpoint(
+        existingPatrol.id
+      );
+
+      return;
+    }
+
+    //
+    // CREATE NEW PATROL
+    //
+    const activePatrolRef =
+      await addDoc(
+        collection(
+          db,
+          "activePatrols"
+        ),
+        {
+          officerId:
+            currentOfficer.id,
+
+          officerName:
+            currentOfficer.name,
+
+          patrolId:
+            patrol.id,
+
+          patrolName:
+            patrol.name,
+
+          siteId:
+            patrol.siteId,
+
+          currentCheckpoint: 0,
+
+          currentCheckpointName:
+            patrolCheckpointList[0]
+              ?.checkpointName || "",
+
+          totalCheckpoints:
+            patrolCheckpointList.length,
+
+          startedAt:
+            serverTimestamp(),
+
+          scheduledStart:
+            Date.now(),
+
+          expectedDuration:
+            patrol.estimatedDuration ||
+            1800000,
+
+          lastUpdated:
+            serverTimestamp(),
+
+          completed: false,
+
+          completedAt: null
+        }
+      );
 
     currentActivePatrolId =
-      existingPatrol.id;
+      activePatrolRef.id;
 
-    showPatrolExecution();
+    await logPatrolEvent({
 
-    await loadCurrentCheckpoint(
-      existingPatrol.id
-    );
-
-    return;
-  }
-
-  //
-  // CREATE NEW PATROL
-  //
-  const activePatrolRef =
-  await addDoc(
-    collection(
-      db,
-      "activePatrols"
-    ),
-    {
-      officerId:
-        currentOfficer.id,
-
-      officerName:
-        currentOfficer.name,
+      patrolSessionId:
+        activePatrolRef.id,
 
       patrolId:
         patrol.id,
@@ -12578,71 +12836,26 @@ async function(patrolId) {
       patrolName:
         patrol.name,
 
+      officerId:
+        currentOfficer.id,
+
+      officerName:
+        currentOfficer.name,
+
       siteId:
         patrol.siteId,
 
-      currentCheckpoint: 0,
+      eventType:
+        "PATROL_STARTED"
 
-      currentCheckpointName:
-        patrolCheckpointList[0]
-          ?.checkpointName || "",
+    });
 
-      totalCheckpoints:
-        patrolCheckpointList.length,
+    showPatrolExecution();
 
-      startedAt:
-        serverTimestamp(),
-
-      scheduledStart:
-        Date.now(),
-
-      expectedDuration:
-        patrol.estimatedDuration ||
-        1800000,
-
-      lastUpdated:
-        serverTimestamp(),
-
-      completed: false,
-
-      completedAt: null
-    }
-  );
-
-currentActivePatrolId =
-  activePatrolRef.id;
-
-await logPatrolEvent({
-
-  patrolSessionId:
-    activePatrolRef.id,
-
-  patrolId:
-    patrol.id,
-
-  patrolName:
-    patrol.name,
-
-  officerId:
-    currentOfficer.id,
-
-  officerName:
-    currentOfficer.name,
-
-  siteId:
-    patrol.siteId,
-
-  eventType:
-    "PATROL_STARTED"
-
-});
-
-showPatrolExecution();
-
-await loadCurrentCheckpoint(
-  activePatrolRef.id
-);
-};
+    await loadCurrentCheckpoint(
+      activePatrolRef.id
+    );
+  };
 
 async function findActivePatrol(officerId) {
 
@@ -12678,214 +12891,211 @@ async function findActivePatrol(officerId) {
 }
 
 window.logPatrolEvent =
-async function(eventData) {
+  async function (eventData) {
 
-  try {
+    try {
 
-    const payload = {
-      ...eventData
-    };
+      const payload = {
+        ...eventData
+      };
 
-    if (
-      !payload.timestamp
-    ) {
-      payload.timestamp =
-        serverTimestamp();
+      if (
+        !payload.timestamp
+      ) {
+        payload.timestamp =
+          serverTimestamp();
+      }
+
+      await addDoc(
+        collection(
+          db,
+          "patrolEvents"
+        ),
+        payload
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Failed to log patrol event:",
+        error
+      );
     }
-
-    await addDoc(
-      collection(
-        db,
-        "patrolEvents"
-      ),
-      payload
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Failed to log patrol event:",
-      error
-    );
-  }
-};
+  };
 
 window.loadCurrentCheckpoint =
-async function(activePatrolId) {
+  async function (activePatrolId) {
 
-  // Load the active patrol document
-  const activePatrolDoc =
-    await getDoc(
-      doc(
-        db,
-        "activePatrols",
-        activePatrolId
+    // Load the active patrol document
+    const activePatrolDoc =
+      await getDoc(
+        doc(
+          db,
+          "activePatrols",
+          activePatrolId
+        )
+      );
+
+    if (!activePatrolDoc.exists()) {
+
+      alert(
+        "Active patrol not found."
+      );
+
+      return;
+
+    }
+
+    const activePatrol =
+      activePatrolDoc.data();
+
+    checkpoints.forEach(cp => {
+
+
+    });
+
+    console.log(
+      "Active Patrol Patrol ID:",
+      activePatrol.patrolId
+    );
+
+    console.log(
+      "Checkpoint Patrol IDs:",
+      checkpoints.map(
+        cp => cp.patrolId
       )
     );
 
-  if (!activePatrolDoc.exists()) {
-
-    alert(
-      "Active patrol not found."
+    console.log(
+      "All Checkpoints:",
+      checkpoints
     );
 
-    return;
+    console.log(
+      "Active Patrol:",
+      activePatrol
+    );
 
-  }
-
-  const activePatrol =
-    activePatrolDoc.data();   
-
-checkpoints.forEach(cp => {
-
-
-});
-
-console.log(
-  "Active Patrol Patrol ID:",
-  activePatrol.patrolId
-);
-
-console.log(
-  "Checkpoint Patrol IDs:",
-  checkpoints.map(
-    cp => cp.patrolId
-  )
-);
-
-console.log(
-  "All Checkpoints:",
-  checkpoints
-);
-
-console.log(
-  "Active Patrol:",
-  activePatrol
-);
-
-console.log(
-  "Active Patrol patrolId:",
-  activePatrol.patrolId
-);
-
-checkpoints.forEach(cp => {
-
-  console.log(
-    "Checkpoint:",
-    cp.id,
-    "patrolId:",
-    cp.patrolId,
-    "match:",
-    cp.patrolId ===
+    console.log(
+      "Active Patrol patrolId:",
       activePatrol.patrolId
-  );
+    );
 
-});
+    checkpoints.forEach(cp => {
 
-const patrolCheckpoints =
-  checkpoints
-    .filter(
-      cp =>
+      console.log(
+        "Checkpoint:",
+        cp.id,
+        "patrolId:",
+        cp.patrolId,
+        "match:",
         cp.patrolId ===
         activePatrol.patrolId
-    )
-    .sort(
-      (a, b) =>
-        a.sequence - b.sequence
+      );
+
+    });
+
+    const patrolCheckpoints =
+      checkpoints
+        .filter(
+          cp =>
+            cp.patrolId ===
+            activePatrol.patrolId
+        )
+        .sort(
+          (a, b) =>
+            a.sequence - b.sequence
+        );
+
+    console.log(
+      "Found Patrol Checkpoints:",
+      patrolCheckpoints
+    );
+    console.log(
+      "Checkpoints Loaded:",
+      checkpoints.length
     );
 
-console.log(
-  "Found Patrol Checkpoints:",
-  patrolCheckpoints
-);
-console.log(
-  "Checkpoints Loaded:",
-  checkpoints.length
-);
-
-console.log(
-  "Patrol ID:",
-  activePatrol.patrolId
-);
-
-console.log(
-  "All Checkpoints:",
-  checkpoints
-);
-  if (!patrolCheckpoints.length) {
-
-    alert(
-      "No checkpoints found."
+    console.log(
+      "Patrol ID:",
+      activePatrol.patrolId
     );
 
-    return;
+    console.log(
+      "All Checkpoints:",
+      checkpoints
+    );
+    if (!patrolCheckpoints.length) {
 
-  }
-  if (
-  activePatrol.currentCheckpoint >=
-  patrolCheckpoints.length
-) {
+      alert(
+        "No checkpoints found."
+      );
 
-  await updateDoc(
+      return;
 
-    doc(
-      db,
-      "activePatrols",
-      currentActivePatrolId
-    ),
+    }
+    if (
+      activePatrol.currentCheckpoint >=
+      patrolCheckpoints.length
+    ) {
 
-    {
+      await updateDoc(
 
-      completed: true,
+        doc(
+          db,
+          "activePatrols",
+          currentActivePatrolId
+        ),
 
-      completedAt:
-        serverTimestamp()
+        {
+
+          completed: true,
+
+          completedAt:
+            serverTimestamp()
+
+        }
+
+      );
+
+      alert(
+        "Patrol Complete!"
+      );
+
+      showMyPatrols();
+
+      return;
 
     }
 
-  );
-
-  alert(
-    "Patrol Complete!"
-  );
-
-  showMyPatrols();
-
-  return;
-
-}
-
-  const currentCheckpoint =
-    patrolCheckpoints[
+    const currentCheckpoint =
+      patrolCheckpoints[
       activePatrol.currentCheckpoint
-    ];
+      ];
 
     document.getElementById(
-  "activePatrolName"
-).textContent =
-  activePatrol.patrolName;
+      "activePatrolName"
+    ).textContent =
+      activePatrol.patrolName;
 
-document.getElementById(
-  "checkpointTitle"
-).textContent =
-  currentCheckpoint.checkpointName;
+    document.getElementById(
+      "checkpointTitle"
+    ).textContent =
+      currentCheckpoint.checkpointName;
 
-document.getElementById(
-  "checkpointProgress"
-).textContent =
-  `Checkpoint ${
-    activePatrol.currentCheckpoint + 1
-  } of ${
-    patrolCheckpoints.length
-  }`;
+    document.getElementById(
+      "checkpointProgress"
+    ).textContent =
+      `Checkpoint ${activePatrol.currentCheckpoint + 1
+      } of ${patrolCheckpoints.length
+      }`;
 
-  document.getElementById(
-  "checkpointContent"
-).innerHTML = `
+    document.getElementById(
+      "checkpointContent"
+    ).innerHTML = `
 
-  ${
-    currentCheckpoint.description
-      ? `
+  ${currentCheckpoint.description
+        ? `
         <div
           class="checkpoint-instructions"
         >
@@ -12898,380 +13108,418 @@ document.getElementById(
           </p>
         </div>
       `
-      : ""
-  }
+        : ""
+      }
 
   <p>
     <strong>Photo Required:</strong>
-    ${
-      currentCheckpoint.requiresPhoto
+    ${currentCheckpoint.requiresPhoto
         ? "Yes"
         : "No"
-    }
+      }
   </p>
 
   <p>
     <strong>Notes Required:</strong>
-    ${
-      currentCheckpoint.requiresNotes
+    ${currentCheckpoint.requiresNotes
         ? "Yes"
         : "No"
-    }
+      }
   </p>
 
 `;
 
-};
+  };
 
 window.completeCheckpoint =
-async function() {
-
-  if (
-    !currentActivePatrolId
-  ) {
-
-    alert(
-      "No active patrol."
-    );
-
-    return;
-
-  }
-
-  const activePatrolRef =
-    doc(
-      db,
-      "activePatrols",
-      currentActivePatrolId
-    );
-
-  const activePatrolDoc =
-    await getDoc(
-      activePatrolRef
-    );
-
-  if (
-    !activePatrolDoc.exists()
-  ) {
-
-    alert(
-      "Active patrol not found."
-    );
-
-    return;
-
-  }
-
-  const activePatrol =
-    activePatrolDoc.data();
-
-  const patrolCheckpoints =
-    checkpoints
-      .filter(
-        cp =>
-          cp.patrolId ===
-          activePatrol.patrolId
-      )
-      .sort(
-        (a, b) =>
-          a.sequence - b.sequence
-      );
-
-  const checkpoint =
-    patrolCheckpoints[
-      activePatrol.currentCheckpoint
-    ];
-
-  if (!checkpoint) {
-
-    alert(
-      "Checkpoint not found."
-    );
-
-    return;
-
-  }
-
-  openCheckpointEvidenceModal(
-    checkpoint
-  );
-
-};
-
-window.deletePatrolTemplate =
-async function(id) {
-
-  const checkpointCount =
-    checkpoints.filter(
-      cp => cp.patrolId === id
-    ).length;
-
-  if (checkpointCount > 0) {
-
-    alert(
-      "Delete all checkpoints before deleting this patrol."
-    );
-
-    return;
-
-  }
-
-  if (
-    !confirm(
-      "Delete this patrol template?"
-    )
-  ) {
-
-    return;
-
-  }
-
-  await deleteDoc(
-    doc(
-      db,
-      "patrolTemplates",
-      id
-    )
-  );
-
-};
-
-window.openCheckpointEvidenceModal =
-function(checkpoint) {
-
-  document.getElementById(
-  "evidenceCheckpointName"
-).textContent =
-  checkpoint.checkpointName;
-
-  document.getElementById(
-    "evidencePhotoSection"
-  ).classList.toggle(
-    "hidden",
-    !checkpoint.requiresPhoto
-  );
-
-  document.getElementById(
-    "evidenceNotesSection"
-  ).classList.toggle(
-    "hidden",
-    !checkpoint.requiresNotes
-  );
-
-  document.getElementById(
-    "checkpointEvidenceModal"
-  ).classList.remove(
-    "hidden"
-  );
-
-};
-
-window.closeCheckpointEvidenceModal =
-function() {
-
-  document.getElementById(
-    "checkpointEvidenceModal"
-  ).classList.add(
-    "hidden"
-  );
-  document.getElementById(
-  "checkpointNotes"
-).value = "";
-
-document.getElementById(
-  "checkpointPhoto"
-).value = "";
-
-};
-
-window.saveCheckpointEvidence =
-async function() {
-
-  if (!currentActivePatrolId) {
-
-    alert(
-      "No active patrol."
-    );
-
-    return;
-
-  }
-
-  const activePatrolRef =
-    doc(
-      db,
-      "activePatrols",
-      currentActivePatrolId
-    );
-
-  const activePatrolDoc =
-    await getDoc(
-      activePatrolRef
-    );
-
-  if (!activePatrolDoc.exists()) {
-
-    alert(
-      "Active patrol not found."
-    );
-
-    return;
-
-  }
-
-  const activePatrol =
-    activePatrolDoc.data();
-
-  const patrolCheckpoints =
-    checkpoints
-      .filter(
-        cp =>
-          cp.patrolId ===
-          activePatrol.patrolId
-      )
-      .sort(
-        (a, b) =>
-          a.sequence - b.sequence
-      );
-
-  const checkpoint =
-    patrolCheckpoints[
-      activePatrol.currentCheckpoint
-    ];
-
-  if (!checkpoint) {
-
-    alert(
-      "Checkpoint not found."
-    );
-
-    return;
-
-  }
-
-  const nextCheckpoint =
-    activePatrol.currentCheckpoint + 1;
-
-    const notes =
-  document.getElementById(
-    "checkpointNotes"
-  ).value.trim();
-
-  const photo =
-  document.getElementById(
-    "checkpointPhoto"
-  ).files[0];
-
-  let photoUrl = "";
-
-if (photo) {
-
-  photoUrl =
-    await uploadCheckpointPhoto(
-
-      photo,
-
-      activePatrol.patrolId,
-
-      checkpoint.id
-
-    );
-
-}
+  async function () {
 
     if (
-  checkpoint.requiresNotes &&
-  !notes
-) {
+      !currentActivePatrolId
+    ) {
 
-  alert(
-    "Notes are required for this checkpoint."
-  );
+      alert(
+        "No active patrol."
+      );
 
-  return;
+      return;
 
-}
+    }
 
-if (
-  checkpoint.requiresPhoto &&
-  !photo
-) {
+    const activePatrolRef =
+      doc(
+        db,
+        "activePatrols",
+        currentActivePatrolId
+      );
 
-  alert(
-    "A photo is required for this checkpoint."
-  );
+    const activePatrolDoc =
+      await getDoc(
+        activePatrolRef
+      );
 
-  return;
+    if (
+      !activePatrolDoc.exists()
+    ) {
 
-}
+      alert(
+        "Active patrol not found."
+      );
 
-let latitude = null;
-let longitude = null;
-let accuracy = null;
+      return;
 
-try {
+    }
 
-  const position =
-    await new Promise(
-      (resolve, reject) => {
+    const activePatrol =
+      activePatrolDoc.data();
 
-        navigator.geolocation
-          .getCurrentPosition(
-            resolve,
-            reject,
-            {
-              enableHighAccuracy: true,
-              timeout: 10000
-            }
-          );
+    const patrolCheckpoints =
+      checkpoints
+        .filter(
+          cp =>
+            cp.patrolId ===
+            activePatrol.patrolId
+        )
+        .sort(
+          (a, b) =>
+            a.sequence - b.sequence
+        );
 
-      }
+    const checkpoint =
+      patrolCheckpoints[
+      activePatrol.currentCheckpoint
+      ];
+
+    if (!checkpoint) {
+
+      alert(
+        "Checkpoint not found."
+      );
+
+      return;
+
+    }
+
+    openCheckpointEvidenceModal(
+      checkpoint
     );
 
-  latitude =
-    position.coords.latitude;
+  };
 
-  longitude =
-    position.coords.longitude;
+window.deletePatrolTemplate =
+  async function (id) {
 
-  accuracy =
-    position.coords.accuracy;
+    const checkpointCount =
+      checkpoints.filter(
+        cp => cp.patrolId === id
+      ).length;
 
-} catch (error) {
+    if (checkpointCount > 0) {
 
-  console.warn(
-    "Unable to obtain GPS location:",
-    error
-  );
+      alert(
+        "Delete all checkpoints before deleting this patrol."
+      );
 
-}
+      return;
 
-  try {
- 
+    }
 
-    await addDoc(
+    if (
+      !confirm(
+        "Delete this patrol template?"
+      )
+    ) {
 
-      collection(
+      return;
+
+    }
+
+    await deleteDoc(
+      doc(
         db,
-        "patrolCompletions"
-      ),
+        "patrolTemplates",
+        id
+      )
+    );
 
-      {
+  };
+
+window.openCheckpointEvidenceModal =
+  function (checkpoint) {
+
+    document.getElementById(
+      "evidenceCheckpointName"
+    ).textContent =
+      checkpoint.checkpointName;
+
+    document.getElementById(
+      "evidencePhotoSection"
+    ).classList.toggle(
+      "hidden",
+      !checkpoint.requiresPhoto
+    );
+
+    document.getElementById(
+      "evidenceNotesSection"
+    ).classList.toggle(
+      "hidden",
+      !checkpoint.requiresNotes
+    );
+
+    document.getElementById(
+      "checkpointEvidenceModal"
+    ).classList.remove(
+      "hidden"
+    );
+
+  };
+
+window.closeCheckpointEvidenceModal =
+  function () {
+
+    document.getElementById(
+      "checkpointEvidenceModal"
+    ).classList.add(
+      "hidden"
+    );
+    document.getElementById(
+      "checkpointNotes"
+    ).value = "";
+
+    document.getElementById(
+      "checkpointPhoto"
+    ).value = "";
+
+  };
+
+window.saveCheckpointEvidence =
+  async function () {
+
+    if (!currentActivePatrolId) {
+
+      alert(
+        "No active patrol."
+      );
+
+      return;
+
+    }
+
+    const activePatrolRef =
+      doc(
+        db,
+        "activePatrols",
+        currentActivePatrolId
+      );
+
+    const activePatrolDoc =
+      await getDoc(
+        activePatrolRef
+      );
+
+    if (!activePatrolDoc.exists()) {
+
+      alert(
+        "Active patrol not found."
+      );
+
+      return;
+
+    }
+
+    const activePatrol =
+      activePatrolDoc.data();
+
+    const patrolCheckpoints =
+      checkpoints
+        .filter(
+          cp =>
+            cp.patrolId ===
+            activePatrol.patrolId
+        )
+        .sort(
+          (a, b) =>
+            a.sequence - b.sequence
+        );
+
+    const checkpoint =
+      patrolCheckpoints[
+      activePatrol.currentCheckpoint
+      ];
+
+    if (!checkpoint) {
+
+      alert(
+        "Checkpoint not found."
+      );
+
+      return;
+
+    }
+
+    const nextCheckpoint =
+      activePatrol.currentCheckpoint + 1;
+
+    const notes =
+      document.getElementById(
+        "checkpointNotes"
+      ).value.trim();
+
+    const photo =
+      document.getElementById(
+        "checkpointPhoto"
+      ).files[0];
+
+    let photoUrl = "";
+
+    if (photo) {
+
+      photoUrl =
+        await uploadCheckpointPhoto(
+
+          photo,
+
+          activePatrol.patrolId,
+
+          checkpoint.id
+
+        );
+
+    }
+
+    if (
+      checkpoint.requiresNotes &&
+      !notes
+    ) {
+
+      alert(
+        "Notes are required for this checkpoint."
+      );
+
+      return;
+
+    }
+
+    if (
+      checkpoint.requiresPhoto &&
+      !photo
+    ) {
+
+      alert(
+        "A photo is required for this checkpoint."
+      );
+
+      return;
+
+    }
+
+    let latitude = null;
+    let longitude = null;
+    let accuracy = null;
+
+    try {
+
+      const position =
+        await new Promise(
+          (resolve, reject) => {
+
+            navigator.geolocation
+              .getCurrentPosition(
+                resolve,
+                reject,
+                {
+                  enableHighAccuracy: true,
+                  timeout: 10000
+                }
+              );
+
+          }
+        );
+
+      latitude =
+        position.coords.latitude;
+
+      longitude =
+        position.coords.longitude;
+
+      accuracy =
+        position.coords.accuracy;
+
+    } catch (error) {
+
+      console.warn(
+        "Unable to obtain GPS location:",
+        error
+      );
+
+    }
+
+    try {
+
+
+      await addDoc(
+
+        collection(
+          db,
+          "patrolCompletions"
+        ),
+
+        {
+
+          patrolSessionId:
+            currentActivePatrolId,
+
+          activePatrolId:
+            currentActivePatrolId,
+
+          patrolId:
+            activePatrol.patrolId,
+
+          checkpointId:
+            checkpoint.id,
+
+          checkpointName:
+            checkpoint.checkpointName,
+
+          officerId:
+            currentOfficer.id,
+
+          officerName:
+            currentOfficer.name,
+
+          siteId:
+            activePatrol.siteId,
+
+          completedAt:
+            serverTimestamp(),
+
+          photoUrl: photoUrl,
+
+          notes: notes,
+
+          latitude:
+            latitude,
+
+          longitude:
+            longitude,
+
+          accuracy:
+            accuracy
+
+        }
+
+      );
+
+      await logPatrolEvent({
 
         patrolSessionId:
-         currentActivePatrolId,
-
-        activePatrolId:
           currentActivePatrolId,
 
         patrolId:
           activePatrol.patrolId,
 
-        checkpointId:
-          checkpoint.id,
-
-        checkpointName:
-          checkpoint.checkpointName,
+        patrolName:
+          activePatrol.patrolName,
 
         officerId:
           currentOfficer.id,
@@ -13282,12 +13530,20 @@ try {
         siteId:
           activePatrol.siteId,
 
-        completedAt:
-          serverTimestamp(),
+        eventType:
+          "CHECKPOINT_COMPLETED",
 
-        photoUrl: photoUrl,
+        checkpointId:
+          checkpoint.id,
 
-        notes: notes,
+        checkpointName:
+          checkpoint.checkpointName,
+
+        notes:
+          notes || "",
+
+        photoUrl:
+          photoUrl || "",
 
         latitude:
           latitude,
@@ -13298,273 +13554,222 @@ try {
         accuracy:
           accuracy
 
-              }
+      });
 
-            );
+      console.log(
+        "Patrol completion saved."
+      );
 
-    await logPatrolEvent({
+    } catch (error) {
 
-  patrolSessionId:
-    currentActivePatrolId,
+      console.error(error);
 
-  patrolId:
-    activePatrol.patrolId,
+      alert(JSON.stringify(error));
 
-  patrolName:
-    activePatrol.patrolName,
+      return;
 
-  officerId:
-    currentOfficer.id,
+    }
 
-  officerName:
-    currentOfficer.name,
+    await updateDoc(
 
-  siteId:
-    activePatrol.siteId,
+      activePatrolRef,
 
-  eventType:
-    "CHECKPOINT_COMPLETED",
+      {
 
-  checkpointId:
-    checkpoint.id,
+        currentCheckpoint:
+          nextCheckpoint
 
-  checkpointName:
-    checkpoint.checkpointName,
+      }
 
-  notes:
-    notes || "",
-
-  photoUrl:
-  photoUrl || "",
-
-latitude:
-  latitude,
-
-longitude:
-  longitude,
-
-accuracy:
-  accuracy
-
-});
-
-    console.log(
-      "Patrol completion saved."
     );
 
-  } catch (error) {
+    if (
+      nextCheckpoint >=
+      patrolCheckpoints.length
+    ) {
 
-  console.error(error);
+      await updateDoc(
 
-  alert(JSON.stringify(error));
+        activePatrolRef,
 
-  return;
+        {
 
-}
+          completed: true,
 
-  await updateDoc(
+          completedAt:
+            serverTimestamp()
 
-    activePatrolRef,
+        }
 
-    {
+      );
 
-      currentCheckpoint:
-        nextCheckpoint
+      await logPatrolEvent({
+
+        patrolSessionId:
+          currentActivePatrolId,
+
+        patrolId:
+          activePatrol.patrolId,
+
+        patrolName:
+          activePatrol.patrolName,
+
+        officerId:
+          currentOfficer.id,
+
+        officerName:
+          currentOfficer.name,
+
+        siteId:
+          activePatrol.siteId,
+
+        eventType:
+          "PATROL_COMPLETED"
+
+      });
+
+      closeCheckpointEvidenceModal();
+
+      alert(
+        "Patrol Complete!"
+      );
+
+      showMyPatrols();
+
+      return;
 
     }
 
-  );
+    closeCheckpointEvidenceModal();
 
-  if (
-  nextCheckpoint >=
-  patrolCheckpoints.length
-) {
-
-  await updateDoc(
-
-    activePatrolRef,
-
-    {
-
-      completed: true,
-
-      completedAt:
-        serverTimestamp()
-
-    }
-
-  );
-
-  await logPatrolEvent({
-
-  patrolSessionId:
-    currentActivePatrolId,
-
-  patrolId:
-    activePatrol.patrolId,
-
-  patrolName:
-    activePatrol.patrolName,
-
-  officerId:
-    currentOfficer.id,
-
-  officerName:
-    currentOfficer.name,
-
-  siteId:
-    activePatrol.siteId,
-
-  eventType:
-    "PATROL_COMPLETED"
-
-});
-
-  closeCheckpointEvidenceModal();
-
-  alert(
-    "Patrol Complete!"
-  );
-
-  showMyPatrols();
-
-  return;
-
-}
-
-closeCheckpointEvidenceModal();
-
-await loadCurrentCheckpoint(
-  currentActivePatrolId
-);
-};
+    await loadCurrentCheckpoint(
+      currentActivePatrolId
+    );
+  };
 
 window.uploadCheckpointPhoto =
-async function(
-  file,
-  patrolId,
-  checkpointId
-) {
+  async function (
+    file,
+    patrolId,
+    checkpointId
+  ) {
 
-  const storageRef =
-    ref(
+    const storageRef =
+      ref(
 
-      storage,
+        storage,
 
-      `patrolPhotos/${
-        patrolId
-      }/${
-        checkpointId
-      }/${
-        Date.now()
-      }`
+        `patrolPhotos/${patrolId
+        }/${checkpointId
+        }/${Date.now()
+        }`
 
+      );
+
+    await uploadBytes(
+      storageRef,
+      file
     );
 
-  await uploadBytes(
-    storageRef,
-    file
-  );
+    return await getDownloadURL(
+      storageRef
+    );
 
-  return await getDownloadURL(
-    storageRef
-  );
-
-};
+  };
 
 window.editCheckpoint =
-function(id) {
+  function (id) {
 
-  const checkpoint =
-    checkpoints.find(
-      cp => cp.id === id
+    const checkpoint =
+      checkpoints.find(
+        cp => cp.id === id
+      );
+
+    if (!checkpoint) {
+
+      alert(
+        "Checkpoint not found."
+      );
+
+      return;
+
+    }
+
+    editingCheckpointId =
+      checkpoint.id;
+
+    document.getElementById(
+      "editCheckpointName"
+    ).value =
+      checkpoint.checkpointName;
+
+    document.getElementById(
+      "editCheckpointDescription"
+    ).value =
+      checkpoint.description || "";
+
+    document.getElementById(
+      "editRequirePhoto"
+    ).checked =
+      checkpoint.requiresPhoto;
+
+    document.getElementById(
+      "editRequireNotes"
+    ).checked =
+      checkpoint.requiresNotes;
+
+    document.getElementById(
+      "editCheckpointModal"
+    ).classList.remove(
+      "hidden"
     );
 
-  if (!checkpoint) {
-
-    alert(
-      "Checkpoint not found."
-    );
-
-    return;
-
-  }
-
-  editingCheckpointId =
-    checkpoint.id;
-
-  document.getElementById(
-    "editCheckpointName"
-  ).value =
-    checkpoint.checkpointName;
-
-  document.getElementById(
-    "editCheckpointDescription"
-  ).value =
-    checkpoint.description || "";
-
-  document.getElementById(
-    "editRequirePhoto"
-  ).checked =
-    checkpoint.requiresPhoto;
-
-  document.getElementById(
-    "editRequireNotes"
-  ).checked =
-    checkpoint.requiresNotes;
-
-  document.getElementById(
-    "editCheckpointModal"
-  ).classList.remove(
-    "hidden"
-  );
-
-};
+  };
 
 window.resumeActivePatrol =
-async function() {
+  async function () {
 
-  if (!currentOfficer) return;
+    if (!currentOfficer) return;
 
-  const activePatrol =
-    await findActivePatrol(
-      currentOfficer.id
+    const activePatrol =
+      await findActivePatrol(
+        currentOfficer.id
+      );
+
+    if (!activePatrol) {
+      return;
+    }
+
+    currentActivePatrolId =
+      activePatrol.id;
+
+    showPatrolExecution();
+
+    await loadCurrentCheckpoint(
+      activePatrol.id
     );
 
-  if (!activePatrol) {
-    return;
-  }
-
-  currentActivePatrolId =
-    activePatrol.id;
-
-  showPatrolExecution();
-
-  await loadCurrentCheckpoint(
-    activePatrol.id
-  );
-
-};
+  };
 
 window.setActiveNavById =
-function(id) {
+  function (id) {
 
-  document
-    .querySelectorAll(
-      ".nav-buttons button:not(.logout-btn)"
-    )
-    .forEach(btn =>
-      btn.classList.remove(
-        "active-nav"
+    document
+      .querySelectorAll(
+        ".nav-buttons button:not(.logout-btn)"
       )
-    );
+      .forEach(btn =>
+        btn.classList.remove(
+          "active-nav"
+        )
+      );
 
-  document
-    .getElementById(id)
-    ?.classList.add(
-      "active-nav"
-    );
-};
+    document
+      .getElementById(id)
+      ?.classList.add(
+        "active-nav"
+      );
+  };
 
 function refreshPatrolDashboard() {
   refreshPatrolMetrics();
@@ -13596,50 +13801,50 @@ function refreshPatrolMetrics() {
     officers.size;
 
   const today =
-  new Date();
+    new Date();
 
-today.setHours(
-  0,
-  0,
-  0,
-  0
-);
-
-const completedToday =
-  activePatrols.filter(
-    patrol => {
-
-      if (
-        !patrol.completed ||
-        !patrol.completedAt
-      ) {
-        return false;
-      }
-
-      return (
-        patrol.completedAt
-          .toDate() >= today
-      );
-    }
+  today.setHours(
+    0,
+    0,
+    0,
+    0
   );
 
-document.getElementById(
-  "completedPatrolsTodayCount"
-).textContent =
-  completedToday.length;
+  const completedToday =
+    activePatrols.filter(
+      patrol => {
+
+        if (
+          !patrol.completed ||
+          !patrol.completedAt
+        ) {
+          return false;
+        }
+
+        return (
+          patrol.completedAt
+            .toDate() >= today
+        );
+      }
+    );
+
+  document.getElementById(
+    "completedPatrolsTodayCount"
+  ).textContent =
+    completedToday.length;
 
   const overduePatrols =
-  active.filter(
-    patrol =>
-      isPatrolOverdue(
-        patrol
-      )
-  );
+    active.filter(
+      patrol =>
+        isPatrolOverdue(
+          patrol
+        )
+    );
 
-document.getElementById(
-  "overduePatrolsCount"
-).textContent =
-  overduePatrols.length;
+  document.getElementById(
+    "overduePatrolsCount"
+  ).textContent =
+    overduePatrols.length;
   renderCompletedPatrolHistory();
 }
 
@@ -13656,7 +13861,7 @@ function renderActivePatrolTable() {
   const active =
     activePatrols.filter(
       p => !p.completed
-    );    
+    );
 
   if (!active.length) {
 
@@ -13683,56 +13888,56 @@ function renderActivePatrolTable() {
       <tbody>
 
         ${active.map(
-          patrol => {
-            
+    patrol => {
 
-       const overdue =
-  isPatrolOverdue(patrol);
 
-const status =
-  overdue
-    ? `
+      const overdue =
+        isPatrolOverdue(patrol);
+
+      const status =
+        overdue
+          ? `
       <span class="badge warning">
         Overdue
       </span>
     `
-    : `
+          : `
       <span class="badge success">
         Active
       </span>
     `;
 
-const rowClass =
-  overdue
-    ? "overdue-row"
-    : "";
+      const rowClass =
+        overdue
+          ? "overdue-row"
+          : "";
 
-const elapsed =
-  getPatrolElapsed(
-    patrol
-  );
+      const elapsed =
+        getPatrolElapsed(
+          patrol
+        );
 
-const elapsedDisplay =
-  overdue
-    ? `
+      const elapsedDisplay =
+        overdue
+          ? `
       <span class="overdue-time">
         ${elapsed}
       </span>
     `
-    : elapsed;
+          : elapsed;
 
-            const progress =
-`${Math.min(
-  patrol.currentCheckpoint + 1,
-  patrol.totalCheckpoints
-)}
+      const progress =
+        `${Math.min(
+          patrol.currentCheckpoint + 1,
+          patrol.totalCheckpoints
+        )}
  / ${patrol.totalCheckpoints}`;
 
- const percent =
-  (patrol.currentCheckpoint /
-   patrol.totalCheckpoints) * 100;
+      const percent =
+        (patrol.currentCheckpoint /
+          patrol.totalCheckpoints) * 100;
 
-            return `
+      return `
                 <tr class="${rowClass}">            
            
                 <td>${patrol.officerName}</td>
@@ -13753,26 +13958,24 @@ const elapsedDisplay =
 </td>
 
                 <td>
-                  ${
-                    patrol.currentCheckpointName ||
-                    "-"
-                  }
+                  ${patrol.currentCheckpointName ||
+        "-"
+        }
                 </td>
 
                 <td>
-                  ${
-                    patrol.startedAt
-                      ?.toDate()
-                      .toLocaleTimeString()
-                  }
+                  ${patrol.startedAt
+          ?.toDate()
+          .toLocaleTimeString()
+        }
                 </td>
 
               <td>${elapsedDisplay}</td>
               <td>${status}</td>
               </tr>
             `;
-          }
-        ).join("")}
+    }
+  ).join("")}
 
       </tbody>
     </table>
@@ -13780,63 +13983,63 @@ const elapsedDisplay =
 }
 
 window.showPatrolDashboardPage =
-function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "block";
-
-  setActiveNavById(
-    "patrolDashboardBtn"
-  );
-
-   document.getElementById(
-  "patrolExecutionPage"
-).style.display = "none";
-
-  document.getElementById(
-  "myPatrolsPage"
-).style.display = "none";
-
-document.getElementById(
-    "officerPortal"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+  function () {
 
     document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+      "dashboardPage"
+    ).style.display = "none";
 
-  refreshPatrolDashboard();
-};
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "block";
+
+    setActiveNavById(
+      "patrolDashboardBtn"
+    );
+
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    refreshPatrolDashboard();
+  };
 
 function isPatrolOverdue(
   patrol
@@ -13862,7 +14065,7 @@ function isPatrolOverdue(
   return (
     Date.now() >
     patrol.scheduledStart +
-      expectedDuration
+    expectedDuration
   );
 }
 
@@ -13890,207 +14093,206 @@ function getPatrolElapsed(
     );
 
   if (hours > 0) {
-    return `${hours}h ${
-      minutes % 60
-    }m`;
+    return `${hours}h ${minutes % 60
+      }m`;
   }
 
   return `${minutes}m`;
 }
 
 window.loadPatrolTimeline =
-async function(
-  patrolSessionId
-) {
+  async function (
+    patrolSessionId
+  ) {
 
-  // Load patrol events
-  const eventsQuery =
-    query(
-      collection(
-        db,
-        "patrolEvents"
-      ),
-      where(
-        "patrolSessionId",
-        "==",
-        patrolSessionId
-      ),
-      orderBy(
-        "timestamp",
-        "asc"
-      )
-    );
+    // Load patrol events
+    const eventsQuery =
+      query(
+        collection(
+          db,
+          "patrolEvents"
+        ),
+        where(
+          "patrolSessionId",
+          "==",
+          patrolSessionId
+        ),
+        orderBy(
+          "timestamp",
+          "asc"
+        )
+      );
 
-  const eventsSnapshot =
-    await getDocs(
-      eventsQuery
-    );
+    const eventsSnapshot =
+      await getDocs(
+        eventsQuery
+      );
 
-  const events =
-    eventsSnapshot.docs.map(
-      doc => ({
-        id: doc.id,
-        ...doc.data()
-      })
-    );
+    const events =
+      eventsSnapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
 
-  // Load checkpoint evidence
-  const completionsQuery =
-    query(
-      collection(
-        db,
-        "patrolCompletions"
-      ),
-      where(
-        "patrolSessionId",
-        "==",
-        patrolSessionId
-      )
-    );
+    // Load checkpoint evidence
+    const completionsQuery =
+      query(
+        collection(
+          db,
+          "patrolCompletions"
+        ),
+        where(
+          "patrolSessionId",
+          "==",
+          patrolSessionId
+        )
+      );
 
-  const completionsSnapshot =
-    await getDocs(
-      completionsQuery
-    );
+    const completionsSnapshot =
+      await getDocs(
+        completionsQuery
+      );
 
-  // Build evidence lookup
-  const evidenceMap = {};
+    // Build evidence lookup
+    const evidenceMap = {};
 
-  completionsSnapshot.forEach(
-    doc => {
+    completionsSnapshot.forEach(
+      doc => {
 
-      const completion =
-        doc.data();
+        const completion =
+          doc.data();
 
-      evidenceMap[
-        completion.checkpointId
-      ] = completion;
-    }
-  );
-
-  // Merge evidence into events
-  return events.map(
-    event => {
-
-      const evidence =
         evidenceMap[
+          completion.checkpointId
+        ] = completion;
+      }
+    );
+
+    // Merge evidence into events
+    return events.map(
+      event => {
+
+        const evidence =
+          evidenceMap[
           event.checkpointId
-        ];
+          ];
 
-      return {
+        return {
 
-        ...event,
+          ...event,
 
-        photoUrl:
-          evidence?.photoUrl || "",
+          photoUrl:
+            evidence?.photoUrl || "",
 
-        notes:
-          evidence?.notes || ""
+          notes:
+            evidence?.notes || ""
 
-      };
-    }
-  );
-};
+        };
+      }
+    );
+  };
 
 window.viewPatrolTimeline =
-async function(
-  patrolSessionId
-) {
-  console.log(
-  "Timeline clicked:",
-  patrolSessionId
-);
-
-  const events =
-    await loadPatrolTimeline(
+  async function (
+    patrolSessionId
+  ) {
+    console.log(
+      "Timeline clicked:",
       patrolSessionId
     );
 
+    const events =
+      await loadPatrolTimeline(
+        patrolSessionId
+      );
+
     patrolPhotoGallery =
-  events
-    .filter(
-      e => e.photoUrl
-    )
-    .map(
-      e => e.photoUrl
-    );
+      events
+        .filter(
+          e => e.photoUrl
+        )
+        .map(
+          e => e.photoUrl
+        );
 
     console.log(
-  "Timeline events:",
-  events
-);
-
-  const container =
-    document.getElementById(
-      "patrolTimeline"
+      "Timeline events:",
+      events
     );
 
-  if (!events.length) {
+    const container =
+      document.getElementById(
+        "patrolTimeline"
+      );
 
-    container.innerHTML =
-      `
+    if (!events.length) {
+
+      container.innerHTML =
+        `
       <p>
         No timeline events found.
       </p>
       `;
 
-  } else {
+    } else {
 
-    container.innerHTML =
-  events.map(
-    (event, index) => {
+      container.innerHTML =
+        events.map(
+          (event, index) => {
 
-          let icon = "📍";
-          let text = "";
+            let icon = "📍";
+            let text = "";
 
-          switch (
+            switch (
             event.eventType
-          ) {
+            ) {
 
-            case "PATROL_STARTED":
-              icon = "🟢";
-              text =
-                "Patrol Started";
-              break;
+              case "PATROL_STARTED":
+                icon = "🟢";
+                text =
+                  "Patrol Started";
+                break;
 
-            case "CHECKPOINT_COMPLETED":
-              icon = "✅";
-              text =
-                `${event.checkpointName} Completed`;
-              break;
+              case "CHECKPOINT_COMPLETED":
+                icon = "✅";
+                text =
+                  `${event.checkpointName} Completed`;
+                break;
 
-            case "PATROL_COMPLETED":
-              icon = "🏁";
-              text =
-                "Patrol Completed";
-              break;
+              case "PATROL_COMPLETED":
+                icon = "🏁";
+                text =
+                  "Patrol Completed";
+                break;
 
-            case "PATROL_OVERDUE":
-              icon = "⚠️";
-              text =
-                "Patrol Became Overdue";
-              break;
+              case "PATROL_OVERDUE":
+                icon = "⚠️";
+                text =
+                  "Patrol Became Overdue";
+                break;
 
-            default:
-              text =
-                event.eventType;
-          }
+              default:
+                text =
+                  event.eventType;
+            }
 
-          const time =
-            event.timestamp?.toDate
-              ? event.timestamp
+            const time =
+              event.timestamp?.toDate
+                ? event.timestamp
                   .toDate()
                   .toLocaleString()
-              : "-";
+                : "-";
 
-              const photoIndex =
-  event.photoUrl
-    ? photoGallery.indexOf(
-        event.photoUrl
-      )
-    : -1;
+            const photoIndex =
+              event.photoUrl
+                ? photoGallery.indexOf(
+                  event.photoUrl
+                )
+                : -1;
 
-          return `
+            return `
   <div class="timeline-item">
 
     <div class="timeline-time">
@@ -14102,19 +14304,17 @@ async function(
       ${text}
     </div>
 
-    ${
-      event.notes
-        ? `
+    ${event.notes
+                ? `
           <div class="timeline-notes">
             📝 ${event.notes}
           </div>
         `
-        : ""
-    }
+                : ""
+              }
 
-${
-  event.photoUrl
-    ? `
+${event.photoUrl
+                ? `
       <div class="timeline-photo">
         <img
           src="${event.photoUrl}"
@@ -14126,12 +14326,11 @@ ${
 ">
       </div>
     `
-    : ""
-}
+                : ""
+              }
 
-    ${
-      event.latitude
-        ? `
+    ${event.latitude
+                ? `
           <div class="timeline-location">
             📍
             ${event.latitude.toFixed(6)},
@@ -14154,134 +14353,134 @@ ${
             🗺 View on Map
           </button>
         `
-        : ""
-    }
+                : ""
+              }
 
   </div>
 `;
-        }
-      ).join("");
-  }
+          }
+        ).join("");
+    }
 
-  console.log(
-  "Opening timeline modal..."
-);
-
-document.getElementById(
-  "patrolTimelineModal"
-).style.display =
-  "flex";
-
-  document.getElementById(
-    "officerPortal"
-  ).style.display =
-    "none";
+    console.log(
+      "Opening timeline modal..."
+    );
 
     document.getElementById(
-  "patrolExecutionPage"
-).style.display = "none";
-
-  document.getElementById(
-    "myPatrolsPage"
-  ).style.display =
-    "none";
+      "patrolTimelineModal"
+    ).style.display =
+      "flex";
 
     document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
+      "officerPortal"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
 
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none"; 
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-};
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+  };
 
 window.testPatrolTimeline =
-async function() {
+  async function () {
 
-  const completed =
-    activePatrols.find(
-      p => p.completed
-    );
-
-  if (!completed) {
-
-    alert(
-      "No completed patrol found."
-    );
-
-    return;
-  }
-
-  await viewPatrolTimeline(
-    completed.id
-  );
-};
-
-window.closePatrolTimelineModal =
-function() {
-
-  document.getElementById(
-    "patrolTimelineModal"
-  ).style.display =
-    "none";
-
-};
-
-window.renderCompletedPatrolHistory =
-function() {
-
-  const container =
-    document.getElementById(
-      "completedPatrolHistory"
-    );
-
-  if (!container)
-    return;
-
-  const completed =
-    activePatrols
-      .filter(
+    const completed =
+      activePatrols.find(
         p => p.completed
-      )
-      .sort(
-        (a, b) => {
-
-          const aTime =
-            a.completedAt?.toDate?.()
-              ?.getTime() || 0;
-
-          const bTime =
-            b.completedAt?.toDate?.()
-              ?.getTime() || 0;
-
-          return bTime - aTime;
-        }
       );
 
-  if (!completed.length) {
+    if (!completed) {
 
-    container.innerHTML =
-      `
+      alert(
+        "No completed patrol found."
+      );
+
+      return;
+    }
+
+    await viewPatrolTimeline(
+      completed.id
+    );
+  };
+
+window.closePatrolTimelineModal =
+  function () {
+
+    document.getElementById(
+      "patrolTimelineModal"
+    ).style.display =
+      "none";
+
+  };
+
+window.renderCompletedPatrolHistory =
+  function () {
+
+    const container =
+      document.getElementById(
+        "completedPatrolHistory"
+      );
+
+    if (!container)
+      return;
+
+    const completed =
+      activePatrols
+        .filter(
+          p => p.completed
+        )
+        .sort(
+          (a, b) => {
+
+            const aTime =
+              a.completedAt?.toDate?.()
+                ?.getTime() || 0;
+
+            const bTime =
+              b.completedAt?.toDate?.()
+                ?.getTime() || 0;
+
+            return bTime - aTime;
+          }
+        );
+
+    if (!completed.length) {
+
+      container.innerHTML =
+        `
       <p>
         No completed patrols.
       </p>
       `;
 
-    return;
-  }
+      return;
+    }
 
-  container.innerHTML =
-    completed.map(
-      patrol => `
+    container.innerHTML =
+      completed.map(
+        patrol => `
 
       <div
         class="completed-patrol-card">
@@ -14300,16 +14499,15 @@ function() {
           <br>
 
           Completed:
-${
-  patrol.completedAt?.toDate
-    ? patrol.completedAt
-        .toDate()
-        .toLocaleString([], {
-          dateStyle: "short",
-          timeStyle: "short"
-        })
-    : "-"
-}
+${patrol.completedAt?.toDate
+            ? patrol.completedAt
+              .toDate()
+              .toLocaleString([], {
+                dateStyle: "short",
+                timeStyle: "short"
+              })
+            : "-"
+          }
         </div>
 
         <button
@@ -14324,40 +14522,40 @@ ${
       </div>
 
       `
-    ).join("");
-};
+      ).join("");
+  };
 
 window.viewPatrolLocation =
-function(lat, lng) {
+  function (lat, lng) {
 
-  closePatrolTimelineModal();
+    closePatrolTimelineModal();
 
-  showDashboard();
+    showDashboard();
 
-  document.getElementById(
-  "operationsMapPanel"
-)?.scrollIntoView({
-  behavior: "smooth",
-  block: "start"
-});
+    document.getElementById(
+      "operationsMapPanel"
+    )?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
-  setTimeout(() => {
+    setTimeout(() => {
 
-    map.invalidateSize();
+      map.invalidateSize();
 
-    map.flyTo(
-      [lat, lng],
-      19,
-      {
-        duration: 2
-      }
-    );
+      map.flyTo(
+        [lat, lng],
+        19,
+        {
+          duration: 2
+        }
+      );
 
-    L.popup()
-      .setLatLng(
-        [lat, lng]
-      )
-      .setContent(`
+      L.popup()
+        .setLatLng(
+          [lat, lng]
+        )
+        .setContent(`
         <strong>
           Patrol Evidence
         </strong>
@@ -14365,219 +14563,219 @@ function(lat, lng) {
         ${lat.toFixed(6)},
         ${lng.toFixed(6)}
       `)
-      .openOn(map);
+        .openOn(map);
 
-  }, 500);
+    }, 500);
 
-};
+  };
 
 window.openPhotoViewer =
-function(index) {
+  function (index) {
 
-  currentPhotoIndex = index;
-
-  document.getElementById(
-  "photoViewerImage"
-).src =
-  photoGallery[
-    currentPhotoIndex
-  ].downloadURL;
-
-  updatePhotoCounter();
-
-  document.getElementById(
-    "photoViewerModal"
-  ).style.display =
-    "flex";
-};
-
-window.closePhotoViewer =
-function() {
-
-  document.getElementById(
-    "photoViewerModal"
-  ).style.display =
-    "none";
-
-  document.getElementById(
-    "photoViewerImage"
-  ).src = "";
-
-  currentPhotoIndex = 0;
-};
-
-window.showPatrolAnalytics =
-function() {
-
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "officerPortal"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myPatrolsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolExecutionPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolTimelineModal"
-  ).style.display = "none";
-
-  document.getElementById(
-    "companySettingsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolAnalyticsPage"
-  ).style.display = "block";
-
-   setActiveNavById(
-    "patrolAnalyticsBtn"
-  );
-
-  document.getElementById(
-    "patrolDashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myReportsPage"
-  ).style.display =
-    "none";
+    currentPhotoIndex = index;
 
     document.getElementById(
-    "mileageReportPage"
-  ).style.display = "none";
+      "photoViewerImage"
+    ).src =
+      photoGallery[
+        currentPhotoIndex
+      ].downloadURL;
 
-  renderPatrolAnalytics();
-};
+    updatePhotoCounter();
 
-window.renderPatrolAnalytics =
-function() {
+    document.getElementById(
+      "photoViewerModal"
+    ).style.display =
+      "flex";
+  };
 
-  const filteredPatrols =
-  getFilteredPatrols();
+window.closePhotoViewer =
+  function () {
 
-  const total =
-  filteredPatrols.length;
+    document.getElementById(
+      "photoViewerModal"
+    ).style.display =
+      "none";
 
-const completed =
-  filteredPatrols.filter(
-    p => p.completed
-  ).length;
+    document.getElementById(
+      "photoViewerImage"
+    ).src = "";
 
-const active =
-  filteredPatrols.filter(
-    p => !p.completed
-  ).length; 
+    currentPhotoIndex = 0;
+  };
 
-  const completionRate =
-    total
-      ? Math.round(
-          (completed / total) * 100
-        )
-      : 0;
+window.showPatrolAnalytics =
+  function () {
 
-  const missed =
-    filteredPatrols.filter(
-      p =>
-        p.totalCheckpoints &&
-        p.currentCheckpoint <
-          p.totalCheckpoints - 1 &&
-        p.completed
-    ).length;
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
 
-  const overdue =
-  filteredPatrols.filter(
-    patrol => {
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
 
-      if (
-        patrol.completed ||
-        !patrol.startedAt
-      ) {
-        return false;
-      }
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
 
-      const elapsed =
-        Date.now() -
-        patrol.startedAt
-          .toDate()
-          .getTime();
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
 
-      return (
-        elapsed >
-        patrol.expectedDuration
-      );
-    }
-  ).length;
+    document.getElementById(
+      "patrolExecutionPage"
+    ).style.display = "none";
 
-  const officerStats = {};
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
 
-filteredPatrols.forEach(
-  patrol => {
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
 
-    const officer =
-      patrol.officerName ||
-      "Unknown";
+    document.getElementById(
+      "patrolTimelineModal"
+    ).style.display = "none";
 
-    if (!officerStats[officer]) {
+    document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
 
-      officerStats[officer] = {
-        total: 0,
-        completed: 0
-      };
-    }
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "block";
 
-    officerStats[officer].total++;
-
-    if (patrol.completed) {
-      officerStats[officer].completed++;
-    }
-  }
-);
-
-const topOfficer =
-  Object.entries(
-    officerStats
-  )
-    .sort(
-      (
-        [, a],
-        [, b]
-      ) =>
-        b.completed -
-        a.completed
-    )[0]?.[0] ||
-  "-";
-
-  const completedPatrols =
-    filteredPatrols.filter(
-      p =>
-        p.completed &&
-        p.startedAt &&
-        p.completedAt
+    setActiveNavById(
+      "patrolAnalyticsBtn"
     );
 
-  const averageSeconds =
-    completedPatrols.length
-      ? Math.round(
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+    renderPatrolAnalytics();
+  };
+
+window.renderPatrolAnalytics =
+  function () {
+
+    const filteredPatrols =
+      getFilteredPatrols();
+
+    const total =
+      filteredPatrols.length;
+
+    const completed =
+      filteredPatrols.filter(
+        p => p.completed
+      ).length;
+
+    const active =
+      filteredPatrols.filter(
+        p => !p.completed
+      ).length;
+
+    const completionRate =
+      total
+        ? Math.round(
+          (completed / total) * 100
+        )
+        : 0;
+
+    const missed =
+      filteredPatrols.filter(
+        p =>
+          p.totalCheckpoints &&
+          p.currentCheckpoint <
+          p.totalCheckpoints - 1 &&
+          p.completed
+      ).length;
+
+    const overdue =
+      filteredPatrols.filter(
+        patrol => {
+
+          if (
+            patrol.completed ||
+            !patrol.startedAt
+          ) {
+            return false;
+          }
+
+          const elapsed =
+            Date.now() -
+            patrol.startedAt
+              .toDate()
+              .getTime();
+
+          return (
+            elapsed >
+            patrol.expectedDuration
+          );
+        }
+      ).length;
+
+    const officerStats = {};
+
+    filteredPatrols.forEach(
+      patrol => {
+
+        const officer =
+          patrol.officerName ||
+          "Unknown";
+
+        if (!officerStats[officer]) {
+
+          officerStats[officer] = {
+            total: 0,
+            completed: 0
+          };
+        }
+
+        officerStats[officer].total++;
+
+        if (patrol.completed) {
+          officerStats[officer].completed++;
+        }
+      }
+    );
+
+    const topOfficer =
+      Object.entries(
+        officerStats
+      )
+        .sort(
+          (
+            [, a],
+            [, b]
+          ) =>
+            b.completed -
+            a.completed
+        )[0]?.[0] ||
+      "-";
+
+    const completedPatrols =
+      filteredPatrols.filter(
+        p =>
+          p.completed &&
+          p.startedAt &&
+          p.completedAt
+      );
+
+    const averageSeconds =
+      completedPatrols.length
+        ? Math.round(
           completedPatrols.reduce(
             (sum, patrol) => {
 
@@ -14593,20 +14791,20 @@ const topOfficer =
           ) /
           completedPatrols.length
         )
-      : 0;
+        : 0;
 
-  const minutes =
-    Math.floor(
-      averageSeconds / 60
-    );
+    const minutes =
+      Math.floor(
+        averageSeconds / 60
+      );
 
-  const seconds =
-    averageSeconds % 60;  
+    const seconds =
+      averageSeconds % 60;
 
-  document.getElementById(
-    "patrolAnalyticsCards"
-  ).innerHTML =
-    `
+    document.getElementById(
+      "patrolAnalyticsCards"
+    ).innerHTML =
+      `
     <div class="stat-card">
       <h2>${total}</h2>
       <p>📋 Total Patrols</p>
@@ -14648,54 +14846,54 @@ const topOfficer =
     </div>
     
     `;
- 
-  populateAnalyticsFilters();
-  renderOfficerPerformance();
-  renderSitePerformance();
-};
+
+    populateAnalyticsFilters();
+    renderOfficerPerformance();
+    renderSitePerformance();
+  };
 
 window.renderSitePerformance =
-function() {  
+  function () {
 
-  const patrols =
-  getFilteredPatrols();
+    const patrols =
+      getFilteredPatrols();
 
-  const stats = {};
+    const stats = {};
 
-  patrols.forEach(
-    patrol => {
+    patrols.forEach(
+      patrol => {
 
-      const site =
-        sites.find(
-          s =>
-            s.id ===
-            patrol.siteId
-        );  
+        const site =
+          sites.find(
+            s =>
+              s.id ===
+              patrol.siteId
+          );
 
-     const name =
-  site?.name ||
-  "Unknown";
+        const name =
+          site?.name ||
+          "Unknown";
 
-      if (!stats[name]) {
+        if (!stats[name]) {
 
-        stats[name] = {
-          total: 0,
-          completed: 0
-        };
+          stats[name] = {
+            total: 0,
+            completed: 0
+          };
+        }
+
+        stats[name].total++;
+
+        if (patrol.completed) {
+          stats[name].completed++;
+        }
       }
+    );
 
-      stats[name].total++;
-
-      if (patrol.completed) {
-        stats[name].completed++;
-      }
-    }
-  );
-
-  document.getElementById(
-    "sitePerformanceTable"
-  ).innerHTML =
-    `
+    document.getElementById(
+      "sitePerformanceTable"
+    ).innerHTML =
+      `
       <table class="table">
 
         <thead>
@@ -14709,21 +14907,20 @@ function() {
 
         <tbody>
 
-          ${
-            Object.entries(stats)
-              .map(
-                ([name, s]) => {
+          ${Object.entries(stats)
+        .map(
+          ([name, s]) => {
 
-                  const pct =
-                    s.total
-                      ? Math.round(
-                          s.completed /
-                          s.total *
-                          100
-                        )
-                      : 0;
+            const pct =
+              s.total
+                ? Math.round(
+                  s.completed /
+                  s.total *
+                  100
+                )
+                : 0;
 
-                  return `
+            return `
                     <tr>
                       <td>${name}</td>
                       <td>${s.total}</td>
@@ -14731,68 +14928,68 @@ function() {
                       <td>${pct}%</td>
                     </tr>
                   `;
-                }
-              )
-              .join("")
           }
+        )
+        .join("")
+      }
 
         </tbody>
 
       </table>
     `;
-};
+  };
 
 window.renderOfficerPerformance =
-function() {  
-  const patrols =
-  getFilteredPatrols();
+  function () {
+    const patrols =
+      getFilteredPatrols();
 
-  const container =
-    document.getElementById(
-      "officerPerformanceTable"
-    );
-
-  if (!container)
-    return;
-
-  const stats = {};
-
-  patrols.forEach(
-    patrol => {
-
-      const officer =
-        patrol.officerName ||
-        "Unknown";
-
-      if (!stats[officer]) {
-
-        stats[officer] = {
-          total: 0,
-          completed: 0
-        };
-      }
-
-      stats[officer].total++;
-
-      if (patrol.completed) {
-        stats[officer].completed++;
-      }
-    }
-  );
-
-  const rows =
-    Object.entries(stats)
-      .sort(
-        (
-          [, a],
-          [, b]
-        ) =>
-          b.completed -
-          a.completed
+    const container =
+      document.getElementById(
+        "officerPerformanceTable"
       );
 
-  container.innerHTML =
-    `
+    if (!container)
+      return;
+
+    const stats = {};
+
+    patrols.forEach(
+      patrol => {
+
+        const officer =
+          patrol.officerName ||
+          "Unknown";
+
+        if (!stats[officer]) {
+
+          stats[officer] = {
+            total: 0,
+            completed: 0
+          };
+        }
+
+        stats[officer].total++;
+
+        if (patrol.completed) {
+          stats[officer].completed++;
+        }
+      }
+    );
+
+    const rows =
+      Object.entries(stats)
+        .sort(
+          (
+            [, a],
+            [, b]
+          ) =>
+            b.completed -
+            a.completed
+        );
+
+    container.innerHTML =
+      `
       <table class="table">
 
         <thead>
@@ -14806,20 +15003,19 @@ function() {
 
         <tbody>
 
-          ${
-            rows.map(
-              ([name, s]) => {
+          ${rows.map(
+        ([name, s]) => {
 
-                const pct =
-                  s.total
-                    ? Math.round(
-                        s.completed /
-                        s.total *
-                        100
-                      )
-                    : 0;
+          const pct =
+            s.total
+              ? Math.round(
+                s.completed /
+                s.total *
+                100
+              )
+              : 0;
 
-                return `
+          return `
                   <tr>
                     <td>${name}</td>
                     <td>${s.total}</td>
@@ -14827,242 +15023,242 @@ function() {
                     <td>${pct}%</td>
                   </tr>
                 `;
-              }
-            ).join("")
-          }
+        }
+      ).join("")
+      }
 
         </tbody>
 
       </table>
     `;
-};
+  };
 
 window.populateAnalyticsFilters =
-function () {    
+  function () {
 
-  const siteSelect =
-    document.getElementById(
-      "analyticsSiteFilter"
-    );
+    const siteSelect =
+      document.getElementById(
+        "analyticsSiteFilter"
+      );
 
-  const officerSelect =
-    document.getElementById(
-      "analyticsOfficerFilter"
-    ); 
+    const officerSelect =
+      document.getElementById(
+        "analyticsOfficerFilter"
+      );
 
-  if (!siteSelect || !officerSelect)
-    return;
+    if (!siteSelect || !officerSelect)
+      return;
 
-  siteSelect.innerHTML =
-    `<option value="">All Sites</option>`;
+    siteSelect.innerHTML =
+      `<option value="">All Sites</option>`;
 
-  officerSelect.innerHTML =
-    `<option value="">All Officers</option>`;
+    officerSelect.innerHTML =
+      `<option value="">All Officers</option>`;
 
-  sites
-    .sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-    .forEach(site => {
+    sites
+      .sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+      .forEach(site => {
 
-      siteSelect.innerHTML += `
+        siteSelect.innerHTML += `
         <option value="${site.id}">
           ${site.name}
         </option>
       `;
-    });
+      });
 
-  employees
-    .filter(
-      e => e.role === "Officer"
-    )
-    .sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-    .forEach(officer => {
+    employees
+      .filter(
+        e => e.role === "Officer"
+      )
+      .sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+      .forEach(officer => {
 
-      officerSelect.innerHTML += `
+        officerSelect.innerHTML += `
         <option value="${officer.id}">
           ${officer.name}
         </option>
       `;
-    });
+      });
 
-  siteSelect.value =
-    analyticsSiteFilter;
+    siteSelect.value =
+      analyticsSiteFilter;
 
-  officerSelect.value =
-    analyticsOfficerFilter;
+    officerSelect.value =
+      analyticsOfficerFilter;
 
-  siteSelect.onchange = () => {
-
-    console.log(
-      "Site changed:",
-      siteSelect.value
-    );
-
-    analyticsSiteFilter =
-      siteSelect.value;
-
-    renderPatrolAnalytics();
-  };
-
-  officerSelect.onchange = () => {
-
-    console.log(
-      "Officer changed:",
-      officerSelect.value
-    );
-
-    analyticsOfficerFilter =
-      officerSelect.value;
-
-    renderPatrolAnalytics();
-  };
-
-  const startInput =
-  document.getElementById(
-    "analyticsStartDate"
-  );
-
-if (startInput) {
-  startInput.onchange =
-    e => {
-
-      analyticsStartDateFilter =
-        e.target.value;
+    siteSelect.onchange = () => {
 
       console.log(
-        "Start Date:",
-        analyticsStartDateFilter
+        "Site changed:",
+        siteSelect.value
       );
+
+      analyticsSiteFilter =
+        siteSelect.value;
 
       renderPatrolAnalytics();
     };
-}
 
-const endInput =
-  document.getElementById(
-    "analyticsEndDate"
-  );
-
-if (endInput) {
-  endInput.onchange =
-    e => {
-
-      analyticsEndDateFilter =
-        e.target.value;
+    officerSelect.onchange = () => {
 
       console.log(
-        "End Date:",
-        analyticsEndDateFilter
+        "Officer changed:",
+        officerSelect.value
       );
+
+      analyticsOfficerFilter =
+        officerSelect.value;
 
       renderPatrolAnalytics();
     };
-}
- 
-};
 
-window.applyAnalyticsFilters =
-function () {
+    const startInput =
+      document.getElementById(
+        "analyticsStartDate"
+      );
 
-  const start =
-    document.getElementById(
-      "analyticsStartDate"
-    ).value;
+    if (startInput) {
+      startInput.onchange =
+        e => {
 
-  const end =
-    document.getElementById(
-      "analyticsEndDate"
-    ).value;
+          analyticsStartDateFilter =
+            e.target.value;
 
-  const siteId =
-    document.getElementById(
-      "analyticsSiteFilter"
-    ).value;
-
-  const officerId =
-    document.getElementById(
-      "analyticsOfficerFilter"
-    ).value;
-
-  filteredPatrolCompletions =
-    patrolCompletions.filter(
-      patrol => {
-
-        let pass = true;
-
-        if (start) {
-
-          const startDate =
-            new Date(start);
-
-          pass =
-            pass &&
-            patrol.completedAt?.toDate() >=
-              startDate;
-        }
-
-        if (end) {
-
-          const endDate =
-            new Date(end);
-          endDate.setHours(
-            23,
-            59,
-            59,
-            999
+          console.log(
+            "Start Date:",
+            analyticsStartDateFilter
           );
 
-          pass =
-            pass &&
-            patrol.completedAt?.toDate() <=
+          renderPatrolAnalytics();
+        };
+    }
+
+    const endInput =
+      document.getElementById(
+        "analyticsEndDate"
+      );
+
+    if (endInput) {
+      endInput.onchange =
+        e => {
+
+          analyticsEndDateFilter =
+            e.target.value;
+
+          console.log(
+            "End Date:",
+            analyticsEndDateFilter
+          );
+
+          renderPatrolAnalytics();
+        };
+    }
+
+  };
+
+window.applyAnalyticsFilters =
+  function () {
+
+    const start =
+      document.getElementById(
+        "analyticsStartDate"
+      ).value;
+
+    const end =
+      document.getElementById(
+        "analyticsEndDate"
+      ).value;
+
+    const siteId =
+      document.getElementById(
+        "analyticsSiteFilter"
+      ).value;
+
+    const officerId =
+      document.getElementById(
+        "analyticsOfficerFilter"
+      ).value;
+
+    filteredPatrolCompletions =
+      patrolCompletions.filter(
+        patrol => {
+
+          let pass = true;
+
+          if (start) {
+
+            const startDate =
+              new Date(start);
+
+            pass =
+              pass &&
+              patrol.completedAt?.toDate() >=
+              startDate;
+          }
+
+          if (end) {
+
+            const endDate =
+              new Date(end);
+            endDate.setHours(
+              23,
+              59,
+              59,
+              999
+            );
+
+            pass =
+              pass &&
+              patrol.completedAt?.toDate() <=
               endDate;
+          }
+
+          if (siteId) {
+            pass =
+              pass &&
+              patrol.siteId === siteId;
+          }
+
+          if (officerId) {
+            pass =
+              pass &&
+              patrol.employeeId === officerId;
+          }
+
+          return pass;
         }
+      );
 
-        if (siteId) {
-          pass =
-            pass &&
-            patrol.siteId === siteId;
-        }
-
-        if (officerId) {
-          pass =
-            pass &&
-            patrol.employeeId === officerId;
-        }
-
-        return pass;
-      }
-    );
-
-  refreshPatrolAnalytics();
-};
+    refreshPatrolAnalytics();
+  };
 
 window.clearAnalyticsFilters =
-function () {
+  function () {
 
-  document.getElementById(
-    "analyticsStartDate"
-  ).value = "";
+    document.getElementById(
+      "analyticsStartDate"
+    ).value = "";
 
-  document.getElementById(
-    "analyticsEndDate"
-  ).value = "";
+    document.getElementById(
+      "analyticsEndDate"
+    ).value = "";
 
-  document.getElementById(
-    "analyticsSiteFilter"
-  ).value = "";
+    document.getElementById(
+      "analyticsSiteFilter"
+    ).value = "";
 
-  document.getElementById(
-    "analyticsOfficerFilter"
-  ).value = "";
+    document.getElementById(
+      "analyticsOfficerFilter"
+    ).value = "";
 
-  filteredPatrolCompletions = [];
+    filteredPatrolCompletions = [];
 
-  refreshPatrolAnalytics();
-};
+    refreshPatrolAnalytics();
+  };
 
 function getFilteredPatrols() {
 
@@ -15078,497 +15274,497 @@ function getFilteredPatrols() {
       );
   }
 
- if (analyticsOfficerFilter) {
-  filtered =
-    filtered.filter(
-      p =>
-        p.officerId ===
-        analyticsOfficerFilter
-    );
-}
+  if (analyticsOfficerFilter) {
+    filtered =
+      filtered.filter(
+        p =>
+          p.officerId ===
+          analyticsOfficerFilter
+      );
+  }
   if (analyticsStartDateFilter) {
 
-  const start =
-    new Date(
-      analyticsStartDateFilter
+    const start =
+      new Date(
+        analyticsStartDateFilter
+      );
+
+    start.setHours(
+      0, 0, 0, 0
     );
 
-  start.setHours(
-    0, 0, 0, 0
-  );
+    filtered =
+      filtered.filter(
+        patrol => {
 
-  filtered =
-    filtered.filter(
-      patrol => {
+          if (!patrol.startedAt)
+            return false;
 
-        if (!patrol.startedAt)
-          return false;
+          const patrolDate =
+            patrol.startedAt
+              .toDate();
 
-        const patrolDate =
-          patrol.startedAt
-            .toDate();
+          return (
+            patrolDate >=
+            start
+          );
+        }
+      );
+  }
 
-        return (
-          patrolDate >=
-          start
-        );
-      }
+  if (analyticsEndDateFilter) {
+
+    const end =
+      new Date(
+        analyticsEndDateFilter
+      );
+
+    end.setHours(
+      23, 59, 59, 999
     );
-}
 
-if (analyticsEndDateFilter) {
+    filtered =
+      filtered.filter(
+        patrol => {
 
-  const end =
-    new Date(
-      analyticsEndDateFilter
-    );
+          if (!patrol.startedAt)
+            return false;
 
-  end.setHours(
-    23, 59, 59, 999
-  );
+          const patrolDate =
+            patrol.startedAt
+              .toDate();
 
-  filtered =
-    filtered.filter(
-      patrol => {
-
-        if (!patrol.startedAt)
-          return false;
-
-        const patrolDate =
-          patrol.startedAt
-            .toDate();
-
-        return (
-          patrolDate <=
-          end
-        );
-      }
-    );
-}
+          return (
+            patrolDate <=
+            end
+          );
+        }
+      );
+  }
   return filtered;
 }
 
 window.saveCompanyProfile =
-async function () {
+  async function () {
 
-  try {
+    try {
 
-    let logoUrl =
-      companyProfile.logoUrl || "";
+      let logoUrl =
+        companyProfile.logoUrl || "";
 
       let logoBase64 =
-  companyProfile.logoBase64 || "";
+        companyProfile.logoBase64 || "";
 
-    let patchUrl =
-      companyProfile.patchUrl || "";
+      let patchUrl =
+        companyProfile.patchUrl || "";
 
       const logoFile =
-  document.getElementById(
-    "companyLogoUpload"
-  ).files[0];
-
-  console.log(
-  "Selected logo file:",
-  logoFile
-);
-
-if (logoFile) {
-
-  logoUrl =
-    await uploadCompanyLogo(
-      logoFile
-    );
-
-  logoBase64 =
-    await fileToBase64(
-      logoFile
-    );
-
-    console.log(
-  "Base64 length:",
-  logoBase64?.length
-);
-
-console.log(
-  "Base64 starts with:",
-  logoBase64?.substring(0, 30)
-);
-}
-
-const patchFile =
-  document.getElementById(
-    "companyPatchUpload"
-  ).files[0];
-
-if (patchFile) {
-
-  patchUrl =
-    await uploadCompanyPatch(
-      patchFile
-    );
-}
-
-    const profile = {
-      companyName:
         document.getElementById(
-          "companyName"
-        ).value,
+          "companyLogoUpload"
+        ).files[0];
 
-      phone:
-        document.getElementById(
-          "companyPhone"
-        ).value,
+      console.log(
+        "Selected logo file:",
+        logoFile
+      );
 
-      email:
-        document.getElementById(
-          "companyEmail"
-        ).value,
+      if (logoFile) {
 
-      website:
-        document.getElementById(
-          "companyWebsite"
-        ).value,
+        logoUrl =
+          await uploadCompanyLogo(
+            logoFile
+          );
 
-      licenseNumber:
-        document.getElementById(
-          "companyLicenseNumber"
-        ).value,
+        logoBase64 =
+          await fileToBase64(
+            logoFile
+          );
 
-      address:
-        document.getElementById(
-          "companyAddress"
-        ).value,
+        console.log(
+          "Base64 length:",
+          logoBase64?.length
+        );
 
-      city:
-        document.getElementById(
-          "companyCity"
-        ).value,
+        console.log(
+          "Base64 starts with:",
+          logoBase64?.substring(0, 30)
+        );
+      }
 
-      state:
+      const patchFile =
         document.getElementById(
-          "companyState"
-        ).value,
+          "companyPatchUpload"
+        ).files[0];
 
-      zip:
-        document.getElementById(
-          "companyZip"
-        ).value,
+      if (patchFile) {
+
+        patchUrl =
+          await uploadCompanyPatch(
+            patchFile
+          );
+      }
+
+      const profile = {
+        companyName:
+          document.getElementById(
+            "companyName"
+          ).value,
+
+        phone:
+          document.getElementById(
+            "companyPhone"
+          ).value,
+
+        email:
+          document.getElementById(
+            "companyEmail"
+          ).value,
+
+        website:
+          document.getElementById(
+            "companyWebsite"
+          ).value,
+
+        licenseNumber:
+          document.getElementById(
+            "companyLicenseNumber"
+          ).value,
+
+        address:
+          document.getElementById(
+            "companyAddress"
+          ).value,
+
+        city:
+          document.getElementById(
+            "companyCity"
+          ).value,
+
+        state:
+          document.getElementById(
+            "companyState"
+          ).value,
+
+        zip:
+          document.getElementById(
+            "companyZip"
+          ).value,
 
         logoUrl,
         logoBase64,
         patchUrl,
 
-            mileageThreshold:
-      Number(
-        document.getElementById(
-          "mileageThreshold"
-        ).value
-      ) || 25,
+        mileageThreshold:
+          Number(
+            document.getElementById(
+              "mileageThreshold"
+            ).value
+          ) || 25,
 
         createdAt:
-    companyProfile.createdAt ??
-    serverTimestamp(),
+          companyProfile.createdAt ??
+          serverTimestamp(),
 
-      updatedAt:
-        serverTimestamp()
-    };
+        updatedAt:
+          serverTimestamp()
+      };
 
-    await setDoc(
-      doc(
+      await setDoc(
+        doc(
+          db,
+          "tenants",
+          tenantId,
+          "settings",
+          "companyProfile"
+        ),
+        profile,
+        { merge: true }
+      );
+      companyProfile = profile;
+      window.companyProfile = profile;
+
+      alert(
+        "Company profile saved."
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Save company profile error:",
+        error
+      );
+
+      alert(
+        "Unable to save company profile."
+      );
+    }
+
+  };
+
+window.loadCompanyProfile =
+  async function () {
+
+    try {
+
+      const docRef = doc(
         db,
         "tenants",
         tenantId,
         "settings",
         "companyProfile"
-      ),
-      profile,
-      { merge: true }
-    );
-    companyProfile = profile;
-    window.companyProfile = profile;
-
-    alert(
-      "Company profile saved."
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Save company profile error:",
-      error
-    );
-
-    alert(
-      "Unable to save company profile."
-    );
-  }
-  
-};
-
-window.loadCompanyProfile =
-async function () {
-
-  try {
-
-    const docRef = doc(
-      db,
-      "tenants",
-      tenantId,
-      "settings",
-      "companyProfile"
-    );
-
-    const docSnap =
-      await getDoc(docRef);
-
-    if (!docSnap.exists())
-      return;
-
-    companyProfile =
-      docSnap.data();
-
-      window.companyProfile =
-      companyProfile;  
-      
-      console.log(
-  "COMPANY PROFILE:",
-  companyProfile
-);
-
-    document.getElementById(
-      "companyName"
-    ).value =
-      companyProfile.companyName || "";
-
-    document.getElementById(
-      "companyPhone"
-    ).value =
-      companyProfile.phone || "";
-
-    document.getElementById(
-      "companyEmail"
-    ).value =
-      companyProfile.email || "";
-
-    document.getElementById(
-      "companyWebsite"
-    ).value =
-      companyProfile.website || "";
-
-    document.getElementById(
-      "companyLicenseNumber"
-    ).value =
-      companyProfile.licenseNumber || "";
-
-    document.getElementById(
-      "companyAddress"
-    ).value =
-      companyProfile.address || "";
-
-    document.getElementById(
-      "companyCity"
-    ).value =
-      companyProfile.city || "";
-
-    document.getElementById(
-      "companyState"
-    ).value =
-      companyProfile.state || "";
-
-    document.getElementById(
-      "companyZip"
-    ).value =
-      companyProfile.zip || "";
-
-      document.getElementById(
-      "mileageThreshold"
-    ).value =
-      companyProfile.mileageThreshold || 25;
-
-  } catch (error) {
-
-    console.error(
-      "Load company profile error:",
-      error
-    );
-  }
-  if (companyProfile.logoUrl) {
-
-  const logoPreview =
-    document.getElementById(
-      "companyLogoPreview"
-    );
-
-  logoPreview.src =
-    companyProfile.logoUrl;
-
-  logoPreview.style.display =
-    "block";
-}
-
-if (companyProfile.patchUrl) {
-
-  const patchPreview =
-    document.getElementById(
-      "companyPatchPreview"
-    );
-
-  patchPreview.src =
-    companyProfile.patchUrl;
-
-  patchPreview.style.display =
-    "block";
-}
-};
-
-window.uploadCompanyLogo =
-async function(file) {
-
-  const storageRef =
-    ref(
-      storage,
-      `company-assets/${tenantId}/logo`
-    );
-
-  await uploadBytes(
-    storageRef,
-    file
-  );
-
-  return await getDownloadURL(
-    storageRef
-  );
-};
-
-window.uploadCompanyPatch =
-async function(file) {
-
-  const storageRef =
-    ref(
-      storage,
-      `company-assets/${tenantId}/patch`
-    );
-
-  await uploadBytes(
-    storageRef,
-    file
-  );
-
-  return await getDownloadURL(
-    storageRef
-  );
-};
-
-window.openSupplementModal =
-async function () {
-
-  console.log(
-    "Current Incident:",
-    window.currentIncident
-  );
-
-  const incident =
-    window.currentIncident;
-
-  if (!incident) {
-    alert(
-      "No incident selected."
-    );
-    return;
-  }
-
-  document.getElementById(
-    "supplementIncidentId"
-  ).value =
-    incident.id;
-
-  document.getElementById(
-    "supplementCaseNumber"
-  ).value =
-    incident.caseNumber;
-
-  const supplementNumber =
-    await getNextSupplementNumber(
-      incident.id
-    );
-
-  document.getElementById(
-    "supplementNumber"
-  ).value =
-    supplementNumber;
-
-  document.getElementById(
-    "viewIncidentModal"
-  ).style.display =
-    "none";
-
-  document.getElementById(
-    "supplementModal"
-  ).style.display =
-    "block";
-};
-
-
-window.closeSupplementModal =
-function () {
-
-  document.getElementById(
-    "supplementModal"
-  ).style.display =
-    "none";
-
-  document.getElementById(
-    "viewIncidentModal"
-  ).style.display =
-    "block";
-};
-
-window.loadSupplements =
-async function (
-  incidentId
-) {
-  const container =
-    document.getElementById(
-      "supplementsContainer"
-    );
-
-  if (!container) return;
-
-  container.innerHTML =
-    "<p>Loading supplements...</p>";
-
-  try {
-    const snapshot =
-      await getDocs(
-        collection(
-          db,
-          "incidentReports",
-          incidentId,
-          "supplements"
-        )
       );
 
-    if (snapshot.empty) {
-      container.innerHTML =
-        "<p>No supplemental reports.</p>";
+      const docSnap =
+        await getDoc(docRef);
+
+      if (!docSnap.exists())
+        return;
+
+      companyProfile =
+        docSnap.data();
+
+      window.companyProfile =
+        companyProfile;
+
+      console.log(
+        "COMPANY PROFILE:",
+        companyProfile
+      );
+
+      document.getElementById(
+        "companyName"
+      ).value =
+        companyProfile.companyName || "";
+
+      document.getElementById(
+        "companyPhone"
+      ).value =
+        companyProfile.phone || "";
+
+      document.getElementById(
+        "companyEmail"
+      ).value =
+        companyProfile.email || "";
+
+      document.getElementById(
+        "companyWebsite"
+      ).value =
+        companyProfile.website || "";
+
+      document.getElementById(
+        "companyLicenseNumber"
+      ).value =
+        companyProfile.licenseNumber || "";
+
+      document.getElementById(
+        "companyAddress"
+      ).value =
+        companyProfile.address || "";
+
+      document.getElementById(
+        "companyCity"
+      ).value =
+        companyProfile.city || "";
+
+      document.getElementById(
+        "companyState"
+      ).value =
+        companyProfile.state || "";
+
+      document.getElementById(
+        "companyZip"
+      ).value =
+        companyProfile.zip || "";
+
+      document.getElementById(
+        "mileageThreshold"
+      ).value =
+        companyProfile.mileageThreshold || 25;
+
+    } catch (error) {
+
+      console.error(
+        "Load company profile error:",
+        error
+      );
+    }
+    if (companyProfile.logoUrl) {
+
+      const logoPreview =
+        document.getElementById(
+          "companyLogoPreview"
+        );
+
+      logoPreview.src =
+        companyProfile.logoUrl;
+
+      logoPreview.style.display =
+        "block";
+    }
+
+    if (companyProfile.patchUrl) {
+
+      const patchPreview =
+        document.getElementById(
+          "companyPatchPreview"
+        );
+
+      patchPreview.src =
+        companyProfile.patchUrl;
+
+      patchPreview.style.display =
+        "block";
+    }
+  };
+
+window.uploadCompanyLogo =
+  async function (file) {
+
+    const storageRef =
+      ref(
+        storage,
+        `company-assets/${tenantId}/logo`
+      );
+
+    await uploadBytes(
+      storageRef,
+      file
+    );
+
+    return await getDownloadURL(
+      storageRef
+    );
+  };
+
+window.uploadCompanyPatch =
+  async function (file) {
+
+    const storageRef =
+      ref(
+        storage,
+        `company-assets/${tenantId}/patch`
+      );
+
+    await uploadBytes(
+      storageRef,
+      file
+    );
+
+    return await getDownloadURL(
+      storageRef
+    );
+  };
+
+window.openSupplementModal =
+  async function () {
+
+    console.log(
+      "Current Incident:",
+      window.currentIncident
+    );
+
+    const incident =
+      window.currentIncident;
+
+    if (!incident) {
+      alert(
+        "No incident selected."
+      );
       return;
     }
 
-    container.innerHTML = "";
+    document.getElementById(
+      "supplementIncidentId"
+    ).value =
+      incident.id;
 
-    snapshot.forEach(
-      docSnap => {
-        const s =
-          docSnap.data();
+    document.getElementById(
+      "supplementCaseNumber"
+    ).value =
+      incident.caseNumber;
 
-        const created =
-          s.createdAt?.toDate
-            ? s.createdAt
+    const supplementNumber =
+      await getNextSupplementNumber(
+        incident.id
+      );
+
+    document.getElementById(
+      "supplementNumber"
+    ).value =
+      supplementNumber;
+
+    document.getElementById(
+      "viewIncidentModal"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "supplementModal"
+    ).style.display =
+      "block";
+  };
+
+
+window.closeSupplementModal =
+  function () {
+
+    document.getElementById(
+      "supplementModal"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "viewIncidentModal"
+    ).style.display =
+      "block";
+  };
+
+window.loadSupplements =
+  async function (
+    incidentId
+  ) {
+    const container =
+      document.getElementById(
+        "supplementsContainer"
+      );
+
+    if (!container) return;
+
+    container.innerHTML =
+      "<p>Loading supplements...</p>";
+
+    try {
+      const snapshot =
+        await getDocs(
+          collection(
+            db,
+            "incidentReports",
+            incidentId,
+            "supplements"
+          )
+        );
+
+      if (snapshot.empty) {
+        container.innerHTML =
+          "<p>No supplemental reports.</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+
+      snapshot.forEach(
+        docSnap => {
+          const s =
+            docSnap.data();
+
+          const created =
+            s.createdAt?.toDate
+              ? s.createdAt
                 .toDate()
                 .toLocaleString()
-            : "Unknown Date";
+              : "Unknown Date";
 
-        container.innerHTML += `
+          container.innerHTML += `
   <div
     class="supplement-card"
     onclick="
@@ -15591,50 +15787,50 @@ async function (
     ${created}
   </div>
 `;
-      }
-    );
-  }
-  catch (err) {
-    console.error(
-      "Error loading supplements:",
-      err
-    );
+        }
+      );
+    }
+    catch (err) {
+      console.error(
+        "Error loading supplements:",
+        err
+      );
 
-    container.innerHTML =
-      "<p>Error loading supplements.</p>";
-  }
-};
+      container.innerHTML =
+        "<p>Error loading supplements.</p>";
+    }
+  };
 
 window.viewSupplement =
-async function (
-  incidentId,
-  supplementId
-) {
+  async function (
+    incidentId,
+    supplementId
+  ) {
 
-  const snap =
-    await getDoc(
-      doc(
-        db,
-        "incidentReports",
-        incidentId,
-        "supplements",
-        supplementId
-      )
-    );
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements",
+          supplementId
+        )
+      );
 
-  if (!snap.exists()) {
-    alert(
-      "Supplement not found."
-    );
-    return;
-  }
+    if (!snap.exists()) {
+      alert(
+        "Supplement not found."
+      );
+      return;
+    }
 
-  const s =
-    snap.data();
+    const s =
+      snap.data();
 
-  document.getElementById(
-    "supplementViewerContent"
-  ).innerHTML = `
+    document.getElementById(
+      "supplementViewerContent"
+    ).innerHTML = `
     <p>
       <strong>
         Case Number:
@@ -15660,12 +15856,11 @@ async function (
       <strong>
         Date:
       </strong>
-      ${
-        s.createdAt?.toDate
-          ? s.createdAt
-              .toDate()
-              .toLocaleString()
-          : ""
+      ${s.createdAt?.toDate
+        ? s.createdAt
+          .toDate()
+          .toLocaleString()
+        : ""
       }
     </p>
 
@@ -15685,193 +15880,193 @@ ${s.narrative}
     </pre>
   `;
 
-  document.getElementById(
-  "viewIncidentModal"
-).style.display =
-  "none";
+    document.getElementById(
+      "viewIncidentModal"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "viewSupplementModal"
-  ).style.display =
-    "block";
-};
+    document.getElementById(
+      "viewSupplementModal"
+    ).style.display =
+      "block";
+  };
 
 window.getNextSupplementNumber =
-async function (
-  incidentId
-) {
-  const snapshot =
-    await getDocs(
-      collection(
+  async function (
+    incidentId
+  ) {
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements"
+        )
+      );
+    console.log(
+      "Supplement count:",
+      snapshot.size
+    );
+
+    return String(
+      snapshot.size + 1
+    ).padStart(3, "0");
+  };
+
+window.saveSupplement =
+  async function () {
+
+    const incidentId =
+      document.getElementById(
+        "supplementIncidentId"
+      ).value;
+
+    const supplementId =
+      document.getElementById(
+        "supplementNumber"
+      ).value;
+
+    const narrative =
+      document.getElementById(
+        "supplementNarrative"
+      ).value;
+
+    await setDoc(
+      doc(
         db,
         "incidentReports",
         incidentId,
-        "supplements"
-      )
+        "supplements",
+        supplementId
+      ),
+      {
+        incidentId,
+        caseNumber,
+        supplementId,
+        reportType:
+          "Supplement",
+        narrative,
+        officerId:
+          currentOfficer.id,
+        officerName:
+          currentOfficer.name,
+        createdAt:
+          serverTimestamp()
+      }
     );
-    console.log(
-  "Supplement count:",
-  snapshot.size
-);
 
-  return String(
-    snapshot.size + 1
-  ).padStart(3, "0");
-};
+    await addReviewHistory(
+      incidentId,
+      "Supplement Added",
+      `Supplement ${supplementId}`
+    );
 
-window.saveSupplement =
-async function () {
+    alert(
+      `Supplement ${supplementId} saved.`
+    );
 
-  const incidentId =
-    document.getElementById(
-      "supplementIncidentId"
-    ).value; 
+    closeSupplementModal();
 
-  const supplementId =
-    document.getElementById(
-      "supplementNumber"
-    ).value;
-
-  const narrative =
+    loadSupplements(
+      incidentId
+    );
     document.getElementById(
       "supplementNarrative"
-    ).value;
-
-  await setDoc(
-    doc(
-      db,
-      "incidentReports",
-      incidentId,
-      "supplements",
-      supplementId
-    ),
-    {
-      incidentId,
-      caseNumber,
-      supplementId,
-      reportType:
-        "Supplement",
-      narrative,
-      officerId:
-        currentOfficer.id,
-      officerName:
-        currentOfficer.name,
-      createdAt:
-        serverTimestamp()
-    }
-  );
-
-  await addReviewHistory(
-  incidentId,
-  "Supplement Added",
-  `Supplement ${supplementId}`
-  );
-
-  alert(
-    `Supplement ${supplementId} saved.`
-  );
-
-  closeSupplementModal();
-
-  loadSupplements(
-    incidentId
-  );
-  document.getElementById(
-  "supplementNarrative"
-).value = "";
-};
+    ).value = "";
+  };
 
 window.closeSupplementViewer =
-function () {
-  document.getElementById(
-    "viewSupplementModal"
-  ).style.display =
-    "none";
+  function () {
+    document.getElementById(
+      "viewSupplementModal"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "viewIncidentModal"
-  ).style.display =
-    "block";
-};
+    document.getElementById(
+      "viewIncidentModal"
+    ).style.display =
+      "block";
+  };
 
 window.showMyReports =
-async function () {
+  async function () {
 
-  const drafts =
-    incidentReports.filter(
-      r =>
-        r.officerId ===
+    const drafts =
+      incidentReports.filter(
+        r =>
+          r.officerId ===
           currentOfficer.id &&
-        r.status ===
+          r.status ===
           "draft"
-    );
+      );
 
-  renderDraftReports(
-    drafts
-  );
-};
+    renderDraftReports(
+      drafts
+    );
+  };
 
 window.loadMyReports =
-function () {
+  function () {
 
-  console.log(
-    "All Incident Reports:",
-    incidentReports
-  );
-
-  console.log(
-    "Current Officer:",
-    currentOfficer.id
-  );
-
-  const drafts =
-    incidentReports.filter(
-      r =>
-        r.officerId ===
-          currentOfficer.id &&
-        r.status ===
-          "draft"
+    console.log(
+      "All Incident Reports:",
+      incidentReports
     );
 
-  console.log(
-    "Drafts:",
-    drafts
-  );
-
-  let myReports =
-    incidentReports.filter(
-      r =>
-        r.officerId ===
-          currentOfficer.id &&
-        r.status !==
-          "draft"
+    console.log(
+      "Current Officer:",
+      currentOfficer.id
     );
 
-  if (
-    window.currentReportFilter !==
-      "all"
-  ) {
-    myReports =
-      myReports.filter(
+    const drafts =
+      incidentReports.filter(
         r =>
+          r.officerId ===
+          currentOfficer.id &&
           r.status ===
-          window.currentReportFilter
+          "draft"
       );
-  }
 
-  console.log(
-    "My Reports:",
-    myReports
-  );
+    console.log(
+      "Drafts:",
+      drafts
+    );
 
-  renderDraftReports(
-    drafts
-  );
+    let myReports =
+      incidentReports.filter(
+        r =>
+          r.officerId ===
+          currentOfficer.id &&
+          r.status !==
+          "draft"
+      );
 
-  renderSubmittedReports(
-    myReports
-  );
-};
+    if (
+      window.currentReportFilter !==
+      "all"
+    ) {
+      myReports =
+        myReports.filter(
+          r =>
+            r.status ===
+            window.currentReportFilter
+        );
+    }
+
+    console.log(
+      "My Reports:",
+      myReports
+    );
+
+    renderDraftReports(
+      drafts
+    );
+
+    renderSubmittedReports(
+      myReports
+    );
+  };
 
 function renderDraftReports(
   drafts
@@ -15889,12 +16084,11 @@ function renderDraftReports(
     tbody.innerHTML += `
       <tr>
         <td>
-          ${
-            report.createdAt
-              ?.toDate()
-              ?.toLocaleDateString() ||
-            ""
-          }
+          ${report.createdAt
+        ?.toDate()
+        ?.toLocaleDateString() ||
+      ""
+      }
         </td>
 
         <td>
@@ -15922,339 +16116,339 @@ function renderDraftReports(
 }
 
 window.editDraft =
-async function (
-  reportId
-) {
+  async function (
+    reportId
+  ) {
 
-  try {
+    try {
 
-    const snap =
-      await getDoc(
-        doc(
-          db,
-          "incidentReports",
-          reportId
-        )
+      const snap =
+        await getDoc(
+          doc(
+            db,
+            "incidentReports",
+            reportId
+          )
+        );
+
+      if (!snap.exists()) {
+        alert(
+          "Draft not found."
+        );
+        return;
+      }
+
+      const report =
+        snap.data();
+
+      document.getElementById(
+        "editingIncidentId"
+      ).value =
+        reportId;
+
+      document.getElementById(
+        "incidentType"
+      ).value =
+        report.incidentType || "";
+
+      document.getElementById(
+        "incidentSeverity"
+      ).value =
+        report.severity || "";
+
+      document.getElementById(
+        "incidentNarrative"
+      ).value =
+        report.narrative || "";
+
+      document.getElementById(
+        "incidentAgency"
+      ).value =
+        report.lawEnforcement
+          ?.agency || "";
+
+      document.getElementById(
+        "incidentAgencyOfficer"
+      ).value =
+        report.lawEnforcement
+          ?.officer || "";
+
+      document.getElementById(
+        "incidentAgencyBadge"
+      ).value =
+        report.lawEnforcement
+          ?.badge || "";
+
+      document.getElementById(
+        "incidentAgencyCase"
+      ).value =
+        report.lawEnforcement
+          ?.caseNumber || "";
+
+      document.getElementById(
+        "personsContainer"
+      ).innerHTML = "";
+
+      report.persons?.forEach(
+        person => {
+
+          addPerson();
+
+          const cards =
+            document.querySelectorAll(
+              ".person-card"
+            );
+
+          const card =
+            cards[
+            cards.length - 1
+            ];
+
+          card.querySelector(
+            ".personRole"
+          ).value =
+            person.role || "";
+
+          card.querySelector(
+            ".personFirstName"
+          ).value =
+            person.firstName || "";
+
+          card.querySelector(
+            ".personMiddleName"
+          ).value =
+            person.middleName || "";
+
+          card.querySelector(
+            ".personLastName"
+          ).value =
+            person.lastName || "";
+
+          card.querySelector(
+            ".personAlias"
+          ).value =
+            person.alias || "";
+
+          card.querySelector(
+            ".personDOB"
+          ).value =
+            person.dob || "";
+
+          card.querySelector(
+            ".personSex"
+          ).value =
+            person.sex || "";
+
+          card.querySelector(
+            ".personHeightFeet"
+          ).value =
+            person.heightFeet || "";
+
+          card.querySelector(
+            ".personHeightInches"
+          ).value =
+            person.heightInches || "";
+
+          card.querySelector(
+            ".personWeight"
+          ).value =
+            person.weight || "";
+
+          card.querySelector(
+            ".personRace"
+          ).value =
+            person.race || "";
+
+          card.querySelector(
+            ".personEthnicity"
+          ).value =
+            person.ethnicity || "";
+
+          card.querySelector(
+            ".personHairColor"
+          ).value =
+            person.hairColor || "";
+
+          card.querySelector(
+            ".personEyeColor"
+          ).value =
+            person.eyeColor || "";
+
+          card.querySelector(
+            ".personIdType"
+          ).value =
+            person.idType || "";
+
+          card.querySelector(
+            ".personIdState"
+          ).value =
+            person.idState || "";
+
+          card.querySelector(
+            ".personIdNumber"
+          ).value =
+            person.idNumber || "";
+
+          card.querySelector(
+            ".personHomePhone"
+          ).value =
+            person.homePhone || "";
+
+          card.querySelector(
+            ".personCellPhone"
+          ).value =
+            person.cellPhone || "";
+
+          card.querySelector(
+            ".personWorkPhone"
+          ).value =
+            person.workPhone || "";
+
+          card.querySelector(
+            ".personStreet"
+          ).value =
+            person.street || "";
+
+          card.querySelector(
+            ".personCity"
+          ).value =
+            person.city || "";
+
+          card.querySelector(
+            ".personAddressState"
+          ).value =
+            person.addressState || "";
+
+          card.querySelector(
+            ".personZip"
+          ).value =
+            person.zip || "";
+
+          card.querySelector(
+            ".personEmployer"
+          ).value =
+            person.employer || "";
+
+          card.querySelector(
+            ".personEmail"
+          ).value =
+            person.email || "";
+
+          card.querySelector(
+            ".personPreferredContact"
+          ).value =
+            person.preferredContact || "";
+        }
       );
 
-    if (!snap.exists()) {
-      alert(
-        "Draft not found."
-      );
-      return;
-    }
+      incidentVehicles =
+        report.vehicles || [];
 
-    const report =
-      snap.data();
+      renderIncidentVehicles();
 
-    document.getElementById(
-      "editingIncidentId"
-    ).value =
-      reportId;
+      if (
+        report.supervisorComments
+      ) {
+        alert(
+          `Supervisor Comments:\n\n${report.returnComments}`
+        );
+      }
 
-          document.getElementById(
-      "incidentType"
-    ).value =
-      report.incidentType || "";
-
-    document.getElementById(
-      "incidentSeverity"
-    ).value =
-      report.severity || "";
-
-    document.getElementById(
-      "incidentNarrative"
-    ).value =
-      report.narrative || "";
-
-          document.getElementById(
-      "incidentAgency"
-    ).value =
-      report.lawEnforcement
-        ?.agency || "";
-
-    document.getElementById(
-      "incidentAgencyOfficer"
-    ).value =
-      report.lawEnforcement
-        ?.officer || "";
-
-    document.getElementById(
-      "incidentAgencyBadge"
-    ).value =
-      report.lawEnforcement
-        ?.badge || "";
-
-    document.getElementById(
-      "incidentAgencyCase"
-    ).value =
-      report.lawEnforcement
-        ?.caseNumber || "";
+      if (
+        report.supervisorComments
+      ) {
 
         document.getElementById(
-  "personsContainer"
-).innerHTML = "";
+          "supervisorCommentsCard"
+        ).style.display =
+          "block";
 
-report.persons?.forEach(
-  person => {
+        document.getElementById(
+          "supervisorCommentsText"
+        ).textContent =
+          report.supervisorComments;
 
-    addPerson();
+      } else {
 
-    const cards =
-      document.querySelectorAll(
-        ".person-card"
-      );
+        document.getElementById(
+          "supervisorCommentsCard"
+        ).style.display =
+          "none";
 
-    const card =
-      cards[
-        cards.length - 1
-      ];
-
-    card.querySelector(
-      ".personRole"
-    ).value =
-      person.role || "";
-
-    card.querySelector(
-      ".personFirstName"
-    ).value =
-      person.firstName || "";
-
-    card.querySelector(
-      ".personMiddleName"
-    ).value =
-      person.middleName || "";
-
-    card.querySelector(
-      ".personLastName"
-    ).value =
-      person.lastName || "";
-
-    card.querySelector(
-      ".personAlias"
-    ).value =
-      person.alias || "";
-
-    card.querySelector(
-      ".personDOB"
-    ).value =
-      person.dob || "";
-
-    card.querySelector(
-      ".personSex"
-    ).value =
-      person.sex || "";
-
-    card.querySelector(
-      ".personHeightFeet"
-    ).value =
-      person.heightFeet || "";
-
-    card.querySelector(
-      ".personHeightInches"
-    ).value =
-      person.heightInches || "";
-
-    card.querySelector(
-      ".personWeight"
-    ).value =
-      person.weight || "";
-
-    card.querySelector(
-      ".personRace"
-    ).value =
-      person.race || "";
-
-    card.querySelector(
-      ".personEthnicity"
-    ).value =
-      person.ethnicity || "";
-
-    card.querySelector(
-      ".personHairColor"
-    ).value =
-      person.hairColor || "";
-
-    card.querySelector(
-      ".personEyeColor"
-    ).value =
-      person.eyeColor || "";
-
-    card.querySelector(
-      ".personIdType"
-    ).value =
-      person.idType || "";
-
-    card.querySelector(
-      ".personIdState"
-    ).value =
-      person.idState || "";
-
-    card.querySelector(
-      ".personIdNumber"
-    ).value =
-      person.idNumber || "";
-
-    card.querySelector(
-      ".personHomePhone"
-    ).value =
-      person.homePhone || "";
-
-    card.querySelector(
-      ".personCellPhone"
-    ).value =
-      person.cellPhone || "";
-
-    card.querySelector(
-      ".personWorkPhone"
-    ).value =
-      person.workPhone || "";
-
-    card.querySelector(
-      ".personStreet"
-    ).value =
-      person.street || "";
-
-    card.querySelector(
-      ".personCity"
-    ).value =
-      person.city || "";
-
-    card.querySelector(
-      ".personAddressState"
-    ).value =
-      person.addressState || "";
-
-    card.querySelector(
-      ".personZip"
-    ).value =
-      person.zip || "";
-
-    card.querySelector(
-      ".personEmployer"
-    ).value =
-      person.employer || "";
-
-    card.querySelector(
-      ".personEmail"
-    ).value =
-      person.email || "";
-
-    card.querySelector(
-      ".personPreferredContact"
-    ).value =
-      person.preferredContact || "";
-  }
-);
-
-incidentVehicles =
-  report.vehicles || [];
-
-renderIncidentVehicles();
-
-if (
-  report.supervisorComments
-) {
-  alert(
-    `Supervisor Comments:\n\n${report.returnComments}`
-  );
-}
-
-if (
-  report.supervisorComments
-) {
-
-  document.getElementById(
-    "supervisorCommentsCard"
-  ).style.display =
-    "block";
-
-  document.getElementById(
-    "supervisorCommentsText"
-  ).textContent =
-    report.supervisorComments;
-
-} else {
-
-  document.getElementById(
-    "supervisorCommentsCard"
-  ).style.display =
-    "none";
-
-}
-const attachments =
-  await loadIncidentAttachments(
-    reportId
-  );
+      }
+      const attachments =
+        await loadIncidentAttachments(
+          reportId
+        );
       renderIncidentAttachments(
-  attachments
-);
-
-              showOfficerIncidentReport();
-
-  } catch (error) {
-
-    console.error(
-      "Edit Draft Error:",
-      error
-    );
-
-    alert(
-      "Unable to open draft."
-    );
-
-  }
-
-};
-
-window.loadIncidentReviewQueue =
-async function () {
-
-  const container =
-    document.getElementById(
-      "incidentReviewList"
-    );
-
-  container.innerHTML =
-    "<p>Loading...</p>";
-
-  try {
-
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          where(
-            "status",
-            "==",
-            "submitted"
-          ),
-          orderBy(
-            "submittedAt",
-            "desc"
-          )
-        )
+        attachments
       );
 
-    if (snapshot.empty) {
+      showOfficerIncidentReport();
 
-      container.innerHTML =
-        "<p>No reports awaiting review.</p>";
+    } catch (error) {
 
-      return;
+      console.error(
+        "Edit Draft Error:",
+        error
+      );
+
+      alert(
+        "Unable to open draft."
+      );
+
     }
 
+  };
+
+window.loadIncidentReviewQueue =
+  async function () {
+
+    const container =
+      document.getElementById(
+        "incidentReviewList"
+      );
+
     container.innerHTML =
-      snapshot.docs
-        .map(doc => {
+      "<p>Loading...</p>";
 
-          const incident =
-            doc.data();
+    try {
 
-          return `
+      const snapshot =
+        await getDocs(
+          query(
+            collection(
+              db,
+              "incidentReports"
+            ),
+            where(
+              "status",
+              "==",
+              "submitted"
+            ),
+            orderBy(
+              "submittedAt",
+              "desc"
+            )
+          )
+        );
+
+      if (snapshot.empty) {
+
+        container.innerHTML =
+          "<p>No reports awaiting review.</p>";
+
+        return;
+      }
+
+      container.innerHTML =
+        snapshot.docs
+          .map(doc => {
+
+            const incident =
+              doc.data();
+
+            return `
 
             <div
               class="dashboard-card"
@@ -16286,8 +16480,8 @@ async function () {
 
               Status:
               ${getIncidentStatusBadge(
-                incident.status
-              )}
+              incident.status
+            )}
 
               <br><br>
 
@@ -16301,355 +16495,353 @@ async function () {
 
           `;
 
-        })
-        .join("");
+          })
+          .join("");
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error(
-      "Review Queue Error:",
-      error
-    );
+      console.error(
+        "Review Queue Error:",
+        error
+      );
 
-    container.innerHTML =
-      "<p>Error loading review queue.</p>";
-  }
-};
+      container.innerHTML =
+        "<p>Error loading review queue.</p>";
+    }
+  };
 
 window.approveIncident =
-async function(id) {
-  try {
+  async function (id) {
+    try {
 
-    if (
-      !confirm(
-        "Approve this report?"
-      )
-    ) {
-      return;
-    }
-
-    await updateDoc(
-      doc(
-        db,
-        "incidentReports",
-        id
-      ),
-      {
-        status:
-          "approved",
-
-        approvedAt:
-          serverTimestamp(),
-
-        approvedBy:
-          window.currentEmployee.id,
-
-        approvedByName:
-          window.currentEmployee.name
+      if (
+        !confirm(
+          "Approve this report?"
+        )
+      ) {
+        return;
       }
-    );
 
-    await addReviewHistory(
-  id,
-  "approved"
-);
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          id
+        ),
+        {
+          status:
+            "approved",
 
-    alert(
-      "Report approved."
-    );
+          approvedAt:
+            serverTimestamp(),
 
-    closeIncidentModal();
+          approvedBy:
+            window.currentEmployee.id,
 
-    await loadIncidentReviewQueue();
+          approvedByName:
+            window.currentEmployee.name
+        }
+      );
 
-  } catch (error) {
+      await addReviewHistory(
+        id,
+        "approved"
+      );
 
-    console.error(
-      "Approve Error:",
-      error
-    );
+      alert(
+        "Report approved."
+      );
 
-    alert(
-      "Unable to approve report."
-    );
-  }
-};
+      closeIncidentModal();
+
+      await loadIncidentReviewQueue();
+
+    } catch (error) {
+
+      console.error(
+        "Approve Error:",
+        error
+      );
+
+      alert(
+        "Unable to approve report."
+      );
+    }
+  };
 
 window.returnIncident =
-async function(id) {
+  async function (id) {
 
-  try {
+    try {
 
-    const comments =
-      document
-        .getElementById(
-          "supervisorComments"
+      const comments =
+        document
+          .getElementById(
+            "supervisorComments"
+          )
+          .value
+          .trim();
+
+      if (!comments) {
+        alert(
+          "Please provide correction instructions."
+        );
+        return;
+      }
+
+      if (
+        !confirm(
+          "Return this report for corrections?"
         )
-        .value
-        .trim();
+      ) {
+        return;
+      }
 
-    if (!comments) {
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          id
+        ),
+        {
+          status: "returned",
+          supervisorComments: comments,
+          returnedAt: serverTimestamp(),
+          returnedBy:
+            window.currentEmployee.id,
+          returnedByName:
+            window.currentEmployee.name
+        }
+      );
+
+      await addReviewHistory(
+        id,
+        "returned",
+        comments
+      );
+
+      const reportSnap =
+        await getDoc(
+          doc(
+            db,
+            "incidentReports",
+            id
+          )
+        );
+
+      const report =
+        reportSnap.data();
+
+      await addDoc(
+        collection(
+          db,
+          "notifications"
+        ),
+        {
+          officerId:
+            report.officerId,
+
+          incidentId:
+            id,
+
+          title:
+            "Report Returned",
+
+          message:
+            `Case ${report.caseNumber ||
+            "Draft Report"
+            } was returned for corrections.`,
+
+          read: false,
+
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+      alert(
+        "Report returned to officer."
+      );
+
+      closeIncidentModal();
+
+      await loadIncidentReviewQueue();
+
+    } catch (error) {
+
+      console.error(
+        "Return Error:",
+        error
+      );
+
+      alert(
+        "Unable to return report."
+      );
+    }
+  };
+
+let returningIncidentId = null;
+
+window.openReturnReportModal =
+  function (incidentId) {
+    returningIncidentId = incidentId;
+
+    document.getElementById(
+      "returnComment"
+    ).value = "";
+
+    document.getElementById(
+      "returnReportModal"
+    ).style.display = "flex";
+  };
+
+window.closeReturnReportModal =
+  function () {
+    document.getElementById(
+      "returnReportModal"
+    ).style.display = "none";
+
+    returningIncidentId = null;
+  };
+
+window.submitReturnReport =
+  async function () {
+
+    const comment =
+      document.getElementById(
+        "returnComment"
+      ).value.trim();
+
+    if (!comment) {
       alert(
         "Please provide correction instructions."
       );
       return;
     }
 
-    if (
-      !confirm(
-        "Return this report for corrections?"
-      )
-    ) {
-      return;
+    try {
+
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          returningIncidentId
+        ),
+        {
+          status: "returned",
+          returnedAt:
+            serverTimestamp(),
+          returnComments: comment,
+          returnedBy:
+            window.currentEmployee.id,
+          returnedByName:
+            currentOfficer?.name ||
+            auth.currentUser.displayName ||
+            "Supervisor"
+        }
+      );
+
+      await addReviewHistory(
+        returningIncidentId,
+        "Resubmitted"
+      );
+
+      await addDoc(
+        collection(
+          db,
+          "notifications"
+        ),
+        {
+          userId:
+            report.officerId,
+
+          type:
+            "report_returned",
+
+          title:
+            "Incident Report Returned",
+
+          message:
+            `Case ${report.caseNumber} was returned for corrections.`,
+
+          incidentId:
+            returningIncidentId,
+
+          read: false,
+
+          createdAt:
+            serverTimestamp()
+        }
+      );
+
+      closeReturnReportModal();
+
+      alert(
+        "Report returned for corrections."
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "Unable to return report."
+      );
     }
-
-   await updateDoc(
-  doc(
-    db,
-    "incidentReports",
-    id
-  ),
-  {
-    status: "returned",
-    supervisorComments: comments,
-    returnedAt: serverTimestamp(),
-    returnedBy:
-      window.currentEmployee.id,
-    returnedByName:
-      window.currentEmployee.name
-  }
-);
-
-await addReviewHistory(
-  id,
-  "returned",
-  comments
-);
-
-    const reportSnap =
-  await getDoc(
-    doc(
-      db,
-      "incidentReports",
-      id
-    )
-  );
-
-const report =
-  reportSnap.data();
-
-await addDoc(
-  collection(
-    db,
-    "notifications"
-  ),
-  {
-    officerId:
-      report.officerId,
-
-    incidentId:
-      id,
-
-    title:
-      "Report Returned",
-
-    message:
-      `Case ${
-        report.caseNumber ||
-        "Draft Report"
-      } was returned for corrections.`,
-
-    read: false,
-
-    createdAt:
-      serverTimestamp()
-  }
-);
-
-    alert(
-      "Report returned to officer."
-    );
-
-    closeIncidentModal();
-
-    await loadIncidentReviewQueue();
-
-  } catch (error) {
-
-    console.error(
-      "Return Error:",
-      error
-    );
-
-    alert(
-      "Unable to return report."
-    );
-  }
-};
-
-let returningIncidentId = null;
-
-window.openReturnReportModal =
-function (incidentId) {
-  returningIncidentId = incidentId;
-
-  document.getElementById(
-    "returnComment"
-  ).value = "";
-
-  document.getElementById(
-    "returnReportModal"
-  ).style.display = "flex";
-};
-
-window.closeReturnReportModal =
-function () {
-  document.getElementById(
-    "returnReportModal"
-  ).style.display = "none";
-
-  returningIncidentId = null;
-};
-
-window.submitReturnReport =
-async function () {
-
-  const comment =
-    document.getElementById(
-      "returnComment"
-    ).value.trim();
-
-  if (!comment) {
-    alert(
-      "Please provide correction instructions."
-    );
-    return;
-  }
-
-  try {
-
-    await updateDoc(
-      doc(
-        db,
-        "incidentReports",
-        returningIncidentId
-      ),
-      {
-        status: "returned",
-        returnedAt:
-          serverTimestamp(),
-        returnComments: comment,
-        returnedBy:
-          window.currentEmployee.id,
-        returnedByName:
-          currentOfficer?.name ||
-          auth.currentUser.displayName ||
-          "Supervisor"
-      }
-    );
-
-    await addReviewHistory(
-  returningIncidentId,
-  "Resubmitted"
-);
-
-    await addDoc(
-  collection(
-    db,
-    "notifications"
-  ),
-  {
-    userId:
-      report.officerId,
-
-    type:
-      "report_returned",
-
-    title:
-      "Incident Report Returned",
-
-    message:
-      `Case ${report.caseNumber} was returned for corrections.`,
-
-    incidentId:
-      returningIncidentId,
-
-    read: false,
-
-    createdAt:
-      serverTimestamp()
-  }
-);
-
-    closeReturnReportModal();
-
-    alert(
-      "Report returned for corrections."
-    );
-
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      "Unable to return report."
-    );
-  }
-};
+  };
 
 window.renderSubmittedReports =
-function (reports) {
+  function (reports) {
 
-  const tbody =
-    document.getElementById(
-      "submittedReportsBody"
-    );
+    const tbody =
+      document.getElementById(
+        "submittedReportsBody"
+      );
 
-  if (!tbody) return;
+    if (!tbody) return;
 
-  tbody.innerHTML = "";
+    tbody.innerHTML = "";
 
-  if (!reports.length) {
-    tbody.innerHTML = `
+    if (!reports.length) {
+      tbody.innerHTML = `
       <tr>
         <td colspan="4">
           No submitted reports.
         </td>
       </tr>
     `;
-    return;
-  }
+      return;
+    }
 
-  reports.forEach(report => {
+    reports.forEach(report => {
 
-    const date =
-      report.submittedAt?.toDate
-        ? report
+      const date =
+        report.submittedAt?.toDate
+          ? report
             .submittedAt
             .toDate()
             .toLocaleDateString()
-        : "-";
+          : "-";
 
-    const type =
-      report.status ===
-      "returned"
-        ? `
+      const type =
+        report.status ===
+          "returned"
+          ? `
           ${report.incidentType}
           <br>
           <small style="color:red;">
             Returned for Corrections
           </small>
-          ${
-            report.returnComments
-              ? `<br><small>
+          ${report.returnComments
+            ? `<br><small>
                    Supervisor:
                    ${report.returnComments}
                  </small>`
-              : ""
+            : ""
           }
         `
-        : report.incidentType;
+          : report.incidentType;
 
-    tbody.innerHTML += `
+      tbody.innerHTML += `
       <tr>
         <td>
           ${report.caseNumber}
@@ -16689,262 +16881,260 @@ function (reports) {
       </td>
       </tr>
     `;
-  });
+    });
 
-};
+  };
 
 window.listenForNotifications =
-function () {
+  function () {
 
-console.log(
-  "Current Employee:",
-  window.currentEmployee
-);
+    console.log(
+      "Current Employee:",
+      window.currentEmployee
+    );
 
-  const user =
-    auth.currentUser;
+    const user =
+      auth.currentUser;
 
-  if (!user) return;
+    if (!user) return;
 
-  onSnapshot(
-    query(
-      collection(
-        db,
-        "notifications"
+    onSnapshot(
+      query(
+        collection(
+          db,
+          "notifications"
+        ),
+        where(
+          "officerId",
+          "==",
+          window.currentEmployee.id
+        ),
+        orderBy(
+          "createdAt",
+          "desc"
+        )
       ),
-where(
-  "officerId",
-  "==",
-  window.currentEmployee.id
-),
-      orderBy(
-        "createdAt",
-        "desc"
-      )
-    ),
-    (snapshot) => {
+      (snapshot) => {
 
-      console.log(
-  "Notifications found:",
-  snapshot.size
-);
+        console.log(
+          "Notifications found:",
+          snapshot.size
+        );
 
-      const container =
-  document.getElementById(
-    "notificationsList"
-  );
-      container.innerHTML =
-        "";
+        const container =
+          document.getElementById(
+            "notificationsList"
+          );
+        container.innerHTML =
+          "";
 
-      let unread = 0;
+        let unread = 0;
 
-      snapshot.forEach(
-        (docSnap) => {    
+        snapshot.forEach(
+          (docSnap) => {
 
-          const n =
-            docSnap.data();
+            const n =
+              docSnap.data();
 
-          if (!n.read) {
-            unread++;
-          }
+            if (!n.read) {
+              unread++;
+            }
 
-          const div =
-            document.createElement(
-              "div"
-            );
+            const div =
+              document.createElement(
+                "div"
+              );
 
-          div.className =
-            `notification-item ${
-              !n.read
+            div.className =
+              `notification-item ${!n.read
                 ? "unread"
                 : ""
-            }`;
+              }`;
 
-          div.innerHTML = `
+            div.innerHTML = `
             <strong>
               ${n.title}
             </strong>
             <br>
             ${n.message}
             <div class="notification-time">
-              ${
-                n.createdAt
-                  ?.toDate()
-                  .toLocaleString() ||
-                ""
+              ${n.createdAt
+                ?.toDate()
+                .toLocaleString() ||
+              ""
               }
             </div>
           `;
 
-          div.onclick =
-            () =>
-              openNotification(
-                docSnap.id,
-                n
-              );
+            div.onclick =
+              () =>
+                openNotification(
+                  docSnap.id,
+                  n
+                );
 
-          container.appendChild(
-            div
+            container.appendChild(
+              div
+            );
+          }
+        );
+
+        const badge =
+          document.getElementById(
+            "notificationBadge"
           );
+
+        badge.textContent =
+          unread;
+
+        badge.style.display =
+          unread > 0
+            ? "inline-block"
+            : "none";
+      }
+    );
+  };
+
+window.openNotification =
+  async function (
+    notificationId,
+    notification
+  ) {
+
+    if (!notification.read) {
+
+      await updateDoc(
+        doc(
+          db,
+          "notifications",
+          notificationId
+        ),
+        {
+          read: true,
+          readAt:
+            serverTimestamp()
+        }
+      );
+    }
+
+    if (
+      notification.incidentId
+    ) {
+
+      editDraft(
+        notification.incidentId
+      );
+    }
+  };
+
+window.voidIncident =
+  async function (
+    reportId
+  ) {
+    try {
+
+      const reason =
+        prompt(
+          "Enter reason for voiding this report:"
+        );
+
+      if (reason === null) {
+        return;
+      }
+
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          reportId
+        ),
+        {
+          status: "voided",
+
+          voidReason:
+            reason,
+
+          voidedAt:
+            serverTimestamp(),
+
+          voidedBy:
+            currentEmployee?.id ||
+            "",
+
+          voidedByName:
+            currentEmployee?.name ||
+            "Supervisor"
         }
       );
 
-      const badge =
-  document.getElementById(
-    "notificationBadge"
-  );
-
-badge.textContent =
-  unread;
-
-badge.style.display =
-  unread > 0
-    ? "inline-block"
-    : "none";
-    }
-  );
-};
-
-window.openNotification =
-async function (
-  notificationId,
-  notification
-) {
-
-  if (!notification.read) {
-
-    await updateDoc(
-      doc(
-        db,
-        "notifications",
-        notificationId
-      ),
-      {
-        read: true,
-        readAt:
-          serverTimestamp()
-      }
-    );
-  }
-
-  if (
-    notification.incidentId
-  ) {
-
-    editDraft(
-      notification.incidentId
-    );
-  }
-};
-
-window.voidIncident =
-async function (
-  reportId
-) {
-  try {
-
-    const reason =
-      prompt(
-        "Enter reason for voiding this report:"
+      await addReviewHistory(
+        reportId,
+        "Voided",
+        reason
       );
 
-    if (reason === null) {
-      return;
+      await addDoc(
+        collection(
+          db,
+          "activityLogs"
+        ),
+        {
+          type:
+            "Incident Report",
+
+          description:
+            `Incident report voided`,
+
+          timestamp:
+            serverTimestamp()
+        }
+      );
+
+      alert(
+        "Incident has been voided."
+      );
+
+      closeIncidentModal();
+
+      loadIncidentReports?.();
+      loadIncidentReviewQueue?.();
+
+    } catch (err) {
+
+      console.error(
+        "Void Incident Error:",
+        err
+      );
+
+      alert(
+        "Unable to void incident."
+      );
     }
-
-    await updateDoc(
-      doc(
-        db,
-        "incidentReports",
-        reportId
-      ),
-      {
-        status: "voided",
-
-        voidReason:
-          reason,
-
-        voidedAt:
-          serverTimestamp(),
-
-        voidedBy:
-          currentEmployee?.id ||
-          "",
-
-        voidedByName:
-          currentEmployee?.name ||
-          "Supervisor"
-      }
-    );
-
-    await addReviewHistory(
-      reportId,
-      "Voided",
-      reason
-    );
-
-    await addDoc(
-      collection(
-        db,
-        "activityLogs"
-      ),
-      {
-        type:
-          "Incident Report",
-
-        description:
-          `Incident report voided`,
-
-        timestamp:
-          serverTimestamp()
-      }
-    );
-
-    alert(
-      "Incident has been voided."
-    );
-
-    closeIncidentModal();
-
-    loadIncidentReports?.();
-    loadIncidentReviewQueue?.();
-
-  } catch (err) {
-
-    console.error(
-      "Void Incident Error:",
-      err
-    );
-
-    alert(
-      "Unable to void incident."
-    );
-  }
-};
+  };
 
 window.currentReportFilter =
   "all";
 
 window.filterMyReports =
-function(status) {
+  function (status) {
 
-  window.currentReportFilter =
-    status;
+    window.currentReportFilter =
+      status;
 
-  loadMyReports();
-};
+    loadMyReports();
+  };
 
 window.closeReviewHistoryModal =
-function() {
+  function () {
 
-  document.getElementById(
-    "reviewHistoryModal"
-  ).style.display = "none";
+    document.getElementById(
+      "reviewHistoryModal"
+    ).style.display = "none";
 
-  document.getElementById(
-    "historyTimeline"
-  ).innerHTML = "";
-};
+    document.getElementById(
+      "historyTimeline"
+    ).innerHTML = "";
+  };
 
 let incidentPhotoFiles = [];
 
@@ -17004,11 +17194,11 @@ function previewIncidentPhotos() {
       img.src =
         e.target.result;
 
-        img.onclick =
-  () =>
-    openEvidenceViewer(
-      e.target.result
-    );
+      img.onclick =
+        () =>
+          openEvidenceViewer(
+            e.target.result
+          );
 
       img.style.width =
         "100px";
@@ -17041,39 +17231,39 @@ async function uploadIncidentPhotos(
 ) {
 
   console.log(
-  "uploadIncidentPhotos called"
-);
-
-console.log(
-  "incidentPhotoFiles:",
-  incidentPhotoFiles
-);
-
-console.log(
-  "Length:",
-  incidentPhotoFiles.length
-);
+    "uploadIncidentPhotos called"
+  );
 
   console.log(
-  "incidentPhotoFiles:",
-  incidentPhotoFiles
-);
+    "incidentPhotoFiles:",
+    incidentPhotoFiles
+  );
 
-console.log(
-  "Length:",
-  incidentPhotoFiles.length
-);
-
-const files =
-  incidentPhotoFiles;
   console.log(
-  "Files being uploaded:",
-  files
-);
+    "Length:",
+    incidentPhotoFiles.length
+  );
 
-if (!files.length) {
-  return [];
-}
+  console.log(
+    "incidentPhotoFiles:",
+    incidentPhotoFiles
+  );
+
+  console.log(
+    "Length:",
+    incidentPhotoFiles.length
+  );
+
+  const files =
+    incidentPhotoFiles;
+  console.log(
+    "Files being uploaded:",
+    files
+  );
+
+  if (!files.length) {
+    return [];
+  }
   const uploadedPhotos = [];
 
   for (const file of files) {
@@ -17095,64 +17285,64 @@ if (!files.length) {
         storageRef
       );
 
-   const imageBase64 =
-  await fileToBase64(
-    file
-  );
+    const imageBase64 =
+      await fileToBase64(
+        file
+      );
 
-uploadedPhotos.push({
-  type: "photo",
-  fileName,
-  originalName:
-    file.name,
-  downloadURL,
-  imageBase64,
-  uploadedBy:
-    currentOfficer.id,
-  uploadedAt:
-    serverTimestamp()
-});
+    uploadedPhotos.push({
+      type: "photo",
+      fileName,
+      originalName:
+        file.name,
+      downloadURL,
+      imageBase64,
+      uploadedBy:
+        currentOfficer.id,
+      uploadedAt:
+        serverTimestamp()
+    });
   }
 
   return uploadedPhotos;
 }
 
 async function saveIncidentAttachments(
-  
+
   incidentId,
   photos
 ) {
 
   console.log(
-  "saveIncidentAttachments called"
-);
-
-console.log(
-  "Photo count:",
-  photos.length
-);
-
-console.log(
-  "Photos being saved:",
-  photos
-);
-  for (const photo of photos) {
+    "saveIncidentAttachments called"
+  );
 
   console.log(
-    "Saving:",
-    photo.originalName
+    "Photo count:",
+    photos.length
   );
 
-  await addDoc(
-    collection(
-      db,
-      "incidentReports",
-      incidentId,
-      "attachments"
-    ),
-    photo
+  console.log(
+    "Photos being saved:",
+    photos
   );
-}
+  for (const photo of photos) {
+
+    console.log(
+      "Saving:",
+      photo.originalName
+    );
+
+    await addDoc(
+      collection(
+        db,
+        "incidentReports",
+        incidentId,
+        "attachments"
+      ),
+      photo
+    );
+  }
 }
 
 function clearIncidentPhotos() {
@@ -17184,45 +17374,45 @@ function renderIncidentAttachments(
   container.innerHTML = "";
 
   attachments.forEach(
-    photo => {  
-      
-       const img =
-  document.createElement(
-    "img"
-  );
+    photo => {
+
+      const img =
+        document.createElement(
+          "img"
+        );
       img.src =
         photo.downloadURL;
 
-        img.onclick =
-  () =>
-    openEvidenceViewer(
-      photo.downloadURL
-    );   
+      img.onclick =
+        () =>
+          openEvidenceViewer(
+            photo.downloadURL
+          );
 
-img.src =
-  photo.downloadURL;
+      img.src =
+        photo.downloadURL;
 
-img.style.width =
-  "100px";
+      img.style.width =
+        "100px";
 
-img.style.height =
-  "100px";
+      img.style.height =
+        "100px";
 
-img.style.objectFit =
-  "cover";
+      img.style.objectFit =
+        "cover";
 
-img.style.cursor =
-  "pointer";
+      img.style.cursor =
+        "pointer";
 
-img.onclick =
-  () =>
-    openEvidenceViewer(
-      photo.downloadURL
-    );
+      img.onclick =
+        () =>
+          openEvidenceViewer(
+            photo.downloadURL
+          );
 
-container.appendChild(
-  img
-);
+      container.appendChild(
+        img
+      );
 
       img.style.width =
         "100px";
@@ -17250,77 +17440,77 @@ container.appendChild(
 }
 
 window.openEvidenceViewer =
-function (imageUrl) {
+  function (imageUrl) {
 
-  document.getElementById(
-    "evidenceViewerImage"
-  ).src =
-    imageUrl;
+    document.getElementById(
+      "evidenceViewerImage"
+    ).src =
+      imageUrl;
 
-  document.getElementById(
-    "evidenceViewerModal"
-  ).style.display =
-    "block";
+    document.getElementById(
+      "evidenceViewerModal"
+    ).style.display =
+      "block";
 
-};
+  };
 
 window.closeEvidenceViewer =
-function () {
+  function () {
 
-  document.getElementById(
-    "evidenceViewerModal"
-  ).style.display =
-    "none";
+    document.getElementById(
+      "evidenceViewerModal"
+    ).style.display =
+      "none";
 
-  document.getElementById(
-    "evidenceViewerImage"
-  ).src =
-    "";
+    document.getElementById(
+      "evidenceViewerImage"
+    ).src =
+      "";
 
-};
+  };
 
 window.showNextPhoto =
-function() {
+  function () {
 
-  if (
-    !photoGallery.length
-  ) return;
+    if (
+      !photoGallery.length
+    ) return;
 
-  currentPhotoIndex =
-    (currentPhotoIndex + 1) %
-    photoGallery.length;
+    currentPhotoIndex =
+      (currentPhotoIndex + 1) %
+      photoGallery.length;
 
-  document.getElementById(
-  "photoViewerImage"
-).src =
-  photoGallery[
-    currentPhotoIndex
-  ].downloadURL;
+    document.getElementById(
+      "photoViewerImage"
+    ).src =
+      photoGallery[
+        currentPhotoIndex
+      ].downloadURL;
 
-  updatePhotoCounter();
-};
+    updatePhotoCounter();
+  };
 
 window.showPreviousPhoto =
-function() {
+  function () {
 
-  if (
-    !photoGallery.length
-  ) return;
+    if (
+      !photoGallery.length
+    ) return;
 
-  currentPhotoIndex =
-    currentPhotoIndex === 0
-      ? photoGallery.length - 1
-      : currentPhotoIndex - 1;
+    currentPhotoIndex =
+      currentPhotoIndex === 0
+        ? photoGallery.length - 1
+        : currentPhotoIndex - 1;
 
-document.getElementById(
-  "photoViewerImage"
-).src =
-  photoGallery[
-    currentPhotoIndex
-  ].downloadURL;
+    document.getElementById(
+      "photoViewerImage"
+    ).src =
+      photoGallery[
+        currentPhotoIndex
+      ].downloadURL;
 
-  updatePhotoCounter();
-};
+    updatePhotoCounter();
+  };
 
 function updatePhotoCounter() {
 
@@ -17338,75 +17528,75 @@ function updatePhotoCounter() {
 }
 
 window.openCurrentPhoto =
-function () {
+  function () {
 
-  const imageUrl =
-  photoGallery[
-    currentPhotoIndex
-  ].downloadURL;
+    const imageUrl =
+      photoGallery[
+        currentPhotoIndex
+      ].downloadURL;
 
-  if (!imageUrl) return;
+    if (!imageUrl) return;
 
-  window.open(
-    imageUrl,
-    "_blank"
-  );
-};
-
-window.downloadCurrentPhoto =
-function () {
-
-  const photo =
-    photoGallery[
-      currentPhotoIndex
-    ];
-
-  if (!photo) return;
-
-  // Incident photo
-  if (photo.downloadURL) {
     window.open(
-      photo.downloadURL,
+      imageUrl,
       "_blank"
     );
-    return;
-  }
+  };
 
-  // Base64 photo
-  const image =
-    photo.imageBase64 ||
-    photo;
+window.downloadCurrentPhoto =
+  function () {
 
-  if (!image) return;
+    const photo =
+      photoGallery[
+      currentPhotoIndex
+      ];
 
-  const a =
-    document.createElement("a");
+    if (!photo) return;
 
-  a.href = image;
-  a.download =
-    "photo.jpg";
+    // Incident photo
+    if (photo.downloadURL) {
+      window.open(
+        photo.downloadURL,
+        "_blank"
+      );
+      return;
+    }
 
-  document.body.appendChild(
-    a
-  );
+    // Base64 photo
+    const image =
+      photo.imageBase64 ||
+      photo;
 
-  a.click();
+    if (!image) return;
 
-  document.body.removeChild(
-    a
-  );
-};
+    const a =
+      document.createElement("a");
+
+    a.href = image;
+    a.download =
+      "photo.jpg";
+
+    document.body.appendChild(
+      a
+    );
+
+    a.click();
+
+    document.body.removeChild(
+      a
+    );
+  };
 
 function renderAttachments() {
   console.log(
-  "Rendering:",
-  photoGallery
-);
+    "Rendering:",
+    photoGallery
+  );
 
   const attachmentsContainer =
-  document.getElementById(
-    "reviewAttachmentsContainer"
-  );
+    document.getElementById(
+      "reviewAttachmentsContainer"
+    );
 
   if (!attachmentsContainer)
     return;
@@ -17469,38 +17659,38 @@ document
     }
   );
 
-  window.viewPreShiftPhoto =
-function (timeEntryId) {
+window.viewPreShiftPhoto =
+  function (timeEntryId) {
 
-  const entry =
-    timeEntries.find(
-      t => t.id === timeEntryId
-    );
+    const entry =
+      timeEntries.find(
+        t => t.id === timeEntryId
+      );
 
-  if (
-    !entry ||
-    !entry.preShiftPhoto
-  ) {
-    return;
-  }
+    if (
+      !entry ||
+      !entry.preShiftPhoto
+    ) {
+      return;
+    }
 
-  photoGallery = [
-    entry.preShiftPhoto
-  ];
+    photoGallery = [
+      entry.preShiftPhoto
+    ];
 
-  currentPhotoIndex = 0;
+    currentPhotoIndex = 0;
 
-  document.getElementById(
-    "photoViewerImage"
-  ).src =
-    entry.preShiftPhoto
-      .imageBase64;
+    document.getElementById(
+      "photoViewerImage"
+    ).src =
+      entry.preShiftPhoto
+        .imageBase64;
 
-  document.getElementById(
-    "photoViewerModal"
-  ).style.display =
-    "flex";
-};
+    document.getElementById(
+      "photoViewerModal"
+    ).style.display =
+      "flex";
+  };
 
 document
   .getElementById("postShiftPhoto")
@@ -17537,157 +17727,157 @@ document
     }
   );
 
-  window.loadMileageReport =
-async function () {
-  console.log(
-  "Mileage Report:",
-  mileageReportShifts
-);
-  try {
-    const q = query(
-  collection(db, "shifts"),
-  orderBy("startTime", "desc")
-);
-
-const snapshot =
-  await getDocs(q);
-
-    mileageReportShifts =
-  snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-
-window.mileageReportShifts =
-  mileageReportShifts;
-
-console.log(
-  "Mileage Report Shifts:",
-  mileageReportShifts
-);
-
-renderMileageReport();
-
-  } catch (error) {
-    console.error(
-      "Mileage Report Error:",
-      error
+window.loadMileageReport =
+  async function () {
+    console.log(
+      "Mileage Report:",
+      mileageReportShifts
     );
-  }
-};
+    try {
+      const q = query(
+        collection(db, "shifts"),
+        orderBy("startTime", "desc")
+      );
+
+      const snapshot =
+        await getDocs(q);
+
+      mileageReportShifts =
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      window.mileageReportShifts =
+        mileageReportShifts;
+
+      console.log(
+        "Mileage Report Shifts:",
+        mileageReportShifts
+      );
+
+      renderMileageReport();
+
+    } catch (error) {
+      console.error(
+        "Mileage Report Error:",
+        error
+      );
+    }
+  };
 
 window.renderMileageReport =
-function () {
+  function () {
 
-  console.log(
-    "Mileage Report Shifts:",
-    mileageReportShifts
-  );
-
-  let filteredShifts =
-  mileageReportShifts.filter(
-    shift =>
-      shift.mileageStatus ===
-      "Calculated"
-  );
-
-  const filter =
-  document.getElementById(
-    "mileageReportFilter"
-  ).value;
-
-if (filter === "incentive") {
-  filteredShifts =
-    filteredShifts.filter(
-      shift =>
-        shift.mileageIncentive
+    console.log(
+      "Mileage Report Shifts:",
+      mileageReportShifts
     );
-}
 
-if (filter === "week") {
+    let filteredShifts =
+      mileageReportShifts.filter(
+        shift =>
+          shift.mileageStatus ===
+          "Calculated"
+      );
 
-  const today =
-    new Date();
+    const filter =
+      document.getElementById(
+        "mileageReportFilter"
+      ).value;
 
-  const weekAgo =
-    new Date();
-
-  weekAgo.setDate(
-    today.getDate() - 7
-  );
-
-  filteredShifts =
-    filteredShifts.filter(
-      shift =>
-        new Date(
-          shift.startTime
-        ) >= weekAgo
-    );
-}
-
-if (filter === "month") {
-
-  const now =
-    new Date();
-
-  filteredShifts =
-    filteredShifts.filter(
-      shift => {
-
-        const shiftDate =
-          new Date(
-            shift.startTime
-          );
-
-        return (
-          shiftDate.getMonth() ===
-            now.getMonth() &&
-          shiftDate.getFullYear() ===
-            now.getFullYear()
+    if (filter === "incentive") {
+      filteredShifts =
+        filteredShifts.filter(
+          shift =>
+            shift.mileageIncentive
         );
-      }
-    );
-}
+    }
 
-const incentiveShifts =
-  filteredShifts.filter(
-    shift =>
-      shift.mileageIncentive
-  );
+    if (filter === "week") {
 
-const totalMiles =
-  incentiveShifts.reduce(
-    (sum, shift) =>
-      sum +
-      Number(
-        shift.mileageDistance || 0
-      ),
-    0
-  );
+      const today =
+        new Date();
 
-const uniqueOfficers =
-  new Set(
-    incentiveShifts.map(
-      shift => shift.employeeId
-    )
-  );
+      const weekAgo =
+        new Date();
 
-  document.getElementById(
-  "totalMileageShifts"
-).textContent =
-  incentiveShifts.length;
+      weekAgo.setDate(
+        today.getDate() - 7
+      );
 
-document.getElementById(
-  "totalMileageMiles"
-).textContent =
-  totalMiles.toFixed(1);
+      filteredShifts =
+        filteredShifts.filter(
+          shift =>
+            new Date(
+              shift.startTime
+            ) >= weekAgo
+        );
+    }
 
-document.getElementById(
-  "totalMileageOfficers"
-).textContent =
-  uniqueOfficers.size;
+    if (filter === "month") {
 
-  let html = `
+      const now =
+        new Date();
+
+      filteredShifts =
+        filteredShifts.filter(
+          shift => {
+
+            const shiftDate =
+              new Date(
+                shift.startTime
+              );
+
+            return (
+              shiftDate.getMonth() ===
+              now.getMonth() &&
+              shiftDate.getFullYear() ===
+              now.getFullYear()
+            );
+          }
+        );
+    }
+
+    const incentiveShifts =
+      filteredShifts.filter(
+        shift =>
+          shift.mileageIncentive
+      );
+
+    const totalMiles =
+      incentiveShifts.reduce(
+        (sum, shift) =>
+          sum +
+          Number(
+            shift.mileageDistance || 0
+          ),
+        0
+      );
+
+    const uniqueOfficers =
+      new Set(
+        incentiveShifts.map(
+          shift => shift.employeeId
+        )
+      );
+
+    document.getElementById(
+      "totalMileageShifts"
+    ).textContent =
+      incentiveShifts.length;
+
+    document.getElementById(
+      "totalMileageMiles"
+    ).textContent =
+      totalMiles.toFixed(1);
+
+    document.getElementById(
+      "totalMileageOfficers"
+    ).textContent =
+      uniqueOfficers.size;
+
+    let html = `
 <table class="dashboard-table">
 <thead>
 <tr>
@@ -17702,67 +17892,66 @@ document.getElementById(
 <tbody>
 `;
 
-filteredShifts.forEach(
-  shift => {
+    filteredShifts.forEach(
+      shift => {
 
-    html += `
+        html += `
       <tr>
         <td>${shift.employeeName}</td>
         <td>${shift.siteName}</td>
         <td>
           ${new Date(
-            shift.startTime
-          ).toLocaleDateString()}
+          shift.startTime
+        ).toLocaleDateString()}
         </td>
         <td>
           ${Number(
-            shift.mileageDistance || 0
-          ).toFixed(1)} mi
+          shift.mileageDistance || 0
+        ).toFixed(1)} mi
         </td>
         <td>
           ${shift.mileageThreshold} mi
         </td>
         <td>
-          ${
-            shift.mileageIncentive
-              ? "🚗 Yes"
-              : "—"
+          ${shift.mileageIncentive
+            ? "🚗 Yes"
+            : "—"
           }
         </td>
       </tr>
     `;
-  }
-);
+      }
+    );
 
-html += `
+    html += `
 </tbody>
 </table>
 `;
 
-document.getElementById(
-  "mileageReportTable"
-).innerHTML = html;
+    document.getElementById(
+      "mileageReportTable"
+    ).innerHTML = html;
 
-};
+  };
 
 window.toggleRepeatOptions =
-function () {
+  function () {
 
-  const section =
-    document.getElementById(
-      "repeatOptions"
+    const section =
+      document.getElementById(
+        "repeatOptions"
+      );
+
+    const checked =
+      document.getElementById(
+        "repeatSchedule"
+      ).checked;
+
+    section.classList.toggle(
+      "hidden",
+      !checked
     );
-
-  const checked =
-    document.getElementById(
-      "repeatSchedule"
-    ).checked;
-
-  section.classList.toggle(
-    "hidden",
-    !checked
-  );
-};
+  };
 
 function getRepeatDays() {
   return Array.from(
@@ -17832,6 +18021,105 @@ function applyTimeToDate(
   return result;
 }
 
+async function confirmDeleteShift() {
+  console.log("Reached confirmDeleteShift section");
+
+  const deleteMode =
+    document.querySelector(
+      'input[name="deleteRecurringMode"]:checked'
+    )?.value || "occurrence";
+
+  if (
+    !deletingRecurring ||
+    deleteMode === "occurrence"
+  ) {
+
+    await deleteDoc(
+      doc(
+        db,
+        "shifts",
+        deletingShiftId
+      )
+    );
+
+  } else {
+
+    const batch =
+      writeBatch(db);
+
+    const seriesQuery =
+      query(
+        collection(
+          db,
+          "shifts"
+        ),
+        where(
+          "seriesId",
+          "==",
+          deletingSeriesId
+        )
+      );
+
+    const snapshot =
+      await getDocs(
+        seriesQuery
+      );
+
+    const now =
+      new Date();
+
+    for (
+      const shiftDoc of
+      snapshot.docs
+    ) {
+
+      const shift =
+        shiftDoc.data();
+
+      if (
+        new Date(
+          shift.startTime
+        ) < now
+      ) {
+        continue;
+      }
+
+      batch.delete(
+        shiftDoc.ref
+      );
+
+    }
+
+    await batch.commit();
+
+  }
+
+  deletingShiftId = null;
+  deletingSeriesId = null;
+  deletingRecurring = false;
+
+  closeDeleteShiftModal();
+
+  await loadShifts();
+
+}
+
+function closeDeleteShiftModal() {
+
+  document
+    .getElementById(
+      "deleteShiftModal"
+    )
+    .classList.add(
+      "hidden"
+    );
+
+  deletingShiftId = null;
+  deletingSeriesId = null;
+  deletingRecurring = false;
+
+}
+
 
 
 // ================= GLOBAL =================
@@ -17898,6 +18186,8 @@ window.createShift = createShift;
 window.renderSchedules = renderSchedules
 window.deleteShift = deleteShift;
 window.saveShiftEdit = saveShiftEdit;
+window.confirmDeleteShift = confirmDeleteShift;
+window.closeDeleteShiftModal = closeDeleteShiftModal;
 window.previousWeek = previousWeek;
 window.nextWeek = nextWeek;
 window.clockIn = clockIn;

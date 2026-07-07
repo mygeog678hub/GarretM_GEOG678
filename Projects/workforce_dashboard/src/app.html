@@ -1584,6 +1584,37 @@
 </select>
 </div>
 
+<div
+  id="editRecurringOptions"
+  class="hidden">
+
+  <hr>
+
+  <strong>
+    Recurring Schedule
+  </strong>
+
+  <label>
+    <input
+      type="radio"
+      name="editRecurringMode"
+      value="occurrence"
+      checked>
+
+    Edit This Occurrence
+  </label>
+
+  <label>
+    <input
+      type="radio"
+      name="editRecurringMode"
+      value="series">
+
+    Edit Entire Series
+  </label>
+
+</div>
+
     <div class="modal-actions">
 
       <button onclick="saveShiftEdit()">
@@ -2866,6 +2897,59 @@
     target ="_blank">Privacy</a>
   </div>
 </footer>
+
+<div id="deleteShiftModal" class="modal hidden">
+
+  <div class="modal-content">
+
+    <h2>Delete Shift</h2>
+
+    <p id="deleteShiftMessage">
+      Are you sure you want to delete this shift?
+    </p>
+
+    <div
+      id="deleteRecurringOptions"
+      class="hidden">
+
+      <label>
+        <input
+          type="radio"
+          name="deleteRecurringMode"
+          value="occurrence"
+          checked>
+
+        Delete This Occurrence
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="deleteRecurringMode"
+          value="series">
+
+        Delete Entire Series
+      </label>
+
+    </div>
+
+    <div class="modal-buttons">
+
+      <button
+        onclick="confirmDeleteShift()">
+        Delete
+      </button>
+
+      <button
+        onclick="closeDeleteShiftModal()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
     </div>
 
     <div id="evidenceViewerModal"
