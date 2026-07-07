@@ -1886,11 +1886,39 @@
 
 <div class="dashboard-card">
 
+    <h2>Schedule Type</h2>
+
+    <label>
+       <input
+          type="radio"
+          name="scheduleType"
+          value="assigned"
+          checked
+          onchange="updateScheduleType()">
+        Assign Officer
+    </label>
+
+    <br><br>
+
+    <label>
+   <input
+      type="radio"
+      name="scheduleType"
+      value="open"
+      onchange="updateScheduleType()">
+    Publish Open Shift
+</label>
+
+</div>
+
+
+<div class="dashboard-card">
+
     <h2>Scheduling</h2>
+  <div class="schedule-form">
+    <div id="assignedOfficerSection">    
 
-    <div class="schedule-form">
-
-  <div>
+  
     <label>Officer</label>
 
     <select id="scheduleEmployee">
@@ -1898,7 +1926,7 @@
         Select Officer
       </option>
     </select>
-  </div>  
+  </div>      
 
   <div>
     <label>Site</label>

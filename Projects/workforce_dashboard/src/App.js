@@ -6243,9 +6243,10 @@ function showSchedulingPage() {
   document.getElementById(
     "mileageReportPage"
   ).style.display = "none";
-
+  
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
+  updateScheduleType();
 
 }
 
@@ -6587,7 +6588,22 @@ window.showIncidentReportsPage =
 
 }
 
+async function createOpenShift() {
+
+  alert("Publishing Open Shift...");
+
+}
+
 async function createShift() {
+
+  const scheduleType =
+    document.querySelector(
+      'input[name="scheduleType"]:checked'
+    ).value;
+
+  if (scheduleType === "open") {
+    return createOpenShift();
+  }
 
   const employeeId =
     document.getElementById(
@@ -6607,7 +6623,7 @@ async function createShift() {
   const endTime =
     document.getElementById(
       "scheduleEnd"
-    ).value;
+    ).value;  
 
   const shiftPay =
     Number(
@@ -18343,7 +18359,23 @@ newDates.forEach((date, index) => {
 
 }
 
+function updateScheduleType() {
 
+    const scheduleType =
+        document.querySelector(
+            'input[name="scheduleType"]:checked'
+        ).value;
+
+    console.log("Schedule Type:", scheduleType);
+
+    document.getElementById(
+        "assignedOfficerSection"
+    ).style.display =
+        scheduleType === "assigned"
+            ? "block"
+            : "none";            
+
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
@@ -18423,5 +18455,7 @@ window.renderMySchedule = renderMySchedule
 window.submitActivityReport = submitActivityReport;
 window.generateIncidentCaseNumber = generateIncidentCaseNumber;
 window.extendRecurringSeries = extendRecurringSeries;
+window.updateScheduleType = updateScheduleType;
+window.createOpenShift = createOpenShift;
 
 refreshSupervisorDashboard();
