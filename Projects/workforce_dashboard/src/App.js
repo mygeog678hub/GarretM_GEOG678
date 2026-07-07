@@ -6698,15 +6698,6 @@ async function createShift() {
       s => s.id === siteId
     );
 
-    const employee =
-  employees.find(
-    e => e.id === employeeId
-  );
-
-const site =
-  sites.find(
-    s => s.id === siteId
-  );
 
 if (!employee) {
   alert("Employee not found.");
