@@ -6561,6 +6561,32 @@ window.showIncidentReportsPage =
     loadIncidentReports();
 
   };
+
+  async function createSingleShift(shiftData) {
+
+  const {
+    employeeId,
+    employeeName,
+    siteId,
+    siteName,
+    siteCategory,
+    startTime,
+    endTime,
+    classification,
+    licenseLevel,
+    shiftPay,
+    mileageDistance,
+    mileageIncentive,
+    mileageStatus,
+    mileageThreshold,
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate,
+    seriesId
+  } = shiftData;
+
+}
+
 async function createShift() {
 
   const employeeId =
@@ -6762,7 +6788,7 @@ async function createShift() {
     mileageStatus = "Unavailable";
   }
 
-  const duplicate =
+ const duplicate  =
     shifts.some(
       shift =>
 
@@ -7229,6 +7255,14 @@ ${shift.repeatEnabled
 
       <button onclick="editShift('${shift.id}')">
         Edit Shift
+      </button>
+
+      <button
+        class="secondary-btn"
+        onclick="extendRecurringSeries('${shift.seriesId}')">
+
+        Extend Series
+
       </button>
 
       <button onclick="deleteShift('${shift.id}')">
@@ -18120,6 +18154,199 @@ function closeDeleteShiftModal() {
 
 }
 
+async function extendRecurringSeries(seriesId) {
+
+  try {
+
+    const q = query(
+  collection(db, "shifts"),
+  where("seriesId", "==", seriesId)
+);
+
+const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      alert("Recurring series not found.");
+      return;
+    }
+
+    const shifts = [];
+
+    snapshot.forEach(doc => {
+      shifts.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    // Sort by start time
+    shifts.sort((a, b) =>
+      new Date(a.startTime) -
+      new Date(b.startTime)
+    );
+
+    const firstShift = shifts[0];
+    const lastShift = shifts[shifts.length - 1];
+
+    console.log("First shift:", firstShift);
+
+    const currentEnd = lastShift.endTime
+  ? lastShift.endTime.substring(0, 10)
+  : lastShift.startTime.substring(0, 10);
+
+const newEndDate = prompt(
+  `Current series ends on ${currentEnd}.\n\n` +
+  `Enter the new ending date (YYYY-MM-DD):`,
+  currentEnd
+);
+
+if (!newEndDate) {
+  return;
+}
+
+const requestedEnd = new Date(newEndDate);
+
+if (isNaN(requestedEnd.getTime())) {
+  alert("Invalid date.");
+  return;
+}
+
+const currentEndDate = new Date(currentEnd);
+
+if (requestedEnd <= currentEndDate) {
+  alert("The new end date must be after the current end date.");
+  return;
+}
+
+const generatedDates = generateRecurringDates(
+  firstShift.startTime,
+  firstShift.repeatDays,
+  newEndDate
+);
+
+const lastStart = new Date(lastShift.startTime);
+
+const newDates = generatedDates.filter(
+  date => date > lastStart
+);
+
+const shiftTemplate = {
+  ...firstShift,
+  repeatEndDate: newEndDate,
+  createdAt: new Date().toISOString()
+};
+
+// Remove fields we don't want to copy
+delete shiftTemplate.id;
+let createdCount = 0;
+
+for (const date of newDates) {
+
+  const newStart = applyTimeToDate(
+    firstShift.startTime,
+    date
+  );
+
+  const newEnd = applyTimeToDate(
+    firstShift.endTime,
+    date
+  );
+
+  const occurrenceStart =
+    formatLocalDateTime(newStart);
+
+  const occurrenceEnd =
+    formatLocalDateTime(newEnd);
+
+ const duplicate = shifts.some(
+  shift =>
+    shift.employeeId === firstShift.employeeId &&
+    shift.siteId === firstShift.siteId &&
+    shift.startTime === occurrenceStart &&
+    shift.endTime === occurrenceEnd
+);
+
+if (duplicate) {
+  console.log("Skipping duplicate:", occurrenceStart);
+  continue;
+}
+
+const conflict = shifts.some(
+  shift =>
+    shift.employeeId === firstShift.employeeId &&
+    timesOverlap(
+      occurrenceStart,
+      occurrenceEnd,
+      shift.startTime,
+      shift.endTime
+    )
+);
+
+if (conflict) {
+  console.log("Skipping conflict:", occurrenceStart);
+  continue;
+}
+
+await addDoc(
+  collection(db, "shifts"),
+  {
+    ...shiftTemplate,
+    startTime: occurrenceStart,
+    endTime: occurrenceEnd,
+    seriesId: firstShift.seriesId
+  }
+);
+
+shifts.push({
+  ...shiftTemplate,
+  startTime: occurrenceStart,
+  endTime: occurrenceEnd,
+  seriesId: firstShift.seriesId
+});
+
+createdCount++;
+
+}
+
+for (const shift of shifts) {
+
+  if (!shift.id) continue;
+
+  await updateDoc(
+    doc(db, "shifts", shift.id),
+    {
+      repeatEndDate: newEndDate
+    }
+  );
+
+}
+
+alert(
+  `Series extended by ${createdCount} shifts.`
+);
+
+console.log("Generated Dates:", generatedDates);
+console.log("New Dates:", newDates);
+
+newDates.forEach((date, index) => {
+  console.log(
+    `${index + 1}:`,
+    formatLocalDateTime(date)
+  );
+});
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to load recurring series."
+    );
+
+  }
+
+}
+
 
 
 // ================= GLOBAL =================
@@ -18199,5 +18426,6 @@ window.checkPostAbandonment = checkPostAbandonment;
 window.renderMySchedule = renderMySchedule
 window.submitActivityReport = submitActivityReport;
 window.generateIncidentCaseNumber = generateIncidentCaseNumber;
+window.extendRecurringSeries = extendRecurringSeries;
 
 refreshSupervisorDashboard();
