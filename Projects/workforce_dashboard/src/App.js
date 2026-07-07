@@ -201,6 +201,7 @@ let editingRecurring = false;
 let deletingShiftId = null;
 let deletingSeriesId = null;
 let deletingRecurring = false;
+let currentOfficerShifts = [];
 window.incidentVehicles = [];
 
 //window.markers = markers;
@@ -6635,7 +6636,7 @@ async function createShift() {
   const classification =
     document.getElementById(
       "shiftClassification"
-    ).value;
+    ).value;   
 
   const repeatEnabled =
     document.getElementById(
@@ -6659,12 +6660,7 @@ async function createShift() {
         startTime,
         repeatDays,
         repeatEndDate
-      );
-
-    console.log(
-      "Recurring dates:",
-      generatedDates
-    );
+      );   
 
   }
 
@@ -6688,40 +6684,53 @@ async function createShift() {
     !endTime
   ) {
     alert(
-      "Complete all fields."
-    );
+      "Complete all fields.");
 
     return;
   }
-  console.log("All Shifts:", shifts);
   const employee =
     employees.find(
       e => e.id === employeeId
-    );
+    ); 
 
-  console.log(
-    "Employee object:",
-    employee
-  );
-
-  console.log(
-    "Address:",
-    employee?.homeAddress,
-    employee?.homeCity,
-    employee?.homeState,
-    employee?.homeZip
-  );
-
-  console.log(
-    "Coordinates:",
-    employee?.homeLat,
-    employee?.homeLng
-  );
-
-  const site =
+     const site =
     sites.find(
       s => s.id === siteId
     );
+
+    const employee =
+  employees.find(
+    e => e.id === employeeId
+  );
+
+const site =
+  sites.find(
+    s => s.id === siteId
+  );
+
+if (!employee) {
+  alert("Employee not found.");
+  return;
+}
+
+if (!site) {
+  alert("Site not found.");
+  return;
+}
+    
+
+  if (
+  new Date(endTime) <=
+  new Date(startTime)
+) {
+
+  alert(
+    "Shift end time must be after the start time."
+  );
+
+  return;
+
+} 
 
   let mileageDistance = 0;
   let mileageIncentive = false;
@@ -6903,6 +6912,11 @@ async function createShift() {
 
   };
 
+  console.log("Saving shift:", {
+  startTime,
+  endTime
+});
+
   if (!repeatEnabled) {
 
     await addDoc(
@@ -6952,26 +6966,7 @@ async function createShift() {
 const occurrenceEnd =
   formatLocalDateTime(
     newEnd
-  );
-
-  console.log("Checking:", {
-  employeeId,
-  occurrenceStart,
-  occurrenceEnd
-});
-
-const existing =
-  shifts.filter(
-    s => s.employeeId === employeeId
-  );
-
-console.table(
-  existing.map(s => ({
-    start: s.startTime,
-    end: s.endTime,
-    site: s.siteId
-  }))
-);
+  ); 
 
   const duplicate =
   shifts.some(
@@ -6990,12 +6985,7 @@ console.table(
         occurrenceEnd
   );
 
-if (duplicate) {
-
-  console.log(
-    "Skipping duplicate:",
-    occurrenceStart
-  );
+if (duplicate) {  
 
   continue;
 
@@ -7016,31 +7006,12 @@ const conflict =
       )
   );
 
-if (conflict) {
-
-  console.log(
-    "Skipping conflict:",
-    occurrenceStart
-  );
+if (conflict) {  
 
   continue;
 
 }
-
-      console.log(
-        "New Start:",
-        newStart
-      );
-
-      console.log(
-        "New End:",
-        newEnd
-      );
-
-      console.log(
-        "Saving recurring shift..."
-      );
-
+      
       await addDoc(
   collection(db, "shifts"),
   {
@@ -7054,15 +7025,7 @@ if (conflict) {
 
     seriesId
   }
-);
-
-      console.log(
-        "Recurring shift saved."
-      );
-
-      console.log(
-        `${generatedDates.length} recurring shifts created.`
-      );
+);     
 
     }
 
@@ -9380,21 +9343,38 @@ function renderMySchedule() {
     !currentOfficer
   ) return;
 
-  const myShifts =
+  const today = new Date();
 
-    shifts
-      .filter(
-        shift =>
-          shift.employeeId ===
-          currentOfficer.id
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.startTime) -
-          new Date(b.startTime)
+currentOfficerShifts =
+  shifts
+    .filter(shift => {
+
+      if (
+        shift.employeeId !==
+        currentOfficer.id
+      ) {
+        return false;
+      }
+
+      const shiftDate =
+        new Date(
+          shift.startTime
+        );
+
+      return (
+        shiftDate.getFullYear() === today.getFullYear() &&
+        shiftDate.getMonth() === today.getMonth() &&
+        shiftDate.getDate() === today.getDate()
       );
 
-  if (!myShifts.length) {
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.startTime) -
+        new Date(b.startTime)
+    );
+
+  if (!currentOfficerShifts.length) {
 
     container.innerHTML =
       "No scheduled shifts.";
@@ -9404,7 +9384,7 @@ function renderMySchedule() {
   }
 
   container.innerHTML =
-    myShifts.map(
+    currentOfficerShifts.map(
       shift => `
 
         <div
@@ -9455,6 +9435,7 @@ ${shift.status}
 
       `
     ).join("");
+    updatePortalWelcome();
 
 }
 
@@ -18374,6 +18355,83 @@ function updateScheduleType() {
         scheduleType === "assigned"
             ? "block"
             : "none";            
+
+}
+
+function updatePortalWelcome() {
+
+  const welcome =
+    document.getElementById(
+      "portalWelcome"
+    );
+
+  const subtitle =
+    document.getElementById(
+      "portalSubtitle"
+    );
+
+  if (
+    !welcome ||
+    !subtitle ||
+    !currentOfficer
+  ) return;
+  console.log(currentOfficer);
+
+ welcome.textContent =
+    `Welcome back, ${currentOfficer.name}!`;
+
+  if (!currentOfficerShifts.length) {
+
+    subtitle.textContent =
+      "You have no scheduled shifts today.";
+
+    return;
+
+  }
+
+  const now = new Date();
+
+  const activeShift =
+    currentOfficerShifts.find(
+      shift =>
+        new Date(shift.startTime) <= now &&
+        new Date(shift.endTime) >= now
+    );
+
+  if (activeShift) {
+
+    subtitle.textContent =
+      `You are currently on duty at ${activeShift.siteName}.`;
+
+    return;
+
+  }
+
+  const nextShift =
+    currentOfficerShifts.find(
+      shift =>
+        new Date(shift.startTime) > now
+    );
+
+  if (nextShift) {
+
+    const startTime =
+      new Date(
+        nextShift.startTime
+      ).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+      });
+
+    subtitle.textContent =
+      `Your next shift starts at ${startTime} at ${nextShift.siteName}.`;
+
+    return;
+
+  }
+
+  subtitle.textContent =
+    "You have completed today's scheduled shifts.";
 
 }
 
