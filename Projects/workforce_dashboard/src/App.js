@@ -7591,47 +7591,26 @@ async function saveShiftEdit() {
 
     return;
 
+  }  
+
+const conflict = shifts.some(shift => {
+
+  if (shift.id === id) {
+    return false; // Don't compare the shift to itself
   }
 
-  console.log("Checking occurrence:", {
-  employeeId,
-  siteId,
-  occurrenceStart,
-  occurrenceEnd
+  if (shift.employeeId !== employeeId) {
+    return false;
+  }
+
+  return timesOverlap(
+    startTime,
+    endTime,
+    shift.startTime,
+    shift.endTime
+  );
+
 });
-
-console.log(
-  "Existing shifts:",
-  shifts
-    .filter(s => s.employeeId === employeeId)
-    .map(s => ({
-      start: s.startTime,
-      end: s.endTime,
-      site: s.siteId
-    }))
-);
-
-  const conflict =
-  shifts.some(shift => {
-
-    if (shift.employeeId !== employeeId) {
-      return false;
-    }
-
-    console.log(
-      "Comparing against:",
-      shift.startTime,
-      shift.endTime
-    );
-
-    return timesOverlap(
-      occurrenceStart,
-      occurrenceEnd,
-      shift.startTime,
-      shift.endTime
-    );
-
-  });
 
   if (conflict) {
 
@@ -18132,9 +18111,7 @@ async function confirmDeleteShift() {
   deletingSeriesId = null;
   deletingRecurring = false;
 
-  closeDeleteShiftModal();
-
-  await loadShifts();
+  closeDeleteShiftModal();  
 
 }
 
