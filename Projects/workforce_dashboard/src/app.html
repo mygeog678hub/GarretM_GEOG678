@@ -120,116 +120,128 @@
   <main class="main-content">
 
     <div class="dashboard-container">
-      <div class="dashboard-card brand-card">
 
-  <!-- HEADER -->
+  <!-- Branding Card -->
 
-  <header class="dashboard-header">
+  <div class="dashboard-card brand-card">
 
-    <div class="header-left">
+    <header class="dashboard-header">
 
-      <img
-        src="workforge-logo.png"
-        class="logo"
-      >
+      <div class="header-left">
 
-      <div>
-        <h1>Dashboard</h1>
-        <span class="version-tag">
-          v5.5
-        </span>
+        <img
+          src="workforge-logo.png"
+          class="logo"
+        >
+
+        <div>
+
+          <h1>Dashboard</h1>
+
+          <span class="version-tag">
+            v5.5
+          </span>
+
+        </div>
+
       </div>
 
-    </div>
+      <div class="header-right">
+
+        <img
+          id="clientLogoHeader"
+          class="client-logo hidden"
+        >
+
+      </div>
+
+    </header>
+
   </div>
 
-  <div class="header-right">
+  <!-- Navigation Card -->
 
-  <img
-    id="clientLogoHeader"
-    class="client-logo hidden"
-  >
+  <div class="nav-card">
+
+    <div class="nav-left">
+
+      <button
+        id="companySettingsBtn"
+        onclick="showCompanySettingsPage()">
+        🏢 Company Settings
+      </button>
+
+      <button
+        id="dashboardBtn"
+        onclick="showDashboard()">
+        Dashboard
+      </button>
+
+      <button
+        id="schedulingBtn"
+        onclick="showSchedulingPage()">
+        Scheduling
+      </button>
+
+      <button
+        id="incidentReportsBtn"
+        onclick="showIncidentReportsPage()">
+        Investigative Reports
+      </button>
+
+      <button
+        id="incidentReviewBtn"
+        onclick="showIncidentReviewPage()">
+        Incident Review
+      </button>
+
+      <button
+        id="patrolsBtn"
+        onclick="showPatrolsPage()">
+        Patrols
+      </button>
+
+      <button
+        id="patrolDashboardBtn"
+        onclick="showPatrolDashboardPage()">
+        Patrol Dashboard
+      </button>
+
+      <button
+        id="patrolAnalyticsBtn"
+        onclick="showPatrolAnalytics()">
+        📊 Patrol Analytics
+      </button>
+
+      <button
+        id="mileageReportBtn"
+        onclick="showMileageReportPage()">
+        🚗 Mileage Report
+      </button>
+
+    </div>
+
+    <div class="nav-right">
+
+      <button
+        id="myPortalBtn"
+        onclick="showMyPortalPage()">
+        👤 My Portal
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="logout-btn"
+        onclick="logout()">
+        Logout
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
-
-    <div class="nav-card">
-
-  <div class="nav-left">
-
-<button
-  id="companySettingsBtn"
-  onclick="showCompanySettingsPage()">
-  🏢 Company Settings
-</button>
-
-  <button
-  id="dashboardBtn"
-  onclick="showDashboard()">
-  Dashboard
-</button>
-
-<button
-  id="schedulingBtn"
-  onclick="showSchedulingPage()">
-  Scheduling
-</button>
-
-<button
-  id="incidentReportsBtn"
-  onclick="showIncidentReportsPage()">
-  Investigative Reports
-</button>
-
-<button
-  id="incidentReviewBtn"
-  onclick="showIncidentReviewPage()"
->
-  Incident Review
-</button>
-
-<button
-  id="patrolsBtn"
-  onclick="showPatrolsPage()">
-  Patrols
-</button>
-
-<button
-  id="patrolDashboardBtn"
-  onclick="showPatrolDashboardPage()">
-  Patrol Dashboard
-</button>
-
-<button
-  id="patrolAnalyticsBtn"
-  onclick="showPatrolAnalytics()">
-  📊 Patrol Analytics
-</button>
-
-<button
-  id="mileageReportBtn"
-  onclick="showMileageReportPage()">
-  🚗 Mileage Report
-</button>
-
- <div class="nav-right">
-<button
-  id="myPortalBtn"
-  onclick="showMyPortalPage()">
-  👤 My Portal
-</button>
-
-  <button
-  id="logoutBtn"
-  class="logout-btn"
-  onclick="logout()">
-  Logout
-</button> 
-
-</div>
-</div>
-</div>
-
-  </header>
+ 
 
   <div
   id="mileageReportPage"

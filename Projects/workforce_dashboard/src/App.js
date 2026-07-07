@@ -15601,19 +15601,38 @@ window.loadCompanyProfile =
         error
       );
     }
-    if (companyProfile.logoUrl) {
+   if (companyProfile.logoBase64) {
 
-      const logoPreview =
-        document.getElementById(
-          "companyLogoPreview"
-        );
+  const logoPreview =
+    document.getElementById(
+      "companyLogoPreview"
+    );
 
-      logoPreview.src =
-        companyProfile.logoUrl;
+  logoPreview.src =
+    companyProfile.logoBase64;
 
-      logoPreview.style.display =
-        "block";
-    }
+  logoPreview.style.display =
+    "block";
+}
+
+const headerLogo =
+  document.getElementById(
+    "clientLogoHeader"
+  );
+
+if (
+  headerLogo &&
+  companyProfile.logoBase64
+) {
+
+  headerLogo.src =
+    companyProfile.logoBase64;
+
+  headerLogo.classList.remove(
+    "hidden"
+  );
+
+}
 
     if (companyProfile.patchUrl) {
 

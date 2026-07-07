@@ -79,12 +79,25 @@ td {
 
 /* ================= HEADER LOGO ================= */
 
-.logo {
-  width: 150px;
+.logo{
 
-  height: auto;
+    width:170px;
 
-  object-fit: contain;
+    height:auto;
+
+}
+
+.client-logo{
+
+    height:72px;
+
+    width:auto;
+
+}
+.header-right{
+
+    padding-right:20px;
+
 }
 
 .app-name {
@@ -294,15 +307,41 @@ button:hover {
   margin-bottom: 20px;
 }
 
-.nav-card {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.nav-card{
+    background: rgba(15,23,42,.78);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius:20px;
+    padding:24px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+
+    backdrop-filter:blur(12px);
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
-.client-logo {
-  max-height: 90px;
-  max-width: 220px;
-  object-fit: contain;
+
+.nav-card button{
+
+    min-width: 115px;
+
+    height: 56px;
+
+    padding: 0 18px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+    white-space:normal;
+
+    line-height:1.2;
+
 }
 
 .header-left {
@@ -1201,6 +1240,30 @@ border-bottom:
   color: #cbd5e1;
 
   line-height: 1.8;
+}
+
+.dashboard-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    width:100%;
+
+}
+
+.header-right{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:flex-end;
+
+    margin-left:auto;
+
 }
 @media (max-width: 768px) {
 
@@ -2321,14 +2384,31 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   flex-wrap: wrap;
 }
 .nav-left {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    flex: 1;
+
+    flex-wrap: nowrap;
+
 }
 
 .nav-right {
-  display: flex;
-  gap: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    margin-left: auto;
+
+    flex-shrink: 0;
+
 }
 
 .nav-buttons button {
