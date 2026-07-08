@@ -2091,9 +2091,11 @@
   <div>
     <label>&nbsp;</label>
 
-    <button onclick="createShift()">
-      Create Shift
-    </button>
+   <button
+    id="scheduleSubmitButton"
+    onclick="createShift()">
+    Create Shift
+</button>
   </div>
 
 </div>
@@ -2130,6 +2132,72 @@
   <div class="weekly-board-container">
     <div id="weeklyScheduleBoard"></div>
   </div>
+
+</div>
+
+<div class="dashboard-card">
+
+  <h2>Published Open Shifts</h2>
+
+  <table class="data-table">
+
+    <thead>
+
+      <tr>
+        <th>Actions</th>
+        <th>Site</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Pay</th>
+        <th>Classification</th>
+        <th>Status</th>
+
+      </tr>
+
+    </thead>
+
+    <tbody id="openShiftsTableBody">
+
+    </tbody>
+
+  </table>
+
+</div>
+
+<div class="dashboard-card">
+
+    <h3>Claim Requests</h3>
+
+    <table class="data-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Officer</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Classification</th>
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="claimRequestsBody">
+
+            <tr>
+
+                <td colspan="6">
+                    No claim requests.
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
 
 </div>
 
@@ -2314,6 +2382,14 @@
   <div id="notificationsList">
     No notifications.
   </div>
+</div>
+
+<div class="dashboard-card">
+    <h3>Available Open Shifts</h3>
+
+    <div id="availableOpenShifts">
+        No open shifts available.
+    </div>
 </div>
 
     <div class="dashboard-card">

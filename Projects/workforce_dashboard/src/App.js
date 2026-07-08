@@ -202,6 +202,8 @@ let deletingShiftId = null;
 let deletingSeriesId = null;
 let deletingRecurring = false;
 let currentOfficerShifts = [];
+let openShifts = [];
+let claimedShifts = [];
 window.incidentVehicles = [];
 
 //window.markers = markers;
@@ -755,6 +757,9 @@ onSnapshot(
 
     renderMyAttendanceStatus();
     loadCompanyProfile();
+    loadOpenShifts();
+    loadOfficerOpenShifts();
+    loadClaimRequests();
 
   },
 
@@ -4769,8 +4774,10 @@ async function deploySiteCrew(siteId) {
     sites.find(s => s.id === siteId);
 
   if (!site) {
-    alert("Site not found");
-    return;
+    return {
+    success: false,
+    message: "Site not found."
+};
   }
 
   const crew =
@@ -6505,11 +6512,7 @@ window.showIncidentReportsPage =
 
     document.getElementById(
       "schedulingPage"
-    ).style.display = "none";
-
-    setActiveNavById(
-      "incidentReportsBtn"
-    );
+    ).style.display = "none";   
 
     document.getElementById(
       "officerPortal"
@@ -6589,106 +6592,233 @@ window.showIncidentReportsPage =
 
 }
 
-async function createOpenShift() {
+let officerOpenShifts = [];
 
-  alert("Publishing Open Shift...");
+function loadOfficerOpenShifts() {
+
+    onSnapshot(
+
+        query(
+            collection(db, "openShifts"),
+            where("status", "==", "open")
+        ),
+
+        (snapshot) => {
+
+            officerOpenShifts = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            renderOfficerOpenShifts();
+
+        }
+
+    );
 
 }
 
-async function createShift() {
+function renderOfficerOpenShifts() {
 
-  const scheduleType =
-    document.querySelector(
-      'input[name="scheduleType"]:checked'
-    ).value;
+    const container =
+        document.getElementById(
+            "availableOpenShifts"
+        );
 
-  if (scheduleType === "open") {
-    return createOpenShift();
-  }
+    if (!container) return;
 
-  const employeeId =
-    document.getElementById(
-      "scheduleEmployee"
-    ).value;
+    if (officerOpenShifts.length === 0) {
 
-  const siteId =
-    document.getElementById(
-      "scheduleSite"
-    ).value;
+        container.innerHTML =
+            "<p>No open shifts available.</p>";
 
-  const startTime =
-    document.getElementById(
-      "scheduleStart"
-    ).value;
+        return;
 
-  const endTime =
-    document.getElementById(
-      "scheduleEnd"
-    ).value;  
+    }
 
-  const shiftPay =
-    Number(
+    container.innerHTML =
+        officerOpenShifts.map(shift => `
+
+            <div class="open-shift-card">
+
+                <h4>${shift.siteName}</h4>
+
+                <p>
+                    ${formatDate(shift.startTime)}
+                </p>
+
+                <p>
+                    ${formatTime(shift.startTime)}
+                    -
+                    ${formatTime(shift.endTime)}
+                </p>
+
+                <p>
+                    ${shift.classification}
+                </p>
+
+                <p>
+                    $${shift.shiftPay}/hr
+                </p>
+
+                <button onclick="claimOpenShift('${shift.id}')">
+                  Claim Shift
+                </button>
+
+            </div>
+
+        `).join("");
+
+}
+
+async function createOpenShift() {
+
+  try {
+
+    const siteId =
       document.getElementById(
-        "schedulePay"
-      ).value
-    ) || 0;
+        "scheduleSite"
+      ).value;
 
-  const classification =
-    document.getElementById(
-      "shiftClassification"
-    ).value;   
+    const startTime =
+      document.getElementById(
+        "scheduleStart"
+      ).value;
 
-  const repeatEnabled =
-    document.getElementById(
-      "repeatSchedule"
-    ).checked;
+    const endTime =
+      document.getElementById(
+        "scheduleEnd"
+      ).value;
 
-  const repeatDays =
-    getRepeatDays();
+    const shiftPay =
+      parseFloat(
+        document.getElementById(
+          "schedulePay"
+        ).value
+      ) || 0;
 
-  const repeatEndDate =
-    document.getElementById(
-      "repeatEndDate"
-    ).value;
+    const classification =
+      document.getElementById(
+        "shiftClassification"
+      ).value;
 
-  let generatedDates = [];
+    const repeatEnabled =
+      document.getElementById(
+        "repeatSchedule"
+      ).checked;
 
-  if (repeatEnabled) {
+    const repeatDays = 
+      getRepeatDays();
 
-    generatedDates =
-      generateRecurringDates(
-        startTime,
-        repeatDays,
-        repeatEndDate
-      );   
+    const repeatEndDate =
+      document.getElementById(
+        "repeatEndDate"
+      ).value;
+
+    if (!siteId) {
+      alert("Please select a site.");
+      return;
+    }
+
+    if (!startTime || !endTime) {
+      alert("Please select the shift times.");
+      return;
+    }
+
+    if (
+      new Date(endTime) <=
+      new Date(startTime)
+    ) {
+     return {
+    success: false,
+    message: "Shift end time must be after the start time."
+};
+      return;
+    }
+
+  const siteDoc = await getDoc(
+  doc(db, "sites", siteId)
+);
+
+if (!siteDoc.exists()) {
+  return {
+    success: false,
+    message: "Site not found."
+};
+}
+
+const site = siteDoc.data();
+
+console.log("Site document:", site);
+console.log("Site ID:", siteId);
+  await addDoc(
+  collection(db, "openShifts"),
+  {
+
+    siteId,
+    siteName: site.name,
+    siteCategory: site.siteCategory,
+
+    startTime,
+    endTime,
+
+    shiftPay,
+    classification,
+
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate,
+
+    seriesId: null,
+
+    status: "open",
+
+    publishedAt: serverTimestamp(),
+
+    createdAt: serverTimestamp()
 
   }
+);
 
-  if (
-    repeatEnabled &&
-    (
-      !repeatDays.length ||
-      !repeatEndDate
-    )
-  ) {
     alert(
-      "Select repeat days and an end date."
+      "Open Shift Published."
     );
-    return;
-  }
 
-  if (
-    !employeeId ||
-    !siteId ||
-    !startTime ||
-    !endTime
-  ) {
+    console.log("Site document:", site);
+    console.log("Site ID:", siteId);
+
+  } catch (error) {
+
+    console.error(error);
+
     alert(
-      "Complete all fields.");
+      "Unable to publish Open Shift."
+    );
 
-    return;
   }
-  const employee =
+
+}
+
+async function createScheduledShift(data) {
+
+  const {
+
+    employeeId,
+    siteId,
+
+    startTime,
+    endTime,
+
+    classification,
+    shiftPay,
+
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate
+
+} = data;
+
+    const employee =
     employees.find(
       e => e.id === employeeId
     ); 
@@ -6700,13 +6830,21 @@ async function createShift() {
 
 
 if (!employee) {
-  alert("Employee not found.");
-  return;
+
+    return {
+        success: false,
+        message: "Employee not found."
+    };
+
 }
 
 if (!site) {
-  alert("Site not found.");
-  return;
+
+    return {
+        success: false,
+        message: "Site not found."
+    };
+
 }
     
 
@@ -6715,13 +6853,26 @@ if (!site) {
   new Date(startTime)
 ) {
 
-  alert(
-    "Shift end time must be after the start time."
-  );
+ return {
+    success: false,
+    message: "Shift end time must be after the start time."
+};
 
   return;
 
 } 
+
+let generatedDates = [];
+
+if (repeatEnabled) {
+
+    generatedDates = generateRecurringDates(
+        startTime,
+        repeatDays,
+        repeatEndDate
+    );
+
+}
 
   let mileageDistance = 0;
   let mileageIncentive = false;
@@ -6822,9 +6973,10 @@ if (!site) {
   duplicate
 ) {
 
-  alert(
-    "This shift already exists."
-  );
+ return {
+    success: false,
+    message: "This shift already exists."
+};
 
   return;
 
@@ -6850,19 +7002,14 @@ if (!site) {
   conflict
 ) {
 
-  alert(
-    "Officer already scheduled during this time."
-  );
+ return {
+    success: false,
+    message: "Officer already scheduled during this time."
+};
 
   return;
 
-}
-
-  console.log({
-    repeatEnabled,
-    repeatDays,
-    repeatEndDate
-  });
+} 
 
   const shiftData = {
 
@@ -7021,13 +7168,125 @@ if (conflict) {
     }
 
   }
-  document.getElementById(
-    "scheduleEmployee"
-  ).value = "";
+  return {
+    success: true
+};
 
-  document.getElementById(
-    "scheduleSite"
-  ).value = "";
+}
+
+async function createShift() {
+
+  const scheduleType =
+    document.querySelector(
+      'input[name="scheduleType"]:checked'
+    ).value;
+
+  if (scheduleType === "open") {
+    return createOpenShift();
+  }
+
+  const employeeId =
+    document.getElementById(
+      "scheduleEmployee"
+    ).value;
+
+  const siteId =
+    document.getElementById(
+      "scheduleSite"
+    ).value;
+
+  const startTime =
+    document.getElementById(
+      "scheduleStart"
+    ).value;
+
+  const endTime =
+    document.getElementById(
+      "scheduleEnd"
+    ).value;  
+
+  const shiftPay =
+    Number(
+      document.getElementById(
+        "schedulePay"
+      ).value
+    ) || 0;
+
+  const classification =
+    document.getElementById(
+      "shiftClassification"
+    ).value;   
+
+  const repeatEnabled =
+    document.getElementById(
+      "repeatSchedule"
+    ).checked;
+
+  const repeatDays =
+    getRepeatDays();
+
+  const repeatEndDate =
+    document.getElementById(
+      "repeatEndDate"
+    ).value;
+
+    if (
+    repeatEnabled &&
+    (
+      !repeatDays.length ||
+      !repeatEndDate
+    )
+  ) {
+    alert(
+      "Select repeat days and an end date."
+    );
+    return;
+  }
+
+  if (
+    !employeeId ||
+    !siteId ||
+    !startTime ||
+    !endTime
+  ) {
+    alert(
+      "Complete all fields.");
+
+    return;
+  }
+
+  const shiftData = {
+
+    employeeId,
+    siteId,
+
+    startTime,
+    endTime,
+
+    classification,
+    shiftPay,
+
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate
+
+};
+
+const result =
+    await createScheduledShift(
+        shiftData
+    );
+
+if (!result || !result.success) {
+
+    alert(
+        result?.message ||
+        "Unable to create shift."
+    );
+
+    return;
+
+}   
 
   console.log("Shift saved");
   document.getElementById(
@@ -7555,9 +7814,10 @@ async function saveShiftEdit() {
 
   if (duplicate) {
 
-    alert(
-      "This shift already exists."
-    );
+  return {
+    success: false,
+    message: "This shift already exists."
+};
 
     return;
 
@@ -7584,9 +7844,10 @@ const conflict = shifts.some(shift => {
 
   if (conflict) {
 
-    alert(
-      "Officer already scheduled during this time."
-    );
+   return {
+    success: false,
+    message: "Officer already scheduled during this time."
+};
 
     return;
 
@@ -18338,14 +18599,39 @@ function updateScheduleType() {
             'input[name="scheduleType"]:checked'
         ).value;
 
-    console.log("Schedule Type:", scheduleType);
+    const assignedSection =
+        document.getElementById(
+            "assignedOfficerSection"
+        );
 
-    document.getElementById(
-        "assignedOfficerSection"
-    ).style.display =
-        scheduleType === "assigned"
-            ? "block"
-            : "none";            
+    const submitButton =
+        document.getElementById(
+            "scheduleSubmitButton"
+        );
+
+    if (scheduleType === "assigned") {
+
+        assignedSection.style.display =
+            "block";
+
+        submitButton.textContent =
+            "Create Shift";
+
+        submitButton.onclick =
+            createShift;
+
+    } else {
+
+        assignedSection.style.display =
+            "none";
+
+        submitButton.textContent =
+            "Publish Open Shift";
+
+        submitButton.onclick =
+            createOpenShift;
+
+    }
 
 }
 
@@ -18425,6 +18711,343 @@ function updatePortalWelcome() {
     "You have completed today's scheduled shifts.";
 
 }
+
+function loadOpenShifts() {
+
+  onSnapshot(
+
+    query(
+      collection(db, "openShifts"),
+      where("status", "==", "open")
+    ),
+
+    (snapshot) => {
+
+      openShifts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log(
+        "Open Shifts:",
+        openShifts
+      );
+
+      renderOpenShifts();
+
+    },
+
+    (error) => {
+
+      console.error(
+        "Open Shift Listener:",
+        error
+      );
+
+    }
+
+  );
+
+}
+
+function loadClaimRequests() {
+
+    onSnapshot(
+
+        query(
+            collection(db, "openShifts"),
+            where("status", "==", "claimed")
+        ),
+
+        (snapshot) => {
+
+            claimedShifts = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            renderClaimRequests();
+
+        }
+
+    );
+
+}
+
+function renderOpenShifts() {
+
+  const tbody =
+    document.getElementById(
+      "openShiftsTableBody"
+    );
+
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  if (!openShifts.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          No Open Shifts Published
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  openShifts.forEach(shift => {
+
+    const row =
+      document.createElement("tr");
+
+    row.innerHTML = `
+
+    
+
+      <td>${shift.siteName}</td>
+
+      <td>${formatDate(shift.startTime)}</td>
+
+      <td>
+        ${formatTime(shift.startTime)}
+        -
+        ${formatTime(shift.endTime)}
+      </td>
+
+      <td>
+        $${Number(
+          shift.shiftPay
+        ).toFixed(2)}
+      </td>
+
+      <td>${shift.classification}</td>
+
+      <td>${shift.status}</td>
+
+      <td>
+      <button
+        class="btn-danger"
+        onclick="cancelOpenShift('${shift.id}')">
+        Cancel
+      </button>
+    </td>
+
+    `;
+
+    tbody.appendChild(row);
+
+  });
+
+}
+
+function renderClaimRequests() {
+
+    const tbody =
+        document.getElementById(
+            "claimRequestsBody"
+        );
+
+    if (!tbody) return;
+
+    if (claimedShifts.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    No claim requests.
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+    tbody.innerHTML =
+        claimedShifts.map(shift => `
+
+            <tr>
+
+                <td>
+                    ${shift.claimedByName}
+                </td>
+
+                <td>
+                    ${shift.siteName}
+                </td>
+
+                <td>
+                    ${formatDate(
+                        shift.startTime
+                    )}
+                </td>
+
+                <td>
+                    ${formatTime(
+                        shift.startTime
+                    )}
+                    -
+                    ${formatTime(
+                        shift.endTime
+                    )}
+                </td>
+
+                <td>
+                    ${shift.classification}
+                </td>
+
+                <td>
+
+                    <button
+                        onclick="approveClaim('${shift.id}')">
+
+                        Approve
+
+                    </button>
+
+                    <button
+                        onclick="declineClaim('${shift.id}')">
+
+                        Decline
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `).join("");
+
+}
+
+async function approveClaim(id) {
+
+    alert(
+        "Approve coming next."
+    );
+
+}
+
+async function declineClaim(id) {
+
+    alert(
+        "Decline coming next."
+    );
+
+}
+
+window.approveClaim = approveClaim;
+window.declineClaim = declineClaim;
+
+async function cancelOpenShift(id) {
+
+  const confirmed = confirm(
+    "Cancel this Open Shift?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+
+    await updateDoc(
+      doc(db, "openShifts", id),
+      {
+        status: "cancelled",
+        cancelledAt: serverTimestamp()
+      }
+    );
+
+    alert(
+      "Open Shift Cancelled."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to cancel Open Shift."
+    );
+
+  }
+
+}
+
+function formatDate(dateString) {
+
+  return new Date(dateString)
+    .toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      }
+    );
+
+}
+
+function formatTime(dateString) {
+
+  return new Date(dateString)
+    .toLocaleTimeString(
+      "en-US",
+      {
+        hour: "numeric",
+        minute: "2-digit"
+      }
+    );
+
+}
+
+async function claimOpenShift(id) {
+
+    const confirmed = confirm(
+        "Claim this open shift?"
+    );
+
+    if (!confirmed) return;
+
+    try {     
+
+        await updateDoc(
+            doc(db, "openShifts", id),
+            {
+
+                status: "claimed",
+
+                claimedEmployeeId:
+                    currentEmployee.id,
+
+                claimedByName:
+                    currentEmployee.name,
+
+                claimedAt:
+                    serverTimestamp()
+
+            }
+        );
+
+        alert(
+            "Shift claimed successfully."
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Unable to claim shift."
+        );
+
+    }
+
+}
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
@@ -18506,5 +19129,7 @@ window.generateIncidentCaseNumber = generateIncidentCaseNumber;
 window.extendRecurringSeries = extendRecurringSeries;
 window.updateScheduleType = updateScheduleType;
 window.createOpenShift = createOpenShift;
+window.cancelOpenShift = cancelOpenShift;
+window.claimOpenShift = claimOpenShift;
 
 refreshSupervisorDashboard();
