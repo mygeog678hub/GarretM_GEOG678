@@ -7055,18 +7055,20 @@ if (repeatEnabled) {
   endTime
 });
 
+let createdShiftId = null;
+
   if (!repeatEnabled) {
 
-    await addDoc(
-      collection(db, "shifts"),
-      {
-        ...shiftData,
+    const shiftRef = await addDoc(
+  collection(db, "shifts"),
+  {
+    ...shiftData,
+    startTime,
+    endTime
+  }
+);
 
-        startTime,
-
-        endTime
-      }
-    );
+createdShiftId = shiftRef.id;
 
     alert(
       "Shift created successfully."
@@ -7150,26 +7152,33 @@ if (conflict) {
 
 }
       
-      await addDoc(
-  collection(db, "shifts"),
-  {
-    ...shiftData,
+      const shiftRef = await addDoc(
+    collection(db, "shifts"),
+    {
+        ...shiftData,
 
-    startTime:
-      occurrenceStart,
+        startTime:
+            occurrenceStart,
 
-    endTime:
-      occurrenceEnd,
+        endTime:
+            occurrenceEnd,
 
-    seriesId
-  }
-);     
+        seriesId
+    }
+); 
+
+if (!createdShiftId) {
+
+    createdShiftId = shiftRef.id;
+
+}
 
     }
 
   }
-  return {
-    success: true
+return {
+    success: true,
+    shiftId: createdShiftId
 };
 
 }
@@ -18924,14 +18933,6 @@ function renderClaimRequests() {
 
 }
 
-async function approveClaim(id) {
-
-    alert(
-        "Approve coming next."
-    );
-
-}
-
 async function declineClaim(id) {
 
     alert(
@@ -19045,6 +19046,109 @@ async function claimOpenShift(id) {
         );
 
     }
+
+}
+
+async function approveClaim(id) {
+
+  try {
+
+    const openShiftRef =
+      doc(db, "openShifts", id);
+
+    const openShiftSnap =
+      await getDoc(openShiftRef);
+
+    if (!openShiftSnap.exists()) {
+
+      alert("Open Shift not found.");
+      return;
+
+    }
+
+    const openShift =
+      openShiftSnap.data();
+
+    const shiftData = {
+
+      employeeId:
+        openShift.claimedEmployeeId,
+
+      employeeName:
+        openShift.claimedByName,
+
+      siteId:
+        openShift.siteId,
+
+      startTime:
+        openShift.startTime,
+
+      endTime:
+        openShift.endTime,
+
+      classification:
+        openShift.classification,
+
+      shiftPay:
+        openShift.shiftPay,
+
+      repeatEnabled:
+        openShift.repeatEnabled || false,
+
+      repeatDays:
+        openShift.repeatDays || [],
+
+      repeatEndDate:
+        openShift.repeatEndDate || null,
+
+      seriesId:
+        openShift.seriesId || null
+
+    };
+
+    const result =
+      await createScheduledShift(
+        shiftData
+      );
+
+    if (!result.success) {
+
+      alert(result.message);
+
+      return;
+
+    }
+
+    await updateDoc(
+      openShiftRef,
+      {
+        status: "assigned",
+        shiftId: result.shiftId,
+        approvedAt: new Date().toISOString()
+      }
+    );
+
+    await logActivity(
+      openShift.siteId,
+      "MARKETPLACE_SHIFT_APPROVED",
+      `${openShift.claimedByName} approved for ${openShift.siteName}`,
+      "Supervisor",
+      "marketplace"
+    );
+
+    loadClaimRequests();  
+
+    alert("Shift approved successfully.");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to approve Marketplace claim."
+    );
+
+  }
 
 }
 
