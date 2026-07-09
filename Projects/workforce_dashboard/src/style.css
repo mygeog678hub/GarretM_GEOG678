@@ -2124,10 +2124,26 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 }
 .person-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 15px;
+}
+
+@media (max-width: 1200px) {
+
+    .person-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .person-grid {
+        grid-template-columns: 1fr;
+    }
+
 }
 
 .field-group {
@@ -2149,19 +2165,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   max-width: 100% !important;
 }
 
-.person-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      4,
-      minmax(200px, 1fr)
-    );
-
-  gap: 15px;
-
-  margin-top: 15px;
-}
 .person-card,
 .vehicle-card {
 
@@ -2907,4 +2910,36 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #portalSubtitle {
     margin-top: 12px;
     margin-bottom: 30px;
+}
+#availableOpenShifts {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+#availableOpenShifts::-webkit-scrollbar {
+    width: 8px;
+}
+
+#availableOpenShifts::-webkit-scrollbar-track {
+    background: #111827;
+}
+
+#availableOpenShifts::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 10px;
+}
+
+#availableOpenShifts::-webkit-scrollbar-thumb:hover {
+    background: #60a5fa;
+}
+#availableOpenShifts > div {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+#personsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
