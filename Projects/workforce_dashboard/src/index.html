@@ -232,37 +232,59 @@ WorkForge | Security Operations Management Software
 
 </div>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getAuth,
+import {
+  auth,
+  provider,
+  db
+} from "./firebase-config.js";
+
+import {
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  GoogleAuthProvider,
   signInWithPopup,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
-  authDomain: "workforge-3b77f.firebaseapp.com",
-  projectId: "workforge-3b77f",
-  storageBucket: "workforge-3b77f.appspot.com",
-  messagingSenderId: "906291779450",
-  appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async (user) => {
 
   document.getElementById("body").style.display = "flex";
 
-  if (user) {
+  if (!user) return;
+
+  try {
+
+    const userRef = doc(
+      db,
+      "users",
+      user.uid
+    );
+
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+
+      alert("User profile not found.");
+
+      return;
+
+    }
+
+    const profile = userSnap.data();
+
+    console.log("User Profile:", profile);
 
     window.location.href = "app.html";
+
+  } catch (error) {
+
+    console.error("Unable to load user profile:", error);
 
   }
 
@@ -287,8 +309,10 @@ window.googleLogin = async function() {
     const result =
       await signInWithPopup(
         auth,
-        provider
+        provider        
       );
+
+      
 
     const user = result.user;
 

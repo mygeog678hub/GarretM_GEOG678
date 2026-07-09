@@ -32,6 +32,10 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+import {
+  getCurrentUserProfile
+} from "./identity-service.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
   authDomain: "workforge-3b77f.firebaseapp.com",
@@ -40,6 +44,11 @@ const firebaseConfig = {
   messagingSenderId: "906291779450",
   appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
 };
+
+const currentUserProfile =
+  await getCurrentUserProfile();
+
+console.log(currentUserProfile);
 //===================== INITIALIZE =================
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -15752,7 +15761,10 @@ window.saveCompanyProfile =
         { merge: true }
       );
       companyProfile = profile;
-      window.companyProfile = profile;
+      window.companyProfile =
+        companyProfile;
+
+      return companyProfile;
 
       alert(
         "Company profile saved."
