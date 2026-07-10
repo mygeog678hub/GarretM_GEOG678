@@ -1,5 +1,5 @@
 // ================= FIREBASE =================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
   collection,
@@ -17,47 +17,42 @@ import {
   where,
   orderBy,
   writeBatch
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   getStorage,
   ref,
   uploadBytes,
   getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 import {
   getAuth,
   onAuthStateChanged,
   signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getCurrentUserProfile
-} from "./identity-service.js";
+} from "./services/identity-service.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
-  authDomain: "workforge-3b77f.firebaseapp.com",
-  projectId: "workforge-3b77f",
-  storageBucket: "workforge-3b77f.firebasestorage.app",
-  messagingSenderId: "906291779450",
-  appId: "1:906291779450:web:276a14fed6b25dde2f68c3"
-};
-
-const currentUserProfile =
-  await getCurrentUserProfile();
-
-console.log(currentUserProfile);
-//===================== INITIALIZE =================
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-const auth = getAuth(app);
-// ================= AUTH =================
-onAuthStateChanged(
+import {
+  app,
   auth,
-  (user) => {
+  db,
+  storage
+} from "./services/firebase-config.js";
+
+import {
+  setEmployees,
+  getEmployees,
+  getEmployeeById,
+  setCurrentEmployee,
+  getCurrentEmployee
+} from "./services/employee-service.js";
+
+// ================= AUTH =================
+onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
       window.location.href =
@@ -66,6 +61,12 @@ onAuthStateChanged(
     }
 
     currentUser = user;
+
+const identityReady =
+  await initializeIdentity();
+
+if (!identityReady) return;
+await bootstrapApplication();
 
     console.log(
       "Authenticated:",
@@ -159,9 +160,8 @@ const criticalAlert =
   );
 criticalAlert.preload = "auto";
 
-
-
 let employees = [];
+let currentEmployee = null;
 let sites = [];
 let assets = [];
 let vehicles = [];
@@ -186,6 +186,7 @@ let missingClockInList = [];
 let postMonitoringTimer = null;
 let currentOfficer = null;
 let currentUser = null;
+let currentUserProfile = null;
 let activityReports = [];
 let patrolTemplates = [];
 let currentPatrolId = null;
@@ -522,13 +523,18 @@ function fileToBase64(file) {
 }
 
 // ================= LOAD =================
+function startEmployeeListener() {
 onSnapshot(collection(db, "employees"), snap => {
 
-  employees = snap.docs.map(d => ({
+ const employeeList = snap.docs.map(d => ({
     id: d.id,
     ...d.data(),
     role: d.data().role || "Officer"
-  }));
+}));
+
+
+employees = employeeList;
+setEmployees(employeeList);
 
   console.log(
     "Employees Loaded:",
@@ -538,25 +544,50 @@ onSnapshot(collection(db, "employees"), snap => {
   if (!currentUser) return;
 
   const employee =
-    employees.find(
-      e =>
-        e.email &&
-        currentUser.email &&
-        e.email.toLowerCase() ===
-        currentUser.email.toLowerCase()
-    );
-  window.currentEmployee =
-    employee;
+  employees.find(
+    
+    e =>
+      currentUserProfile &&
+      currentUserProfile.employeeId &&
+      e.id === currentUserProfile.employeeId
+  );
+
+      
+  currentEmployee = employee;
+
+  console.log("Matched Employee:", employee);
+console.log("All Employee IDs:", employees.map(e => e.id));
+  setCurrentEmployee(employee);
+
+  console.log("================================");
+console.log("UID:", currentUser?.uid);
+console.log("Profile:", currentUserProfile);
+console.log("Profile Role:", currentUserProfile?.role);
+console.log("Profile Employee ID:", currentUserProfile?.employeeId);
+console.log("Employee Found:", employee);
+console.log("currentEmployee:", currentEmployee);
+console.log("================================");
+
+    console.log("Current User:", currentUser);
+    console.log("Current User Profile:", currentUserProfile);
+    console.log("Role:", currentUserProfile?.role);
+    console.log("Profile employeeId:", currentUserProfile?.employeeId);
+    console.log("Matched Employee:", employee);
 
   console.log(
     "Matched Employee:",
     employee
   );
 
-  if (
-    employee &&
-    employee.role === "Officer"
-  ) {
+  console.log(
+  "Officer comparison:",
+  currentUserProfile?.role === "Officer"
+);
+
+ if (
+  currentUserProfile &&
+  currentUserProfile.role === "Officer"
+) {
 
     currentOfficer = employee;
 
@@ -572,7 +603,7 @@ onSnapshot(collection(db, "employees"), snap => {
 
     console.log(
       "Employee ID:",
-      window.currentEmployee?.id
+      currentEmployee?.id
     );
 
     showOfficerPortal();
@@ -581,17 +612,18 @@ onSnapshot(collection(db, "employees"), snap => {
 
   } else {
 
-    console.log(
-      "Supervisor Login"
-    );
+   console.log(
+  "Administrator/Supervisor Login"
+);
 
     showDashboard();
 
   }
 
 });
+}
 
-
+function startPatrolTemplateListener() {
 onSnapshot(
   collection(
     db,
@@ -610,7 +642,11 @@ onSnapshot(
     renderPatrolTemplates();
   }
 );
+}
 
+
+function startSiteListener() {
+  
 onSnapshot(
   collection(db, "sites"),
   snapshot => {
@@ -629,7 +665,10 @@ onSnapshot(
     populatePatrolSiteDropdown();
   }
 );
+}
 
+
+function startAssignmentListener() {
 onSnapshot(collection(db, "assignments"), snap => {
   assignments = snap.docs
     .map(d => ({
@@ -640,7 +679,10 @@ onSnapshot(collection(db, "assignments"), snap => {
   refresh();
   updateDailySummary();
 });
+}
 
+
+function startAssetListener() {
 onSnapshot(collection(db, "assets"), snap => {
   assets = snap.docs.map(d => ({
     docId: d.id,
@@ -650,7 +692,10 @@ onSnapshot(collection(db, "assets"), snap => {
   refresh();
   updateDailySummary();
 });
+}
 
+
+function startVehicleListener() {
 onSnapshot(collection(db, "vehicles"), snap => {
   vehicles = snap.docs.map(d => ({
     docId: d.id,
@@ -659,7 +704,10 @@ onSnapshot(collection(db, "vehicles"), snap => {
   refresh();
   updateDailySummary();
 });
+}
 
+
+function startActivityLogListener() {
 onSnapshot(
 
   collection(db, "activityLogs"),
@@ -686,9 +734,11 @@ onSnapshot(
   }
 
 );
+}
 
-console.log("Before Activity Reports Listener");
 
+
+function startActivityReportListener() {
 onSnapshot(
   collection(db, "activityReports"),
 
@@ -717,9 +767,10 @@ onSnapshot(
 
   }
 );
+}
 
-console.log("After Activity Reports Listener");
 
+function startSiteNoteListener() {
 onSnapshot(
   collection(db, "siteNotes"),
   snap => {
@@ -733,7 +784,10 @@ onSnapshot(
 
   }
 );
+}
 
+
+function startShiftListener() {
 onSnapshot(
   collection(db, "shifts"),
 
@@ -750,7 +804,7 @@ onSnapshot(
           ...d.data()
         })
       );
-
+    
     console.log(
       "SHIFTS LOADED:",
       shifts.length
@@ -782,6 +836,10 @@ onSnapshot(
   }
 
 );
+}
+
+
+function startTimeEntryListener() {
 onSnapshot(
   collection(db, "timeEntries"),
   snapshot => {
@@ -800,7 +858,10 @@ onSnapshot(
 
   }
 );
+}
 
+
+function startCheckpointListener() {
 onSnapshot(
 
   collection(
@@ -826,6 +887,72 @@ onSnapshot(
   }
 
 );
+}
+
+let bootstrapComplete = false;
+
+async function bootstrapApplication() {
+
+  if (bootstrapComplete) {
+    console.log("Bootstrap already completed.");
+    return;
+  }
+
+  bootstrapComplete = true;
+  
+
+// ================= BOOTSTRAP =================
+
+
+
+  console.log("========== BOOTSTRAP START ==========");
+
+  startEmployeeListener();
+  startPatrolTemplateListener();
+  startSiteListener();
+  startAssignmentListener();
+  startAssetListener();
+  startVehicleListener();
+  startActivityLogListener();
+  startActivityReportListener();
+  startSiteNoteListener();
+  startShiftListener();
+  startTimeEntryListener();
+  startCheckpointListener();
+
+  console.log("========== BOOTSTRAP COMPLETE ==========");
+
+}
+
+async function initializeIdentity() {
+
+  try {
+
+    currentUserProfile =
+      await getCurrentUserProfile();
+
+    window.currentUserProfile =
+      currentUserProfile;
+
+    console.log(
+      "Application Profile:",
+      currentUserProfile
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.error(
+      "Identity initialization failed:",
+      err
+    );
+
+    return false;
+
+  }
+
+}
 
 document.getElementById(
   "editEmpRole"
@@ -5290,19 +5417,17 @@ function openViewNotesModal() {
 
   let activeEntry = null;
 
-  if (
-    window.currentEmployee &&
-    window.currentEmployee.id
-  ) {
-    activeEntry =
-      timeEntries.find(
-        entry =>
-          entry.employeeId ===
-          window.currentEmployee.id &&
-          entry.status ===
-          "Clocked In"
-      );
-  }
+ if (
+  currentEmployee &&
+  currentEmployee.id
+) {
+  activeEntry =
+    timeEntries.find(
+      entry =>
+        entry.employeeId === currentEmployee.id &&
+        entry.status === "Clocked In"
+    );
+}
 
   if (activeEntry) {
 
@@ -11642,9 +11767,8 @@ function renderIncidentActionButtons() {
     window.currentIncident;
 
   const isSupervisor =
-    window.currentEmployee &&
-    window.currentEmployee.role !==
-    "Officer";
+  currentEmployee &&
+  currentEmployee.role !== "Officer";
 
   let html = `
   <button
@@ -16838,10 +16962,10 @@ window.approveIncident =
             serverTimestamp(),
 
           approvedBy:
-            window.currentEmployee.id,
+            currentEmployee.id,
 
           approvedByName:
-            window.currentEmployee.name
+            currentEmployee.name
         }
       );
 
@@ -16910,9 +17034,9 @@ window.returnIncident =
           supervisorComments: comments,
           returnedAt: serverTimestamp(),
           returnedBy:
-            window.currentEmployee.id,
+            currentEmployee.id,
           returnedByName:
-            window.currentEmployee.name
+            currentEmployee.name
         }
       );
 
@@ -17035,7 +17159,7 @@ window.submitReturnReport =
             serverTimestamp(),
           returnComments: comment,
           returnedBy:
-            window.currentEmployee.id,
+            currentEmployee.id,
           returnedByName:
             currentOfficer?.name ||
             auth.currentUser.displayName ||
@@ -17192,7 +17316,7 @@ window.listenForNotifications =
 
     console.log(
       "Current Employee:",
-      window.currentEmployee
+      currentEmployee
     );
 
     const user =
@@ -17209,7 +17333,7 @@ window.listenForNotifications =
         where(
           "officerId",
           "==",
-          window.currentEmployee.id
+          currentEmployee.id
         ),
         orderBy(
           "createdAt",

@@ -254,7 +254,7 @@ function renderTopOfficersChart() {
 }
 
 function renderPatrolVolumeBySiteChart() {
-    console.log("sites:", sites);
+    console.log("sites:", window.sites);
 console.log("activePatrols:", activePatrols);
 
   const canvas =

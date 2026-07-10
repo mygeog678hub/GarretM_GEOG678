@@ -9,6 +9,10 @@ import {
   getFirestore
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+  getStorage
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAkVL4FUIyb7A2XRi1CGmDLf6W_jlJ2VuM",
   authDomain: "workforge-3b77f.firebaseapp.com",
@@ -26,9 +30,12 @@ const provider = new GoogleAuthProvider();
 
 const db = getFirestore(app);
 
+const storage = getStorage(app);
+
 export {
   app,
   auth,
   provider,
-  db
+  db,
+  storage
 };

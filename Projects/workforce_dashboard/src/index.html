@@ -214,9 +214,7 @@ WorkForge | Security Operations Management Software
   <input id="password" type="password" placeholder="Enter your password">
 
   <button onclick="login()">Login</button>
-  <button onclick="googleLogin()" class="google-btn">
-  Continue with Google
-</button>
+  
 
 <p class="reset-link">
   <a href="#" onclick="resetPassword()">
@@ -236,7 +234,7 @@ import {
   auth,
   provider,
   db
-} from "./firebase-config.js";
+} from "./js/services/firebase-config.js";
 
 import {
   doc,
