@@ -5505,7 +5505,11 @@ function openViewNotesModal() {
       "viewNotesSite"
     );
 
-  select.innerHTML = "";
+  select.innerHTML = `
+  <option value="">
+    Select Site...
+  </option>
+`;
 
   sites
     .sort((a, b) =>
@@ -5546,6 +5550,7 @@ function openViewNotesModal() {
       activeEntry.siteId;
 
   }
+
   select.onchange = function () {
     console.log(
       "Site changed:",
@@ -6005,7 +6010,15 @@ document.getElementById(
   "fieldIncidentSeverity"
 ).selectedIndex = 0;
 
+if (result.success) {
+
+    resetCommunicationForm();
+
 }
+
+}
+
+
 
 function handleCriticalIncident(siteId) {
 
@@ -8795,7 +8808,10 @@ ${Math.round(allowedRadius)} meters`
 
   alert(
     "Clock In Successful"
-  );
+  );  
+
+renderMyAttendanceStatus();
+renderMySchedule();
 
   document.getElementById(
     "clockEmployee"
@@ -9126,6 +9142,9 @@ This event has been logged.`
       "Clock Out Successful"
     );
 
+    renderMyAttendanceStatus();
+    renderMySchedule();
+
   }
 
   if (photoInput) {
@@ -9434,12 +9453,9 @@ async function checkPostAbandonment() {
 
   if (!activeEntries.length) {
 
-    alert(
-      "No officers currently clocked in."
-    );
+  return;
 
-    return;
-  }
+}
 
   const position =
     await new Promise(
@@ -9484,17 +9500,7 @@ async function checkPostAbandonment() {
       Number(site.geofenceRadius) || 150;
 
     const radiusMeters =
-      radiusFeet * 0.3048;
-
-    alert(
-      `${entry.employeeName}
-
-Distance:
-${Math.round(distance)} meters
-
-Allowed:
-${Math.round(radiusMeters)} meters`
-    );
+      radiusFeet * 0.3048;    
 
     const isInsideGeofence =
       distance <= radiusMeters;
@@ -10461,7 +10467,15 @@ async function submitActivityReport() {
     "activityDescription"
   ).value = "";
 
+  if (result.success) {
+
+    resetCommunicationForm();
+
 }
+
+}
+
+
 
 async function generateIncidentCaseNumber() {
 
@@ -19575,6 +19589,39 @@ function toggleCommunicationForm() {
 
 }
 
+function resetCommunicationForm() {
+
+  document.getElementById(
+    "communicationType"
+  ).value = "";
+
+  // Activity
+  document.getElementById(
+    "activityReportDescription"
+  ).value = "";
+
+  // Site Note
+  document.getElementById(
+    "siteNoteTitle"
+  ).value = "";
+
+  document.getElementById(
+    "siteNoteContent"
+  ).value = "";
+
+  // Incident
+  document.getElementById(
+    "fieldIncidentSeverity"
+  ).value = "";
+
+  document.getElementById(
+    "fieldIncidentDescription"
+  ).value = "";
+
+  toggleCommunicationForm();
+
+}
+
 window.submitOfficerSiteNote =
   async function () {
 
@@ -19659,7 +19706,24 @@ window.submitOfficerSiteNote =
     "Site note submitted."
   );
 
+  if (result.success) {
+
+    resetCommunicationForm();
+
 }
+
+}
+
+function toggleMobileMenu() {
+
+  document
+    .getElementById("navCard")
+    .classList
+    .toggle("mobile-open");
+
+}
+
+
 
 
 // ================= GLOBAL =================

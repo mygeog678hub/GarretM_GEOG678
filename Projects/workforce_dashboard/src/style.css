@@ -2943,3 +2943,60 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     flex-direction: column;
     gap: 20px;
 }
+.mobile-nav{
+
+    display:none;
+
+}
+@media (max-width:768px){
+
+.mobile-nav{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:12px;
+
+    background:#1f2937;
+
+    color:white;
+
+}
+
+#navCard{
+
+    display:none;
+
+    flex-direction:column;
+
+}
+
+#navCard.mobile-open{
+
+    display:flex;
+
+}
+
+.nav-left,
+.nav-right{
+
+    display:flex;
+
+    flex-direction:column;
+
+    width:100%;
+
+}
+
+.nav-left button,
+.nav-right button{
+
+    width:100%;
+    margin:4px 0;
+
+}
+
+}
