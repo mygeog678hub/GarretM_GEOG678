@@ -828,6 +828,9 @@ onSnapshot(
     loadOpenShifts();
     loadOfficerOpenShifts();
     loadClaimRequests();
+    document
+  .getElementById("menuToggleBtn")
+  ?.addEventListener("click", toggleMobileMenu);
 
   },
 
@@ -19715,6 +19718,8 @@ window.submitOfficerSiteNote =
 }
 
 function toggleMobileMenu() {
+
+  console.log("Hamburger clicked");
 
   document
     .getElementById("navCard")
