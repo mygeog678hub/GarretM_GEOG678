@@ -663,6 +663,11 @@ onSnapshot(
 
     updateMap();
     populatePatrolSiteDropdown();
+
+     // Refresh officer portal if it's active
+      if (currentEmployee) {
+        renderMySite();
+      }
   }
 );
 }
@@ -1861,22 +1866,34 @@ async function logActivity(
   type,
   message,
   user = "System",
-  scope = "site"
+  scope = "site",
+  metadata = {}
 ) {
 
   try {
 
     await addDoc(
-      collection(
-        db,
-        "activityLogs"
-      ),
+      collection(db, "activityLogs"),
       {
         siteId,
+
+        siteName:
+          metadata.siteName || "",
+
+        employeeId:
+          metadata.employeeId || "",
+
+        officerName:
+          metadata.officerName || user,
+
         type,
+
         message,
+
         user,
+
         scope,
+
         timestamp:
           serverTimestamp()
       }
@@ -1890,10 +1907,9 @@ async function logActivity(
     );
 
   }
-}
 
-window.logActivity =
-  logActivity;
+}
+window.logActivity = logActivity;
 
 async function endBusinessDay() {
 
@@ -2965,7 +2981,10 @@ function updateMap() {
 
     }
 
-    marker.bindPopup(popup);
+   marker.bindPopup(popup, {
+  maxWidth: 450,
+  minWidth: 300
+});
 
   });
 
@@ -3523,59 +3542,151 @@ function closeSiteNoteModal() {
   ).style.display = "none";
 }
 
+async function createSiteNote({
+  siteId,
+  note,
+  createdBy,
+  priority = "Normal",
+  title = "",
+  category = ""
+}) {
+
+  try {
+
+    if (!siteId) {
+
+      return {
+        success: false,
+        message: "No site selected."
+      };
+
+    }
+
+    if (!note?.trim()) {
+
+      return {
+        success: false,
+        message: "Please enter a site note."
+      };
+
+    }
+
+    const site =
+      sites.find(
+        s => s.id === siteId
+      );
+
+    if (!site) {
+
+      return {
+        success: false,
+        message: "Unable to locate site."
+      };
+
+    }
+
+    const noteRef =
+      await addDoc(
+        collection(db, "siteNotes"),
+        {
+
+          siteId,
+          siteName: site.name,
+
+          category,
+
+          title,
+
+          priority,
+
+          note: note.trim(),
+
+          createdBy,
+
+          createdAt:
+            new Date().toISOString()
+
+        }
+      );
+
+    await logActivity(
+      siteId,
+      "note",
+      `📝 ${priority} Site Note - ${site.name}`,
+      createdBy,
+      "site",
+      {
+        siteName: site.name
+      }
+    );
+
+    // Future:
+    // if (priority === "Critical") {
+    //   await processCriticalSiteNote(...);
+    // }
+
+    return {
+
+      success: true,
+
+      noteId: noteRef.id
+
+    };
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Error creating site note:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to save site note."
+
+    };
+
+  }
+
+}
 async function saveSiteNote() {
 
   const siteId =
-    document.getElementById(
-      "noteSite"
-    ).value;
+    document.getElementById("noteSite").value;
 
   const note =
-    document.getElementById(
-      "siteNote"
-    ).value.trim();
+    document.getElementById("siteNote").value.trim();
 
-  if (!note) {
+  const result =
+    await createSiteNote({
 
-    alert(
-      "Please enter a note."
-    );
+      siteId,
+
+      note,
+
+      createdBy:
+        currentOfficer?.name ||
+        auth.currentUser?.email
+
+    });
+
+  if (!result.success) {
+
+    alert(result.message);
 
     return;
+
   }
-
-  const site =
-    sites.find(
-      s => s.id === siteId
-    );
-
-  await addDoc(
-    collection(db, "siteNotes"),
-    {
-      siteId,
-      siteName: site.name,
-      note,
-      createdBy:
-        auth.currentUser?.email ||
-        "Unknown",
-
-      createdAt:
-        new Date().toISOString()
-    }
-  );
-
-  await logActivity(
-    siteId,
-    "note",
-    `Site note added for ${site.name}`,
-    auth.currentUser?.email || "Unknown"
-  );
 
   closeSiteNoteModal();
 
-  alert(
-    "Site note saved."
-  );
+  alert("Site note saved.");
+
 }
 
 // ================= EXPORT EXCEL =================
@@ -5635,7 +5746,9 @@ function loadSiteHistory() {
         report.employeeName ||
         report.createdBy ||
         "Officer",
-      createdAt: report.timestamp,
+      createdAt: report.timestamp?.toDate
+  ? report.timestamp.toDate()
+  : report.timestamp,
       text: `
 ${report.activityType || "Activity"}
 
@@ -5735,143 +5848,212 @@ function outsideViewNotesClick(event) {
 
 }
 
-async function saveIncident() {
+async function createIncidentAlert({
+  siteId,
+  severity,
+  description,
+  reportedBy
+}) {
 
-  const siteId =
-    document.getElementById(
-      "incidentSite"
-    ).value;
+  const site = sites.find(
+    s => s.id === siteId
+  );
 
-  const severity =
-    document.getElementById(
-      "incidentSeverity"
-    ).value;
+  if (!site) {
 
-  const description =
-    document.getElementById(
-      "incidentDescription"
-    ).value.trim();
+    return {
+      success: false,
+      message: "Unable to locate site."
+    };
+
+  }
 
   if (!description) {
 
+    return {
+      success: false,
+      message: "Description required."
+    };
+
+  }
+
+  try {
+
+    const incidentRef =
+      await addDoc(
+        collection(db, "incidents"),
+        {
+
+          siteId,
+
+          siteName:
+            site.name,
+
+          severity,
+
+          description,
+
+          reportedBy:
+            reportedBy || "Unknown",
+
+          createdAt:
+            new Date().toISOString()
+
+        }
+      );
+
+await logActivity(
+  siteId,
+  "incident",
+  `🚨 ${severity} | ${site.name} | ${description}`,
+  reportedBy
+);
+
+    return {
+
+      success: true,
+
+      incidentId:
+        incidentRef.id,
+
+      message:
+        "Incident reported."
+
+    };
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Error creating incident:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to report incident."
+
+    };
+
+  }
+
+}
+
+async function saveIncident() {
+
+  const siteId =
+    getCurrentOfficerSiteId();
+
+  if (!siteId) {
+
     alert(
-      "Description required."
+      "Unable to determine your current site."
     );
 
     return;
 
   }
 
-  const site =
-    sites.find(
-      s => s.id === siteId
-    );
+  const severity =
+  document.getElementById(
+    "fieldIncidentSeverity"
+  ).value;
 
-  await addDoc(
-    collection(
-      db,
-      "incidents"
-    ),
-    {
+const description =
+  document.getElementById(
+    "fieldIncidentDescription"
+  ).value.trim();
+
+  const result =
+    await createIncidentAlert({
 
       siteId,
-
-      siteName:
-        site?.name || "Unknown",
-
       severity,
-
       description,
 
       reportedBy:
-        auth.currentUser?.email ||
-        "Unknown",
+        auth.currentUser?.email || "Unknown"
 
-      createdAt:
-        new Date().toISOString()
+    });
 
-    }
+  if (!result.success) {
 
-  );
+    alert(result.message);
+    return;
 
-
-  await logActivity(
-    siteId,
-    "incident",
-    `🚨 ${severity} Incident - ${site.name}`,
-    auth.currentUser?.email ||
-    "Unknown"
-  );
+  }
 
   if (
     severity?.toLowerCase() === "critical"
   ) {
 
-    playCriticalAlert();
-
-    console.log("Site:", site);
-
-    if (
-      site &&
-      window.map
-    ) {
-
-      document
-        .getElementById(
-          "operationsMapPanel"
-        )
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-
-      setTimeout(() => {
-
-        window.map.flyTo(
-          [site.lat, site.lng],
-          16,
-          {
-            duration: 1.5
-          }
-        );
-
-      }, 500);
-
-      setTimeout(() => {
-
-        const marker =
-          markers[site.id];
-
-        if (
-          marker &&
-          marker.openPopup
-        ) {
-
-          marker.openPopup();
-
-          window.map.panBy(
-            [0, 150]
-          );
-
-        }
-
-      }, 1800);
-
-    }
+    handleCriticalIncident(siteId);
 
   }
 
-  alert(
-    "Incident reported."
-  );
-  document.getElementById(
-    "incidentDescription"
-  ).value = "";
-  document.getElementById(
-    "incidentSeverity"
-  ).selectedIndex = 0;
+  alert("Incident reported.");
+
+ document.getElementById(
+  "fieldIncidentDescription"
+).value = "";
+
+document.getElementById(
+  "fieldIncidentSeverity"
+).selectedIndex = 0;
 
 }
+
+function handleCriticalIncident(siteId) {
+
+  const site =
+    sites.find(s => s.id === siteId);
+
+  if (!site || !window.map) return;
+
+  playCriticalAlert();
+
+  console.log("Site:", site);
+
+  document
+    .getElementById("operationsMapPanel")
+    ?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  setTimeout(() => {
+
+    window.map.flyTo(
+      [site.lat, site.lng],
+      16,
+      {
+        duration: 1.5
+      }
+    );
+
+  }, 500);
+
+  setTimeout(() => {
+
+    const marker =
+      markers[site.id];
+
+    if (marker?.openPopup) {
+
+      marker.openPopup();
+
+      window.map.panBy([0, 150]);
+
+    }
+
+  }, 1800);
+
+}
+
 
 function renderIncidents() {
   console.log(
@@ -9846,60 +10028,25 @@ function renderMySite() {
     !currentOfficer
   ) return;
 
-  const activeEntry = timeEntries.find(
-    entry =>
-      entry.employeeId === currentOfficer.id &&
-      entry.status === "Clocked In"
-  );
+const siteId =
+  getCurrentOfficerSiteId();
 
-  let siteId = null;
+  console.log("My Site siteId:", siteId);
 
-  if (activeEntry) {
+if (!siteId) {
 
-    siteId = activeEntry.siteId;
+  container.innerHTML =
+    "<p>No site assigned.</p>";
 
-  } else {
+  return;
 
-    const now = new Date();
-
-    const currentShift = shifts.find(
-      shift =>
-        shift.employeeId === currentOfficer.id &&
-        new Date(shift.startTime) <= now &&
-        new Date(shift.endTime) >= now
-    );
-
-    if (!currentShift) {
-
-      container.innerHTML =
-        "<p>No site assigned.</p>";
-
-      return;
-
-    }
-
-    const assignedSite =
-      sites.find(
-        site =>
-          site.id === currentShift.siteId
-      );
-
-    if (currentShift) {
-      siteId = currentShift.siteId;
-    }
-  }
-
-  if (!siteId) {
-
-    container.innerHTML =
-      "<p>No site assigned.</p>";
-
-    return;
-  }
+}
 
   const site = sites.find(
     s => s.id === siteId
   );
+
+  console.log("My Site siteId:", siteId);
 
   if (!site) {
 
@@ -9936,6 +10083,33 @@ function renderMySite() {
     ${site.geofenceRadius} ft
 
   `;
+
+}
+
+function getCurrentOfficerSiteId() {
+
+  if (!currentOfficer) return null;
+
+  const activeEntry = timeEntries.find(
+    entry =>
+      entry.employeeId === currentOfficer.id &&
+      entry.status === "Clocked In"
+  );
+
+  if (activeEntry) {
+    return activeEntry.siteId;
+  }
+
+  const now = new Date();
+
+  const currentShift = shifts.find(
+    shift =>
+      shift.employeeId === currentOfficer.id &&
+      new Date(shift.startTime) <= now &&
+      new Date(shift.endTime) >= now
+  );
+
+  return currentShift?.siteId || null;
 
 }
 
@@ -10263,34 +10437,18 @@ async function submitActivityReport() {
     }
   );
 
-  await addDoc(
-    collection(
-      db,
-      "activityLogs"
-    ),
-    {
-      type: "Activity Report",
-
-      employeeId:
-        currentOfficer.id,
-
-      employeeName:
-        currentOfficer.name,
-
-      siteId:
-        activeEntry.siteId,
-
-      siteName:
-        activeEntry.siteName,
-
-      description:
-        `${activityType}: ${description}`,
-
-      timestamp:
-        serverTimestamp()
-    }
-  );
-
+  await logActivity(
+  activeEntry.siteId,
+  "Activity Report",
+  `${activityType}: ${description}`,
+  currentOfficer.name,
+  "site",
+  {
+    siteName: activeEntry.siteName,
+    employeeId: currentOfficer.id,
+    officerName: currentOfficer.name
+  }
+);
   alert(
     "Activity Report Submitted"
   );
@@ -19343,6 +19501,166 @@ async function approveClaim(id) {
 
 }
 
+function toggleCommunicationForm() {
+
+  const type =
+    document.getElementById(
+      "communicationType"
+    ).value;
+
+  document.getElementById(
+    "activityReportForm"
+  ).style.display =
+    type === "activity"
+      ? "block"
+      : "none";
+
+  document.getElementById(
+    "siteNoteForm"
+  ).style.display =
+    type === "siteNote"
+      ? "block"
+      : "none";
+
+  document.getElementById(
+    "incidentForm"
+  ).style.display =
+    type === "incident"
+      ? "block"
+      : "none";
+
+  const submitBtn =
+    document.getElementById(
+      "communicationSubmitBtn"
+    );
+
+  if (!type) {
+
+    submitBtn.style.display = "none";
+    return;
+
+  }
+
+  submitBtn.style.display = "block";
+
+  if (type === "activity") {
+
+    submitBtn.textContent =
+      "Submit Activity";
+
+    submitBtn.onclick =
+      window.submitActivityReport;
+
+  }
+
+  else if (type === "siteNote") {
+
+    submitBtn.textContent =
+      "Submit Site Note";
+
+    submitBtn.onclick =
+      window.submitOfficerSiteNote;
+
+  }
+
+  else if (type === "incident") {
+
+    submitBtn.textContent =
+      "Submit Incident";
+
+    submitBtn.onclick =
+      window.saveIncident;
+
+  }
+
+}
+
+window.submitOfficerSiteNote =
+  async function () {
+
+  const siteId =
+    getCurrentOfficerSiteId();
+
+  if (!siteId) {
+
+    alert(
+      "Unable to determine your current site."
+    );
+
+    return;
+
+  }
+
+  const priority =
+    document.getElementById(
+      "siteNotePriority"
+    ).value;
+
+  const title =
+    document.getElementById(
+      "siteNoteTitle"
+    ).value.trim();
+
+  const note =
+    document.getElementById(
+      "siteNoteDescription"
+    ).value.trim();
+
+  if (!note) {
+
+    alert(
+      "Please enter the site note details."
+    );
+
+    return;
+
+  }
+
+  const result =
+    await createSiteNote({
+
+      siteId,
+
+      priority,
+
+      title,
+
+      note,
+
+      createdBy:
+        currentOfficer?.name ||
+        auth.currentUser?.email
+
+    });
+
+  if (!result.success) {
+
+    alert(
+      result.message
+    );
+
+    return;
+
+  }
+
+  document.getElementById(
+    "siteNotePriority"
+  ).value = "Normal";
+
+  document.getElementById(
+    "siteNoteTitle"
+  ).value = "";
+
+  document.getElementById(
+    "siteNoteDescription"
+  ).value = "";
+
+  alert(
+    "Site note submitted."
+  );
+
+}
+
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
@@ -19426,5 +19744,7 @@ window.updateScheduleType = updateScheduleType;
 window.createOpenShift = createOpenShift;
 window.cancelOpenShift = cancelOpenShift;
 window.claimOpenShift = claimOpenShift;
+window.toggleCommunicationForm = toggleCommunicationForm;
+
 
 refreshSupervisorDashboard();

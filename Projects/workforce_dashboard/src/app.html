@@ -2474,55 +2474,183 @@
 
 <div class="dashboard-card">
 
-  <h2>
-    Activity Report
+  <h2 id="communicationTitle">
+    📡 Field Communication
   </h2>
 
-  <select id="activityType">
+  <div class="field-group">
 
-    <option value="">
-      Select Activity
-    </option>
+    <label>
+      Communication Type
+    </label>
 
-    <option>
-      Patrol Check
-    </option>
+    <select
+      id="communicationType"
+      onchange="toggleCommunicationForm()"
+    >
 
-    <option>
-      Door Check
-    </option>
+      <option value="" selected>
+        Select Communication Type
+      </option>
 
-    <option>
-      Visitor Contact
-    </option>
+      <option value="activity">
+        📋 Routine Activity
+      </option>
 
-    <option>
-      Parking Enforcement
-    </option>
+      <option value="siteNote">
+        📝 Site Note
+      </option>
 
-    <option>
-      Alarm Response
-    </option>
+      <option value="incident">
+        🚨 Report Incident
+      </option>
 
-    <option>
-      Safety Hazard
-    </option>
+    </select>
 
-    <option>
-      General Activity
-    </option>
+  </div>
 
-  </select>
+  <!-- Activity Report -->
 
-  <textarea
-    id="activityDescription"
-    placeholder="Enter activity details..."
-  ></textarea>
+  <div id="activityReportForm">
+
+    <select id="activityType">
+
+      <option value="">
+        Select Activity
+      </option>
+
+      <option>Patrol Check</option>
+      <option>Door Check</option>
+      <option>Visitor Contact</option>
+      <option>Parking Enforcement</option>
+      <option>Alarm Response</option>
+      <option>Safety Hazard</option>
+      <option>General Activity</option>
+
+    </select>
+
+    <textarea
+      id="activityDescription"
+      placeholder="Describe the activity performed..."
+    ></textarea>
+
+  </div>
+
+  <!-- Site Note -->
+
+  <div
+    id="siteNoteForm"
+    style="display:none;"
+  >
+
+    <div class="field-group">
+
+      <label>
+        Priority
+      </label>
+
+      <select id="siteNotePriority">
+
+        <option value="Normal">
+          🟢 Normal
+        </option>
+
+        <option value="Important">
+          🟡 Important
+        </option>
+
+        <option value="Critical">
+          🔴 Critical
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="field-group">
+
+      <label>
+        Title
+      </label>
+
+      <input
+        type="text"
+        id="siteNoteTitle"
+        placeholder="Brief summary..."
+      >
+
+    </div>
+
+    <div class="field-group">
+
+      <label>
+        Details
+      </label>
+
+      <textarea
+        id="siteNoteDescription"
+        placeholder="Enter information dispatch or the next shift should know..."
+      ></textarea>
+
+    </div>
+
+  </div>
+
+  <!-- Incident Report -->
+
+  <div
+    id="incidentForm"
+    style="display:none;"
+  >
+
+    <div class="field-group">
+
+      <label>
+        Severity
+      </label>
+
+      <select id="fieldIncidentSeverity">
+
+        <option value="Low">
+          Low
+        </option>
+
+        <option value="Medium">
+          Medium
+        </option>
+
+        <option value="High">
+          High
+        </option>
+
+        <option value="Critical">
+          Critical
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="field-group">
+
+      <label>
+        Description
+      </label>
+
+      <textarea
+        id="fieldIncidentDescription"
+        placeholder="Describe the incident..."
+      ></textarea>
+
+    </div>
+
+  </div>
 
   <button
-    onclick="submitActivityReport()"
+    id="communicationSubmitBtn"
+    style="display:none;"
   >
-    Submit Report
+    Submit
   </button>
 
 </div>
