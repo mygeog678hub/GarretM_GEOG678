@@ -193,4 +193,369 @@ async function initializeClientPortal() {
 
 });
 
+     
+    renderTodayOfficers();
+    renderPatrolActivity();
+    renderIncidentSummary();
+    renderSiteStatus();
+    renderKPIs();
+
+}
+
+function renderTodayOfficers() {
+  console.log("Rendering Today's Officers");
+
+    const officers = [
+
+        {
+            name: "James Wilson",
+            post: "Main Entrance",
+            shift: "0700 - 1500",
+            status: "On Duty",
+            clock: "3 hrs 12 min"
+        },
+
+        {
+            name: "Maria Rodriguez",
+            post: "Loading Dock",
+            shift: "0800 - 1600",
+            status: "On Duty",
+            clock: "2 hrs 08 min"
+        },
+
+        {
+            name: "David Johnson",
+            post: "Patrol Vehicle",
+            shift: "0600 - 1800",
+            status: "Scheduled",
+            clock: "--"
+        }
+
+    ];
+
+    const container =
+        document.getElementById("todayOfficers");
+
+    if (!container) return;
+
+    container.innerHTML =
+        officers.map(renderOfficerCard).join("");
+
+}
+
+function renderOfficerCard(officer) {
+
+    let badgeClass = "client-status-success";
+    let badgeText = "ON DUTY";
+    let footer = "✔ Clocked In";
+
+    if (officer.status === "Scheduled") {
+
+        badgeClass = "client-status-warning";
+        badgeText = "SCHEDULED";
+        footer = "🕒 Scheduled";
+
+    }
+
+    if (officer.status === "Off Duty") {
+
+        badgeClass = "client-status-danger";
+        badgeText = "OFF DUTY";
+        footer = "🚫 Off Duty";
+
+    }
+
+    return `
+
+        <div class="officer-card">
+
+            <div class="officer-header">
+
+                <div class="officer-left">
+
+                    <div class="officer-avatar">
+                        👮
+                    </div>
+
+                    <div>
+
+                        <div class="officer-name">
+                            ${officer.name}
+                        </div>
+
+                        <div class="officer-post">
+                            📍 ${officer.post}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="${badgeClass}">
+                    ${badgeText}
+                </div>
+
+            </div>
+
+            <hr class="officer-divider">
+
+            <div class="officer-detail">
+
+                <span class="detail-label">
+                    🕒 Shift
+                </span>
+
+                <span class="detail-value">
+                    ${officer.shift}
+                </span>
+
+            </div>
+
+            <div class="officer-detail">
+
+                <span class="detail-label">
+                    ⏱ Time on Post
+                </span>
+
+                <span class="detail-value">
+                    ${officer.clock}
+                </span>
+
+            </div>
+
+            <div class="officer-footer">
+
+                ${footer}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+function renderPatrolActivity() {
+
+    const patrols = [
+
+        {
+            type: "completed",
+            title: "Patrol Completed",
+            location: "Main Entrance",
+            time: "2 minutes ago"
+        },
+
+        {
+            type: "started",
+            title: "Patrol Started",
+            location: "Perimeter Patrol",
+            time: "14 minutes ago"
+        },
+
+        {
+            type: "checkpoint",
+            title: "Checkpoint Reached",
+            location: "Warehouse Gate",
+            time: "18 minutes ago"
+        },
+
+        {
+            type: "overdue",
+            title: "Patrol Overdue",
+            location: "North Fence",
+            time: "45 minutes ago"
+        }
+
+    ];
+
+    const container =
+        document.getElementById("clientPatrols");
+
+    if (!container) return;
+
+    container.innerHTML =
+        patrols
+            .map(renderPatrolCard)
+            .join("");
+
+}
+
+function renderPatrolCard(event) {
+
+    let icon = "✔";
+    let badge = "client-status-success";
+
+    switch (event.type) {
+
+        case "started":
+            icon = "🚶";
+            badge = "client-status-warning";
+            break;
+
+        case "checkpoint":
+            icon = "📍";
+            badge = "client-status-success";
+            break;
+
+        case "overdue":
+            icon = "⚠";
+            badge = "client-status-danger";
+            break;
+
+    }
+
+    return `
+
+        <div class="patrol-card">
+
+            <div class="patrol-header">
+
+                <div class="${badge}">
+                    ${icon}
+                </div>
+
+                <div class="patrol-title">
+                    ${event.title}
+                </div>
+
+            </div>
+
+            <div class="patrol-location">
+
+                📍 ${event.location}
+
+            </div>
+
+            <div class="patrol-time">
+
+                ${event.time}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+function renderIncidentSummary() {
+
+    const incidents = [
+
+        {
+            severity: "High",
+            title: "Unauthorized Person",
+            location: "Main Entrance",
+            reported: "18 minutes ago",
+            status: "Open"
+        },
+
+        {
+            severity: "Medium",
+            title: "Vehicle Gate Left Open",
+            location: "Warehouse",
+            reported: "2 hours ago",
+            status: "Monitoring"
+        },
+
+        {
+            severity: "Low",
+            title: "Noise Complaint",
+            location: "Parking Lot",
+            reported: "Yesterday",
+            status: "Closed"
+        }
+
+    ];
+
+    const container =
+        document.getElementById("clientIncidents");
+
+    if (!container) return;
+
+    container.innerHTML =
+        incidents
+            .map(renderIncidentCard)
+            .join("");
+
+}
+
+function renderIncidentCard(incident) {
+
+    let badgeClass = "client-status-success";
+    let icon = "🟢";
+
+    if (incident.severity === "Medium") {
+
+        badgeClass = "client-status-warning";
+        icon = "🟡";
+
+    }
+
+    if (incident.severity === "High") {
+
+        badgeClass = "client-status-danger";
+        icon = "🔴";
+
+    }
+
+    return `
+
+        <div class="incident-card">
+
+            <div class="incident-header">
+
+                <div class="${badgeClass}">
+                    ${icon} ${incident.severity.toUpperCase()}
+                </div>
+
+            </div>
+
+            <div class="incident-title">
+
+                ${incident.title}
+
+            </div>
+
+            <div class="incident-location">
+
+                📍 ${incident.location}
+
+            </div>
+
+            <hr class="incident-divider">
+
+            <div class="incident-meta">
+
+                <div>
+
+                    <span class="meta-label">
+                        Reported
+                    </span>
+
+                    <span class="meta-value">
+                        ${incident.reported}
+                    </span>
+
+                </div>
+
+                <div>
+
+                    <span class="meta-label">
+                        Status
+                    </span>
+
+                    <span class="meta-value">
+                        ${incident.status}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
 }
