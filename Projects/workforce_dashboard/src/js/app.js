@@ -19728,9 +19728,6 @@ function toggleMobileMenu() {
 
 }
 
-
-
-
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;

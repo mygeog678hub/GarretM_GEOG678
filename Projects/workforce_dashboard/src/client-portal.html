@@ -13,71 +13,148 @@
 
 <div class="client-container">
 
-    <header class="client-header">
+   <header class="client-header">
 
-        <div class="client-branding">
+    <div class="client-branding">
 
-            <img
-                src="assets/logo.png"
-                alt="Company Logo"
-                class="client-logo">
-
-            <div>
-
-                <div class="client-branding">
-
-    <img
-    id="clientCompanyLogo"
-    class="client-logo"
-    style="display:none;"
-    alt="Company Logo">
-
-    <div>
-
-        <h1 id="clientCompanyName">
-
-            WorkForge
-
-        </h1>
-
-        <h2 id="clientPortalTitle">
-            Client Portal
-        </h2>
-
-    </div>
-
-</div>
-
-                <p id="clientPortalSubtitle">
-            Secure Property Dashboard
-        </p>
-
-            </div>
-
-        </div>
-
-    </header>
-
-    <section class="welcome-banner">
+       <img
+            id="clientCompanyLogo"
+            src="assets/logo.png"
+            class="client-logo"
+            alt="Company Logo">
 
         <div>
 
-            <h2>ABC Distribution Center</h2>
+            <h1 id="clientCompanyName">
+                WorkForge
+            </h1>
 
-            <p>
-                Welcome back.
-                Here is today's property status.
+            <h2 id="clientPortalTitle">
+                Client Portal
+            </h2>
+
+            <p id="clientPortalSubtitle">
+                Secure Property Dashboard
             </p>
 
         </div>
 
-        <div class="status-pill">
+    </div>
 
-            🟢 Active
+</header>
 
-        </div>
+    <section class="welcome-banner">
 
-    </section>
+    <div>
+
+        <h2 id="clientSiteName">
+            Loading...
+        </h2>
+
+        <p id="clientWelcomeMessage">
+            Loading today's site status...
+        </p>
+
+    </div>
+
+    <div
+        id="clientStatusPill"
+        class="status-pill">
+
+        Loading...
+
+    </div>
+
+</section>
+
+<section class="content-card">
+
+    <h2>Today's Site Status</h2>
+
+   <div
+    id="clientSiteStatusCard"
+    class="status-summary">
+
+            <h3 id="siteStatusTitle">
+                Loading...
+            </h3>
+
+            <p id="siteStatusMessage">
+                Loading property status...
+            </p>
+
+            <ul class="status-details">
+
+                <li id="statusOfficers">
+                    Officers on duty: --
+                </li>
+
+                <li id="statusPatrols">
+                    Patrols completed today: --
+                </li>
+
+                <li id="statusIncidents">
+                    Open incidents: --
+                </li>
+
+                <li id="statusLastPatrol">
+                    Last patrol: --
+                </li>
+
+            </ul>        
+
+    </div>
+
+</section>
+
+<section class="client-kpi-grid">
+
+    <div class="kpi-card">
+
+    <div class="kpi-icon">
+        👮
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">Officers On Duty</div>
+        <div id="kpiOfficerCount" class="kpi-value">--</div>
+    </div>
+
+    <div class="kpi-card">
+
+    <div class="kpi-icon">
+        🚓
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">Patrols Today</div>
+        <div id="kpiPatrolCount" class="kpi-value">--</div>
+    </div>
+
+    <div class="kpi-card">
+
+    <div class="kpi-icon">
+        ⚠️
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">Open Incidents</div>
+        <div id="kpiIncidentCount" class="kpi-value">--</div>
+    </div>
+
+    <div class="kpi-card">
+
+    <div class="kpi-icon">
+        💬
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-title">Communications</div>
+        <div id="kpiCommunicationCount" class="kpi-value">--</div>
+    </div>
+    </div>
+
+</section>
 
     <section class="content-card">
 
@@ -123,18 +200,6 @@
 
     <section class="content-card">
 
-        <h2>Today's Officers</h2>
-
-        <div id="clientTodayOfficers">
-
-            Coming Soon
-
-        </div>
-
-    </section>
-
-    <section class="content-card">
-
         <h2>Recent Patrol Activity</h2>
 
         <div id="clientPatrols">
@@ -175,5 +240,4 @@
 
 </body>
 
-<script type="module" src="client-portal.js"></script>
 </html>
