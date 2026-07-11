@@ -98,7 +98,7 @@ async function loadTodaysOfficers() {
       "Error loading today's officers:",
       error
     );
-
+      return {};
   }
 
 }
@@ -181,29 +181,20 @@ async function initializeClientPortal() {
         cssClass: "status-normal"
     });
 
-   renderKPIs({
+    renderKPIs({
+        officers: 2,
+        patrols: 18,
+        incidents: 0,
+        communications: 3
+    });
 
-    officers: 2,
-
-    patrols: 18,
-
-    incidents: 0,
-
-    communications: 3
-
-});
-
-     
     renderTodayOfficers();
     renderPatrolActivity();
     renderIncidentSummary();
-    renderSiteStatus();
-    renderKPIs();
 
 }
 
 function renderTodayOfficers() {
-  console.log("Rendering Today's Officers");
 
     const officers = [
 
@@ -239,7 +230,9 @@ function renderTodayOfficers() {
     if (!container) return;
 
     container.innerHTML =
-        officers.map(renderOfficerCard).join("");
+        officers
+            .map(renderOfficerCard)
+            .join("");
 
 }
 
