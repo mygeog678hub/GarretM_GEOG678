@@ -200,7 +200,15 @@ console.log(
 
 renderTodaysOfficers(liveOfficers);
 
-renderPatrolActivity();
+const patrols =
+    await loadTodaysPatrolActivity();
+
+console.log(
+    "Live Patrol Activity:",
+    patrols
+);
+
+renderPatrolActivity(patrols);
 renderIncidentSummary();
 
 }
@@ -270,6 +278,100 @@ async function loadTodaysOfficers() {
         return [];
 
     }
+
+}
+
+async function loadTodaysPatrolActivity() {
+
+    const today =
+        new Date()
+            .toISOString()
+            .substring(0, 10);
+
+    const snapshot =
+        await getDocs(
+            collection(db, "patrolEvents")
+        );
+
+    const patrols =
+        snapshot.docs
+            .map(doc => {
+
+                const event = doc.data();
+
+                const eventDate =
+                    event.timestamp?.toDate
+                        ? event.timestamp
+                            .toDate()
+                            .toISOString()
+                            .substring(0, 10)
+                        : "";
+
+                if (eventDate !== today)
+                    return null;
+
+                let type = "activity";
+                let title = "Patrol Activity";
+
+                switch (event.eventType) {
+
+                    case "CHECKPOINT_COMPLETED":
+                        type = "checkpoint";
+                        title = "Checkpoint Completed";
+                        break;
+
+                    case "PATROL_STARTED":
+                        type = "started";
+                        title = "Patrol Started";
+                        break;
+
+                    case "PATROL_COMPLETED":
+                        type = "completed";
+                        title = "Patrol Completed";
+                        break;
+
+                    case "PATROL_OVERDUE":
+                        type = "overdue";
+                        title = "Patrol Overdue";
+                        break;
+
+                }
+
+                return {
+
+                    type,
+                    title,
+                    location:
+                        event.checkpointName || "-",
+
+                    time:
+                        event.timestamp?.toDate
+                            ? event.timestamp
+                                .toDate()
+                                .toLocaleTimeString([], {
+                                    hour: "numeric",
+                                    minute: "2-digit"
+                                })
+                            : ""
+
+                };
+
+            })
+            .filter(Boolean);
+
+    patrols.sort((a, b) => {
+
+        // We'll improve sorting later if needed.
+        return 0;
+
+    });
+
+    console.log(
+        "Today's Patrol Activity:",
+        patrols
+    );
+
+    return patrols;
 
 }
 
@@ -407,44 +509,26 @@ function renderOfficerCard(officer) {
 
 }
 
-function renderPatrolActivity() {
-
-    const patrols = [
-
-        {
-            type: "completed",
-            title: "Patrol Completed",
-            location: "Main Entrance",
-            time: "2 minutes ago"
-        },
-
-        {
-            type: "started",
-            title: "Patrol Started",
-            location: "Perimeter Patrol",
-            time: "14 minutes ago"
-        },
-
-        {
-            type: "checkpoint",
-            title: "Checkpoint Reached",
-            location: "Warehouse Gate",
-            time: "18 minutes ago"
-        },
-
-        {
-            type: "overdue",
-            title: "Patrol Overdue",
-            location: "North Fence",
-            time: "45 minutes ago"
-        }
-
-    ];
+function renderPatrolActivity(patrols) {
 
     const container =
         document.getElementById("clientPatrols");
 
     if (!container) return;
+
+    if (!patrols.length) {
+
+        container.innerHTML =
+            renderNoDataCard({
+                icon: "🚓",
+                title: "No Patrol Activity Today",
+                message:
+                    "No patrol activity has been recorded for this property today."
+            });
+
+        return;
+
+    }
 
     container.innerHTML =
         patrols
