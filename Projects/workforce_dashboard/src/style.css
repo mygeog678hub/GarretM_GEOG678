@@ -1666,25 +1666,6 @@ border-bottom:
 
 }
 
-.incident-card {
-
-  display: flex;
-
-  justify-content:
-    space-between;
-
-  align-items: center;
-
-  padding: 12px;
-
-  margin-top: 10px;
-
-  border-radius: 12px;
-
-  background:
-    rgba(255,255,255,.05);
-
-}
 .report-actions {
 
   display: flex;

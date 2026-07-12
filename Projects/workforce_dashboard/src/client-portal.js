@@ -13,6 +13,8 @@ import {
   getAuth
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+import { formatRelativeTime } from "./js/utils.js";
+
 const auth = getAuth();
 
 //console.log("Current user:", auth.currentUser);
@@ -208,8 +210,18 @@ console.log(
     patrols
 );
 
+
 renderPatrolActivity(patrols);
-renderIncidentSummary();
+
+const incidents =
+    await loadTodaysIncidents();
+
+    console.log(
+    "Today's Incidents:",
+    incidents
+);
+
+renderIncidentSummary(incidents);
 
 }
 
@@ -595,45 +607,42 @@ function renderPatrolCard(event) {
 
 }
 
-function renderIncidentSummary() {
-
-    const incidents = [
-
-        {
-            severity: "High",
-            title: "Unauthorized Person",
-            location: "Main Entrance",
-            reported: "18 minutes ago",
-            status: "Open"
-        },
-
-        {
-            severity: "Medium",
-            title: "Vehicle Gate Left Open",
-            location: "Warehouse",
-            reported: "2 hours ago",
-            status: "Monitoring"
-        },
-
-        {
-            severity: "Low",
-            title: "Noise Complaint",
-            location: "Parking Lot",
-            reported: "Yesterday",
-            status: "Closed"
-        }
-
-    ];
+function renderIncidentSummary(incidents) {
 
     const container =
         document.getElementById("clientIncidents");
 
     if (!container) return;
 
-    container.innerHTML =
-        incidents
+    if (!incidents.length) {
+
+        container.innerHTML =
+            renderNoDataCard({
+
+                icon: "🚨",
+
+                title: "No Incidents Reported Today",
+
+                message:
+                    "There are currently no reported incidents for this property."
+
+            });
+
+        return;
+
+    }
+
+    container.innerHTML = `
+
+    <div class="incident-feed">
+
+        ${incidents
             .map(renderIncidentCard)
-            .join("");
+            .join("")}
+
+    </div>
+
+`;
 
 }
 
@@ -741,4 +750,66 @@ function renderNoDataCard({
     `;
 
 }
+
+async function loadTodaysIncidents() {
+
+    const snapshot =
+        await getDocs(
+            collection(db, "incidents")
+        );
+
+    const today =
+        new Date()
+            .toISOString()
+            .split("T")[0];
+
+    return snapshot.docs
+
+        .map(doc => ({
+
+            id: doc.id,
+            ...doc.data()
+
+        }))
+
+        .filter(incident => {
+
+            if (!incident.createdAt)
+                return false;
+
+            return incident.createdAt.startsWith(today);
+
+        })
+
+        .sort((a, b) =>
+
+            new Date(b.createdAt) -
+            new Date(a.createdAt)
+
+        )
+
+       .map(incident => {
+
+        return {
+
+            id: incident.id,
+
+            severity: incident.severity,
+
+            title: incident.description,
+
+            location: incident.siteName,
+
+            reported: formatRelativeTime(
+                incident.createdAt
+            ),
+
+            status: incident.status
+
+        };
+
+    });
+
+}
+
 
