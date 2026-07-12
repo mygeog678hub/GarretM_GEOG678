@@ -68,38 +68,41 @@ document.getElementById(
 
 }
 
-async function loadTodaysOfficers() {
+function renderTodaysOfficers(officers) {
 
-  try {
+    const container =
+        document.getElementById("todayOfficers");
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    if (!container) return;
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  if (!officers.length) {
 
-    const q = query(
-      collection(db, "shifts"),
-      where("siteId", "==", currentSiteId),
-      where("startTime", ">=", today.toISOString()),
-      where("startTime", "<", tomorrow.toISOString())
-    );
+    container.classList.add("empty");
 
-    const snapshot = await getDocs(q);
+    container.innerHTML = renderNoDataCard({
+        icon: "👮",
+        title: "No officers are scheduled for today.",
+        message:
+            "If you expected security coverage at this property, please contact your account manager."
+    });
 
-    console.log(
-      "Today's shifts:",
-      snapshot.size
-    );
+    return;
+}
 
-  } catch (error) {
+container.classList.remove("empty");
 
-    console.error(
-      "Error loading today's officers:",
-      error
-    );
-      return {};
-  }
+container.innerHTML =
+    officers.map(renderOfficerCard).join("");
+
+container.innerHTML =
+    officers
+        .map(renderOfficerCard)
+        .join("");
+
+    container.innerHTML =
+        officers
+            .map(renderOfficerCard)
+            .join("");
 
 }
 
@@ -188,9 +191,85 @@ async function initializeClientPortal() {
         communications: 3
     });
 
-    renderTodayOfficers();
-    renderPatrolActivity();
-    renderIncidentSummary();
+    const liveOfficers = await loadTodaysOfficers();
+
+console.log(
+    "Live Officers:",
+    liveOfficers
+);
+
+renderTodaysOfficers(liveOfficers);
+
+renderPatrolActivity();
+renderIncidentSummary();
+
+}
+
+async function loadTodaysOfficers() {
+
+    try {
+
+        const today =
+            new Date()
+                .toISOString()
+                .substring(0, 10);
+
+        const q = query(
+            collection(db, "shifts"),
+            where("siteId", "==", currentSiteId)
+        );
+
+        const snapshot = await getDocs(q);
+
+        const officers =
+            snapshot.docs
+
+                .map(doc => ({
+                    shiftId: doc.id,
+                    ...doc.data()
+                }))
+
+                .filter(shift =>
+                    shift.startTime &&
+                    shift.startTime.startsWith(today)
+                )
+
+                .map(shift => ({
+
+                    shiftId: shift.shiftId,
+
+                    employeeId: shift.employeeId,
+
+                    name: shift.employeeName,
+
+                    post: shift.siteName,
+
+                    shift: `${shift.startTime} - ${shift.endTime}`,
+
+                    status: shift.status || "Scheduled",
+
+                    clock: "--"
+
+                }));
+
+        console.log(
+            "Today's Officers:",
+            officers
+        );
+
+        return officers;
+
+    }
+    catch (error) {
+
+        console.error(
+            "loadTodaysOfficers",
+            error
+        );
+
+        return [];
+
+    }
 
 }
 
@@ -552,3 +631,30 @@ function renderIncidentCard(incident) {
     `;
 
 }
+
+function renderNoDataCard({
+    icon,
+    title,
+    message
+}) {
+
+    return `
+        <div class="no-data-card">
+
+            <div class="no-data-icon">
+                ${icon}
+            </div>
+
+            <div class="no-data-title">
+                ${title}
+            </div>
+
+            <div class="no-data-message">
+                ${message}
+            </div>
+
+        </div>
+    `;
+
+}
+
