@@ -58,7 +58,8 @@ import {
     loadIncidentReportsData,
     saveIncidentAttachments,
     loadIncidentAttachments,
-    saveIncidentDraftRecord
+    saveIncidentDraftRecord,
+    generateIncidentCaseNumber
 } from "./services/incident-service.js";
 
 
@@ -10083,63 +10084,8 @@ async function submitActivityReport() {
   if (result.success) {
 
     resetCommunicationForm();
-
 }
 
-}
-
-
-
-async function generateIncidentCaseNumber() {
-
-  const currentYear =
-    new Date().getFullYear();
-
-  const counterRef =
-    doc(
-      db,
-      "counters",
-      "incidentCounter"
-    );
-
-  const snap =
-    await getDoc(counterRef);
-
-  let year = currentYear;
-  let currentNumber = 1;
-
-  if (snap.exists()) {
-
-    const data = snap.data();
-
-    year =
-      data.year || currentYear;
-
-    currentNumber =
-      data.currentNumber || 1;
-
-    if (year !== currentYear) {
-
-      year = currentYear;
-      currentNumber = 1;
-    }
-  }
-
-  const caseNumber =
-    `IC-${year}${String(
-      currentNumber
-    ).padStart(5, "0")}`;
-
-  await setDoc(
-    counterRef,
-    {
-      year,
-      currentNumber:
-        currentNumber + 1
-    }
-  );
-
-  return caseNumber;
 }
 
 window.addPerson = function () {
@@ -10688,9 +10634,28 @@ window.submitIncidentReport =
         const existingIncident =
           incidentSnap.data();
 
-        caseNumber =
-          existingIncident.caseNumber ||
-          await generateIncidentCaseNumber();
+        if (existingIncident.caseNumber) {
+
+  caseNumber =
+    existingIncident.caseNumber;
+
+} else {
+
+  const caseNumberResult =
+    await generateIncidentCaseNumber();
+
+  if (!caseNumberResult.success) {
+
+    throw new Error(
+      caseNumberResult.message
+    );
+
+  }
+
+  caseNumber =
+    caseNumberResult.caseNumber;
+
+}
 
         await updateDoc(
           doc(
@@ -10721,25 +10686,24 @@ window.submitIncidentReport =
 
         //
         // SAVE ATTACHMENTS
-        //
-        const photos =
-          await uploadIncidentPhotos(
-            editingId
-          );
+        //    
 
-        const result =
+          const photos =
+  await uploadIncidentPhotos(
+    editingId
+  );
+
+const result =
   await saveIncidentAttachments(
-    incidentId,
+    editingId,
     photos
   );
 
-if (!photos?.length) {
+if (!result.success) {
 
-  return {
-
-    success: true
-
-  };
+  throw new Error(
+    result.message
+  );
 
 }
 
@@ -10750,8 +10714,19 @@ if (!photos?.length) {
       //
       else {
 
-        caseNumber =
-          await generateIncidentCaseNumber();
+        const caseNumberResult =
+  await generateIncidentCaseNumber();
+
+if (!caseNumberResult.success) {
+
+  throw new Error(
+    caseNumberResult.message
+  );
+
+}
+
+caseNumber =
+  caseNumberResult.caseNumber;
 
         const docRef =
           await addDoc(
@@ -10802,10 +10777,19 @@ if (!photos?.length) {
             docRef.id
           );
 
-        await saveIncidentAttachments(
-          docRef.id,
-          photos
-        );
+       const result =
+  await saveIncidentAttachments(
+    docRef.id,
+    photos
+  );
+
+if (!result.success) {
+
+  throw new Error(
+    result.message
+  );
+
+}
 
         await addReviewHistory(
           docRef.id,

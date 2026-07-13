@@ -4,6 +4,8 @@ import {
     collection,
     addDoc,
     getDocs,
+    getDoc,
+    setDoc,
     query,
     where,
     updateDoc,
@@ -419,6 +421,94 @@ export async function saveIncidentDraftRecord(
 
       message:
         "Unable to save incident draft."
+
+    };
+
+  }
+
+}
+
+export async function generateIncidentCaseNumber() {
+
+  try {
+
+    const currentYear =
+      new Date().getFullYear();
+
+    const counterRef =
+      doc(
+        db,
+        "counters",
+        "incidentCounter"
+      );
+
+    const snap =
+      await getDoc(counterRef);
+
+    let year =
+      currentYear;
+
+    let currentNumber =
+      1;
+
+    if (snap.exists()) {
+
+      const data =
+        snap.data();
+
+      year =
+        data.year || currentYear;
+
+      currentNumber =
+        data.currentNumber || 1;
+
+      if (year !== currentYear) {
+
+        year =
+          currentYear;
+
+        currentNumber =
+          1;
+
+      }
+
+    }
+
+    const caseNumber =
+      `IC-${year}${String(
+        currentNumber
+      ).padStart(5, "0")}`;
+
+    await setDoc(
+      counterRef,
+      {
+        year,
+        currentNumber:
+          currentNumber + 1
+      }
+    );
+
+    return {
+
+      success: true,
+
+      caseNumber
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error generating incident case number:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to generate incident case number."
 
     };
 
