@@ -52,6 +52,12 @@ import {
   getCurrentEmployee
 } from "./services/employee-service.js";
 
+import {
+    createIncidentAlert,
+    resolveIncidentRecord
+} from "./services/incident-service.js";
+
+
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
 
@@ -5612,100 +5618,7 @@ function outsideViewNotesClick(event) {
 
 }
 
-async function createIncidentAlert({
-  siteId,
-  severity,
-  description,
-  reportedBy
-}) {
 
-  const site = sites.find(
-    s => s.id === siteId
-  );
-
-  if (!site) {
-
-    return {
-      success: false,
-      message: "Unable to locate site."
-    };
-
-  }
-
-  if (!description) {
-
-    return {
-      success: false,
-      message: "Description required."
-    };
-
-  }
-
-  try {
-
-    const incidentRef =
-      await addDoc(
-        collection(db, "incidents"),
-        {
-
-          siteId,
-
-          siteName:
-            site.name,
-
-          severity,
-
-          description,
-
-          reportedBy:
-            reportedBy || "Unknown",
-
-          createdAt:
-            new Date().toISOString()
-
-        }
-      );
-
-await logActivity(
-  siteId,
-  "incident",
-  `🚨 ${severity} | ${site.name} | ${description}`,
-  reportedBy
-);
-
-    return {
-
-      success: true,
-
-      incidentId:
-        incidentRef.id,
-
-      message:
-        "Incident reported."
-
-    };
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "Error creating incident:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Unable to report incident."
-
-    };
-
-  }
-
-}
 
 async function saveIncident() {
 
@@ -5768,12 +5681,6 @@ const description =
 document.getElementById(
   "fieldIncidentSeverity"
 ).selectedIndex = 0;
-
-if (result.success) {
-
-    resetCommunicationForm();
-
-}
 
 }
 
@@ -5964,61 +5871,28 @@ async function resolveIncident(id) {
     return;
   }
 
-  try {
+  const result =
+    await resolveIncidentRecord({
 
-    const incidentRef =
-      doc(
-        db,
-        "incidents",
-        id
-      );
+        id,
 
-    const snap =
-      await getDoc(
-        incidentRef
-      );
-
-    if (!snap.exists()) {
-
-      alert(
-        "This incident no longer exists."
-      );
-
-      return;
-    }
-
-    await updateDoc(
-      incidentRef,
-      {
-        status:
-          "Resolved",
-
-        resolution:
-          resolution.trim(),
+        resolution,
 
         resolvedBy:
-          auth.currentUser?.email ||
-          "Unknown",
+            auth.currentUser?.email ||
+            "Unknown"
 
-        resolvedAt:
-          new Date()
-            .toISOString()
-      }
-    );
+    });
 
-    alert(
-      "Incident resolved."
-    );
+if (!result.success) {
 
-  } catch (err) {
+    alert(result.message);
 
-    console.error(err);
+    return;
 
-    alert(
-      "Failed to resolve incident."
-    );
+}
 
-  }
+alert("Incident resolved.");
 }
 
 function playCriticalAlert() {
