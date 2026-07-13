@@ -1,5 +1,3 @@
-console.log("charts.js loaded");
-
 let patrolStatusChart;
 let patrolDayChart;
 let topOfficerChart;
@@ -7,9 +5,7 @@ let siteVolumeChart;
 
 function renderPatrolCharts() {
    
-  console.log(
-    "Rendering patrol charts..."
-  );
+  
 
   renderPatrolStatusChart();
   renderPatrolsByDayChart();
@@ -29,12 +25,6 @@ function renderPatrolStatusChart() {
       p => !p.completed
     ).length;
 
-  console.log(
-    "Completed:",
-    completed,
-    "Active:",
-    active
-  );
 
   const canvas =
     document.getElementById(
@@ -254,8 +244,6 @@ function renderTopOfficersChart() {
 }
 
 function renderPatrolVolumeBySiteChart() {
-    console.log("sites:", window.sites);
-console.log("activePatrols:", activePatrols);
 
   const canvas =
     document.getElementById(

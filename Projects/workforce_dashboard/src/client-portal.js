@@ -1,4 +1,3 @@
-console.log("Client Portal loaded");
 import { db } from "./js/services/firebase-config.js";
 
 import {
@@ -15,20 +14,16 @@ import {
 
 import { formatRelativeTime } from "./js/utils.js";
 
+import {
+    initializeIdentity
+} from "./js/services/identity-service.js";
+
+
 const auth = getAuth();
 
-//console.log("Current user:", auth.currentUser);
-
 // Temporary until authentication (Phase 9B)
-const currentSiteId = "H9448x1K3XtRgbA8BnPk";
-
-document.addEventListener("DOMContentLoaded", async () => {
-
-    console.log("Client Portal Loaded");
-
-    await initializeClientPortal();
-
-});
+const currentSiteId =
+    window.currentUserProfile?.siteId;
 
 async function loadCompanyProfile() {
 
@@ -61,10 +56,10 @@ document.getElementById(
 
   } catch (error) {
 
-    console.error(
-      "Unable to load company profile:",
-      error
-    );
+   console.error(
+    "Client Portal: Unable to load company profile",
+    error
+);
 
   }
 
@@ -174,7 +169,12 @@ function renderClientHeader(site) {
 
 }
 
-async function initializeClientPortal() {
+export async function initializeClientPortal() {
+
+    console.log(
+    "Client Portal Profile:",
+    window.currentUserProfile
+);
 
     renderSiteStatus({
         title: "🟢 Normal Operations",
@@ -186,17 +186,10 @@ async function initializeClientPortal() {
         cssClass: "status-normal"
     });
 
-    renderKPIs({
-        officers: 2,
-        patrols: 18,
-        incidents: 0,
-        communications: 3
-    });
+   const liveOfficers =
+    await loadTodaysOfficers();
 
-    const liveOfficers = await loadTodaysOfficers();
-
-console.log(
-    "Live Officers:",
+renderTodaysOfficers(
     liveOfficers
 );
 
@@ -205,29 +198,63 @@ renderTodaysOfficers(liveOfficers);
 const patrols =
     await loadTodaysPatrolActivity();
 
-console.log(
-    "Live Patrol Activity:",
-    patrols
-);
-
-
 renderPatrolActivity(patrols);
 
 const incidents =
     await loadTodaysIncidents();
 
-    console.log(
-    "Today's Incidents:",
-    incidents
-);
-
 renderIncidentSummary(incidents);
 
+// We'll add communications next
+const communications =
+    await loadTodaysCommunications();
+
+const kpis =
+    await loadClientKPIs({
+        officers: liveOfficers,
+        patrols,
+        incidents,
+        communications
+    });
+
+renderKPIs(kpis);
+
+renderPatrolActivity(
+    patrols
+);
+
+renderIncidentSummary(
+    incidents
+);
 }
 
 async function loadTodaysOfficers() {
 
-    try {
+    console.log(
+    "Loader Profile:",
+    window.currentUserProfile
+);
+
+console.log(
+    "Loader Site ID:",
+    window.currentUserProfile?.siteId
+);
+
+
+   try {
+
+     const currentSiteId =
+    window.currentUserProfile?.siteId;
+
+if (!currentSiteId) {
+
+    console.error(
+        "Client Portal: No siteId available for current user."
+    );
+
+    return [];
+
+}
 
         const today =
             new Date()
@@ -238,6 +265,7 @@ async function loadTodaysOfficers() {
             collection(db, "shifts"),
             where("siteId", "==", currentSiteId)
         );
+
 
         const snapshot = await getDocs(q);
 
@@ -271,21 +299,17 @@ async function loadTodaysOfficers() {
                     clock: "--"
 
                 }));
-
-        console.log(
-            "Today's Officers:",
-            officers
-        );
+       
 
         return officers;
 
     }
     catch (error) {
 
-        console.error(
-            "loadTodaysOfficers",
-            error
-        );
+       console.error(
+    "Client Portal: loadTodaysOfficers failed",
+    error
+);
 
         return [];
 
@@ -376,12 +400,7 @@ async function loadTodaysPatrolActivity() {
         // We'll improve sorting later if needed.
         return 0;
 
-    });
-
-    console.log(
-        "Today's Patrol Activity:",
-        patrols
-    );
+    }); 
 
     return patrols;
 
@@ -812,4 +831,22 @@ async function loadTodaysIncidents() {
 
 }
 
+async function loadClientKPIs({
+    officers,
+    patrols,
+    incidents,
+    communications
+}) {
 
+    return {
+        officers: officers.length,
+        patrols: patrols.length,
+        incidents: incidents.filter(
+            i => i.status !== "resolved"
+        ).length,
+        communications: communications.length
+    };
+
+}
+
+await initializeIdentity();

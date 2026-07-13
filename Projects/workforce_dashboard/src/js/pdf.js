@@ -1,17 +1,4 @@
-console.log(
-  "db:",
-  typeof db
-);
 
-console.log(
-  "collection:",
-  typeof collection
-);
-
-console.log(
-  "getDocs:",
-  typeof getDocs
-);
 
 async function imageUrlToDataUrl(
   url
@@ -990,10 +977,7 @@ if (photos.length) {
   const maxWidth = 80;
   const maxHeight = 60;
 
- console.log(
-  "Raw photos:",
-  photos
-);
+
 
 photos.forEach((p, i) => {
 
@@ -1054,34 +1038,6 @@ const dataUrl =
         y = 20;
         x = 20;
       }
-
-console.log(
-  "Base64 starts with:",
-  photo.imageBase64.substring(
-    0,
-    50
-  )
-);   
-
-console.log(
-  "Drawing:",
-  photo.originalName,
-  {
-    x,
-    y,
-    width,
-    height
-  }
-);
-   console.log(
-  "Adding image:",
-  {
-    x,
-    y,
-    width,
-    height
-  }
-);
 
 doc.addImage(
   dataUrl,

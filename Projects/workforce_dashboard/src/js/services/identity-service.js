@@ -17,6 +17,8 @@ export async function getCurrentUserProfile() {
   const firebaseUser =
     auth.currentUser;
 
+    console.log("Firebase User:", firebaseUser);
+
   if (!firebaseUser) {
 
     return null;
@@ -32,6 +34,11 @@ export async function getCurrentUserProfile() {
   const userSnap =
     await getDoc(userRef);
 
+    
+console.log("Looking for UID:", firebaseUser.uid);
+
+    console.log("User document exists:", userSnap.exists());
+
   if (!userSnap.exists()) {
 
     return null;
@@ -42,5 +49,50 @@ export async function getCurrentUserProfile() {
     uid: firebaseUser.uid,
     ...userSnap.data()
   };
+
+}
+
+export async function initializeIdentity() {
+
+    try {
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+            console.log(
+    "initializeIdentity received:",
+    currentUserProfile
+);
+
+        if (!currentUserProfile) {
+
+            console.error(
+                "No WorkForge user profile found."
+            );     
+
+            return false;
+
+        }
+
+        window.currentUserProfile =
+            currentUserProfile;
+
+        console.log(
+            "Application Profile:",
+            currentUserProfile
+        );
+
+        return true;
+
+    } catch (err) {
+
+        console.error(
+            "Identity initialization failed:",
+            err
+        );
+
+        return false;
+
+    }
 
 }

@@ -33,7 +33,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  getCurrentUserProfile
+    getCurrentUserProfile,
+    initializeIdentity
 } from "./services/identity-service.js";
 
 import {
@@ -55,27 +56,38 @@ import {
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-      window.location.href =
-        "index.html";
-      return;
+        window.location.href = "index.html";
+        return;
     }
 
     currentUser = user;
 
-const identityReady =
-  await initializeIdentity();
+    const identityReady =
+        await initializeIdentity();
 
-if (!identityReady) return;
-await bootstrapApplication();
+        console.log("Profile:", window.currentUserProfile);
+
+    if (!identityReady) return;
+
+    currentUserProfile =
+    window.currentUserProfile;
+
+    // 👇 INSERT THE ROLE ROUTER HERE
+    if (window.currentUserProfile?.role === "client") {
+        window.location.href = "client-portal.html";
+        return;
+    }
+
+    console.log("Employee ID:", window.currentUserProfile?.employeeId);
+
+    await bootstrapApplication();
 
     console.log(
-      "Authenticated:",
-      user.email
+        "Authenticated:",
+        user.email
     );
 
-    //listenForNotifications();
-  }
-);
+});
 // ================= DOM =================
 const empName = document.getElementById("empName");
 const empRole = document.getElementById("empRole");
@@ -900,6 +912,7 @@ onSnapshot(
 let bootstrapComplete = false;
 
 async function bootstrapApplication() {
+  console.log("Bootstrap Profile:", window.currentUserProfile);
 
   if (bootstrapComplete) {
     console.log("Bootstrap already completed.");
@@ -930,117 +943,6 @@ async function bootstrapApplication() {
 
   console.log("========== BOOTSTRAP COMPLETE ==========");
 
-}
-
-async function initializeIdentity() {
-
-  try {
-
-    currentUserProfile =
-      await getCurrentUserProfile();
-
-    window.currentUserProfile =
-      currentUserProfile;
-
-    console.log(
-      "Application Profile:",
-      currentUserProfile
-    );
-
-    return true;
-
-  } catch (err) {
-
-    console.error(
-      "Identity initialization failed:",
-      err
-    );
-
-    return false;
-
-  }
-
-}
-
-document.getElementById(
-  "editEmpRole"
-).addEventListener(
-  "change",
-  function () {
-
-    document.getElementById(
-      "editLicenseSection"
-    ).style.display =
-      this.value === "Security Officer"
-        ? "block"
-        : "none";
-  }
-);
-
-document.getElementById(
-  "companyLogoUpload"
-).onchange =
-  function (e) {
-
-    const file =
-      e.target.files[0];
-
-    if (!file) return;
-
-    const preview =
-      document.getElementById(
-        "companyLogoPreview"
-      );
-
-    preview.src =
-      URL.createObjectURL(file);
-
-    preview.style.display =
-      "block";
-  };
-
-document.getElementById(
-  "companyPatchUpload"
-).onchange =
-  function (e) {
-
-    const file =
-      e.target.files[0];
-
-    if (!file) return;
-
-    const preview =
-      document.getElementById(
-        "companyPatchPreview"
-      );
-
-    preview.src =
-      URL.createObjectURL(file);
-
-    preview.style.display =
-      "block";
-  };
-
-const editRole =
-  document.getElementById(
-    "editEmpRole"
-  );
-
-if (editRole) {
-  editRole.addEventListener(
-    "change",
-    function () {
-
-      document.getElementById(
-        "editLicenseSection"
-      ).style.display =
-        this.value ===
-          "Security Officer"
-          ? "block"
-          : "none";
-
-    }
-  );
 }
 
 function formatLocalDateTime(
@@ -2484,27 +2386,7 @@ function updateMap() {
       color = "#6b7280";
     }
 
-    // ACTIVE STATUS
-
-    console.log(
-      "SITE:",
-      site.name,
-      site.id
-    );
-
-    console.log(
-      "TIME ENTRIES:",
-      timeEntries
-    );
-
-    console.log(
-      "MATCHING ENTRIES:",
-      timeEntries.filter(
-        entry =>
-          entry.siteId === site.id &&
-          entry.status === "Clocked In"
-      )
-    );
+    // ACTIVE STATUS    
 
     if (
       siteStatus === "Active" &&
@@ -2517,21 +2399,7 @@ function updateMap() {
     if (site.maintenance) {
       color = "#eab308";
     }
-    console.log(
-      "SITE:",
-      site.name,
-      site.id
-    );
-
-    console.log(
-      "INCIDENTS:",
-      incidents.map(i => ({
-        siteName: i.siteName,
-        siteId: i.siteId,
-        severity: i.severity,
-        status: i.status
-      }))
-    );
+   
 
     // CRITICAL INCIDENT
     const hasCriticalIncident =
@@ -2750,16 +2618,7 @@ function updateMap() {
       markers[site.id]
     );
 
-    const marker = markers[site.id];
-
-    console.log(
-      "Notes for site:",
-      site.name,
-      siteNotes
-        .filter(
-          n => n.siteId === site.id
-        )
-    );
+    const marker = markers[site.id];  
 
     const latestNote =
       siteNotes
@@ -3771,9 +3630,7 @@ async function markMaintenance() {
     const assetId =
       document.getElementById(
         "maintenanceAssetSelect"
-      ).value;
-
-    console.log("Selected Asset:", assetId);
+      ).value;  
 
     if (!assetId) {
       alert("Select an asset");
@@ -3782,9 +3639,7 @@ async function markMaintenance() {
 
     const asset = assets.find(a =>
       a.id === assetId
-    );
-
-    console.log("Matched Asset:", asset);
+    );  
 
     if (!asset) {
       alert("Asset not found");
@@ -3797,8 +3652,6 @@ async function markMaintenance() {
         status: "maintenance"
       }
     );
-
-    console.log("Maintenance Updated");
 
     alert(`${assetId} set to maintenance`);
 
@@ -4230,12 +4083,7 @@ async function deleteSelectedSites() {
 
       );
 
-    if (activeAssignments) {
-
-      console.log(
-        "Skipping active site:",
-        siteId
-      );
+    if (activeAssignments) {    
 
       continue;
 
@@ -4462,12 +4310,7 @@ async function saveEmployeeEdit() {
 
       let results = [];
 
-      for (const address of addresses) {
-
-        console.log(
-          "Trying address:",
-          address
-        );
+      for (const address of addresses) {        
 
         const response =
           await fetch(
@@ -4477,12 +4320,7 @@ async function saveEmployeeEdit() {
           );
 
         results =
-          await response.json();
-
-        console.log(
-          "Results:",
-          results
-        );
+          await response.json();        
 
         if (results.length) {
           break;
@@ -4884,11 +4722,7 @@ async function deployDefaultCrews() {
 
       const crew =
         site.defaultCrew || [];
-
-      console.log(
-        "Deploying Crew:",
-        crew
-      );
+ 
 
       for (const employeeId of crew) {
 
@@ -4966,11 +4800,7 @@ async function clearSiteAssignments(siteId) {
         !a.endTime
 
       );
-
-    console.log(
-      "Assignments Found:",
-      activeAssignments
-    );
+   
 
     if (!activeAssignments.length) {
 
@@ -5554,11 +5384,7 @@ function openViewNotesModal() {
 
   }
 
-  select.onchange = function () {
-    console.log(
-      "Site changed:",
-      this.value
-    );
+  select.onchange = function () {  
 
     loadSiteHistory();
   };
@@ -5585,9 +5411,7 @@ function loadSiteNotes() {
     document.getElementById(
       "viewNotesSite"
     ).value;
-  console.log("Selected Site:", siteId);
-  console.log("All Notes:", siteNotes);
-
+ 
   const notes =
     siteNotes
       .filter(
@@ -5598,7 +5422,7 @@ function loadSiteNotes() {
         new Date(b.createdAt) -
         new Date(a.createdAt)
       );
-  console.log("Matching Notes:", notes);
+  
   const container =
     document.getElementById(
       "siteNotesList"
@@ -5612,8 +5436,7 @@ function loadSiteNotes() {
     return;
 
   }
-  console.log("Container:", container);
-  console.log("First Note:", notes[0]);
+  
   container.innerHTML =
     notes.map(note => `
 
@@ -5650,55 +5473,18 @@ ${JSON.stringify(note, null, 2)}
 }
 
 function loadSiteHistory() {
-  console.log(
-    "loadSiteHistory fired:",
-    document.getElementById(
-      "viewNotesSite"
-    ).value
-  );
+ 
 
   const select =
     document.getElementById(
       "viewNotesSite"
     );
 
-  console.log(
-    "Dropdown Element:",
-    select
-  );
-
-  console.log(
-    "Selected Index:",
-    select.selectedIndex
-  );
-
-  console.log(
-    "Selected Value:",
-    select.value
-  );
-
-  console.log(
-    "Selected Text:",
-    select.options[
-      select.selectedIndex
-    ]?.text
-  );
-
-  console.log(
-    "Duplicate Elements:",
-    document.querySelectorAll(
-      "#viewNotesSite"
-    ).length
-  );
-  console.log("Activity Reports Count:", activityReports.length);
-  console.log("Latest Report:", activityReports[0]);
-
   const siteId =
     document.getElementById(
       "viewNotesSite"
     ).value;
-  console.log("Selected Site:", siteId);
-  console.log("All Notes:", siteNotes);
+ 
 
   const notes = siteNotes
     .filter(
@@ -5711,37 +5497,7 @@ function loadSiteHistory() {
       text: note.note || "",
       raw: note
     }));
-  console.log(
-    "activityReports variable:",
-    activityReports
-  );
-
-  console.log(
-    "activityReports length:",
-    activityReports?.length
-  );
-  console.log(
-    "Selected Site ID:",
-    siteId
-  );
-
-  console.log(
-    "All Report Site IDs:",
-    activityReports.map(
-      r => ({
-        siteId: r.siteId,
-        siteName: r.siteName,
-        activityType: r.activityType
-      })
-    )
-  );
-
-  console.log(
-    "Matching Reports:",
-    activityReports.filter(
-      r => r.siteId === siteId
-    )
-  );
+ 
 
   const reports = activityReports
     .filter(
@@ -6030,9 +5786,7 @@ function handleCriticalIncident(siteId) {
 
   if (!site || !window.map) return;
 
-  playCriticalAlert();
-
-  console.log("Site:", site);
+  playCriticalAlert();  
 
   document
     .getElementById("operationsMapPanel")
@@ -6071,11 +5825,7 @@ function handleCriticalIncident(siteId) {
 }
 
 
-function renderIncidents() {
-  console.log(
-    "renderIncidents:",
-    incidents.length
-  );
+function renderIncidents() {  
 
   const container =
     document.getElementById(
@@ -6439,6 +6189,10 @@ window.showOfficerPortal =
     document.getElementById(
       "myPatrolsPage"
     ).style.display = "none";
+
+     document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
 
     document.getElementById(
       "companySettingsPage"
@@ -7081,8 +6835,6 @@ if (!siteDoc.exists()) {
 
 const site = siteDoc.data();
 
-console.log("Site document:", site);
-console.log("Site ID:", siteId);
   await addDoc(
   collection(db, "openShifts"),
   {
@@ -7115,9 +6867,7 @@ console.log("Site ID:", siteId);
     alert(
       "Open Shift published successfully."
     );
-
-    console.log("Site document:", site);
-    console.log("Site ID:", siteId);
+    
 
   } catch (error) {
 
@@ -9325,12 +9075,7 @@ async function refreshSupervisorDashboard() {
     const escalationLevel =
       getEscalationLevel(
         entry.gpsViolationCount || 0
-      );
-
-    console.log(
-      entry.employeeName,
-      escalationLevel
-    );
+      );   
 
     const clockInTime = entry.clockIn
       ? entry.clockIn.toDate
@@ -9378,7 +9123,7 @@ async function refreshSupervisorDashboard() {
   </div>
 </div>
 `;
-  console.log(html);
+  
   document.getElementById("attendanceRoster").innerHTML = html;
   renderComplianceFeed();
 
@@ -9573,11 +9318,7 @@ async function checkPostAbandonment() {
         "function"
       ) {
         refreshSupervisorDashboard();
-      }
-
-      console.log(
-        `${entry.employeeName} is outside geofence`
-      );
+      }     
 
     }
 
@@ -9619,10 +9360,7 @@ async function checkPostAbandonment() {
       ) {
         refreshSupervisorDashboard();
       }
-
-      console.log(
-        `${entry.employeeName} has returned to post`
-      );
+ 
 
     }
 
@@ -9642,16 +9380,12 @@ async function checkPostAbandonment() {
         isInsideGeofence
       ) {
 
-        console.log(
-          `${entry.employeeName} is currently on post`
-        );
+       
 
       }
       else {
 
-        console.log(
-          `${entry.employeeName} remains outside geofence`
-        );
+        
 
       }
 
@@ -10039,8 +9773,7 @@ function renderMySite() {
 
 const siteId =
   getCurrentOfficerSiteId();
-
-  console.log("My Site siteId:", siteId);
+  
 
 if (!siteId) {
 
@@ -10055,8 +9788,7 @@ if (!siteId) {
     s => s.id === siteId
   );
 
-  console.log("My Site siteId:", siteId);
-
+  
   if (!site) {
 
     container.innerHTML =
@@ -11040,21 +10772,7 @@ window.submitIncidentReport =
     try {
 
       const incidentData =
-        collectIncidentData();
-
-      console.log(
-        "incidentVehicles at submit:",
-        incidentVehicles
-      );
-
-      console.log(
-        "incidentVehicles JSON:",
-        JSON.stringify(
-          incidentVehicles,
-          null,
-          2
-        )
-      );
+        collectIncidentData();      
 
       if (
         !incidentData.incidentType ||
@@ -11503,11 +11221,7 @@ function collectIncidentData() {
     });
 
   const vehicles =
-    window.incidentVehicles || [];
-  console.log(
-    "Persons:",
-    persons
-  );
+    window.incidentVehicles || []; 
 
   return {
 
@@ -11881,7 +11595,7 @@ function getIncidentStatusBadge(
 
 window.viewIncident =
   async function (id) {
-    console.log("View clicked:", id);
+    
 
     currentIncidentId = id;
 
@@ -11893,7 +11607,7 @@ window.viewIncident =
           id
         )
       );
-    console.log("Document exists:", snap.exists());
+    
 
     if (!snap.exists()) return;
 
@@ -12343,12 +12057,7 @@ ${incident.vehicles &&
       })
     );
   window.currentIncidentAttachments =
-    attachments;
-
-  console.log(
-    "Current Incident Attachments:",
-    attachments
-  );
+    attachments;  
 
   if (!attachments.length) {
 
@@ -13533,45 +13242,18 @@ window.loadCurrentCheckpoint =
 
     });
 
-    console.log(
-      "Active Patrol Patrol ID:",
-      activePatrol.patrolId
-    );
+   
 
     console.log(
       "Checkpoint Patrol IDs:",
       checkpoints.map(
         cp => cp.patrolId
       )
-    );
-
-    console.log(
-      "All Checkpoints:",
-      checkpoints
-    );
-
-    console.log(
-      "Active Patrol:",
-      activePatrol
-    );
-
-    console.log(
-      "Active Patrol patrolId:",
-      activePatrol.patrolId
-    );
+    );    
 
     checkpoints.forEach(cp => {
 
-      console.log(
-        "Checkpoint:",
-        cp.id,
-        "patrolId:",
-        cp.patrolId,
-        "match:",
-        cp.patrolId ===
-        activePatrol.patrolId
-      );
-
+      
     });
 
     const patrolCheckpoints =
@@ -13585,25 +13267,7 @@ window.loadCurrentCheckpoint =
           (a, b) =>
             a.sequence - b.sequence
         );
-
-    console.log(
-      "Found Patrol Checkpoints:",
-      patrolCheckpoints
-    );
-    console.log(
-      "Checkpoints Loaded:",
-      checkpoints.length
-    );
-
-    console.log(
-      "Patrol ID:",
-      activePatrol.patrolId
-    );
-
-    console.log(
-      "All Checkpoints:",
-      checkpoints
-    );
+   
     if (!patrolCheckpoints.length) {
 
       alert(
@@ -14135,10 +13799,7 @@ window.saveCheckpointEvidence =
 
       });
 
-      console.log(
-        "Patrol completion saved."
-      );
-
+     
     } catch (error) {
 
       console.error(error);
@@ -14776,11 +14437,7 @@ window.loadPatrolTimeline =
 window.viewPatrolTimeline =
   async function (
     patrolSessionId
-  ) {
-    console.log(
-      "Timeline clicked:",
-      patrolSessionId
-    );
+  ) {   
 
     const events =
       await loadPatrolTimeline(
@@ -14795,11 +14452,6 @@ window.viewPatrolTimeline =
         .map(
           e => e.photoUrl
         );
-
-    console.log(
-      "Timeline events:",
-      events
-    );
 
     const container =
       document.getElementById(
