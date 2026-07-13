@@ -90,17 +90,6 @@ container.classList.remove("empty");
 
 container.innerHTML =
     officers.map(renderOfficerCard).join("");
-
-container.innerHTML =
-    officers
-        .map(renderOfficerCard)
-        .join("");
-
-    container.innerHTML =
-        officers
-            .map(renderOfficerCard)
-            .join("");
-
 }
 
 function renderSiteStatus(status) {
@@ -174,24 +163,10 @@ export async function initializeClientPortal() {
     console.log(
     "Client Portal Profile:",
     window.currentUserProfile
-);
-
-    renderSiteStatus({
-        title: "🟢 Normal Operations",
-        message: "No active incidents have been reported today.",
-        officers: 2,
-        patrols: 18,
-        incidents: 0,
-        lastPatrol: "11 minutes ago",
-        cssClass: "status-normal"
-    });
+);    
 
    const liveOfficers =
     await loadTodaysOfficers();
-
-renderTodaysOfficers(
-    liveOfficers
-);
 
 renderTodaysOfficers(liveOfficers);
 
@@ -218,6 +193,15 @@ const kpis =
     });
 
 renderKPIs(kpis);
+
+const siteStatus =
+    loadSiteStatus({
+        officers: liveOfficers,
+        patrols,
+        incidents
+    });
+
+renderSiteStatus(siteStatus);
 
 renderPatrolActivity(
     patrols
@@ -324,10 +308,26 @@ async function loadTodaysPatrolActivity() {
             .toISOString()
             .substring(0, 10);
 
-    const snapshot =
-        await getDocs(
-            collection(db, "patrolEvents")
-        );
+   const currentSiteId =
+    window.currentUserProfile?.siteId;
+
+if (!currentSiteId) {
+
+    console.error(
+        "Client Portal: No siteId available for current user."
+    );
+
+    return [];
+
+}
+
+const q = query(
+    collection(db, "patrolEvents"),
+    where("siteId", "==", currentSiteId)
+);
+
+const snapshot =
+    await getDocs(q);
 
     const patrols =
         snapshot.docs
@@ -403,48 +403,6 @@ async function loadTodaysPatrolActivity() {
     }); 
 
     return patrols;
-
-}
-
-function renderTodayOfficers() {
-
-    const officers = [
-
-        {
-            name: "James Wilson",
-            post: "Main Entrance",
-            shift: "0700 - 1500",
-            status: "On Duty",
-            clock: "3 hrs 12 min"
-        },
-
-        {
-            name: "Maria Rodriguez",
-            post: "Loading Dock",
-            shift: "0800 - 1600",
-            status: "On Duty",
-            clock: "2 hrs 08 min"
-        },
-
-        {
-            name: "David Johnson",
-            post: "Patrol Vehicle",
-            shift: "0600 - 1800",
-            status: "Scheduled",
-            clock: "--"
-        }
-
-    ];
-
-    const container =
-        document.getElementById("todayOfficers");
-
-    if (!container) return;
-
-    container.innerHTML =
-        officers
-            .map(renderOfficerCard)
-            .join("");
 
 }
 
@@ -772,10 +730,26 @@ function renderNoDataCard({
 
 async function loadTodaysIncidents() {
 
-    const snapshot =
-        await getDocs(
-            collection(db, "incidents")
-        );
+    const currentSiteId =
+    window.currentUserProfile?.siteId;
+
+if (!currentSiteId) {
+
+    console.error(
+        "Client Portal: No siteId available for current user."
+    );
+
+    return [];
+
+}
+
+const q = query(
+    collection(db, "incidents"),
+    where("siteId", "==", currentSiteId)
+);
+
+const snapshot =
+    await getDocs(q);
 
     const today =
         new Date()
@@ -850,3 +824,53 @@ async function loadClientKPIs({
 }
 
 await initializeIdentity();
+
+function loadSiteStatus({
+    officers,
+    patrols,
+    incidents
+}) {
+
+    const activeIncidents =
+        incidents.filter(
+            incident =>
+                incident.status !== "resolved"
+        ).length;
+
+    let title = "🟢 Normal Operations";
+    let message =
+        "No active incidents have been reported today.";
+    let cssClass = "status-normal";
+
+    if (activeIncidents > 0) {
+
+        title = "🟡 Attention Required";
+        message =
+            `${activeIncidents} active incident${activeIncidents > 1 ? "s have" : " has"} been reported today.`;
+
+        cssClass = "status-warning";
+
+    }
+
+    return {
+
+        title,
+
+        message,
+
+        officers: officers.length,
+
+        patrols: patrols.length,
+
+        incidents: activeIncidents,
+
+        lastPatrol:
+            patrols.length
+                ? patrols[0].time
+                : "No patrols today",
+
+        cssClass
+
+    };
+
+}

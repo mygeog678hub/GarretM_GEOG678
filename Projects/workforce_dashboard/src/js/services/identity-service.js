@@ -66,9 +66,9 @@ export async function initializeIdentity() {
 
         if (!currentUserProfile) {
 
-            console.error(
-                "No WorkForge user profile found."
-            );     
+           console.warn(
+    "Identity initialization skipped. No authenticated Firebase user yet."
+);   
 
             return false;
 
