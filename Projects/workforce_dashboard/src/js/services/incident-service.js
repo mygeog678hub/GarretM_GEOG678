@@ -169,3 +169,259 @@ export async function resolveIncidentRecord({
     }
 
 }
+
+export async function loadIncidentReportsData() {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          orderBy(
+            "createdAt",
+            "desc"
+          )
+        )
+      );
+
+    const incidentReports =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      incidentReports
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading incidents:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Error loading incident reports."
+
+    };
+
+  }
+
+}
+
+export async function saveIncidentAttachments(
+
+  incidentId,
+  photos
+
+) {
+
+  try {
+
+    for (const photo of photos) {
+
+      await addDoc(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "attachments"
+        ),
+        photo
+      );
+
+    }
+
+    return {
+
+      success: true
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error saving incident attachments:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to save incident attachments."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentAttachments(
+  incidentId
+) {
+
+  try {
+
+    const snap =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "attachments"
+        )
+      );
+
+    const attachments =
+      snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      attachments
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading incident attachments:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load incident attachments."
+
+    };
+
+  }
+
+}
+
+export async function saveIncidentDraftRecord(
+  editingId,
+  incidentData
+) {
+
+  try {
+
+    if (editingId) {
+
+      await updateDoc(
+        doc(
+          db,
+          "incidentReports",
+          editingId
+        ),
+        {
+          ...incidentData,
+
+          status: "draft",
+
+          lastEdited:
+            serverTimestamp()
+        }
+      );
+
+      return {
+
+        success: true,
+
+        incidentId:
+          editingId
+
+      };
+
+    }
+
+    const docRef =
+      await addDoc(
+        collection(
+          db,
+          "incidentReports"
+        ),
+        {
+          ...incidentData,
+
+          caseNumber: null,
+
+          status: "draft",
+
+          createdAt:
+            serverTimestamp(),
+
+          lastEdited:
+            serverTimestamp(),
+
+          submittedAt: null,
+
+          approvedAt: null,
+          approvedBy: null,
+          approvedByName: null,
+
+          returnedAt: null,
+          returnedBy: null,
+          returnedByName: null,
+          returnComments: "",
+
+          voidedAt: null,
+          voidedBy: null,
+          voidedByName: null,
+          voidReason: "",
+
+          reviewHistory: []
+
+        }
+      );
+
+    return {
+
+      success: true,
+
+      incidentId:
+        docRef.id
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error saving incident draft:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to save incident draft."
+
+    };
+
+  }
+
+}

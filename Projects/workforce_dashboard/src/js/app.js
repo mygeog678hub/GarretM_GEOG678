@@ -54,7 +54,11 @@ import {
 
 import {
     createIncidentAlert,
-    resolveIncidentRecord
+    resolveIncidentRecord,
+    loadIncidentReportsData,
+    saveIncidentAttachments,
+    loadIncidentAttachments,
+    saveIncidentDraftRecord
 } from "./services/incident-service.js";
 
 
@@ -10723,10 +10727,21 @@ window.submitIncidentReport =
             editingId
           );
 
-        await saveIncidentAttachments(
-          editingId,
-          photos
-        );
+        const result =
+  await saveIncidentAttachments(
+    incidentId,
+    photos
+  );
+
+if (!photos?.length) {
+
+  return {
+
+    success: true
+
+  };
+
+}
 
       }
 
@@ -11158,96 +11173,55 @@ window.saveIncidentDraft =
           "editingIncidentId"
         ).value;
 
-      if (editingId) {
-
-        await updateDoc(
-          doc(
-            db,
-            "incidentReports",
-            editingId
-          ),
-          {
-            ...incidentData,
-
-            status:
-              "draft",
-
-            lastEdited:
-              serverTimestamp()
-          }
-        );
-
-        const photos =
-          await uploadIncidentPhotos(
-            editingId
-          );
-
-        await saveIncidentAttachments(
+      const result =
+        await saveIncidentDraftRecord(
           editingId,
-          photos
+          incidentData
         );
 
-      } else {
+      if (!result.success) {
 
-        const docRef =
-          await addDoc(
-            collection(
-              db,
-              "incidentReports"
-            ),
-            {
-              ...incidentData,
+        throw new Error(
+          result.message
+        );
 
-              caseNumber: null,
+      }
 
-              status: "draft",
+      const incidentId =
+        result.incidentId;
 
-              createdAt:
-                serverTimestamp(),
-
-              lastEdited:
-                serverTimestamp(),
-
-              submittedAt:
-                null,
-
-              approvedAt: null,
-              approvedBy: null,
-              approvedByName: null,
-
-              returnedAt: null,
-              returnedBy: null,
-              returnedByName: null,
-              returnComments: "",
-
-              voidedAt: null,
-              voidedBy: null,
-              voidedByName: null,
-              voidReason: "",
-
-              reviewHistory: []
-            }
-          );
+      if (!editingId) {
 
         document.getElementById(
           "editingIncidentId"
         ).value =
-          docRef.id;
+          incidentId;
 
-        const photos =
-          await uploadIncidentPhotos(
-            docRef.id
-          );
+      }
 
+      const photos =
+        await uploadIncidentPhotos(
+          incidentId
+        );
+
+      const attachmentResult =
         await saveIncidentAttachments(
-          docRef.id,
+          incidentId,
           photos
         );
+
+      if (!attachmentResult.success) {
+
+        throw new Error(
+          attachmentResult.message
+        );
+
       }
 
       alert(
         "Draft saved."
       );
+
       clearIncidentPhotos();
 
     } catch (error) {
@@ -11258,33 +11232,13 @@ window.saveIncidentDraft =
       );
 
       alert(
+        error.message ||
         "Unable to save draft."
       );
 
     }
 
   };
-
-async function loadIncidentAttachments(
-  incidentId
-) {
-  const snap =
-    await getDocs(
-      collection(
-        db,
-        "incidentReports",
-        incidentId,
-        "attachments"
-      )
-    );
-
-  return snap.docs.map(
-    doc => ({
-      id: doc.id,
-      ...doc.data()
-    })
-  );
-}
 
 async function loadIncidentReports() {
 
@@ -11300,27 +11254,29 @@ async function loadIncidentReports() {
 
   try {
 
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          orderBy(
-            "createdAt",
-            "desc"
-          )
-        )
-      );
+   const result =
+  await loadIncidentReportsData();
 
-    incidentReports =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
+if (!result.success) {
+
+  container.innerHTML =
+    `<p>${result.message}</p>`;
+
+  return;
+
+}
+
+incidentReports =
+  result.incidentReports;
+
+if (!incidentReports.length) {
+
+  container.innerHTML =
+    "<p>No incident reports found.</p>";
+
+  return;
+
+}
 
     if (
       snapshot.empty
@@ -17434,43 +17390,6 @@ async function uploadIncidentPhotos(
   return uploadedPhotos;
 }
 
-async function saveIncidentAttachments(
-
-  incidentId,
-  photos
-) {
-
-  console.log(
-    "saveIncidentAttachments called"
-  );
-
-  console.log(
-    "Photo count:",
-    photos.length
-  );
-
-  console.log(
-    "Photos being saved:",
-    photos
-  );
-  for (const photo of photos) {
-
-    console.log(
-      "Saving:",
-      photo.originalName
-    );
-
-    await addDoc(
-      collection(
-        db,
-        "incidentReports",
-        incidentId,
-        "attachments"
-      ),
-      photo
-    );
-  }
-}
 
 function clearIncidentPhotos() {
   console.log(
