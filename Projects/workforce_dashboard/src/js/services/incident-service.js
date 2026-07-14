@@ -1,3 +1,52 @@
+/*********************************************************************
+ * IMPORTANT
+ *
+ * This service is the reference architecture for all remaining RC3
+ * domain services.
+ *
+ * Services own:
+ * • Firestore
+ * • Business rules
+ * • Validation
+ * • Data transformation
+ * • Realtime listeners
+ *
+ * Services never own:
+ * • DOM
+ * • HTML
+ * • CSS
+ * • Rendering
+ * • alert()
+ * • confirm()
+ * • prompt()
+ *
+ * All service operations return structured results.
+ *********************************************************************/
+
+/*********************************************************************
+ * Incident Service
+ *
+ * RC3 Reference Implementation
+ *
+ * Responsibilities
+ * ----------------
+ * • Firestore persistence
+ * • Business rules
+ * • Incident workflows
+ * • Data retrieval
+ * • Realtime listeners
+ * • Number generation
+ *
+ * This service owns all Incident domain data access.
+ * UI controllers are responsible only for user interaction
+ * and rendering.
+ *********************************************************************/
+
+
+/*********************************************************************
+ * Imports
+ *********************************************************************/
+
 import { db } from "./firebase-config.js";
 
 import {
@@ -14,6 +63,11 @@ import {
     onSnapshot,
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+/*********************************************************************
+ * Incident Creation
+ *********************************************************************/
 
 export async function createIncidentAlert({
   siteId,
@@ -103,221 +157,6 @@ await logActivity(
 
       message:
         "Unable to report incident."
-
-    };
-
-  }
-
-}
-
-export async function resolveIncidentRecord({
-    id,
-    resolution,
-    resolvedBy
-}) {
-
-    try {
-
-        const incidentRef =
-            doc(
-                db,
-                "incidents",
-                id
-            );
-
-        const snap =
-            await getDoc(
-                incidentRef
-            );
-
-        if (!snap.exists()) {
-
-            return {
-                success: false,
-                message:
-                    "This incident no longer exists."
-            };
-
-        }
-
-        await updateDoc(
-            incidentRef,
-            {
-                status: "Resolved",
-
-                resolution:
-                    resolution.trim(),
-
-                resolvedBy,
-
-                resolvedAt:
-                    new Date()
-                        .toISOString()
-            }
-        );
-
-        return {
-            success: true
-        };
-
-    } catch (err) {
-
-        console.error(err);
-
-        return {
-            success: false,
-            message:
-                "Failed to resolve incident."
-        };
-
-    }
-
-}
-
-export async function loadIncidentReportsData() {
-
-  try {
-
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          orderBy(
-            "createdAt",
-            "desc"
-          )
-        )
-      );
-
-    const incidentReports =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-    return {
-
-      success: true,
-
-      incidentReports
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Error loading incidents:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Error loading incident reports."
-
-    };
-
-  }
-
-}
-
-export async function saveIncidentAttachments(
-
-  incidentId,
-  photos
-
-) {
-
-  try {
-
-    for (const photo of photos) {
-
-      await addDoc(
-        collection(
-          db,
-          "incidentReports",
-          incidentId,
-          "attachments"
-        ),
-        photo
-      );
-
-    }
-
-    return {
-
-      success: true
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Error saving incident attachments:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Unable to save incident attachments."
-
-    };
-
-  }
-
-}
-
-export async function loadIncidentAttachments(
-  incidentId
-) {
-
-  try {
-
-    const snap =
-      await getDocs(
-        collection(
-          db,
-          "incidentReports",
-          incidentId,
-          "attachments"
-        )
-      );
-
-    const attachments =
-      snap.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-    return {
-
-      success: true,
-
-      attachments
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Error loading incident attachments:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Unable to load incident attachments."
 
     };
 
@@ -430,78 +269,39 @@ export async function saveIncidentDraftRecord(
 
 }
 
-export async function generateIncidentCaseNumber() {
+export async function saveIncidentAttachments(
+
+  incidentId,
+  photos
+
+) {
 
   try {
 
-    const currentYear =
-      new Date().getFullYear();
+    for (const photo of photos) {
 
-    const counterRef =
-      doc(
-        db,
-        "counters",
-        "incidentCounter"
+      await addDoc(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "attachments"
+        ),
+        photo
       );
-
-    const snap =
-      await getDoc(counterRef);
-
-    let year =
-      currentYear;
-
-    let currentNumber =
-      1;
-
-    if (snap.exists()) {
-
-      const data =
-        snap.data();
-
-      year =
-        data.year || currentYear;
-
-      currentNumber =
-        data.currentNumber || 1;
-
-      if (year !== currentYear) {
-
-        year =
-          currentYear;
-
-        currentNumber =
-          1;
-
-      }
 
     }
 
-    const caseNumber =
-      `IC-${year}${String(
-        currentNumber
-      ).padStart(5, "0")}`;
-
-    await setDoc(
-      counterRef,
-      {
-        year,
-        currentNumber:
-          currentNumber + 1
-      }
-    );
-
     return {
 
-      success: true,
-
-      caseNumber
+      success: true
 
     };
 
   } catch (error) {
 
     console.error(
-      "Error generating incident case number:",
+      "Error saving incident attachments:",
       error
     );
 
@@ -510,7 +310,7 @@ export async function generateIncidentCaseNumber() {
       success: false,
 
       message:
-        "Unable to generate incident case number."
+        "Unable to save incident attachments."
 
     };
 
@@ -518,114 +318,42 @@ export async function generateIncidentCaseNumber() {
 
 }
 
-export function startIncidentReportsListener(callback) {
+export async function saveIncidentSupplement({
 
-  return onSnapshot(
-    query(
-      collection(
-        db,
-        "incidentReports"
-      ),
-      orderBy(
-        "createdAt",
-        "desc"
-      )
-    ),
-    snapshot => {
+  incidentId,
+  supplementId,
+  caseNumber,
+  narrative,
+  officerId,
+  officerName
 
-      const incidentReports =
-        snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-      callback({
-        success: true,
-        incidentReports
-      });
-
-    },
-    error => {
-
-      console.error(
-        "Incident Reports listener error:",
-        error
-      );
-
-      callback({
-        success: false,
-        message:
-          "Unable to load incident reports."
-      });
-
-    }
-  );
-
-}
-
-export function startIncidentsListener(callback) {
-
-  return onSnapshot(
-    collection(
-      db,
-      "incidents"
-    ),
-    snapshot => {
-
-      const incidents =
-        snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
-      callback({
-        success: true,
-        incidents
-      });
-
-    },
-    error => {
-
-      console.error(
-        "Incidents listener error:",
-        error
-      );
-
-      callback({
-        success: false,
-        message:
-          "Unable to load incidents."
-      });
-
-    }
-  );
-
-}
-
-export async function addIncidentReviewHistory({
-  reportId,
-  action,
-  comments = "",
-  by,
-  byId
 }) {
 
   try {
 
-    await addDoc(
-      collection(
+    await setDoc(
+      doc(
         db,
         "incidentReports",
-        reportId,
-        "history"
+        incidentId,
+        "supplements",
+        supplementId
       ),
       {
-        action,
-        comments,
+        incidentId,
 
-        by,
+        caseNumber,
 
-        byId,
+        supplementId,
+
+        reportType:
+          "Supplement",
+
+        narrative,
+
+        officerId,
+
+        officerName,
 
         createdAt:
           serverTimestamp()
@@ -641,7 +369,7 @@ export async function addIncidentReviewHistory({
   } catch (error) {
 
     console.error(
-      "Error adding incident history:",
+      "Error saving supplement:",
       error
     );
 
@@ -650,13 +378,351 @@ export async function addIncidentReviewHistory({
       success: false,
 
       message:
-        "Unable to add review history."
+        "Unable to save supplement."
 
     };
 
   }
 
 }
+
+/*********************************************************************
+ * Incident Retrieval
+ *********************************************************************/
+
+export async function loadIncidentDraft(
+  reportId
+) {
+
+  try {
+
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          reportId
+        )
+      );
+
+    if (!snap.exists()) {
+
+      return {
+
+        success: false,
+
+        message:
+          "Draft not found."
+
+      };
+
+    }
+
+    return {
+
+      success: true,
+
+      report: {
+
+        id: snap.id,
+
+        ...snap.data()
+
+      }
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading draft:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load draft."
+
+    };
+
+  }
+
+}
+
+
+export async function loadIncidentReviewQueueData() {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          where(
+            "status",
+            "==",
+            "submitted"
+          ),
+          orderBy(
+            "submittedAt",
+            "desc"
+          )
+        )
+      );
+
+    const incidentReports =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      incidentReports
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Review Queue Error:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Error loading review queue."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentAttachments(
+  incidentId
+) {
+
+  try {
+
+    const snap =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "attachments"
+        )
+      );
+
+    const attachments =
+      snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      attachments
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading incident attachments:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load incident attachments."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentSupplements(
+  incidentId
+) {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements"
+        )
+      );
+
+    const supplements =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      supplements
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading supplements:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load supplements."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentReportsData() {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          orderBy(
+            "createdAt",
+            "desc"
+          )
+        )
+      );
+
+    const incidentReports =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      incidentReports
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading incidents:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Error loading incident reports."
+
+    };
+
+  }
+
+}
+
+
+export async function loadIncidentReviewHistory(
+  reportId
+) {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports",
+            reportId,
+            "history"
+          ),
+          orderBy(
+            "createdAt",
+            "asc"
+          )
+        )
+      );
+
+    const history =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      history
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading review history:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load review history."
+
+    };
+
+  }
+
+}
+
+
+/*********************************************************************
+ * Incident Workflow
+ *********************************************************************/
 
 export async function approveIncidentReport({
   reportId,
@@ -786,40 +852,177 @@ export async function returnIncidentReport({
 
 }
 
-export async function loadIncidentSupplements(
-  incidentId
+export async function voidIncidentReport(
+    reportId,
+    reason,
+    currentEmployee
 ) {
+    try {
+
+        await updateDoc(
+            doc(db, "incidentReports", reportId),
+            {
+                status: "voided",
+                voidReason: reason,
+                voidedAt: serverTimestamp(),
+                voidedBy: currentEmployee?.id || "",
+                voidedByName:
+                    currentEmployee?.name ||
+                    "Supervisor"
+            }
+        );
+
+        const historyResult =
+    await addIncidentReviewHistory({
+        reportId,
+        action: "Voided",
+        comments: reason,
+        by:
+            currentEmployee?.name ||
+            currentEmployee?.fullName ||
+            "Supervisor",
+        byId:
+            currentEmployee?.id || ""
+    });
+
+if (!historyResult.success) {
+    return historyResult;
+}
+
+        await addDoc(
+            collection(db, "activityLogs"),
+            {
+                type: "Incident Report",
+                description: "Incident report voided",
+                timestamp: serverTimestamp()
+            }
+        );
+
+        return {
+            success: true
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Error voiding incident:",
+            error
+        );
+
+        return {
+            success: false,
+            message:
+                "Unable to void incident."
+        };
+    }
+}
+
+
+export async function resolveIncidentRecord({
+    id,
+    resolution,
+    resolvedBy
+}) {
+
+    try {
+
+        const incidentRef =
+            doc(
+                db,
+                "incidents",
+                id
+            );
+
+        const snap =
+            await getDoc(
+                incidentRef
+            );
+
+        if (!snap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "This incident no longer exists."
+            };
+
+        }
+
+        await updateDoc(
+            incidentRef,
+            {
+                status: "Resolved",
+
+                resolution:
+                    resolution.trim(),
+
+                resolvedBy,
+
+                resolvedAt:
+                    new Date()
+                        .toISOString()
+            }
+        );
+
+        return {
+            success: true
+        };
+
+    } catch (err) {
+
+        console.error(err);
+
+        return {
+            success: false,
+            message:
+                "Failed to resolve incident."
+        };
+
+    }
+
+}
+
+
+export async function addIncidentReviewHistory({
+  reportId,
+  action,
+  comments = "",
+  by,
+  byId
+}) {
 
   try {
 
-    const snapshot =
-      await getDocs(
-        collection(
-          db,
-          "incidentReports",
-          incidentId,
-          "supplements"
-        )
-      );
+    await addDoc(
+      collection(
+        db,
+        "incidentReports",
+        reportId,
+        "history"
+      ),
+      {
+        action,
+        comments,
 
-    const supplements =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        by,
+
+        byId,
+
+        createdAt:
+          serverTimestamp()
+      }
+    );
 
     return {
 
-      success: true,
-
-      supplements
+      success: true
 
     };
 
   } catch (error) {
 
     console.error(
-      "Error loading supplements:",
+      "Error adding incident history:",
       error
     );
 
@@ -828,7 +1031,7 @@ export async function loadIncidentSupplements(
       success: false,
 
       message:
-        "Unable to load supplements."
+        "Unable to add review history."
 
     };
 
@@ -836,46 +1039,83 @@ export async function loadIncidentSupplements(
 
 }
 
-export async function loadIncidentReviewHistory(
-  reportId
-) {
+
+/*********************************************************************
+ * Number Generation
+ *********************************************************************/
+
+export async function generateIncidentCaseNumber() {
 
   try {
 
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports",
-            reportId,
-            "history"
-          ),
-          orderBy(
-            "createdAt",
-            "asc"
-          )
-        )
+    const currentYear =
+      new Date().getFullYear();
+
+    const counterRef =
+      doc(
+        db,
+        "counters",
+        "incidentCounter"
       );
 
-    const history =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    const snap =
+      await getDoc(counterRef);
+
+    let year =
+      currentYear;
+
+    let currentNumber =
+      1;
+
+    if (snap.exists()) {
+
+      const data =
+        snap.data();
+
+      year =
+        data.year || currentYear;
+
+      currentNumber =
+        data.currentNumber || 1;
+
+      if (year !== currentYear) {
+
+        year =
+          currentYear;
+
+        currentNumber =
+          1;
+
+      }
+
+    }
+
+    const caseNumber =
+      `IC-${year}${String(
+        currentNumber
+      ).padStart(5, "0")}`;
+
+    await setDoc(
+      counterRef,
+      {
+        year,
+        currentNumber:
+          currentNumber + 1
+      }
+    );
 
     return {
 
       success: true,
 
-      history
+      caseNumber
 
     };
 
   } catch (error) {
 
     console.error(
-      "Error loading review history:",
+      "Error generating incident case number:",
       error
     );
 
@@ -884,7 +1124,7 @@ export async function loadIncidentReviewHistory(
       success: false,
 
       message:
-        "Unable to load review history."
+        "Unable to generate incident case number."
 
     };
 
@@ -941,189 +1181,92 @@ export async function getNextSupplementNumber(
 
 }
 
-export async function saveIncidentSupplement({
 
-  incidentId,
-  supplementId,
-  caseNumber,
-  narrative,
-  officerId,
-  officerName
 
-}) {
+/*********************************************************************
+ * Realtime Listeners
+ *********************************************************************/
 
-  try {
+export function startIncidentReportsListener(callback) {
 
-    await setDoc(
-      doc(
+  return onSnapshot(
+    query(
+      collection(
         db,
-        "incidentReports",
-        incidentId,
-        "supplements",
-        supplementId
+        "incidentReports"
       ),
-      {
-        incidentId,
+      orderBy(
+        "createdAt",
+        "desc"
+      )
+    ),
+    snapshot => {
 
-        caseNumber,
+      const incidentReports =
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-        supplementId,
+      callback({
+        success: true,
+        incidentReports
+      });
 
-        reportType:
-          "Supplement",
+    },
+    error => {
 
-        narrative,
-
-        officerId,
-
-        officerName,
-
-        createdAt:
-          serverTimestamp()
-      }
-    );
-
-    return {
-
-      success: true
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Error saving supplement:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Unable to save supplement."
-
-    };
-
-  }
-
-}
-
-export async function loadIncidentDraft(
-  reportId
-) {
-
-  try {
-
-    const snap =
-      await getDoc(
-        doc(
-          db,
-          "incidentReports",
-          reportId
-        )
+      console.error(
+        "Incident Reports listener error:",
+        error
       );
 
-    if (!snap.exists()) {
-
-      return {
-
+      callback({
         success: false,
-
         message:
-          "Draft not found."
-
-      };
+          "Unable to load incident reports."
+      });
 
     }
-
-    return {
-
-      success: true,
-
-      report: {
-
-        id: snap.id,
-
-        ...snap.data()
-
-      }
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Error loading draft:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Unable to load draft."
-
-    };
-
-  }
+  );
 
 }
 
-export async function loadIncidentReviewQueueData() {
+export function startIncidentsListener(callback) {
 
-  try {
+  return onSnapshot(
+    collection(
+      db,
+      "incidents"
+    ),
+    snapshot => {
 
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          where(
-            "status",
-            "==",
-            "submitted"
-          ),
-          orderBy(
-            "submittedAt",
-            "desc"
-          )
-        )
+      const incidents =
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      callback({
+        success: true,
+        incidents
+      });
+
+    },
+    error => {
+
+      console.error(
+        "Incidents listener error:",
+        error
       );
 
-    const incidentReports =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      callback({
+        success: false,
+        message:
+          "Unable to load incidents."
+      });
 
-    return {
-
-      success: true,
-
-      incidentReports
-
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Review Queue Error:",
-      error
-    );
-
-    return {
-
-      success: false,
-
-      message:
-        "Error loading review queue."
-
-    };
-
-  }
+    }
+  );
 
 }

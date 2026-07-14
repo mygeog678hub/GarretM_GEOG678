@@ -69,7 +69,8 @@ import {
     loadIncidentReviewHistory,
      getNextSupplementNumber,
      saveIncidentSupplement,
-     loadIncidentReviewQueueData
+     loadIncidentReviewQueueData,
+     voidIncidentReport
 } from "./services/incident-service.js";
 
 
@@ -17062,53 +17063,19 @@ window.voidIncident =
         return;
       }
 
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          reportId
-        ),
-        {
-          status: "voided",
-
-          voidReason:
-            reason,
-
-          voidedAt:
-            serverTimestamp(),
-
-          voidedBy:
-            currentEmployee?.id ||
-            "",
-
-          voidedByName:
-            currentEmployee?.name ||
-            "Supervisor"
-        }
-      );
-
-      await addReviewHistory(
+      const result =
+    await voidIncidentReport(
         reportId,
-        "Voided",
-        reason
-      );
+        reason,
+        currentEmployee
+    );
 
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type:
-            "Incident Report",
+if (!result.success) {
 
-          description:
-            `Incident report voided`,
-
-          timestamp:
-            serverTimestamp()
-        }
-      );
+    throw new Error(
+        result.message
+    );
+}
 
       alert(
         "Incident has been voided."
