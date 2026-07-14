@@ -60,7 +60,16 @@ import {
     loadIncidentAttachments,
     saveIncidentDraftRecord,
     generateIncidentCaseNumber,
-    startIncidentReportsListener
+    startIncidentReportsListener,
+    startIncidentsListener,
+    addIncidentReviewHistory,
+    approveIncidentReport,
+    returnIncidentReport,
+    loadIncidentSupplements,
+    loadIncidentReviewHistory,
+     getNextSupplementNumber,
+     saveIncidentSupplement,
+     loadIncidentReviewQueueData
 } from "./services/incident-service.js";
 
 
@@ -266,27 +275,23 @@ function getStartOfWeek(date) {
 
 let incidents = [];
 
-onSnapshot(
-  collection(
-    db,
-    "incidents"
-  ),
-  snapshot => {
+startIncidentsListener(result => {
 
-    incidents =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
+  if (!result.success) {
 
-    refresh();
-    updateMap();
+    console.error(result.message);
+
+    return;
 
   }
-);
 
+  incidents =
+    result.incidents;
+
+  refresh();
+  updateMap();
+
+});
 startIncidentReportsListener(result => {
 
   if (!result.success) {
@@ -1321,36 +1326,34 @@ window.addReviewHistory =
     action,
     comments = ""
   ) {
-    try {
-      await addDoc(
-        collection(
-          db,
-          "incidentReports",
-          reportId,
-          "history"
-        ),
-        {
-          action,
-          comments,
 
-          by:
-            currentEmployee?.name ||
-            currentEmployee?.fullName ||
-            "Unknown User",
+    const result =
+      await addIncidentReviewHistory({
 
-          byId:
-            currentEmployee?.id || "",
+        reportId,
 
-          createdAt:
-            serverTimestamp()
-        }
-      );
-    } catch (err) {
+        action,
+
+        comments,
+
+        by:
+          currentEmployee?.name ||
+          currentEmployee?.fullName ||
+          "Unknown User",
+
+        byId:
+          currentEmployee?.id || ""
+
+      });
+
+    if (!result.success) {
+
       console.error(
-        "Error adding history:",
-        err
+        result.message
       );
+
     }
+
   };
 // ================= ADD SITE -GEOCODING =================
 async function addSite() {
@@ -11877,25 +11880,24 @@ window.viewReviewHistory =
 
     try {
 
-      const q = query(
-        collection(
-          db,
-          "incidentReports",
-          reportId,
-          "history"
-        ),
-        orderBy(
-          "createdAt",
-          "asc"
-        )
-      );
+      const result =
+  await loadIncidentReviewHistory(
+    reportId
+  );
 
-      const snap =
-        await getDocs(q);
+if (!result.success) {
+
+  console.error(
+    result.message
+  );
+
+  return;
+
+}
 
       let html = "";
 
-      if (snap.empty) {
+      if (!result.history.length) {
 
         html = `
         <p>
@@ -11905,10 +11907,7 @@ window.viewReviewHistory =
 
       } else {
 
-        snap.forEach(docSnap => {
-
-          const item =
-            docSnap.data();
+        result.history.forEach(item => {
 
           const date =
             item.createdAt
@@ -15785,61 +15784,45 @@ window.loadSupplements =
       "<p>Loading supplements...</p>";
 
     try {
-      const snapshot =
-        await getDocs(
-          collection(
-            db,
-            "incidentReports",
-            incidentId,
-            "supplements"
-          )
-        );
+     const result =
+  await loadIncidentSupplements(
+    incidentId
+  );
 
-      if (snapshot.empty) {
-        container.innerHTML =
-          "<p>No supplemental reports.</p>";
-        return;
-      }
+if (!result.success) {
 
-      container.innerHTML = "";
+  container.innerHTML =
+    `<p>${result.message}</p>`;
 
-      snapshot.forEach(
-        docSnap => {
-          const s =
-            docSnap.data();
+  return;
 
-          const created =
-            s.createdAt?.toDate
-              ? s.createdAt
-                .toDate()
-                .toLocaleString()
-              : "Unknown Date";
+}
 
-          container.innerHTML += `
-  <div
-    class="supplement-card"
-    onclick="
-      viewSupplement(
-        '${incidentId}',
-        '${s.supplementId}'
-      )
-    "
-    style="
-      cursor:pointer;
-    "
-  >
-    <strong>
-      Supplement ${s.supplementId}
-    </strong>
-    <br>
-    Officer:
-    ${s.officerName}
-    <br>
-    ${created}
-  </div>
-`;
-        }
-      );
+if (!result.supplements.length) {
+
+  container.innerHTML =
+    "<p>No supplemental reports.</p>";
+
+  return;
+
+}
+
+container.innerHTML = "";
+
+result.supplements.forEach(s => {
+
+    const created =
+      s.createdAt?.toDate
+        ? s.createdAt
+            .toDate()
+            .toLocaleString()
+        : "Unknown Date";
+
+    container.innerHTML += `
+      ...
+    `;
+
+});
     }
     catch (err) {
       console.error(
@@ -15946,23 +15929,24 @@ window.getNextSupplementNumber =
   async function (
     incidentId
   ) {
-    const snapshot =
-      await getDocs(
-        collection(
-          db,
-          "incidentReports",
-          incidentId,
-          "supplements"
-        )
-      );
-    console.log(
-      "Supplement count:",
-      snapshot.size
-    );
 
-    return String(
-      snapshot.size + 1
-    ).padStart(3, "0");
+    const result =
+      await getNextSupplementNumber(
+        incidentId
+      );
+
+    if (!result.success) {
+
+      console.error(
+        result.message
+      );
+
+      return "001";
+
+    }
+
+    return result.supplementNumber;
+
   };
 
 window.saveSupplement =
@@ -15983,30 +15967,32 @@ window.saveSupplement =
         "supplementNarrative"
       ).value;
 
-    await setDoc(
-      doc(
-        db,
-        "incidentReports",
-        incidentId,
-        "supplements",
-        supplementId
-      ),
-      {
-        incidentId,
-        caseNumber,
-        supplementId,
-        reportType:
-          "Supplement",
-        narrative,
-        officerId:
-          currentOfficer.id,
-        officerName:
-          currentOfficer.name,
-        createdAt:
-          serverTimestamp()
-      }
-    );
+   const result =
+  await saveIncidentSupplement({
 
+    incidentId,
+
+    supplementId,
+
+    caseNumber,
+
+    narrative,
+
+    officerId:
+      currentOfficer.id,
+
+    officerName:
+      currentOfficer.name
+
+  });
+
+if (!result.success) {
+
+  alert(result.message);
+
+  return;
+
+}
     await addReviewHistory(
       incidentId,
       "Supplement Added",
@@ -16173,24 +16159,23 @@ window.editDraft =
 
     try {
 
-      const snap =
-        await getDoc(
-          doc(
-            db,
-            "incidentReports",
-            reportId
-          )
-        );
+      const result =
+  await loadIncidentDraft(
+    reportId
+  );
 
-      if (!snap.exists()) {
-        alert(
-          "Draft not found."
-        );
-        return;
-      }
+if (!result.success) {
 
-      const report =
-        snap.data();
+  alert(
+    result.message
+  );
+
+  return;
+
+}
+
+const report =
+  result.report;
 
       document.getElementById(
         "editingIncidentId"
@@ -16465,39 +16450,30 @@ window.loadIncidentReviewQueue =
 
     try {
 
-      const snapshot =
-        await getDocs(
-          query(
-            collection(
-              db,
-              "incidentReports"
-            ),
-            where(
-              "status",
-              "==",
-              "submitted"
-            ),
-            orderBy(
-              "submittedAt",
-              "desc"
-            )
-          )
-        );
+      const result =
+  await loadIncidentReviewQueueData();
 
-      if (snapshot.empty) {
+if (!result.success) {
 
-        container.innerHTML =
-          "<p>No reports awaiting review.</p>";
+  container.innerHTML =
+    `<p>${result.message}</p>`;
 
-        return;
-      }
+  return;
 
-      container.innerHTML =
-        snapshot.docs
-          .map(doc => {
+}
 
-            const incident =
-              doc.data();
+if (!result.incidentReports.length) {
+
+  container.innerHTML =
+    "<p>No reports awaiting review.</p>";
+
+  return;
+
+}
+
+container.innerHTML =
+  result.incidentReports
+    .map(incident => {
 
             return `
 
@@ -16537,7 +16513,7 @@ window.loadIncidentReviewQueue =
               <br><br>
 
               <button
-                onclick="viewIncident('${doc.id}')"
+                onclick="viewIncident('${incident.id}')"
               >
                 View
               </button>
@@ -16563,61 +16539,49 @@ window.loadIncidentReviewQueue =
 
 window.approveIncident =
   async function (id) {
-    try {
 
-      if (
-        !confirm(
-          "Approve this report?"
-        )
-      ) {
-        return;
-      }
-
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          id
-        ),
-        {
-          status:
-            "approved",
-
-          approvedAt:
-            serverTimestamp(),
-
-          approvedBy:
-            currentEmployee.id,
-
-          approvedByName:
-            currentEmployee.name
-        }
-      );
-
-      await addReviewHistory(
-        id,
-        "approved"
-      );
-
-      alert(
-        "Report approved."
-      );
-
-      closeIncidentModal();
-
-      await loadIncidentReviewQueue();
-
-    } catch (error) {
-
-      console.error(
-        "Approve Error:",
-        error
-      );
-
-      alert(
-        "Unable to approve report."
-      );
+    if (
+      !confirm(
+        "Approve this report?"
+      )
+    ) {
+      return;
     }
+
+    const result =
+      await approveIncidentReport({
+
+        reportId: id,
+
+        approvedBy:
+          currentEmployee.id,
+
+        approvedByName:
+          currentEmployee.name
+
+      });
+
+    if (!result.success) {
+
+      alert(result.message);
+
+      return;
+
+    }
+
+    await addReviewHistory(
+      id,
+      "approved"
+    );
+
+    alert(
+      "Report approved."
+    );
+
+    closeIncidentModal();
+
+    await loadIncidentReviewQueue();
+
   };
 
 window.returnIncident =
@@ -16648,40 +16612,38 @@ window.returnIncident =
         return;
       }
 
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          id
-        ),
-        {
-          status: "returned",
-          supervisorComments: comments,
-          returnedAt: serverTimestamp(),
-          returnedBy:
-            currentEmployee.id,
-          returnedByName:
-            currentEmployee.name
-        }
-      );
+      const result =
+  await returnIncidentReport({
 
-      await addReviewHistory(
-        id,
-        "returned",
-        comments
-      );
+    reportId: id,
 
-      const reportSnap =
-        await getDoc(
-          doc(
-            db,
-            "incidentReports",
-            id
-          )
-        );
+    supervisorComments:
+      comments,
 
-      const report =
-        reportSnap.data();
+    returnedBy:
+      currentEmployee.id,
+
+    returnedByName:
+      currentEmployee.name
+
+  });
+
+if (!result.success) {
+
+  alert(result.message);
+
+  return;
+
+}
+
+await addReviewHistory(
+  id,
+  "returned",
+  comments
+);
+
+const report =
+  result.report;
 
       await addDoc(
         collection(
@@ -16772,30 +16734,37 @@ window.submitReturnReport =
 
     try {
 
-      await updateDoc(
-        doc(
-          db,
-          "incidentReports",
-          returningIncidentId
-        ),
-        {
-          status: "returned",
-          returnedAt:
-            serverTimestamp(),
-          returnComments: comment,
-          returnedBy:
-            currentEmployee.id,
-          returnedByName:
-            currentOfficer?.name ||
-            auth.currentUser.displayName ||
-            "Supervisor"
-        }
-      );
+      const result =
+  await returnIncidentReport({
 
-      await addReviewHistory(
-        returningIncidentId,
-        "Resubmitted"
-      );
+    reportId:
+      returningIncidentId,
+
+    comments:
+      comment,
+
+    returnedBy:
+      currentEmployee.id,
+
+    returnedByName:
+      currentOfficer?.name ||
+      auth.currentUser.displayName ||
+      "Supervisor"
+
+  });
+
+if (!result.success) {
+
+  alert(result.message);
+
+  return;
+
+}
+     await addReviewHistory(
+  returningIncidentId,
+  "Returned for corrections",
+  comment
+);
 
       await addDoc(
         collection(

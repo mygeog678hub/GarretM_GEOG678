@@ -562,3 +562,568 @@ export function startIncidentReportsListener(callback) {
   );
 
 }
+
+export function startIncidentsListener(callback) {
+
+  return onSnapshot(
+    collection(
+      db,
+      "incidents"
+    ),
+    snapshot => {
+
+      const incidents =
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      callback({
+        success: true,
+        incidents
+      });
+
+    },
+    error => {
+
+      console.error(
+        "Incidents listener error:",
+        error
+      );
+
+      callback({
+        success: false,
+        message:
+          "Unable to load incidents."
+      });
+
+    }
+  );
+
+}
+
+export async function addIncidentReviewHistory({
+  reportId,
+  action,
+  comments = "",
+  by,
+  byId
+}) {
+
+  try {
+
+    await addDoc(
+      collection(
+        db,
+        "incidentReports",
+        reportId,
+        "history"
+      ),
+      {
+        action,
+        comments,
+
+        by,
+
+        byId,
+
+        createdAt:
+          serverTimestamp()
+      }
+    );
+
+    return {
+
+      success: true
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error adding incident history:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to add review history."
+
+    };
+
+  }
+
+}
+
+export async function approveIncidentReport({
+  reportId,
+  approvedBy,
+  approvedByName
+}) {
+
+  try {
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        reportId
+      ),
+      {
+        status: "approved",
+
+        approvedAt:
+          serverTimestamp(),
+
+        approvedBy,
+
+        approvedByName
+      }
+    );
+
+    return {
+
+      success: true
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Approve Incident Error:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to approve report."
+
+    };
+
+  }
+
+}
+
+export async function returnIncidentReport({
+
+    reportId,
+
+    comments,
+
+    returnedBy,
+
+    returnedByName
+
+}){
+
+  try {
+
+    await updateDoc(
+      doc(
+        db,
+        "incidentReports",
+        reportId
+      ),
+     {
+    status: "returned",
+
+    supervisorComments:
+        comments,
+
+    returnComments:
+        comments,
+
+    returnedAt:
+        serverTimestamp(),
+
+    returnedBy,
+
+    returnedByName
+}
+    );
+
+    const reportSnap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          reportId
+        )
+      );
+
+    return {
+
+      success: true,
+
+      report:
+        reportSnap.data()
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Return Incident Error:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to return report."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentSupplements(
+  incidentId
+) {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements"
+        )
+      );
+
+    const supplements =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      supplements
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading supplements:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load supplements."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentReviewHistory(
+  reportId
+) {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports",
+            reportId,
+            "history"
+          ),
+          orderBy(
+            "createdAt",
+            "asc"
+          )
+        )
+      );
+
+    const history =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      history
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading review history:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load review history."
+
+    };
+
+  }
+
+}
+
+export async function getNextSupplementNumber(
+  incidentId
+) {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        collection(
+          db,
+          "incidentReports",
+          incidentId,
+          "supplements"
+        )
+      );
+
+    const supplementNumber =
+      String(
+        snapshot.size + 1
+      ).padStart(3, "0");
+
+    return {
+
+      success: true,
+
+      supplementNumber
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error generating supplement number:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to determine the next supplement number."
+
+    };
+
+  }
+
+}
+
+export async function saveIncidentSupplement({
+
+  incidentId,
+  supplementId,
+  caseNumber,
+  narrative,
+  officerId,
+  officerName
+
+}) {
+
+  try {
+
+    await setDoc(
+      doc(
+        db,
+        "incidentReports",
+        incidentId,
+        "supplements",
+        supplementId
+      ),
+      {
+        incidentId,
+
+        caseNumber,
+
+        supplementId,
+
+        reportType:
+          "Supplement",
+
+        narrative,
+
+        officerId,
+
+        officerName,
+
+        createdAt:
+          serverTimestamp()
+      }
+    );
+
+    return {
+
+      success: true
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error saving supplement:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to save supplement."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentDraft(
+  reportId
+) {
+
+  try {
+
+    const snap =
+      await getDoc(
+        doc(
+          db,
+          "incidentReports",
+          reportId
+        )
+      );
+
+    if (!snap.exists()) {
+
+      return {
+
+        success: false,
+
+        message:
+          "Draft not found."
+
+      };
+
+    }
+
+    return {
+
+      success: true,
+
+      report: {
+
+        id: snap.id,
+
+        ...snap.data()
+
+      }
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Error loading draft:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Unable to load draft."
+
+    };
+
+  }
+
+}
+
+export async function loadIncidentReviewQueueData() {
+
+  try {
+
+    const snapshot =
+      await getDocs(
+        query(
+          collection(
+            db,
+            "incidentReports"
+          ),
+          where(
+            "status",
+            "==",
+            "submitted"
+          ),
+          orderBy(
+            "submittedAt",
+            "desc"
+          )
+        )
+      );
+
+    const incidentReports =
+      snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+    return {
+
+      success: true,
+
+      incidentReports
+
+    };
+
+  } catch (error) {
+
+    console.error(
+      "Review Queue Error:",
+      error
+    );
+
+    return {
+
+      success: false,
+
+      message:
+        "Error loading review queue."
+
+    };
+
+  }
+
+}
