@@ -59,7 +59,8 @@ import {
     saveIncidentAttachments,
     loadIncidentAttachments,
     saveIncidentDraftRecord,
-    generateIncidentCaseNumber
+    generateIncidentCaseNumber,
+    startIncidentReportsListener
 } from "./services/incident-service.js";
 
 
@@ -286,24 +287,22 @@ onSnapshot(
   }
 );
 
-onSnapshot(
-  collection(
-    db,
-    "incidentReports"
-  ),
-  snapshot => {
+startIncidentReportsListener(result => {
 
-    incidentReports =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
+  if (!result.success) {
 
-    refresh();
+    console.error(result.message);
+
+    return;
+
   }
-);
+
+  incidentReports =
+    result.incidentReports;
+
+  refresh();
+
+});
 
 // ================= MAP =================
 
@@ -11261,24 +11260,9 @@ if (!incidentReports.length) {
   return;
 
 }
-
-    if (
-      snapshot.empty
-    ) {
-
-      container.innerHTML =
-        "<p>No incident reports found.</p>";
-
-      return;
-
-    }
-
     container.innerHTML =
-      snapshot.docs
-        .map(doc => {
-
-          const incident =
-            doc.data();
+  incidentReports
+       .map(incident => {
 
           const created =
             incident.createdAt?.toDate
@@ -11335,7 +11319,7 @@ if (!incidentReports.length) {
           <br><br>
 
 <button
-  onclick="viewIncident('${doc.id}')"
+  onclick="viewIncident('${incident.id}')"
 >
   View
 </button>

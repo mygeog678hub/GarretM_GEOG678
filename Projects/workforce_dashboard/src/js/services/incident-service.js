@@ -10,7 +10,9 @@ import {
     where,
     updateDoc,
     doc,
-    serverTimestamp
+    serverTimestamp,
+    onSnapshot,
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export async function createIncidentAlert({
@@ -513,5 +515,50 @@ export async function generateIncidentCaseNumber() {
     };
 
   }
+
+}
+
+export function startIncidentReportsListener(callback) {
+
+  return onSnapshot(
+    query(
+      collection(
+        db,
+        "incidentReports"
+      ),
+      orderBy(
+        "createdAt",
+        "desc"
+      )
+    ),
+    snapshot => {
+
+      const incidentReports =
+        snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+      callback({
+        success: true,
+        incidentReports
+      });
+
+    },
+    error => {
+
+      console.error(
+        "Incident Reports listener error:",
+        error
+      );
+
+      callback({
+        success: false,
+        message:
+          "Unable to load incident reports."
+      });
+
+    }
+  );
 
 }
