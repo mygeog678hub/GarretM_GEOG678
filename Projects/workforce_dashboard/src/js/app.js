@@ -67,11 +67,20 @@ import {
     returnIncidentReport,
     loadIncidentSupplements,
     loadIncidentReviewHistory,
-     getNextSupplementNumber,
-     saveIncidentSupplement,
-     loadIncidentReviewQueueData,
-     voidIncidentReport
+    getNextSupplementNumber,
+    saveIncidentSupplement,
+    loadIncidentReviewQueueData,
+    voidIncidentReport      
 } from "./services/incident-service.js";
+
+import {
+    startShiftListener,
+    startOpenShiftsListener,
+    startClaimRequestsListener,
+    startOfficerOpenShiftsListener,
+    startAssignmentListener,
+    deleteScheduledShift
+} from "./services/scheduling-service.js";
 
 
 // ================= AUTH =================
@@ -701,20 +710,6 @@ onSnapshot(
 }
 
 
-function startAssignmentListener() {
-onSnapshot(collection(db, "assignments"), snap => {
-  assignments = snap.docs
-    .map(d => ({
-      id: d.id,
-      ...d.data()
-    }))
-    .filter(a => !a.archived);
-  refresh();
-  updateDailySummary();
-});
-}
-
-
 function startAssetListener() {
 onSnapshot(collection(db, "assets"), snap => {
   assets = snap.docs.map(d => ({
@@ -820,59 +815,7 @@ onSnapshot(
 }
 
 
-function startShiftListener() {
-onSnapshot(
-  collection(db, "shifts"),
 
-  snap => {
-
-    console.log(
-      "SHIFTS SNAPSHOT FIRED"
-    );
-
-    shifts =
-      snap.docs.map(
-        d => ({
-          id: d.id,
-          ...d.data()
-        })
-      );
-    
-    console.log(
-      "SHIFTS LOADED:",
-      shifts.length
-    );
-
-    renderSchedules();
-
-    renderWeeklyScheduleBoard();
-
-    renderMySchedule();
-
-    renderMySite();
-
-    renderMyAttendanceStatus();
-    loadCompanyProfile();
-    loadOpenShifts();
-    loadOfficerOpenShifts();
-    loadClaimRequests();
-    document
-  .getElementById("menuToggleBtn")
-  ?.addEventListener("click", toggleMobileMenu);
-
-  },
-
-  error => {
-
-    console.error(
-      "SHIFTS LISTENER ERROR:",
-      error
-    );
-
-  }
-
-);
-}
 
 
 function startTimeEntryListener() {
@@ -947,13 +890,104 @@ async function bootstrapApplication() {
   startEmployeeListener();
   startPatrolTemplateListener();
   startSiteListener();
-  startAssignmentListener();
+  startAssignmentListener(result => {
+
+    if (!result.success) {
+
+        console.error(result.message);
+        return;
+
+    }
+
+    assignments =
+        result.assignments;
+
+    refresh();
+
+    updateDailySummary();
+
+});
   startAssetListener();
   startVehicleListener();
   startActivityLogListener();
   startActivityReportListener();
   startSiteNoteListener();
-  startShiftListener();
+  startShiftListener(result => {
+
+    if (!result.success) {
+
+        console.error(result.message);
+        return;
+
+    }
+
+    shifts = result.shifts;
+
+    renderSchedules();
+
+    renderWeeklyScheduleBoard();
+
+    renderMySchedule();
+
+    renderMySite();
+
+    renderMyAttendanceStatus();
+
+    loadCompanyProfile();
+
+    startOpenShiftsListener(result => {
+
+    if (!result.success) {
+
+        console.error(result.message);
+        return;
+
+    }
+
+    openShifts = result.openShifts;
+
+    console.log(
+        "Open Shifts:",
+        openShifts
+    );
+
+    renderOpenShifts();
+
+});
+
+    startOfficerOpenShiftsListener(result => {
+
+    if (!result.success) {
+
+        console.error(result.message);
+        return;
+
+    }
+
+    officerOpenShifts =
+        result.officerOpenShifts;
+
+    renderOfficerOpenShifts();
+
+});
+
+    startClaimRequestsListener(result => {
+
+    if (!result.success) {
+
+        console.error(result.message);
+        return;
+
+    }
+
+    claimedShifts =
+        result.claimedShifts;
+
+    renderClaimRequests();
+
+});
+
+});
   startTimeEntryListener();
   startCheckpointListener();
 
