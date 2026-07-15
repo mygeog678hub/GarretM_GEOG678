@@ -80,7 +80,8 @@ import {
     startOfficerOpenShiftsListener,
     startAssignmentListener,
     deleteScheduledShift,
-    updateScheduledShift
+    updateScheduledShift,
+    createScheduledShift
 } from "./services/scheduling-service.js";
 
 import {
@@ -1008,20 +1009,7 @@ async function bootstrapApplication() {
 
 }
 
-function formatLocalDateTime(
-  date
-) {
-  const pad = n =>
-    String(n).padStart(2, "0");
 
-  return (
-    `${date.getFullYear()}-` +
-    `${pad(date.getMonth() + 1)}-` +
-    `${pad(date.getDate())}T` +
-    `${pad(date.getHours())}:` +
-    `${pad(date.getMinutes())}`
-  );
-}
 
 window.addIncidentVehicle =
   function () {
@@ -6925,390 +6913,6 @@ const site = siteDoc.data();
 
 }
 
-async function createScheduledShift(data) {
-
-  const {
-
-    employeeId,
-    siteId,
-
-    startTime,
-    endTime,
-
-    classification,
-    shiftPay,
-
-    repeatEnabled,
-    repeatDays,
-    repeatEndDate
-
-} = data;
-
-    const employee =
-    employees.find(
-      e => e.id === employeeId
-    ); 
-
-     const site =
-    sites.find(
-      s => s.id === siteId
-    );
-
-
-if (!employee) {
-
-    return {
-        success: false,
-        message: "Employee not found."
-    };
-
-}
-
-if (!site) {
-
-    return {
-        success: false,
-        message: "Site not found."
-    };
-
-}
-    
-
-  if (
-  new Date(endTime) <=
-  new Date(startTime)
-) {
-
- return {
-    success: false,
-    message: "Shift end time must be after the start time."
-};
-
-  return;
-
-} 
-
-let generatedDates = [];
-
-if (repeatEnabled) {
-
-    generatedDates = generateRecurringDates(
-        startTime,
-        repeatDays,
-        repeatEndDate
-    );
-
-}
-
-  let mileageDistance = 0;
-  let mileageIncentive = false;
-  let mileageStatus =
-    "Coordinates Missing";
-
-  const mileageThreshold =
-    companyProfile
-      ?.mileageThreshold || 25;
-
-  if (
-    employee?.homeLat != null &&
-    employee?.homeLng != null &&
-    site?.lat != null &&
-    site?.lng != null
-  ) {
-    const distanceMeters =
-      calculateDistance(
-        employee.homeLat,
-        employee.homeLng,
-        site.lat,
-        site.lng
-      );
-
-    mileageDistance =
-      Number(
-        (
-          distanceMeters *
-          0.000621371
-        ).toFixed(1)
-      );
-
-    mileageIncentive =
-      mileageDistance >
-      mileageThreshold;
-
-    mileageStatus =
-      "Calculated";
-
-    console.log(
-      "Mileage calculated:",
-      {
-        employee:
-          employee.name,
-        site:
-          site.name,
-        miles:
-          mileageDistance,
-        incentive:
-          mileageIncentive
-      }
-    );
-
-  } else {
-
-    console.warn(
-      "Mileage calculation skipped.",
-      {
-        employee:
-          employee?.name,
-        employeeCoords: {
-          lat:
-            employee?.homeLat,
-          lng:
-            employee?.homeLng
-        },
-        site:
-          site?.name,
-        siteCoords: {
-          lat:
-            site?.lat,
-          lng:
-            site?.lng
-        }
-      }
-    );
-
-    mileageDistance = null;
-    mileageIncentive = false;
-    mileageStatus = "Unavailable";
-  }
-
- const duplicate  =
-    shifts.some(
-      shift =>
-
-        shift.employeeId === employeeId &&
-
-        shift.siteId === siteId &&
-
-        shift.startTime === startTime &&
-
-        shift.endTime === endTime
-    );
-
-  if (
-  !repeatEnabled &&
-  duplicate
-) {
-
- return {
-    success: false,
-    message: "This shift already exists."
-};
-
-  return;
-
-}
-
-  const conflict =
-    shifts.some(
-      shift =>
-
-        shift.employeeId ===
-        employeeId &&
-
-        timesOverlap(
-          startTime,
-          endTime,
-          shift.startTime,
-          shift.endTime
-        )
-    );
-
- if (
-  !repeatEnabled &&
-  conflict
-) {
-
- return {
-    success: false,
-    message: "Officer already scheduled during this time."
-};
-
-  return;
-
-} 
-
-  const shiftData = {
-
-    employeeId,
-
-    employeeName:
-      employee.name,
-
-    licenseLevel:
-      employee.licenseLevel || "",
-
-    siteId,
-
-    siteName:
-      site.name,
-
-    siteCategory:
-      site.siteCategory || "other",
-
-    classification,
-
-    shiftPay,
-
-    mileageDistance,
-    mileageThreshold,
-    mileageIncentive,
-    mileageStatus,
-
-    repeatEnabled,
-    repeatDays,
-    repeatEndDate,
-
-    status:
-      "Scheduled",
-
-    createdAt:
-      new Date().toISOString()
-
-  };
-
-  console.log("Saving shift:", {
-  startTime,
-  endTime
-});
-
-let createdShiftId = null;
-
-  if (!repeatEnabled) {
-
-    const shiftRef = await addDoc(
-  collection(db, "shifts"),
-  {
-    ...shiftData,
-    startTime,
-    endTime
-  }
-);
-
-createdShiftId = shiftRef.id;
-
-    alert(
-      "Shift created successfully."
-    );
-
-
-  } else {
-
-    const seriesId =
-      crypto.randomUUID();
-
-    console.log(
-      `Creating ${generatedDates.length} recurring shifts`
-    );
-
-    for (const date of generatedDates) {
-
-      const newStart =
-        applyTimeToDate(
-          startTime,
-          date
-        );
-
-      const newEnd =
-        applyTimeToDate(
-          endTime,
-          date
-        );
-
-        const occurrenceStart =
-  formatLocalDateTime(
-    newStart
-  );
-
-const occurrenceEnd =
-  formatLocalDateTime(
-    newEnd
-  ); 
-
-  const duplicate =
-  shifts.some(
-    shift =>
-
-      shift.employeeId ===
-        employeeId &&
-
-      shift.siteId ===
-        siteId &&
-
-      shift.startTime ===
-        occurrenceStart &&
-
-      shift.endTime ===
-        occurrenceEnd
-  );
-
-if (duplicate) {  
-
-  continue;
-
-}
-
-const conflict =
-  shifts.some(
-    shift =>
-
-      shift.employeeId ===
-        employeeId &&
-
-      timesOverlap(
-        occurrenceStart,
-        occurrenceEnd,
-        shift.startTime,
-        shift.endTime
-      )
-  );
-
-if (conflict) {  
-
-  continue;
-
-}
-      
-      const shiftRef = await addDoc(
-    collection(db, "shifts"),
-    {
-        ...shiftData,
-
-        startTime:
-            occurrenceStart,
-
-        endTime:
-            occurrenceEnd,
-
-        seriesId
-    }
-); 
-
-if (!createdShiftId) {
-
-    createdShiftId = shiftRef.id;
-
-}
-
-    }
-
-  }
-return {
-    success: true,
-    shiftId: createdShiftId
-};
-
-}
-
 async function createShift() {
 
   const scheduleType =
@@ -7408,9 +7012,13 @@ async function createShift() {
 };
 
 const result =
-    await createScheduledShift(
-        shiftData
-    );
+    await createScheduledShift({
+        data: shiftData,
+        employees,
+        sites,
+        shifts,
+        companyProfile
+    });
 
 if (!result || !result.success) {
 
@@ -8045,34 +7653,7 @@ function nextWeek() {
   renderWeeklyScheduleBoard();
 }
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
 
-  const R = 6371000; // meters
-
-  const dLat =
-    (lat2 - lat1) * Math.PI / 180;
-
-  const dLon =
-    (lon2 - lon1) * Math.PI / 180;
-
-  const a =
-    Math.sin(dLat / 2) *
-    Math.sin(dLat / 2) +
-
-    Math.cos(lat1 * Math.PI / 180) *
-    Math.cos(lat2 * Math.PI / 180) *
-
-    Math.sin(dLon / 2) *
-    Math.sin(dLon / 2);
-
-  const c =
-    2 * Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1 - a)
-    );
-
-  return R * c;
-}
 
 async function clockIn() {
 
@@ -17843,65 +17424,7 @@ function getRepeatDays() {
   ).map(cb => Number(cb.value));
 }
 
-function generateRecurringDates(
-  startTime,
-  repeatDays,
-  repeatEndDate
-) {
 
-  const dates = [];
-
-  const start =
-    new Date(startTime);
-
-  const end =
-    new Date(repeatEndDate);
-
-  const current =
-    new Date(start);
-
-  while (current <= end) {
-
-    if (
-      repeatDays.includes(
-        current.getDay()
-      )
-    ) {
-
-      dates.push(
-        new Date(current)
-      );
-
-    }
-
-    current.setDate(
-      current.getDate() + 1
-    );
-  }
-
-  return dates;
-
-}
-
-function applyTimeToDate(
-  templateDateTime,
-  targetDate
-) {
-  const template =
-    new Date(templateDateTime);
-
-  const result =
-    new Date(targetDate);
-
-  result.setHours(
-    template.getHours(),
-    template.getMinutes(),
-    template.getSeconds(),
-    template.getMilliseconds()
-  );
-
-  return result;
-}
 
 async function confirmDeleteShift() {
   console.log("Reached confirmDeleteShift section");
@@ -19011,6 +18534,22 @@ function toggleMobileMenu() {
 
 window.loadKnowledgeArticle =
 function (article) {
+
+  document
+        .querySelectorAll(".knowledge-nav")
+        .forEach(button => {
+
+            button.classList.remove("active");
+
+        });
+
+   const activeButton = document.querySelector(
+    `.knowledge-nav[data-article="${article}"]`
+);
+
+if (activeButton) {
+    activeButton.classList.add("active");
+}
 
     const content =
         document.getElementById(
