@@ -142,7 +142,15 @@
             v5.5
           </span>
 
+          
+
         </div>
+
+        <button
+    id="knowledgeCenterBtn"
+    class="secondary-button">
+    📘 Knowledge Center
+</button>
 
       </div>
 
@@ -172,6 +180,8 @@
   </span>
 
 </div>
+
+
 
   <div
   id="navCard"
@@ -318,6 +328,171 @@
     <div id="mileageReportTable"></div>
 
   </div>
+</div>
+
+<div
+    id="knowledgeCenterPage"
+    class="page"
+    style="display:none;">
+
+    <div class="knowledge-container">
+
+    <div class="knowledge-sidebar">
+
+        <h2>📘 WorkForge Knowledge Center</h2>
+
+        <input
+            type="text"
+            id="knowledgeSearch"
+            placeholder="Search..." />
+
+          <button
+              class="knowledge-nav"
+              onclick="loadKnowledgeArticle('home')">
+
+              🏠 Home
+
+          </button>
+
+          <button
+              class="knowledge-nav"
+              onclick="loadKnowledgeArticle('whats-new')">
+
+              ✨ What's New
+
+          </button>
+
+        <button class="knowledge-nav">
+            Dashboard
+        </button>
+
+        <button class="knowledge-nav">
+            Scheduling
+        </button>
+
+        <button class="knowledge-nav">
+            Patrol Operations
+        </button>
+
+        <button class="knowledge-nav">
+            Incident Management
+        </button>
+
+        <button class="knowledge-nav">
+            Marketplace
+        </button>
+
+        <button class="knowledge-nav">
+            Client Portal
+        </button>
+
+        <button class="knowledge-nav">
+            FAQ
+        </button>
+
+        <button
+    class="knowledge-nav"
+    onclick="loadKnowledgeArticle('about')">
+
+    ℹ️ About WorkForge
+
+</button>
+
+    </div>
+
+    <div
+        id="knowledgeContent"
+        class="knowledge-content">
+
+        <h1>Welcome to the WorkForge Knowledge Center</h1>
+
+<div class="version-badge">
+    Version 5.5 • Release Candidate 3
+</div>
+
+<p class="knowledge-intro">
+
+    Welcome to the WorkForge Knowledge Center.
+
+    This resource provides operational guidance,
+    feature documentation, release information,
+    and best practices for using the WorkForge
+    Security Management Platform.
+
+</p>
+
+<h2>Platform Overview</h2>
+
+<div class="knowledge-grid">
+
+    <div class="kpi-card">
+        <div class="kpi-icon">📅</div>
+        <h3>Scheduling</h3>
+        <p>
+            Workforce scheduling, recurring shifts,
+            marketplace publishing and conflict
+            detection.
+        </p>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon">🚔</div>
+        <h3>Patrol Operations</h3>
+        <p>
+            Patrol templates, checkpoint execution,
+            analytics and officer accountability.
+        </p>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon">📋</div>
+        <h3>Incident Management</h3>
+        <p>
+            Case management, investigations,
+            supervisor review and reporting.
+        </p>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon">🏢</div>
+        <h3>Client Portal</h3>
+        <p>
+            Live property status, patrol summaries,
+            officer visibility and incidents.
+        </p>
+    </div>
+
+</div>
+
+<hr>
+
+<h2>Current Platform Status</h2>
+
+<p>
+
+✅ Identity Platform Complete<br>
+✅ Scheduling Engine Complete<br>
+✅ Patrol Management Complete<br>
+✅ Incident Management Complete<br>
+✅ Client Portal Complete<br>
+🚧 Release Candidate 3 in Progress
+
+</p>
+
+<hr>
+
+<p style="opacity:.75">
+
+WorkForge Security Management Platform<br>
+
+Version 5.5 RC3
+
+</p>
+
+    </div>
+
+</div>
+
 </div>
 
   <div id="dashboardPage">

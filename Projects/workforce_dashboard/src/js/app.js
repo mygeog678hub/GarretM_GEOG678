@@ -79,8 +79,14 @@ import {
     startClaimRequestsListener,
     startOfficerOpenShiftsListener,
     startAssignmentListener,
-    deleteScheduledShift
+    deleteScheduledShift,
+    updateScheduledShift
 } from "./services/scheduling-service.js";
+
+import {
+    knowledgeArticles
+}
+from "./knowledge-data.js";
 
 
 // ================= AUTH =================
@@ -886,6 +892,13 @@ async function bootstrapApplication() {
 
 
   console.log("========== BOOTSTRAP START ==========");
+
+  document
+    .getElementById("menuToggleBtn")
+    ?.addEventListener(
+        "click",
+        toggleMobileMenu
+    );
 
   startEmployeeListener();
   startPatrolTemplateListener();
@@ -2311,6 +2324,76 @@ function render() {
   </tbody>
 `;
   renderEmployees();
+}
+
+document
+    .getElementById("knowledgeCenterBtn")
+    ?.addEventListener(
+        "click",
+        showKnowledgeCenter
+    );
+
+function showKnowledgeCenter() {
+
+  
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "block";
+
+        document.getElementById(
+      "companySettingsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "dashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "schedulingPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerIncidentReportPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "officerPortal"
+    ).style.display = "none";
+
+    document.getElementById(
+      "incidentReportsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myPatrolsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
+
+    document.getElementById(
+      "myReportsPage"
+    ).style.display =
+      "none";
+
+    document.getElementById(
+      "incidentReviewPage"
+    ).style.display = "none";
+    document.getElementById(
+      "mileageReportPage"
+    ).style.display = "none";
+
+
 }
 
 function updateDailySummary() {
@@ -6013,6 +6096,11 @@ window.showCompanySettingsPage =
       "mileageReportPage"
     ).style.display = "none";
 
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
 
   };
 
@@ -6071,6 +6159,11 @@ function showDashboard() {
     "mileageReportPage"
   ).style.display = "none";
 
+  document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
   refreshSupervisorDashboard();
 
 }
@@ -6126,6 +6219,11 @@ window.showOfficerPortal =
     document.getElementById(
       "mileageReportPage"
     ).style.display = "none";
+
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
 
     renderMySchedule();
     renderMySite();
@@ -6194,6 +6292,11 @@ window.showOfficerIncidentReport =
       "mileageReportPage"
     ).style.display = "none";
 
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
   };
 
 function showSchedulingPage() {
@@ -6253,6 +6356,11 @@ function showSchedulingPage() {
   document.getElementById(
     "mileageReportPage"
   ).style.display = "none";
+
+  document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
   
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
@@ -6319,6 +6427,11 @@ window.showPatrolExecution =
     document.getElementById(
       "mileageReportPage"
     ).style.display = "none";
+
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
   };
 
 window.showIncidentReviewPage =
@@ -6381,6 +6494,11 @@ window.showIncidentReviewPage =
       "mileageReportPage"
     ).style.display = "none";
 
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
     await loadIncidentReviewQueue();
   };
 
@@ -6439,6 +6557,11 @@ window.showMileageReportPage =
     document.getElementById(
       "mileageReportPage"
     ).style.display = "block";
+
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
 
     await loadMileageReport();
   };
@@ -6564,6 +6687,11 @@ window.showIncidentReportsPage =
     document.getElementById(
       "mileageReportPage"
     ).style.display = "none";
+
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
 
     loadIncidentReports();
 
@@ -7380,7 +7508,6 @@ function timesOverlap(
 
 }
 
-
 function renderSchedules() {
 
   const container =
@@ -7713,286 +7840,42 @@ async function saveShiftEdit() {
       "editShiftClassification"
     ).value;
 
-  const employee =
-    employees.find(
-      e => e.id === employeeId
-    );
-
-  console.log(employee);
-  console.log(
-    "securityLevel:",
-    employee.securityLevel
-  );
-  console.log(
-    "licenseLevel:",
-    employee.licenseLevel
-  );
-
-  const levels = {
-    "LVL 2": 2,
-    "LVL 3": 3,
-    "LVL 4": 4
-  };
-
-  const licenseMap = {
-    "Non-Commissioned (Level II)": 2,
-    "Commissioned (Level III)": 3,
-    "Personal Protection (Level IV)": 4
-  };
-
-  const officerLevel =
-    licenseMap[
-    employee.licenseLevel
-    ] || 0;
-
-  const shiftLevel =
-    levels[
-    classification
-    ] || 0;
-
-  console.log(
-    "Officer Level:",
-    officerLevel
-  );
-
-  console.log(
-    "Shift Level:",
-    shiftLevel
-  );
-
-  if (
-    officerLevel <
-    shiftLevel
-  ) {
-    alert(
-      `${employee.name} is not licensed for this assignment.`
-    );
-
-    return;
-  }
-
-  if (
-    !employeeId ||
-    !siteId ||
-    !startTime ||
-    !endTime
-  ) {
-    console.log({
-      employeeId,
-      siteId,
-      startTime,
-      endTime
-    });
-
-    alert(
-      "Complete all fields."
-    );
-    return;
-  }
-
-  if (
-    new Date(endTime) <=
-    new Date(startTime)
-  ) {
-    alert(
-      "End time must be after start time."
-    );
-    return;
-  }
-
-  const duplicate =
-    shifts.some(
-      shift =>
-
-        shift.id !== id &&
-
-        shift.employeeId ===
-        employeeId &&
-
-        shift.siteId ===
-        siteId &&
-
-        shift.startTime ===
-        startTime &&
-
-        shift.endTime ===
-        endTime
-    );
-
-  if (duplicate) {
-
-  return {
-    success: false,
-    message: "This shift already exists."
-};
-
-    return;
-
-  }  
-
-const conflict = shifts.some(shift => {
-
-  if (shift.id === id) {
-    return false; // Don't compare the shift to itself
-  }
-
-  if (shift.employeeId !== employeeId) {
-    return false;
-  }
-
-  return timesOverlap(
-    startTime,
-    endTime,
-    shift.startTime,
-    shift.endTime
-  );
-
-});
-
-  if (conflict) {
-
-   return {
-    success: false,
-    message: "Officer already scheduled during this time."
-};
-
-    return;
-
-  }
-
-  const site =
-    sites.find(
-      s => s.id === siteId
-    );
-
-  const updateData = {
-
-    employeeId,
-
-    employeeName:
-      employee.name,
-
-    siteId,
-
-    siteName:
-      site.name,
-
-    startTime,
-
-    endTime,
-
-    shiftPay,
-
-    classification
-
-  };
+ 
 
   const editMode =
     document.querySelector(
       'input[name="editRecurringMode"]:checked'
     )?.value || "occurrence";
 
-  if (
-    !editingRecurring ||
-    editMode === "occurrence"
-  ) {
+    const result =
+    await updateScheduledShift({
 
-    await updateDoc(
-      doc(db, "shifts", id),
-      updateData
-    );
-
-  } else {
-
-    const batch =
-      writeBatch(db);
-
-    const seriesQuery =
-      query(
-        collection(
-          db,
-          "shifts"
-        ),
-        where(
-          "seriesId",
-          "==",
-          editingSeriesId
-        )
-      );
-
-    const snapshot =
-      await getDocs(
-        seriesQuery
-      );
-
-    const now =
-      new Date();
-
-    for (
-      const shiftDoc of
-      snapshot.docs
-    ) {
-
-      const shift =
-        shiftDoc.data();
-
-      // Preserve history
-      if (
-        new Date(
-          shift.startTime
-        ) < now
-      ) {
-        continue;
-      }
-
-      // Keep the original date for this occurrence
-      const shiftDate =
-        shift.startTime.split("T")[0];
-
-      // Use the new times selected in the edit form
-      const newStartTime =
-        startTime.split("T")[1];
-
-      const newEndTime =
-        endTime.split("T")[1];
-
-      const seriesUpdate = {
-
+        id,
         employeeId,
-
-        employeeName:
-          employee.name,
-
         siteId,
-
-        siteName:
-          site.name,
-
+        startTime,
+        endTime,
         shiftPay,
-
         classification,
 
-        startTime:
-          `${shiftDate}T${newStartTime}`,
+        editMode,
+        editingRecurring,
+        editingSeriesId,
 
-        endTime:
-          `${shiftDate}T${newEndTime}`
+        employees,
+        sites,
+        shifts
 
-      };
+    });
 
-      batch.update(
-        shiftDoc.ref,
-        seriesUpdate
-      );
+if (!result.success) {
 
-    }
+    alert(result.message);
+    return;
 
-    await batch.commit();
-
-  }
-
+}
+  
   closeEditShiftModal();
-
 }
 
 function renderWeeklyScheduleBoard() {
@@ -12198,6 +12081,11 @@ window.showPatrolsPage =
       "mileageReportPage"
     ).style.display = "none";
 
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
     const patrolPage =
       document.getElementById(
         "patrolsPage"
@@ -14110,6 +13998,11 @@ window.showPatrolDashboardPage =
       "mileageReportPage"
     ).style.display = "none";
 
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
+
     refreshPatrolDashboard();
   };
 
@@ -14726,6 +14619,11 @@ window.showPatrolAnalytics =
     document.getElementById(
       "mileageReportPage"
     ).style.display = "none";
+
+    document
+        .getElementById(
+            "knowledgeCenterPage"
+        ).style.display = "none";
 
     renderPatrolAnalytics();
   };
@@ -19110,6 +19008,19 @@ function toggleMobileMenu() {
     .toggle("mobile-open");
 
 }
+
+window.loadKnowledgeArticle =
+function (article) {
+
+    const content =
+        document.getElementById(
+            "knowledgeContent"
+        );
+
+    content.innerHTML =
+        knowledgeArticles[article];
+
+};
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

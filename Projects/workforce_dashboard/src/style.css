@@ -2981,3 +2981,81 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 }
+.knowledge-container{
+    display:flex;
+    gap:20px;
+    height:calc(100vh - 180px);
+}
+
+.knowledge-sidebar{
+    width:280px;
+    background:#1f2937;
+    border:1px solid #374151;
+    border-radius:10px;
+    padding:20px;
+    overflow-y:auto;
+}
+
+.knowledge-content{
+    flex:1;
+    background:#1f2937;
+    border:1px solid #374151;
+    border-radius:10px;
+    padding:30px;
+    overflow-y:auto;
+}
+
+.knowledge-sidebar h2{
+    margin-top:0;
+    margin-bottom:20px;
+}
+
+#knowledgeSearch{
+    width:100%;
+    padding:10px;
+    margin-bottom:20px;
+    border-radius:8px;
+    border:1px solid #4b5563;
+    background:#111827;
+    color:white;
+}
+
+.knowledge-nav{
+
+    width:100%;
+    display:block;
+
+    margin-bottom:8px;
+    padding:12px;
+
+    text-align:left;
+
+    background:#374151;
+    color:white;
+
+    border:none;
+    border-radius:8px;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+.knowledge-nav:hover{
+
+    background:#2563eb;
+
+}
+
+.knowledge-nav.active{
+
+    background:#2563eb;
+
+}
+
+.knowledge-content h1{
+
+    margin-top:0;
+
+}
