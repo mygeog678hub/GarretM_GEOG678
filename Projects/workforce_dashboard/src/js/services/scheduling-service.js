@@ -86,10 +86,6 @@ export function startOfficerOpenShiftListener(
 
 }
 
-/*********************************************************************
- * Shift Retrieval
- *********************************************************************/
-
 export async function claimMarketplaceShift(
     db,
     shiftId,
@@ -202,8 +198,6 @@ if (!site) {
     success: false,
     message: "Shift end time must be after the start time."
 };
-
-  return;
 
 } 
 
@@ -323,8 +317,6 @@ if (repeatEnabled) {
     message: "This shift already exists."
 };
 
-  return;
-
 }
 
   const conflict =
@@ -350,9 +342,7 @@ if (repeatEnabled) {
  return {
     success: false,
     message: "Officer already scheduled during this time."
-};
-
-  return;
+};  
 
 } 
 
@@ -872,16 +862,15 @@ export async function updateScheduledShift({
         employees.find(
           e => e.id === employeeId
         );
-    
-      console.log(employee);
-      console.log(
-        "securityLevel:",
-        employee.securityLevel
-      );
-      console.log(
-        "licenseLevel:",
-        employee.licenseLevel
-      );
+
+        if (!employee) {
+
+    return {
+        success: false,
+        message: "Employee not found."
+    };
+
+}    
     
       const levels = {
         "LVL 2": 2,
@@ -919,41 +908,38 @@ export async function updateScheduledShift({
         officerLevel <
         shiftLevel
       ) {
-        alert(
-          `${employee.name} is not licensed for this assignment.`
-        );
-    
-        return;
+        return {
+    success: false,
+    message: "Officer is not licensed for this assignment."
+};   
+        
       }
     
       if (
-        !employeeId ||
-        !siteId ||
-        !startTime ||
-        !endTime
-      ) {
-        console.log({
-          employeeId,
-          siteId,
-          startTime,
-          endTime
-        });
+    !employeeId ||
+    !siteId ||
+    !startTime ||
+    !endTime
+) {
+
+    return {
+        success: false,
+        message: "Complete all fields."
+    };
+
+}
     
-        alert(
-          "Complete all fields."
-        );
-        return;
-      }
-    
-      if (
-        new Date(endTime) <=
-        new Date(startTime)
-      ) {
-        alert(
-          "End time must be after start time."
-        );
-        return;
-      }
+     if (
+    new Date(endTime) <=
+    new Date(startTime)
+) {
+
+    return {
+        success: false,
+        message: "End time must be after start time."
+    };
+
+}
     
       const duplicate =
         shifts.some(
@@ -979,9 +965,7 @@ export async function updateScheduledShift({
       return {
         success: false,
         message: "This shift already exists."
-    };
-    
-        return;
+    };      
     
       }  
     
@@ -1009,9 +993,7 @@ export async function updateScheduledShift({
        return {
         success: false,
         message: "Officer already scheduled during this time."
-    };
-    
-        return;
+    };      
     
       }
     
@@ -1144,6 +1126,103 @@ export async function updateScheduledShift({
   return {
     success: true
 };
+
+}
+
+export async function declineMarketplaceClaim(id) {
+
+    try {
+
+        const marketplaceRef =
+            doc(db, "openShifts", id);
+
+        const marketplaceSnap =
+            await getDoc(marketplaceRef);
+
+        if (!marketplaceSnap.exists()) {
+
+            return {
+                success: false,
+                message: "Marketplace shift not found."
+            };
+
+        }
+
+        const shift =
+            marketplaceSnap.data();
+
+        await updateDoc(
+            marketplaceRef,
+            {
+                status: "open",
+
+                claimedBy: null,
+                claimedByName: null,
+                claimedAt: null,
+
+                declinedAt: serverTimestamp()
+            }
+        );
+
+        await logActivity(
+            shift.siteId,
+            "MARKETPLACE_SHIFT_DECLINED",
+            `${shift.claimedByName || "An officer"} was declined for ${shift.siteName}.`,
+            "Supervisor",
+            "marketplace"
+        );
+
+        return {
+            success: true
+        };
+
+    } catch (error) {
+
+        console.error(
+            "declineMarketplaceClaim:",
+            error
+        );
+
+        return {
+            success: false,
+            message:
+                "Unable to decline Marketplace claim."
+        };
+
+    }
+
+}
+
+export async function cancelMarketplaceShift(id) {
+
+    try {
+
+        await updateDoc(
+            doc(db, "openShifts", id),
+            {
+                status: "cancelled",
+                cancelledAt: serverTimestamp()
+            }
+        );
+
+        return {
+            success: true,
+            message: "Open Shift Cancelled."
+        };
+
+    } catch (error) {
+
+        console.error(
+            "cancelMarketplaceShift:",
+            error
+        );
+
+        return {
+            success: false,
+            message: "Unable to cancel Open Shift."
+        };
+
+    }
 
 }
 

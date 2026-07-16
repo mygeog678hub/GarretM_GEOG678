@@ -84,13 +84,20 @@ import {
     createScheduledShift,
     startOfficerOpenShiftListener,
     approveMarketplaceClaim,
-    claimMarketplaceShift
+    claimMarketplaceShift,
+    declineMarketplaceClaim,
+    publishOpenShift,
+    cancelMarketplaceShift
 } from "./services/scheduling-service.js";
 
 import {
     knowledgeArticles
 }
 from "./knowledge-data.js";
+
+import {
+    calculateDistance
+} from "./services/scheduling-utils.js";
 
 
 // ================= AUTH =================
@@ -6851,6 +6858,20 @@ if (!result.success) {
     return;
 
 }
+
+// Clear form
+document.getElementById("scheduleSite").value = "";
+document.getElementById("scheduleStart").value = "";
+document.getElementById("scheduleEnd").value = "";
+document.getElementById("schedulePay").value = "";
+document.getElementById("shiftClassification").selectedIndex = 0;
+
+document.getElementById("repeatSchedule").checked = false;
+
+document.getElementById("repeatEndDate").value = "";
+
+// Hide repeat options again
+toggleRepeatOptions();
 
 alert(result.message);
 
@@ -18004,103 +18025,54 @@ function renderClaimRequests() {
 
 async function declineClaim(id) {
 
-  const confirmed = confirm(
-    "Decline this Marketplace claim?"
-);
-
-if (!confirmed) return;
-
-try {
-
-const marketplaceRef =
-    doc(db, "openShifts", id);
-
-const marketplaceSnap =
-    await getDoc(marketplaceRef);
-
-if (!marketplaceSnap.exists()) {
-
-    alert("Marketplace shift not found.");
-
-    return;
-
-}
-
-
-const shift = marketplaceSnap.data();
-
-await updateDoc(
-  marketplaceRef,
-  {
-    status: "open",
-
-    claimedBy: null,
-    claimedByName: null,
-    claimedAt: null,
-
-    declinedAt: serverTimestamp()
-  }
-);
-
-await logActivity(
-  shift.siteId,
-  "MARKETPLACE_SHIFT_DECLINED",
-  `${shift.claimedByName || "An officer"} was declined for ${shift.siteName}.`,
-  "Supervisor",
-  "marketplace"
-);
-
-loadClaimRequests();
-
-alert("Claim declined. The shift is available for other officers.");
-
-} catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Unable to decline Marketplace claim."
+    const confirmed = confirm(
+        "Decline this Marketplace claim?"
     );
 
-  }
+    if (!confirmed) return;
+
+    const result =
+        await declineMarketplaceClaim(id);
+
+    if (!result.success) {
+
+        alert(result.message);
+
+        return;
+
+    }
+
+    loadClaimRequests();
+
+    alert(
+        "Claim declined. The shift is available for other officers."
+    );
 
 }
-
-window.approveClaim = approveClaim;
 window.declineClaim = declineClaim;
 
 async function cancelOpenShift(id) {
 
-  const confirmed = confirm(
-    "Cancel this Open Shift?"
-  );
-
-  if (!confirmed) return;
-
-  try {
-
-    await updateDoc(
-      doc(db, "openShifts", id),
-      {
-        status: "cancelled",
-        cancelledAt: serverTimestamp()
-      }
-    );    
-
-    alert("Open Shift Cancelled.");
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Unable to cancel Open Shift."
+    const confirmed = confirm(
+        "Cancel this Open Shift?"
     );
 
-  }
+    if (!confirmed) return;
+
+    const result =
+        await cancelMarketplaceShift(id);
+
+    if (!result.success) {
+
+        alert(result.message);
+        return;
+
+    }
+
+    alert(result.message);
 
 }
-
+window.cancelOpenShift = cancelOpenShift;
 
 function formatDate(dateString) {
 
