@@ -893,16 +893,7 @@ export async function updateScheduledShift({
         levels[
         classification
         ] || 0;
-    
-      console.log(
-        "Officer Level:",
-        officerLevel
-      );
-    
-      console.log(
-        "Shift Level:",
-        shiftLevel
-      );
+     
     
       if (
         officerLevel <
@@ -1022,7 +1013,7 @@ export async function updateScheduledShift({
     
         classification
     
-      };
+      };      
 
       if (
     !editingRecurring ||

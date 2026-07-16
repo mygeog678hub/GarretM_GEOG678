@@ -18507,6 +18507,7 @@ window.createOpenShift = createOpenShift;
 window.cancelOpenShift = cancelOpenShift;
 window.claimOpenShift = claimOpenShift;
 window.toggleCommunicationForm = toggleCommunicationForm;
+window.approveClaim = approveClaim;
 
 
 refreshSupervisorDashboard();
