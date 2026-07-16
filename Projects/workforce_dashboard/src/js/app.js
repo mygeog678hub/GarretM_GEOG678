@@ -81,7 +81,10 @@ import {
     startAssignmentListener,
     deleteScheduledShift,
     updateScheduledShift,
-    createScheduledShift
+    createScheduledShift,
+    startOfficerOpenShiftListener,
+    approveMarketplaceClaim,
+    claimMarketplaceShift
 } from "./services/scheduling-service.js";
 
 import {
@@ -6714,19 +6717,13 @@ let officerOpenShifts = [];
 
 function loadOfficerOpenShifts() {
 
-    onSnapshot(
+    startOfficerOpenShiftListener(
 
-        query(
-            collection(db, "openShifts"),
-            where("status", "==", "open")
-        ),
+        db,
 
-        (snapshot) => {
+        (openShifts) => {
 
-            officerOpenShifts = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
+            officerOpenShifts = openShifts;
 
             renderOfficerOpenShifts();
 
@@ -6832,74 +6829,30 @@ async function createOpenShift() {
       document.getElementById(
         "repeatEndDate"
       ).value;
+      
+      const result =
+    await publishOpenShift(
+        db,
+        {
+            siteId,
+            startTime,
+            endTime,
+            shiftPay,
+            classification,
+            repeatEnabled,
+            repeatDays,
+            repeatEndDate
+        }
+    );
 
-    if (!siteId) {
-      alert("Please select a site.");
-      return;
-    }
+if (!result.success) {
 
-    if (!startTime || !endTime) {
-      alert("Please select the shift times.");
-      return;
-    }
+    alert(result.message);
+    return;
 
-    if (
-      new Date(endTime) <=
-      new Date(startTime)
-    ) {
-     return {
-    success: false,
-    message: "Shift end time must be after the start time."
-};
-      return;
-    }
-
-  const siteDoc = await getDoc(
-  doc(db, "sites", siteId)
-);
-
-if (!siteDoc.exists()) {
-  return {
-    success: false,
-    message: "Site not found."
-};
 }
 
-const site = siteDoc.data();
-
-  await addDoc(
-  collection(db, "openShifts"),
-  {
-
-    siteId,
-    siteName: site.name,
-    siteCategory: site.siteCategory,
-
-    startTime,
-    endTime,
-
-    shiftPay,
-    classification,
-
-    repeatEnabled,
-    repeatDays,
-    repeatEndDate,
-
-    seriesId: null,
-
-    status: "open",
-
-    publishedAt: serverTimestamp(),
-
-    createdAt: serverTimestamp()
-
-  }
-);
-
-    alert(
-      "Open Shift published successfully."
-    );
-    
+alert(result.message);
 
   } catch (error) {
 
@@ -9044,35 +8997,36 @@ function renderMySchedule() {
   ) return;
 
   const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const weekEnd = new Date(today);
+weekEnd.setDate(weekEnd.getDate() + 7);
 
 currentOfficerShifts =
-  shifts
-    .filter(shift => {
+    shifts
+        .filter(shift => {
 
-      if (
-        shift.employeeId !==
-        currentOfficer.id
-      ) {
-        return false;
-      }
+            if (
+                shift.employeeId !==
+                currentOfficer.id
+            ) {
+                return false;
+            }
 
-      const shiftDate =
-        new Date(
-          shift.startTime
+            const shiftDate =
+                new Date(shift.startTime);
+
+            return (
+                shiftDate >= today &&
+                shiftDate < weekEnd
+            );
+
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.startTime) -
+                new Date(b.startTime)
         );
-
-      return (
-        shiftDate.getFullYear() === today.getFullYear() &&
-        shiftDate.getMonth() === today.getMonth() &&
-        shiftDate.getDate() === today.getDate()
-      );
-
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.startTime) -
-        new Date(b.startTime)
-    );
 
   if (!currentOfficerShifts.length) {
 
@@ -18183,29 +18137,23 @@ async function claimOpenShift(id) {
 
     if (!confirmed) return;
 
-    try {     
+    try {
 
-        await updateDoc(
-            doc(db, "openShifts", id),
-            {
+        const result =
+            await claimMarketplaceShift(
+                db,
+                id,
+                currentEmployee
+            );
 
-                status: "claimed",
+        if (!result.success) {
 
-                claimedEmployeeId:
-                    currentEmployee.id,
+            alert(result.message);
+            return;
 
-                claimedByName:
-                    currentEmployee.name,
+        }
 
-                claimedAt:
-                    serverTimestamp()
-
-            }
-        );
-
-        alert(
-            "Shift claimed successfully."
-        );
+        alert(result.message);
 
     } catch (error) {
 
@@ -18222,94 +18170,37 @@ async function claimOpenShift(id) {
 async function approveClaim(id) {
 
   try {
-
-    const openShiftRef =
-      doc(db, "openShifts", id);
-
-    const openShiftSnap =
-      await getDoc(openShiftRef);
-
-    if (!openShiftSnap.exists()) {
-
-      alert("Open Shift not found.");
-      return;
-
-    }
-
-    const openShift =
-      openShiftSnap.data();
-
-    const shiftData = {
-
-      employeeId:
-        openShift.claimedEmployeeId,
-
-      employeeName:
-        openShift.claimedByName,
-
-      siteId:
-        openShift.siteId,
-
-      startTime:
-        openShift.startTime,
-
-      endTime:
-        openShift.endTime,
-
-      classification:
-        openShift.classification,
-
-      shiftPay:
-        openShift.shiftPay,
-
-      repeatEnabled:
-        openShift.repeatEnabled || false,
-
-      repeatDays:
-        openShift.repeatDays || [],
-
-      repeatEndDate:
-        openShift.repeatEndDate || null,
-
-      seriesId:
-        openShift.seriesId || null
-
-    };
-
+   
     const result =
-      await createScheduledShift(
-        shiftData
-      );
-
-    if (!result.success) {
-
-      alert(result.message);
-
-      return;
-
-    }
-
-    await updateDoc(
-      openShiftRef,
-      {
-        status: "assigned",
-        shiftId: result.shiftId,
-        approvedAt: new Date().toISOString()
-      }
+    await approveMarketplaceClaim(
+        db,
+        id,
+        {
+            employees,
+            sites,
+            shifts,
+            companyProfile
+        }
     );
 
-    await logActivity(
-      openShift.siteId,
-      "MARKETPLACE_SHIFT_APPROVED",
-      `${openShift.claimedByName} approved for ${openShift.siteName}`,
-      "Supervisor",
-      "marketplace"
-    );
+if (!result.success) {
 
-    loadClaimRequests();  
+    alert(result.message);
+    return;
 
-    alert("Shift approved and added to the schedule.");
+}
 
+await logActivity(
+    result.openShift.siteId,
+    "MARKETPLACE_SHIFT_APPROVED",
+    `${result.openShift.claimedByName} approved for ${result.openShift.siteName}`,
+    "Supervisor",
+    "marketplace"
+);
+
+loadClaimRequests();
+
+alert(result.message);
   } catch (error) {
 
     console.error(error);

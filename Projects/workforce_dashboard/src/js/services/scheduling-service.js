@@ -34,11 +34,13 @@ import {
     query,
     where,
     getDocs,
+    getDoc,
     deleteDoc,
     doc,
     writeBatch,
     updateDoc,
-    addDoc
+    addDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -56,13 +58,81 @@ import {
  * Shift Retrieval
  *********************************************************************/
 
-/*********************************************************************
- * Imports
- *********************************************************************/
+export function startOfficerOpenShiftListener(
+    db,
+    onUpdate
+) {
+
+    return onSnapshot(
+
+        query(
+            collection(db, "openShifts"),
+            where("status", "==", "open")
+        ),
+
+        (snapshot) => {
+
+            const openShifts =
+                snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+            onUpdate(openShifts);
+
+        }
+
+    );
+
+}
 
 /*********************************************************************
  * Shift Retrieval
  *********************************************************************/
+
+export async function claimMarketplaceShift(
+    db,
+    shiftId,
+    employee
+) {
+
+    try {
+
+        await updateDoc(
+            doc(db, "openShifts", shiftId),
+            {
+
+                status: "claimed",
+
+                claimedEmployeeId:
+                    employee.id,
+
+                claimedByName:
+                    employee.name,
+
+                claimedAt:
+                    serverTimestamp()
+
+            }
+        );
+
+        return {
+            success: true,
+            message: "Shift claimed successfully."
+        };
+
+    } catch (error) {
+
+        console.error(error);
+
+        return {
+            success: false,
+            message: "Unable to claim shift."
+        };
+
+    }
+
+}
 
 /*********************************************************************
  * Shift Creation
@@ -451,6 +521,231 @@ return {
     success: true,
     shiftId: createdShiftId
 };
+
+}
+
+export async function publishOpenShift(
+    db,
+    shiftData
+) {
+
+    const {
+        siteId,
+        startTime,
+        endTime,
+        shiftPay,
+        classification,
+        repeatEnabled,
+        repeatDays,
+        repeatEndDate
+    } = shiftData;
+
+    try {
+
+    // validation
+   if (!siteId) {
+
+    return {
+        success: false,
+        message: "Please select a site."
+    };
+
+}
+
+if (!startTime || !endTime) {
+
+    return {
+        success: false,
+        message: "Please select the shift times."
+    };
+
+}
+
+if (
+    new Date(endTime) <=
+    new Date(startTime)
+) {
+
+    return {
+        success: false,
+        message: "Shift end time must be after the start time."
+    };
+
+}
+
+    // site lookup
+    const siteDoc = await getDoc(
+  doc(db, "sites", siteId)
+);
+
+if (!siteDoc.exists()) {
+  return {
+    success: false,
+    message: "Site not found."
+};
+}
+
+const siteData = siteDoc.data();
+
+    // addDoc()
+     await addDoc(
+  collection(db, "openShifts"),
+  {
+
+    siteId,
+    siteName: siteData.name,
+siteCategory: siteData.siteCategory,
+
+    startTime,
+    endTime,
+
+    shiftPay,
+    classification,
+
+    repeatEnabled,
+    repeatDays,
+    repeatEndDate,
+
+    seriesId: null,
+
+    status: "open",
+
+    publishedAt: serverTimestamp(),
+
+    createdAt: serverTimestamp()
+
+  }
+);
+
+    // return { success, message }
+    return {
+    success: true,
+    message: "Open Shift published successfully."
+};
+} catch (error) {
+
+    console.error(error);
+
+    return {
+        success: false,
+        message: "Unable to publish Open Shift."
+    };
+
+}
+}
+
+export async function approveMarketplaceClaim(
+    db,
+    openShiftId,
+    appState
+) {
+
+    try {
+
+            const {
+          employees,
+          sites,
+          shifts,
+          companyProfile
+      } = appState;
+
+        const openShiftRef =
+            doc(db, "openShifts", openShiftId);
+
+        const openShiftSnap =
+            await getDoc(openShiftRef);
+
+        if (!openShiftSnap.exists()) {
+
+            return {
+                success: false,
+                message: "Open Shift not found."
+            };
+
+        }
+
+        const openShift =
+            openShiftSnap.data();
+
+        // We'll add the next block here
+        const shiftData = {
+
+  employeeId:
+    openShift.claimedEmployeeId,
+
+  employeeName:
+    openShift.claimedByName,
+
+  siteId:
+    openShift.siteId,
+
+  startTime:
+    openShift.startTime,
+
+  endTime:
+    openShift.endTime,
+
+  classification:
+    openShift.classification,
+
+  shiftPay:
+    openShift.shiftPay,
+
+  repeatEnabled:
+    openShift.repeatEnabled || false,
+
+  repeatDays:
+    openShift.repeatDays || [],
+
+  repeatEndDate:
+    openShift.repeatEndDate || null,
+
+  seriesId:
+    openShift.seriesId || null
+
+};
+
+const result =
+    await createScheduledShift({
+        data: shiftData,
+        employees,
+        sites,
+        shifts,
+        companyProfile
+    });
+
+if (!result.success) {
+
+  return result;
+
+}
+
+await updateDoc(
+  openShiftRef,
+  {
+    status: "assigned",
+    shiftId: result.shiftId,
+    approvedAt: new Date().toISOString()
+  }
+);
+
+return {
+    success: true,
+    message: "Shift approved and added to the schedule.",
+    openShift,
+    shiftId: result.shiftId
+};
+
+    } catch (error) {
+
+        console.error(error);
+
+        return {
+            success: false,
+            message: "Unable to approve Marketplace claim."
+        };
+
+    }
 
 }
 
