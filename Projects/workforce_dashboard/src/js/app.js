@@ -909,13 +909,7 @@ async function bootstrapApplication() {
 
   console.log("========== BOOTSTRAP START ==========");
 
-  document
-    .getElementById("menuToggleBtn")
-    ?.addEventListener(
-        "click",
-        toggleMobileMenu
-    );
-
+  
   startEmployeeListener();
   startPatrolTemplateListener();
   startSiteListener();
@@ -18367,17 +18361,6 @@ window.submitOfficerSiteNote =
     resetCommunicationForm();
 
 }
-
-}
-
-function toggleMobileMenu() {
-
-  console.log("Hamburger clicked");
-
-  document
-    .getElementById("navCard")
-    .classList
-    .toggle("mobile-open");
 
 }
 
