@@ -3434,9 +3434,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   }
   .nav-left,
 .nav-right{
+
     display:flex;
     flex-wrap:nowrap;
-    flex-shrink:0;
+    flex:0 0 auto;
+
 }
 
 .nav-right{
