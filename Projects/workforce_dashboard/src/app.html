@@ -2372,7 +2372,7 @@ Version 5.6 RC3
 <div class="dashboard-card">
 
   <h2>Published Open Shifts</h2>
-
+  <div class="table-responsive"></div>
   <table class="data-table">
 
     <thead>
@@ -2395,6 +2395,7 @@ Version 5.6 RC3
     </tbody>
 
   </table>
+  </div>
 
 </div>
 
@@ -4052,6 +4053,167 @@ Version 5.6 RC3
 </div>
 
   </div>
+
+</div>
+
+<div id="profileVerificationPage" class="page" style="display:none;">
+
+    <div class="setup-card">
+
+        <img ... WorkForge Logo ...>
+
+        <h2>Verify Your Profile</h2>
+
+        <p>
+            Please verify your information before
+            accessing WorkForge.
+        </p>
+
+        <div class="setup-section">
+
+            Mobile Phone
+
+            <input id="verifyPhone">
+
+        </div>
+
+        <div class="setup-section">
+
+            Emergency Contact
+
+            <input id="verifyEmergencyContact">
+
+        </div>
+
+        <label>
+
+            <input
+                type="checkbox"
+                id="verifyAcknowledgement">
+
+            I certify the information above is correct.
+
+        </label>
+
+        <button
+            onclick="completeProfileVerification()">
+
+            Continue
+
+        </button>
+
+    </div>
+
+</div>
+
+<div id="setupCompletePage"
+     class="page"
+     style="display:none;">
+
+    <div class="setup-card">
+
+        <img ... WorkForge Logo ...>
+
+        <h2>Setup Complete</h2>
+
+        <p>
+
+            Your WorkForge account has been configured
+            successfully.
+
+        </p>
+
+        <div class="setup-checklist">
+
+            <div>✅ Password Updated</div>
+
+            <div>✅ Profile Verified</div>
+
+            <div>✅ Ready to Begin</div>
+
+        </div>
+
+        <button
+            onclick="launchWorkForge()">
+
+            Launch WorkForge
+
+        </button>
+
+    </div>
+
+</div>
+
+<div
+    id="passwordSetupPage"
+    class="setup-page"
+    style="display:none;"
+>
+
+    <div class="setup-card">
+
+        <img
+            src="workforge-logo.png"
+            class="setup-logo"
+            alt="WorkForge Logo"
+        >
+
+        <h1>Create a Secure Password</h1>
+
+        <p class="setup-subtitle">
+
+            Your temporary password must be changed before continuing.
+
+        </p>
+
+        <div class="form-group">
+
+            <label>New Password</label>
+
+            <input
+                type="password"
+                id="newPassword"
+                autocomplete="new-password"
+            >
+
+        </div>
+
+        <div class="form-group">
+
+            <label>Confirm Password</label>
+
+            <input
+                type="password"
+                id="confirmPassword"
+                autocomplete="new-password"
+            >
+
+        </div>
+
+        <div
+            id="passwordSetupError"
+            class="form-error"
+        ></div>
+
+        <div class="setup-actions">
+
+            <button
+                class="primary-btn"
+                onclick="completePasswordSetup()"
+            >
+                Continue
+            </button>
+
+            <button
+                class="secondary-btn"
+                onclick="logout()"
+            >
+                Sign Out
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 

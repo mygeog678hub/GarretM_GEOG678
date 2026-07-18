@@ -759,7 +759,17 @@ tr:hover {
       border-radius: 5px;
     }
 
-   
+    button {
+      width: auto;
+      padding: 10px;
+      margin-top: 10px;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
     label {
       display: block;
@@ -1864,7 +1874,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   border-radius: 12px;
 }
 
-.weekly-board {
+.weekly-board-container {
   overflow-x: auto;
   overflow-y: auto;
   max-height: 600px;
@@ -3448,5 +3458,30 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   .person-grid{
     grid-template-columns:repeat(2,1fr);
   }
+
+}
+@media (max-width: 768px) {
+
+  .weekly-grid {
+    width: max-content;
+    min-width: 0;
+  }
+
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive .data-table {
+    min-width: 900px; /* or whatever width the table needs */
+}
+#passwordSetupPage .form-group label {
+
+    color: #374151;
+
+    font-weight: 600;
 
 }

@@ -103,6 +103,11 @@ import {
     applyRolePermissions
 } from "./services/authorization-service.js";
 
+import {
+    completeFirstTimePassword,
+    verifyProfile
+} from "./services/onboarding-service.js";
+
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -847,6 +852,16 @@ onSnapshot(
   }
 );
 }
+
+window.launchWorkForge = function () {
+
+    document.getElementById(
+        "setupCompletePage"
+    ).style.display = "none";
+
+    bootstrapApplication();
+
+};
 
 
 function startCheckpointListener() {
@@ -18402,7 +18417,95 @@ function showFirstTimeSetup() {
 
 window.startFirstTimeSetup = function () {
 
-    alert("Wizard coming next.");
+    document.getElementById(
+        "firstTimeSetup"
+    ).style.display = "none";
+
+    document.getElementById(
+        "passwordSetupPage"
+    ).style.display = "block";
+
+}
+
+window.completePasswordSetup = async function () {
+
+    const newPassword =
+        document.getElementById(
+            "newPassword"
+        ).value;
+
+    const confirmPassword =
+        document.getElementById(
+            "confirmPassword"
+        ).value;
+
+    const result =
+        await completeFirstTimePassword(
+            newPassword,
+            confirmPassword
+        );
+
+    if (!result.success) {
+
+        alert(result.message);
+        return;
+
+    }
+
+    // Temporary until Profile Verification is built
+
+    alert(
+        "Password updated successfully."
+    );
+
+    document.getElementById(
+        "passwordSetupPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "profileVerificationPage"
+    ).style.display = "block";
+
+};
+
+window.completeProfileVerification = async function () {
+
+    const profileData = {
+
+        phone:
+            document.getElementById(
+                "verifyPhone"
+            ).value.trim(),
+
+        emergencyContact:
+            document.getElementById(
+                "verifyEmergencyContact"
+            ).value.trim(),
+
+        acknowledged:
+            document.getElementById(
+                "verifyAcknowledgement"
+            ).checked
+
+    };
+
+    const result =
+        await verifyProfile(profileData);
+
+    if (!result.success) {
+
+        alert(result.message);
+        return;
+
+    }
+
+    document.getElementById(
+        "profileVerificationPage"
+    ).style.display = "none";
+
+    document.getElementById(
+        "setupCompletePage"
+    ).style.display = "block";
 
 };
 
