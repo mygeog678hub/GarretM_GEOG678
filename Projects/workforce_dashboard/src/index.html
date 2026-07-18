@@ -207,13 +207,27 @@ WorkForge | Security Operations Management Software
 </p>
 
   <!-- ✅ FIXED LABELS -->
+ <form id="loginForm">
+
   <label for="email">Email</label>
-  <input id="email" type="email" placeholder="Enter your email">
+  <input
+    id="email"
+    type="email"
+    placeholder="Enter your email"
+  >
 
   <label for="password">Password</label>
-  <input id="password" type="password" placeholder="Enter your password">
+  <input
+    id="password"
+    type="password"
+    placeholder="Enter your password"
+  >
 
-  <button onclick="login()">Login</button>
+  <button type="submit">
+    Login
+  </button>
+
+</form>
   
 
 <p class="reset-link">
@@ -299,6 +313,16 @@ window.login = async function(){
     error.textContent = e.message;
   }
 };
+
+document
+  .getElementById("loginForm")
+  .addEventListener("submit", async function (event) {
+
+    event.preventDefault();
+
+    await window.login();
+
+  });
 
 window.googleLogin = async function() {
 

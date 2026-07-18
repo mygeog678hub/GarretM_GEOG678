@@ -99,6 +99,10 @@ import {
     calculateDistance
 } from "./services/scheduling-utils.js";
 
+import {
+    applyRolePermissions
+} from "./services/authorization-service.js";
+
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -113,6 +117,10 @@ onAuthStateChanged(auth, async (user) => {
     const identityReady =
         await initializeIdentity();
 
+        applyRolePermissions(
+    window.currentUserProfile
+);
+
         console.log("Profile:", window.currentUserProfile);
 
     if (!identityReady) return;
@@ -120,13 +128,35 @@ onAuthStateChanged(auth, async (user) => {
     currentUserProfile =
     window.currentUserProfile;
 
-    // 👇 INSERT THE ROLE ROUTER HERE
+     // ================================
+    // First-Time User Gate
+    // ================================
+  if (window.currentUserProfile.onboardingRequired) {
+
+    showFirstTimeSetup();
+
+    return;
+
+}
+
+document.getElementById("appLayout")
+    .style.display = "block";
+
+await bootstrapApplication();
+
+    // ================================
+    // Role Routing
+    // ================================
+
     if (window.currentUserProfile?.role === "client") {
         window.location.href = "client-portal.html";
         return;
     }
 
-    console.log("Employee ID:", window.currentUserProfile?.employeeId);
+    console.log(
+        "Employee ID:",
+        window.currentUserProfile?.employeeId
+    );
 
     await bootstrapApplication();
 
@@ -609,70 +639,44 @@ setEmployees(employeeList);
       
   currentEmployee = employee;
 
-  console.log("Matched Employee:", employee);
-console.log("All Employee IDs:", employees.map(e => e.id));
-  setCurrentEmployee(employee);
-
-  console.log("================================");
-console.log("UID:", currentUser?.uid);
-console.log("Profile:", currentUserProfile);
-console.log("Profile Role:", currentUserProfile?.role);
-console.log("Profile Employee ID:", currentUserProfile?.employeeId);
-console.log("Employee Found:", employee);
-console.log("currentEmployee:", currentEmployee);
-console.log("================================");
-
-    console.log("Current User:", currentUser);
-    console.log("Current User Profile:", currentUserProfile);
-    console.log("Role:", currentUserProfile?.role);
-    console.log("Profile employeeId:", currentUserProfile?.employeeId);
-    console.log("Matched Employee:", employee);
-
-  console.log(
-    "Matched Employee:",
-    employee
-  );
-
-  console.log(
-  "Officer comparison:",
-  currentUserProfile?.role === "Officer"
-);
-
- if (
-  currentUserProfile &&
-  currentUserProfile.role === "Officer"
-) {
+ if (employee) {
 
     currentOfficer = employee;
 
+    
+    console.log("currentOfficer set:", currentOfficer);
+    console.log("currentEmployee:", currentEmployee);
+
     console.log(
-      "Officer Login:",
-      employee.name
+        "Employee Session:",
+        employee.name
     );
 
     console.log(
-      "Firebase UID:",
-      currentUser.uid
+        "Employee ID:",
+        employee.id
     );
 
-    console.log(
-      "Employee ID:",
-      currentEmployee?.id
-    );
-
-    showOfficerPortal();
     listenForNotifications();
 
+}
 
-  } else {
+ if (
+    currentUserProfile &&
+    currentUserProfile.role === "Officer"
+) {
 
-   console.log(
-  "Administrator/Supervisor Login"
-);
+    showOfficerPortal();
+
+} else {
+
+    console.log(
+        "Administrator/Supervisor Login"
+    );
 
     showDashboard();
 
-  }
+}
 
 });
 }
@@ -1018,8 +1022,6 @@ async function bootstrapApplication() {
   console.log("========== BOOTSTRAP COMPLETE ==========");
 
 }
-
-
 
 window.addIncidentVehicle =
   function () {
@@ -2334,9 +2336,8 @@ document
 function showKnowledgeCenter() {
 
   
-    document
-        .getElementById(
-            "knowledgeCenterPage"
+    document.getElementById(
+          "knowledgeCenterPage"
         ).style.display = "block";
 
         document.getElementById(
@@ -2387,6 +2388,7 @@ function showKnowledgeCenter() {
     document.getElementById(
       "incidentReviewPage"
     ).style.display = "none";
+
     document.getElementById(
       "mileageReportPage"
     ).style.display = "none";
@@ -6218,17 +6220,20 @@ window.showOfficerPortal =
       "mileageReportPage"
     ).style.display = "none";
 
-    document
-        .getElementById(
-            "knowledgeCenterPage"
-        ).style.display = "none";
+    document.getElementById(
+      "knowledgeCenterPage"
+      ).style.display = "none";
+
+       document.getElementById(
+      "patrolAnalyticsPage"
+    ).style.display = "none";
 
     renderMySchedule();
     renderMySite();
     renderMyAttendanceStatus();
     await resumeActivePatrol();
 
-  };
+  };    
 
 window.showOfficerIncidentReport =
   function () {
@@ -7630,6 +7635,10 @@ function nextWeek() {
 
 
 async function clockIn() {
+
+  console.log("clockIn currentOfficer:", currentOfficer);
+console.log("clockIn currentEmployee:", currentEmployee);
+
 
   if (!currentOfficer) {
     alert(
@@ -18421,6 +18430,19 @@ if (activeButton) {
 
     content.innerHTML =
         knowledgeArticles[article];
+
+};
+
+function showFirstTimeSetup() {
+
+    document.getElementById("firstTimeSetup")
+        .style.display = "flex";
+
+}
+
+window.startFirstTimeSetup = function () {
+
+    alert("Wizard coming next.");
 
 };
 

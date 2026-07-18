@@ -6,7 +6,7 @@ export const knowledgeArticles = {
 <h1>📚 WorkForge Knowledge Center</h1>
 
 <div class="version-badge">
-    Version 5.5 • Release Candidate 3
+    Version 5.6 • Release Candidate 3
 </div>
 
 <p class="knowledge-intro">
@@ -24,6 +24,16 @@ export const knowledgeArticles = {
     <h3>📊 Dashboard</h3>
 
     ...
+</div>
+
+<div
+class="knowledge-card"
+onclick="loadKnowledgeArticle('administration')">
+
+    <h3>🛠️ Administration</h3>
+
+    ...
+
 </div>
 
     <div class="knowledge-card"
@@ -69,13 +79,189 @@ about each WorkForge module and its capabilities.
 
 `,
 
+administration: `
+
+<div class="knowledge-header">
+
+<h1>Administration Overview</h1>
+
+<div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Administrators & Supervisors</span>
+
+    <span><strong>Category:</strong> Administration</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+<div class="version-badge">
+    WorkForge Dashboard v5.6
+</div>
+</div>
+
+<p>
+Welcome to the WorkForge Dashboard Administration Center.
+</p>
+
+<p>
+Administrators are responsible for managing personnel, scheduling,
+client operations, incidents, patrols, assets, and company settings.
+The dashboard provides centralized access to every operational component
+of the platform.
+</p>
+
+<h2>Dashboard Overview</h2>
+
+<ul>
+    <li>Employees</li>
+    <li>Active Assignments</li>
+    <li>Active Sites</li>
+    <li>Today's Operations</li>
+    <li>Assets in Maintenance</li>
+    <li>Open Incidents</li>
+</ul>
+
+<div class="knowledge-header">
+
+<h2>Administrator Responsibilities</h2>
+
+<div class="knowledge-callout knowledge-info">
+
+    <strong>Administrator Access</strong>
+
+    <p>
+        Administrators have full access to employee management,
+        scheduling, incidents, patrol operations,
+        company settings, and reporting.
+    </p>
+
+</div>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+Review the dashboard at the beginning of each shift to identify
+open incidents, staffing shortages, and marketplace activity.
+</p>
+
+</div>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+Changes to company settings affect the entire organization and
+should only be made by authorized administrators.
+</p>
+
+</div>
+</div>
+
+`,
+
+dashboard: `
+
+<div class="knowledge-header">
+
+    <h1>📊 Dashboard Overview</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Administrators & Supervisors</span>
+
+    <span><strong>Category:</strong> Dashboard</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
+</div>
+
+<p>
+The Dashboard serves as the operational command center for
+WorkForge Dashboard. It provides administrators with real-time
+visibility into personnel, scheduling, incidents, patrol
+operations, and overall company performance.
+</p>
+
+<h2>Key Performance Indicators</h2>
+
+<ul>
+    <li>Employees</li>
+    <li>Active Assignments</li>
+    <li>Active Sites</li>
+    <li>Today's Operations</li>
+    <li>Assets in Maintenance</li>
+    <li>Open Incidents</li>
+</ul>
+
+<div class="knowledge-callout knowledge-info">
+
+<strong>Operational Visibility</strong>
+
+<p>
+The KPI cards provide a real-time snapshot of company operations,
+allowing administrators to quickly identify staffing levels,
+active sites, and outstanding incidents.
+</p>
+
+</div>
+
+<h2>Interactive Map</h2>
+
+<p>
+The dashboard map displays operational locations and client sites,
+providing geographic awareness of current operations.
+</p>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+Review the dashboard at the beginning of each shift to identify
+staffing shortages, open incidents, and marketplace activity.
+</p>
+
+</div>
+
+<h2>Activity Feed</h2>
+
+<p>
+The Activity Feed records scheduling changes, incident activity,
+marketplace updates, patrol events, and other operational actions
+as they occur.
+</p>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+Dashboard metrics update as data changes throughout the application.
+Always verify critical operational decisions using the underlying
+records when appropriate.
+</p>
+
+</div>
+
+`,
+
     "whats-new": `
 
-        <h1>✨ What's New in WorkForge 5.5</h1>
+        <h1>✨ What's New in WorkForge 5.6</h1>
 
         <div class="version-badge">
 
-            Version 5.5 • Release Candidate 3
+            Version 5.6 • Release Candidate 3
 
         </div>
 
@@ -118,7 +304,7 @@ about each WorkForge module and its capabilities.
 <h1>Frequently Asked Questions</h1>
 
 <div class="version-badge">
-Version 5.5 • RC3
+Version 5.6 • RC3
 </div>
 
 <h2>What is WorkForge?</h2>
@@ -163,317 +349,788 @@ property health metrics.
 
 `,
 
-dashboard: `
-
-<h1>Dashboard</h1>
-
-<div class="version-badge">
-Version 5.5 • RC3
-</div>
-
-<p>
-The Dashboard provides supervisors and administrators with a
-real-time operational overview of workforce activity across the
-organization.
-</p>
-
-<h2>Dashboard Features</h2>
-
-<ul>
-<li>Live workforce statistics</li>
-<li>Assignment overview</li>
-<li>Open incident monitoring</li>
-<li>Asset maintenance tracking</li>
-<li>Recent activity feed</li>
-<li>Interactive operations map</li>
-</ul>
-
-<h2>Statistics Cards</h2>
-
-<p>
-The dashboard displays key operational metrics including active
-employees, assignments, sites, incidents, and assets currently
-requiring maintenance.
-</p>
-
-<h2>Live Updates</h2>
-
-<p>
-Dashboard information updates automatically through Cloud
-Firestore realtime listeners, ensuring supervisors always have
-current operational information.
-</p>
-
-`,
-
 scheduling: `
 
-<h1>Scheduling</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>📅 Scheduling</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Administrators & Supervisors</span>
+
+    <span><strong>Category:</strong> Operations</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-The Scheduling module manages employee assignments,
-open shifts, recurring schedules, and supervisor
-approvals from a centralized interface.
+The Scheduling module serves as the central hub for workforce
+management. Administrators and supervisors can create employee
+assignments, manage recurring schedules, publish Marketplace shifts,
+and monitor staffing levels from a single interface.
 </p>
 
-<h2>Features</h2>
+<div class="knowledge-callout knowledge-info">
+
+<strong>Overview</strong>
+
+<p>
+Scheduling combines employee assignments, recurring scheduling,
+Marketplace integration, conflict detection, and mileage calculations
+into one streamlined workflow.
+</p>
+
+</div>
+
+<h2>Core Features</h2>
 
 <ul>
+
 <li>Create employee schedules</li>
-<li>Edit existing assignments</li>
-<li>Delete scheduled shifts</li>
+
+<li>Edit or delete assignments</li>
+
 <li>Recurring scheduling</li>
+
 <li>Marketplace publishing</li>
+
 <li>Conflict detection</li>
+
 <li>Duplicate schedule prevention</li>
+
 <li>Mileage incentive calculations</li>
+
+<li>Weekly Schedule Board</li>
+
 </ul>
 
-<h2>Marketplace Integration</h2>
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
 
 <p>
-Open shifts can be published to the Marketplace where
-qualified officers may request assignment approval.
-Supervisors retain final approval authority.
+Review schedules daily for staffing gaps and Marketplace requests to
+maintain full operational coverage.
 </p>
 
-<h2>Realtime Updates</h2>
+</div>
+
+<h2>Workflow</h2>
+
+<ol>
+
+<li>Create or edit a shift.</li>
+
+<li>Validate scheduling conflicts automatically.</li>
+
+<li>Publish open shifts when staffing is unavailable.</li>
+
+<li>Approve Marketplace claim requests.</li>
+
+<li>Monitor assignments using the Weekly Schedule Board.</li>
+
+</ol>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
 
 <p>
-Scheduling data is synchronized through Cloud Firestore
-listeners, providing immediate updates across the
-application.
+Schedule changes immediately affect operational staffing and are
+synchronized throughout the application using Cloud Firestore.
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
 patrol: `
 
-<h1>Patrol Operations</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>🚓 Patrol Operations</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Officers & Supervisors</span>
+
+    <span><strong>Category:</strong> Operations</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-Patrol Operations provides structured patrol execution,
-checkpoint verification, patrol analytics, and officer
-accountability.
+Patrol Operations provides structured patrol execution, checkpoint
+verification, officer accountability, and supervisor oversight for
+field operations.
 </p>
 
-<h2>Capabilities</h2>
+<div class="knowledge-callout knowledge-info">
 
-<ul>
-<li>Patrol templates</li>
-<li>Checkpoint management</li>
-<li>Realtime patrol tracking</li>
-<li>Overdue patrol detection</li>
-<li>Officer activity timeline</li>
-<li>Supervisor visibility</li>
-</ul>
-
-<h2>Monitoring</h2>
+<strong>Overview</strong>
 
 <p>
-Every patrol event is recorded to support operational
-oversight and historical reporting.
+Every patrol is documented to improve accountability, operational
+visibility, and historical reporting across client sites.
+</p>
+
+</div>
+
+<h2>Core Features</h2>
+
+<ul>
+
+<li>Patrol templates</li>
+
+<li>Checkpoint management</li>
+
+<li>Realtime patrol tracking</li>
+
+<li>Overdue patrol detection</li>
+
+<li>Officer activity timeline</li>
+
+<li>Supervisor visibility</li>
+
+<li>Patrol analytics</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+Review overdue patrol alerts promptly to ensure officers remain on
+schedule and client coverage requirements are met.
+</p>
+
+</div>
+
+<h2>Operational Workflow</h2>
+
+<ol>
+
+<li>Create patrol templates.</li>
+
+<li>Assign checkpoints.</li>
+
+<li>Execute patrols in the field.</li>
+
+<li>Monitor patrol completion in real time.</li>
+
+<li>Review patrol history and analytics.</li>
+
+</ol>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+Patrol records become part of the permanent operational history and
+should accurately reflect completed field activity.
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
 incidentManagement: `
 
-<h1>Incident Management</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>🚨 Incident Management</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Officers, Supervisors & Administrators</span>
+
+    <span><strong>Category:</strong> Operations</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-The Incident Management module provides a complete workflow
-for reporting, reviewing, assigning, and resolving operational
-incidents.
+The Incident Management module provides a complete workflow for
+reporting, reviewing, investigating, approving, and resolving
+operational incidents while maintaining comprehensive documentation.
 </p>
 
-<h2>Features</h2>
+<div class="knowledge-callout knowledge-info">
 
-<ul>
-<li>Incident reporting</li>
-<li>Case number generation</li>
-<li>Supervisor review</li>
-<li>Investigation workflow</li>
-<li>Evidence tracking</li>
-<li>Status management</li>
-<li>Resolution documentation</li>
-</ul>
-
-<h2>Lifecycle</h2>
+<strong>Overview</strong>
 
 <p>
-Incidents progress through a structured workflow from
-submission to final resolution, ensuring accountability
-and complete documentation.
+Every incident receives a unique case number and progresses through a
+structured review process to ensure accountability and complete
+documentation.
+</p>
+
+</div>
+
+<h2>Core Features</h2>
+
+<ul>
+
+<li>Incident reporting</li>
+
+<li>Automatic case number generation</li>
+
+<li>Supervisor review workflow</li>
+
+<li>Investigation management</li>
+
+<li>Evidence tracking</li>
+
+<li>Status management</li>
+
+<li>Supplemental reports</li>
+
+<li>Resolution documentation</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+Complete incident reports as soon as practical while information is
+current, and include sufficient detail to support supervisory review.
+</p>
+
+</div>
+
+<h2>Incident Lifecycle</h2>
+
+<ol>
+
+<li>Submit an incident report.</li>
+
+<li>Supervisor reviews the submission.</li>
+
+<li>Additional information may be requested.</li>
+
+<li>Investigation and documentation are completed.</li>
+
+<li>The incident is resolved and archived.</li>
+
+</ol>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+Once approved, incident records become part of the organization's
+permanent operational history and should accurately document events.
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
 marketplace: `
 
-<h1>Marketplace</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>🏪 Marketplace</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Supervisors & Officers</span>
+
+    <span><strong>Category:</strong> Operations</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-The Marketplace allows supervisors to publish open shifts
-that qualified officers can claim for approval.
+
+The Marketplace allows supervisors to publish open shifts for qualified
+officers to claim. This feature improves staffing flexibility while
+maintaining supervisory oversight and approval authority.
+
 </p>
 
-<h2>Features</h2>
+<div class="knowledge-callout knowledge-info">
 
-<ul>
-<li>Publish open shifts</li>
-<li>Officer claim requests</li>
-<li>Supervisor approvals</li>
-<li>Automatic schedule creation</li>
-<li>Activity logging</li>
-</ul>
-
-<h2>Approval Process</h2>
+<strong>Overview</strong>
 
 <p>
-Claim requests remain pending until approved by a supervisor.
-Approved requests automatically create a scheduled shift.
+
+Marketplace shifts remain available until claimed or cancelled.
+Supervisors review all claim requests before an assignment is officially
+added to the schedule.
+
+</p>
+
+</div>
+
+<h2>Core Features</h2>
+
+<ul>
+
+<li>Publish open shifts</li>
+
+<li>Officer claim requests</li>
+
+<li>Supervisor approval workflow</li>
+
+<li>Automatic schedule creation</li>
+
+<li>Activity logging</li>
+
+<li>Claim request management</li>
+
+<li>Shift cancellation</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+
+Review pending Marketplace claims frequently to minimize vacant posts
+and ensure timely staffing decisions.
+
+</p>
+
+</div>
+
+<h2>Workflow</h2>
+
+<ol>
+
+<li>Publish an open shift.</li>
+
+<li>Qualified officers submit claim requests.</li>
+
+<li>Supervisors review each request.</li>
+
+<li>Approved claims automatically create scheduled assignments.</li>
+
+<li>Activity is recorded in the operational log.</li>
+
+</ol>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+
+Only approved Marketplace requests become scheduled assignments.
+Unapproved requests do not modify staffing schedules.
+
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
 clientPortal: `
 
-<h1>Client Portal</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>👥 Client Portal</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Clients</span>
+
+    <span><strong>Category:</strong> Client Services</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-The Client Portal provides customers with secure visibility
-into operations occurring at their assigned properties.
+
+The Client Portal provides customers with secure visibility into the
+security operations occurring at their assigned properties while
+protecting confidential administrative information.
+
 </p>
 
-<h2>Features</h2>
+<div class="knowledge-callout knowledge-info">
 
-<ul>
-<li>Property Health</li>
-<li>Today's Officers</li>
-<li>Patrol Activity</li>
-<li>Incident Summary</li>
-<li>Operational KPIs</li>
-<li>Real-time updates</li>
-</ul>
-
-<h2>Purpose</h2>
+<strong>Overview</strong>
 
 <p>
-The Client Portal improves transparency by allowing clients
-to monitor security operations without exposing internal
-administrative functions.
+
+Clients receive operational transparency through dashboards,
+incident summaries, patrol activity, and property health indicators
+without access to internal management functions.
+
+</p>
+
+</div>
+
+<h2>Core Features</h2>
+
+<ul>
+
+<li>Property Health dashboard</li>
+
+<li>Today's Officers</li>
+
+<li>Patrol Activity</li>
+
+<li>Incident Summary</li>
+
+<li>Operational KPIs</li>
+
+<li>Real-time operational updates</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+
+Review the Property Health dashboard regularly to stay informed of
+security operations and recent activity at your locations.
+
+</p>
+
+</div>
+
+<h2>Client Experience</h2>
+
+<p>
+
+The Client Portal is designed to improve communication, transparency,
+and confidence by providing meaningful operational information in a
+simple, easy-to-understand format.
+
+</p>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+
+Clients only have access to information associated with their assigned
+properties and cannot view internal administrative functions.
+
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
 analytics: `
 
-<h1>Analytics</h1>
+<div class="knowledge-header">
 
-<div class="version-badge">
-Version 5.5 • RC3
+    <h1>📈 Analytics</h1>
+
+    <div class="knowledge-meta">
+
+    <span><strong>Audience:</strong> Administrators & Supervisors</span>
+
+    <span><strong>Category:</strong> Reporting</span>
+
+    <span><strong>Updated:</strong> v5.6</span>
+
+</div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
+
 </div>
 
 <p>
-The Analytics module transforms operational data into
-meaningful metrics that support informed decision-making.
+
+The Analytics module transforms operational data into meaningful
+performance metrics that support informed decision-making and
+continuous operational improvement.
+
 </p>
+
+<div class="knowledge-callout knowledge-info">
+
+<strong>Overview</strong>
+
+<p>
+
+Analytics consolidate scheduling, patrol, incident, and workforce
+information into actionable insights for supervisors and administrators.
+
+</p>
+
+</div>
 
 <h2>Available Metrics</h2>
 
 <ul>
+
 <li>Incident trends</li>
+
 <li>Patrol completion rates</li>
+
 <li>Workforce utilization</li>
+
 <li>Scheduling performance</li>
+
 <li>Operational activity</li>
+
 <li>Historical reporting</li>
+
 </ul>
 
-<h2>Continuous Improvement</h2>
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
 
 <p>
-Analytics help supervisors identify trends, improve staffing,
-and evaluate operational effectiveness over time.
+
+Review operational metrics regularly to identify staffing trends,
+improve efficiency, and support data-driven decision making.
+
+</p>
+
+</div>
+
+<h2>Operational Benefits</h2>
+
+<p>
+
+Historical reporting and trend analysis help leadership evaluate
+performance, allocate resources, and improve operational effectiveness
+over time.
+
+</p>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+
+Analytics should be interpreted alongside operational knowledge and
+current conditions to provide the most accurate assessment of
+performance.
+
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
 </p>
 
 `,
 
     about: `
 
-        <h1>About WorkForge</h1>
+<div class="knowledge-header">
 
-        <div class="version-badge">
+    <h1>ℹ️ About WorkForge</h1>
 
-            Version 5.5 • Release Candidate 3
+    <div class="knowledge-meta">
 
-        </div>
+    <span><strong>Audience:</strong> All Users</span>
 
-        <p>
+    <span><strong>Category:</strong> Platform</span>
 
-            <strong>WorkForge Security Management Platform</strong>
+    <span><strong>Updated:</strong> v5.6</span>
 
-        </p>
+</div>
 
-        <p>
+    <div class="version-badge">
+        WorkForge Dashboard v5.6
+    </div>
 
-            WorkForge is an integrated security operations platform
-            built to help security organizations manage personnel,
-            patrol operations, incident reporting, client communications,
-            and operational oversight through a single, unified system.
+</div>
 
-        </p>
+<p>
 
-        <p>
+<strong>WorkForge Security Management Platform</strong>
 
-            Designed specifically for the security industry,
-            WorkForge streamlines daily operations while improving
-            accountability, transparency, and operational awareness.
+</p>
 
-        </p>
+<p>
 
-        <p>
+WorkForge is an integrated security operations platform designed to
+help security organizations manage personnel, scheduling, patrol
+operations, incident reporting, client communications, and operational
+oversight through a single unified system.
 
-            <strong>
-            Built on real-world law enforcement and security operations
-            experience, WorkForge was designed to address the practical
-            challenges faced by supervisors, officers, administrators,
-            and clients in managing modern security operations.
-            </strong>
+</p>
 
-        </p>
+<div class="knowledge-callout knowledge-info">
 
-        <h2>Mission</h2>
+<strong>Designed for Security Professionals</strong>
 
-        <p>
+<p>
 
-            To provide security organizations with a modern,
-            integrated platform that improves operational efficiency,
-            accountability, and client confidence.
+Built on real-world law enforcement and private security experience,
+WorkForge addresses the practical operational challenges faced by
+administrators, supervisors, officers, and clients every day.
 
-        </p>
+</p>
 
-    `
+</div>
+
+<h2>Platform Modules</h2>
+
+<ul>
+
+<li>Administration</li>
+
+<li>Scheduling</li>
+
+<li>Marketplace</li>
+
+<li>Incident Management</li>
+
+<li>Patrol Operations</li>
+
+<li>Client Portal</li>
+
+<li>Analytics</li>
+
+<li>Knowledge Center</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Mission</strong>
+
+<p>
+
+Provide security organizations with a modern, integrated platform
+that improves operational efficiency, accountability, transparency,
+and client confidence.
+
+</p>
+
+</div>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Commitment</strong>
+
+<p>
+
+WorkForge continues to evolve through practical operational experience,
+user feedback, and continuous platform improvement.
+
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6
+
+</p>
+
+`,
 
 };

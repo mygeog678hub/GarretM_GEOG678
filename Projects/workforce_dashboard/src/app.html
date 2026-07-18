@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 
 <!-- Primary Meta Tags -->
-<title>WorkForge Dashboard v5.5 | Workforce Management & Digital Identity Platform</title>
+<title>WorkForge Dashboard v5.6 | Workforce Management & Digital Identity Platform</title>
 
 <meta
   property="og:image"
@@ -113,7 +113,11 @@
 
 <body>
 
-<div class="app-layout">  
+<div
+    id="appLayout"
+    class="app-layout"
+    style="display:none;"
+>
 
   <!-- MAIN CONTENT -->
 
@@ -139,7 +143,7 @@
           <h1>Dashboard</h1>
 
           <span class="version-tag">
-            v5.5
+            v5.6
           </span>
 
           
@@ -382,6 +386,15 @@
 
       </button>
 
+      <button
+          class="knowledge-nav"
+          data-article="administration"
+          onclick="loadKnowledgeArticle('administration')">
+
+          🛠️ Administration
+
+      </button>
+
        <button
           class="knowledge-nav"
           data-article="scheduling"
@@ -455,7 +468,7 @@
         <h1>Welcome to the WorkForge Knowledge Center</h1>
 
 <div class="version-badge">
-    Version 5.5 • Release Candidate 3
+    Version 5.6 • Release Candidate 3
 </div>
 
 <p class="knowledge-intro">
@@ -533,7 +546,7 @@
 
 WorkForge Security Management Platform<br>
 
-Version 5.5 RC3
+Version 5.6 RC3
 
 </p>
 
@@ -2577,6 +2590,13 @@ Version 5.5 RC3
   My Patrols
 </button>
 
+<button
+        id="logoutBtn"
+        class="logout-btn"
+        onclick="logout()">
+        Logout
+      </button>
+
   <div class="stats-grid">
 
     
@@ -3967,6 +3987,90 @@ Version 5.5 RC3
 
 </div>
 
+<div
+  id="firstTimeSetup"
+  class="setup-page"
+  style="display:none;"
+>
+
+  <div class="setup-card">
+
+    <img
+      src="workforge-logo.png"
+      class="setup-logo"
+      alt="WorkForge Logo"
+    >
+
+    <h1>
+      Welcome to WorkForge
+    </h1>
+
+    <p class="setup-subtitle">
+
+      This is your first time signing in.
+
+    </p>
+
+    <p>
+
+      Before accessing the dashboard,
+      let's secure your account and verify
+      your employee profile.
+
+    </p>
+
+    <div class="setup-checklist">
+
+      <ul class="setup-checklist">
+
+    <li>
+        <i class="fas fa-check-circle"></i>
+        Create a secure password
+    </li>
+
+    <li>
+        <i class="fas fa-check-circle"></i>
+        Verify your profile
+    </li>
+
+    <li>
+        <i class="fas fa-check-circle"></i>
+        Activate your account
+    </li>
+
+</ul>
+
+    </div>
+
+    <p class="setup-time">
+
+      Estimated time:
+      <strong>Less than 2 minutes</strong>
+
+    </p>
+
+    <div class="setup-actions">
+
+    <button
+        class="primary-btn"
+        onclick="startFirstTimeSetup()"
+    >
+        Get Started
+    </button>
+
+    <button
+        class="secondary-btn"
+        onclick="logout()"
+    >
+        Sign Out
+    </button>
+
+</div>
+
+  </div>
+
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -3975,6 +4079,32 @@ Version 5.5 RC3
 
 <script type="module" src="js/app.js"></script>
 <footer class="site-footer">
+
+  <div
+    id="firstTimeSetup"
+    class="page"
+    style="display:none;"
+>
+
+    <div class="setup-card">
+
+        <h1>Welcome to WorkForge</h1>
+
+       <ul class="setup-checklist">
+    <li>✓ Create a secure password</li>
+    <li>✓ Verify your employee profile</li>
+    <li>✓ Activate your account</li>
+</ul>
+
+        <button
+            onclick="startFirstTimeSetup()"
+        >
+            Get Started
+        </button>
+
+    </div>
+
+</div>
 
 </body>
 </html>

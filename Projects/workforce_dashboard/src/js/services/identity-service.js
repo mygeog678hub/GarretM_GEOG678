@@ -47,10 +47,17 @@ console.log("Looking for UID:", firebaseUser.uid);
 
   }
 
-  return {
+const profile = userSnap.data();
+
+return {
     uid: firebaseUser.uid,
-    ...userSnap.data()
-  };
+
+    ...profile,
+
+    onboardingRequired:
+        profile.mustChangePassword ||
+        !profile.profileVerified
+};
 
 }
 
