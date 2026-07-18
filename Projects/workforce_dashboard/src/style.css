@@ -3429,7 +3429,19 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
     flex-shrink:0;
 
+  
+
   }
+  .nav-left,
+.nav-right{
+    display:flex;
+    flex-wrap:nowrap;
+    flex-shrink:0;
+}
+
+.nav-right{
+    margin-left:0;
+}
 
   .nav-card button{
 
