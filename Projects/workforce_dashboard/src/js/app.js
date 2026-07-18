@@ -117,48 +117,36 @@ onAuthStateChanged(auth, async (user) => {
     const identityReady =
         await initializeIdentity();
 
-        applyRolePermissions(
-    window.currentUserProfile
-);
-
-        console.log("Profile:", window.currentUserProfile);
-
     if (!identityReady) return;
 
     currentUserProfile =
-    window.currentUserProfile;
+        window.currentUserProfile;
 
-     // ================================
-    // First-Time User Gate
-    // ================================
-  if (window.currentUserProfile.onboardingRequired) {
+    applyRolePermissions(currentUserProfile);
 
-    showFirstTimeSetup();
+    console.log("Profile:", currentUserProfile);
 
-    return;
+    if (currentUserProfile.onboardingRequired) {
 
-}
+        showFirstTimeSetup();
+        return;
 
-document.getElementById("appLayout")
-    .style.display = "block";
+    }
 
-await bootstrapApplication();
-
-    // ================================
-    // Role Routing
-    // ================================
-
-    if (window.currentUserProfile?.role === "client") {
+    if (currentUserProfile.role === "client") {
         window.location.href = "client-portal.html";
         return;
     }
 
     console.log(
         "Employee ID:",
-        window.currentUserProfile?.employeeId
-    );
+        currentUserProfile.employeeId
+    );    
 
     await bootstrapApplication();
+
+    document.getElementById("appLayout")
+        .style.display = "block";
 
     console.log(
         "Authenticated:",
@@ -889,22 +877,35 @@ onSnapshot(
 );
 }
 
+function hideAllPages() {
+
+    document.querySelectorAll(
+        "[id$='Page'], #officerPortal"
+    ).forEach(page => {
+        page.style.display = "none";
+    });
+
+}
+
 let bootstrapComplete = false;
 
 async function bootstrapApplication() {
+
+  console.log("Mileage page display:",
+    getComputedStyle(
+        document.getElementById("mileageReportPage")
+    ).display
+);
   console.log("Bootstrap Profile:", window.currentUserProfile);
 
   if (bootstrapComplete) {
     console.log("Bootstrap already completed.");
     return;
-  }
+  }  
 
-  bootstrapComplete = true;
-  
+  hideAllPages();
 
 // ================= BOOTSTRAP =================
-
-
 
   console.log("========== BOOTSTRAP START ==========");
 
@@ -1020,6 +1021,8 @@ async function bootstrapApplication() {
   startCheckpointListener();
 
   console.log("========== BOOTSTRAP COMPLETE ==========");
+
+  bootstrapComplete = true;
 
 }
 
@@ -11827,33 +11830,7 @@ function renderPatrolTemplates() {
       `;
 }
 
-function hideAllPages() {
 
-  document.getElementById(
-    "dashboardPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "schedulingPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "incidentReportsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "patrolsPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "officerIncidentReportPage"
-  ).style.display = "none";
-
-  document.getElementById(
-    "myPatrolsPage"
-  ).style.display = "none";
-
-}
 window.openCheckpointModal =
   function (patrolId) {
 
