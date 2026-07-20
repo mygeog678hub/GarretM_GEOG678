@@ -70,7 +70,8 @@ import {
     getNextSupplementNumber,
     saveIncidentSupplement,
     loadIncidentReviewQueueData,
-    voidIncidentReport      
+    voidIncidentReport,
+    loadIncidentDraft      
 } from "./services/incident-service.js";
 
 import {
@@ -108,6 +109,14 @@ import {
     completeFirstTimePassword,
     verifyProfile
 } from "./services/onboarding-service.js";
+
+import {
+  migrateTenantCollection,
+  migrateAllCollections
+} from "./services/migration-service.js";
+
+window.migrateTenantCollection = migrateTenantCollection;
+window.migrateAllCollections = migrateAllCollections;
 
 
 // ================= AUTH =================
@@ -149,7 +158,7 @@ onAuthStateChanged(auth, async (user) => {
         currentUserProfile.employeeId
     );    
 
-    await bootstrapApplication();
+    await bootstrapApplication();    
 
     document.getElementById("appLayout")
         .style.display = "block";
@@ -160,6 +169,7 @@ onAuthStateChanged(auth, async (user) => {
     );
 
 });
+
 // ================= DOM =================
 const empName = document.getElementById("empName");
 const empRole = document.getElementById("empRole");
@@ -237,7 +247,6 @@ function createSiteIcon(
 const geofenceCircles = {};
 const activeIncidentMarkers = {};
 const activeIncidentGeofences = {};
-const tenantId = "default";
 const criticalAlert =
   new Audio(
     "./assets/critical-alert.mp3"
@@ -1073,6 +1082,70 @@ async function bootstrapApplication() {
 
 });
 
+onSnapshot(
+
+  query(
+
+    collection(db, "activePatrols"),
+
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+
+  ),
+
+  snapshot => {
+
+    window.activePatrols =
+      snapshot.docs.map(
+        doc => ({
+          id: doc.id,
+          ...doc.data()
+        })
+      );
+
+    renderPatrolDashboard();
+    window.renderPatrolAnalytics();
+    window.renderPatrolCharts();
+
+  }
+
+);
+
+setInterval(() => {
+  refreshPatrolMetrics();
+
+  if (
+    document.getElementById(
+      "patrolDashboardPage"
+    ).style.display !== "none"
+  ) {
+    renderPatrolDashboard();
+
+  }
+}, 10000);
+
+document.getElementById(
+  "employeeRole"
+).onchange =
+  function () {
+
+    const section =
+      document.getElementById(
+        "securityLicenseSection"
+      );
+
+    section.style.display =
+      this.value ===
+        "Security Officer"
+
+        ? "block"
+
+        : "none";
+  };
+
     startClaimRequestsListener(result => {
 
     if (!result.success) {
@@ -1092,6 +1165,7 @@ async function bootstrapApplication() {
 });
   startTimeEntryListener();
   startCheckpointListener();
+  await refreshSupervisorDashboard();
 
   console.log("========== BOOTSTRAP COMPLETE ==========");
 
@@ -1394,55 +1468,7 @@ window.renderPatrolDashboard =
 
   };
 
-onSnapshot(
-  collection(db, "activePatrols"),
-  snapshot => {
 
-    window.activePatrols =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
-
-    renderPatrolDashboard();
-    window.renderPatrolAnalytics();
-    window.renderPatrolCharts();
-  }
-);
-
-setInterval(() => {
-  refreshPatrolMetrics();
-
-  if (
-    document.getElementById(
-      "patrolDashboardPage"
-    ).style.display !== "none"
-  ) {
-    renderPatrolDashboard();
-
-  }
-}, 10000);
-
-document.getElementById(
-  "employeeRole"
-).onchange =
-  function () {
-
-    const section =
-      document.getElementById(
-        "securityLicenseSection"
-      );
-
-    section.style.display =
-      this.value ===
-        "Security Officer"
-
-        ? "block"
-
-        : "none";
-  };
 
 window.addReviewHistory =
   async function (
@@ -8356,18 +8382,39 @@ This event has been logged.`
 
 async function refreshSupervisorDashboard() {
 
+  if (!currentUserProfile?.tenantId) {
+  console.warn(
+    "Skipping supervisor dashboard refresh: identity not initialized."
+  );
+  return;
+}
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const attendanceSnapshot =
-    await getDocs(
-      collection(db, "timeEntries")
-    );
+ const attendanceSnapshot =
+  await getDocs(
+    query(
+      collection(db, "timeEntries"),
+      where(
+        "tenantId",
+        "==",
+        currentUserProfile.tenantId
+      )
+    )
+  );
 
-  const scheduleSnapshot =
-    await getDocs(
-      collection(db, "shifts")
-    );
+ const scheduleSnapshot =
+  await getDocs(
+    query(
+      collection(db, "shifts"),
+      where(
+        "tenantId",
+        "==",
+        currentUserProfile.tenantId
+      )
+    )
+  );
 
   const attendance = attendanceSnapshot.docs.map(doc => ({
     id: doc.id,
@@ -15055,11 +15102,10 @@ window.saveCompanyProfile =
       window.companyProfile =
         companyProfile;
 
-      return companyProfile;
-
-      alert(
-        "Company profile saved."
-      );
+      return {
+  success: true,
+  companyProfile
+};
 
     } catch (error) {
 
@@ -15080,6 +15126,19 @@ window.loadCompanyProfile =
 
     try {
 
+      const tenantId =
+        currentUserProfile?.tenantId;
+
+      if (!tenantId) {
+
+        console.error(
+          "Cannot load company profile: tenantId is unavailable."
+        );
+
+        return;
+
+      }
+
       const docRef = doc(
         db,
         "tenants",
@@ -15093,7 +15152,7 @@ window.loadCompanyProfile =
 
       if (!docSnap.exists())
         return;
-
+      
       companyProfile =
         docSnap.data();
 
@@ -15955,13 +16014,24 @@ const report =
           "none";
 
       }
-      const attachments =
-        await loadIncidentAttachments(
-          reportId
-        );
-      renderIncidentAttachments(
-        attachments
-      );
+     const attachmentResult =
+  await loadIncidentAttachments(
+    reportId
+  );
+
+if (!attachmentResult.success) {
+
+  alert(
+    attachmentResult.message
+  );
+
+  return;
+
+}
+
+renderIncidentAttachments(
+  attachmentResult.attachments
+);
 
       showOfficerIncidentReport();
 
@@ -16188,32 +16258,35 @@ await addReviewHistory(
 const report =
   result.report;
 
-      await addDoc(
-        collection(
-          db,
-          "notifications"
-        ),
-        {
-          officerId:
-            report.officerId,
+     await addDoc(
+  collection(
+    db,
+    "notifications"
+  ),
+  {
+    tenantId:
+      currentUserProfile.tenantId,
 
-          incidentId:
-            id,
+    officerId:
+      report.officerId,
 
-          title:
-            "Report Returned",
+    incidentId:
+      id,
 
-          message:
-            `Case ${report.caseNumber ||
-            "Draft Report"
-            } was returned for corrections.`,
+    title:
+      "Report Returned",
 
-          read: false,
+    message:
+      `Case ${report.caseNumber ||
+      "Draft Report"
+      } was returned for corrections.`,
 
-          createdAt:
-            serverTimestamp()
-        }
-      );
+    read: false,
+
+    createdAt:
+      serverTimestamp()
+  }
+);
 
       alert(
         "Report returned to officer."
@@ -16303,6 +16376,7 @@ if (!result.success) {
   return;
 
 }
+const report = result.report;
      await addReviewHistory(
   returningIncidentId,
   "Returned for corrections",
@@ -16315,6 +16389,9 @@ if (!result.success) {
           "notifications"
         ),
         {
+
+          tenantId: currentUserProfile.tenantId,
+
           userId:
             report.officerId,
 
@@ -17556,9 +17633,18 @@ async function extendRecurringSeries(seriesId) {
 
   try {
 
-    const q = query(
+ const q = query(
   collection(db, "shifts"),
-  where("seriesId", "==", seriesId)
+  where(
+    "tenantId",
+    "==",
+    currentUserProfile.tenantId
+  ),
+  where(
+    "seriesId",
+    "==",
+    seriesId
+  )
 );
 
 const snapshot = await getDocs(q);
@@ -17689,6 +17775,7 @@ await addDoc(
   collection(db, "shifts"),
   {
     ...shiftTemplate,
+    tenantId: currentUserProfile.tenantId,
     startTime: occurrenceStart,
     endTime: occurrenceEnd,
     seriesId: firstShift.seriesId
@@ -17871,7 +17958,16 @@ function loadOpenShifts() {
 
     query(
       collection(db, "openShifts"),
-      where("status", "==", "open")
+      where(
+        "tenantId",
+        "==",
+        currentUserProfile.tenantId
+      ),
+      where(
+        "status",
+        "==",
+        "open"
+      )
     ),
 
     (snapshot) => {
@@ -17907,10 +18003,19 @@ function loadClaimRequests() {
 
     onSnapshot(
 
-        query(
-            collection(db, "openShifts"),
-            where("status", "==", "claimed")
-        ),
+      query(
+    collection(db, "openShifts"),
+    where(
+        "tenantId",
+        "==",
+        currentUserProfile.tenantId
+    ),
+    where(
+        "status",
+        "==",
+        "claimed"
+    )
+),
 
         (snapshot) => {
 
@@ -18667,6 +18772,3 @@ window.cancelOpenShift = cancelOpenShift;
 window.claimOpenShift = claimOpenShift;
 window.toggleCommunicationForm = toggleCommunicationForm;
 window.approveClaim = approveClaim;
-
-
-refreshSupervisorDashboard();

@@ -64,6 +64,10 @@ import {
     orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+import {
+  getCurrentUserProfile
+} from "./identity-service.js";
+
 
 /*********************************************************************
  * Incident Creation
@@ -619,18 +623,23 @@ export async function loadIncidentReportsData() {
   try {
 
     const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          orderBy(
-            "createdAt",
-            "desc"
-          )
-        )
-      );
+  await getDocs(
+    query(
+      collection(
+        db,
+        "incidentReports"
+      ),
+      where(
+        "tenantId",
+        "==",
+        currentUserProfile.tenantId
+      ),
+      orderBy(
+        "createdAt",
+        "desc"
+      )
+    )
+  );
 
     const incidentReports =
       snapshot.docs.map(doc => ({
@@ -782,6 +791,8 @@ export async function approveIncidentReport({
 
 export async function returnIncidentReport({
 
+  
+
     reportId,
 
     comments,
@@ -791,32 +802,33 @@ export async function returnIncidentReport({
     returnedByName
 
 }){
+  const reviewComments = comments?.trim() ?? "";
 
   try {
 
     await updateDoc(
-      doc(
-        db,
-        "incidentReports",
-        reportId
-      ),
-     {
+  doc(
+    db,
+    "incidentReports",
+    reportId
+  ),
+  {
     status: "returned",
 
     supervisorComments:
-        comments,
+      reviewComments,
 
     returnComments:
-        comments,
+      reviewComments,
 
     returnedAt:
-        serverTimestamp(),
+      serverTimestamp(),
 
     returnedBy,
 
     returnedByName
-}
-    );
+  }
+);
 
     const reportSnap =
       await getDoc(
