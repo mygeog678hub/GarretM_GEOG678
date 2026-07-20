@@ -117,8 +117,10 @@ export async function createIncidentAlert({
           reportedBy:
             reportedBy || "Unknown",
 
+            tenantId: window.currentUserProfile.tenantId,
+
           createdAt:
-            new Date().toISOString()
+  serverTimestamp()
 
         }
       );
@@ -210,6 +212,8 @@ export async function saveIncidentDraftRecord(
           ...incidentData,
 
           caseNumber: null,
+
+          tenantId: window.currentUserProfile.tenantId,
 
           status: "draft",
 
@@ -889,14 +893,20 @@ if (!historyResult.success) {
     return historyResult;
 }
 
-        await addDoc(
-            collection(db, "activityLogs"),
-            {
-                type: "Incident Report",
-                description: "Incident report voided",
-                timestamp: serverTimestamp()
-            }
-        );
+       await logActivity(
+    reportId,
+    "incident",
+    "Incident report voided",
+    currentEmployee?.name || "Supervisor",
+    "incident",
+    {
+        employeeId: currentEmployee?.id || "",
+        officerName:
+            currentEmployee?.name ||
+            currentEmployee?.fullName ||
+            "Supervisor"
+    }
+);
 
         return {
             success: true

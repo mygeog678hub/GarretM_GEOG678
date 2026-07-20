@@ -377,6 +377,9 @@ if (repeatEnabled) {
     repeatDays,
     repeatEndDate,
 
+    tenantId:
+    window.currentUserProfile.tenantId,
+
     status:
       "Scheduled",
 
@@ -597,6 +600,8 @@ siteCategory: siteData.siteCategory,
     repeatEndDate,
 
     seriesId: null,
+
+    tenantId: window.currentUserProfile.tenantId,
 
     status: "open",
 

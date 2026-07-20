@@ -1,3 +1,11 @@
+import { 
+    auth 
+} from "./firebase-config.js";
+
+import { 
+    sendPasswordResetEmail 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 // authorization-service.js
 
 export function applyRolePermissions(profile) {
@@ -59,6 +67,39 @@ function hideNavigation() {
 
     if (nav) {
         nav.style.display = "none";
+    }
+
+}
+
+
+
+export async function sendResetPassword(email) {
+
+    if (!email?.trim()) {
+        return {
+            success: false,
+            message: "Please enter your email address."
+        };
+    }
+
+    try {
+
+        await sendPasswordResetEmail(auth, email.trim());
+
+        return {
+            success: true,
+            message: "If an account exists for that email, a password reset link has been sent."
+        };
+
+    } catch (error) {
+
+        console.error(error);
+
+        return {
+            success: false,
+            message: error.message
+        };
+
     }
 
 }

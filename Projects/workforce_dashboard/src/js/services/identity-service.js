@@ -85,6 +85,10 @@ export async function initializeIdentity() {
 
         window.currentUserProfile =
             currentUserProfile;
+            console.log(
+    "Tenant:",
+    currentUserProfile.tenantId
+);
 
         console.log(
             "Application Profile:",

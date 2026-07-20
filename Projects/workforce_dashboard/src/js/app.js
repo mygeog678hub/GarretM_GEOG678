@@ -100,7 +100,8 @@ import {
 } from "./services/scheduling-utils.js";
 
 import {
-    applyRolePermissions
+    applyRolePermissions,
+    sendResetPassword
 } from "./services/authorization-service.js";
 
 import {
@@ -601,13 +602,27 @@ function fileToBase64(file) {
 
 // ================= LOAD =================
 function startEmployeeListener() {
-onSnapshot(collection(db, "employees"), snap => {
+onSnapshot(
 
- const employeeList = snap.docs.map(d => ({
-    id: d.id,
-    ...d.data(),
-    role: d.data().role || "Officer"
-}));
+  query(
+
+    collection(db, "employees"),
+
+    where(
+      "tenantId",
+      "==",
+      window.currentUserProfile.tenantId
+    )
+
+  ),
+
+  snap => {
+
+    const employeeList = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data(),
+      role: d.data().role || "Officer"
+    }));
 
 
 employees = employeeList;
@@ -675,52 +690,92 @@ setEmployees(employeeList);
 }
 
 function startPatrolTemplateListener() {
-onSnapshot(
-  collection(
-    db,
-    "patrolTemplates"
-  ),
-  snapshot => {
 
-    patrolTemplates =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
+  onSnapshot(
 
-    renderPatrolTemplates();
-  }
-);
+    query(
+
+      collection(
+        db,
+        "patrolTemplates"
+      ),
+
+      where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+      )
+
+    ),
+
+    snapshot => {
+
+      patrolTemplates =
+        snapshot.docs.map(
+          doc => ({
+            id: doc.id,
+            ...doc.data()
+          })
+        );
+
+      renderPatrolTemplates();
+
+    }
+
+  );
+
 }
 
 
 function startSiteListener() {
-  
-onSnapshot(
-  collection(db, "sites"),
-  snapshot => {
 
-    sites =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
+  onSnapshot(
 
-    window.sites = sites;
+    query(
 
-    updateMap();
-    populatePatrolSiteDropdown();
+      collection(db, "sites"),
 
-     // Refresh officer portal if it's active
+      where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+      )
+
+    ),
+
+    snapshot => {
+      console.log(
+  "Site snapshot size:",
+  snapshot.size
+);
+
+      sites =
+        snapshot.docs.map(
+          doc => ({
+            id: doc.id,
+            ...doc.data()
+          })
+        );
+        console.log(
+  "Sites loaded:",
+  snapshot.size,
+  sites
+);
+
+      window.sites = sites;
+
+      updateMap();
+      populatePatrolSiteDropdown();
+
+      // Refresh officer portal if it's active
       if (currentEmployee) {
         renderMySite();
       }
-  }
-);
+
+    }
+
+  );
+
 }
 
 
@@ -750,34 +805,45 @@ onSnapshot(collection(db, "vehicles"), snap => {
 
 
 function startActivityLogListener() {
-onSnapshot(
 
-  collection(db, "activityLogs"),
+  onSnapshot(
 
-  snap => {
+    query(
 
-    activityLogs = snap.docs
-      .map(doc => doc.data())
-      .sort((a, b) => {
+      collection(db, "activityLogs"),
 
-        const aTime =
-          a.timestamp?.seconds || 0;
+      where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+      )
 
-        const bTime =
-          b.timestamp?.seconds || 0;
+    ),
 
-        return bTime - aTime;
+    snap => {
 
-      });
+      activityLogs = snap.docs
+        .map(doc => doc.data())
+        .sort((a, b) => {
 
-    refreshActivityFeed();
-    updateDailySummary();
+          const aTime =
+            a.timestamp?.seconds || 0;
 
-  }
+          const bTime =
+            b.timestamp?.seconds || 0;
 
-);
+          return bTime - aTime;
+
+        });
+
+      refreshActivityFeed();
+      updateDailySummary();
+
+    }
+
+  );
+
 }
-
 
 
 function startActivityReportListener() {
@@ -810,7 +876,6 @@ onSnapshot(
   }
 );
 }
-
 
 function startSiteNoteListener() {
 onSnapshot(
@@ -923,7 +988,6 @@ async function bootstrapApplication() {
 // ================= BOOTSTRAP =================
 
   console.log("========== BOOTSTRAP START ==========");
-
   
   startEmployeeListener();
   startPatrolTemplateListener();
@@ -1536,6 +1600,8 @@ async function addSite() {
 
       status: "Active",
 
+      tenantId: window.currentUserProfile.tenantId,
+
       geofenceRadius,
 
       lat: +coords[0].lat,
@@ -1624,8 +1690,11 @@ async function addEmployee() {
 
     hireDate: "",
 
-    createdAt:
-      new Date().toISOString()
+    tenantId:
+  window.currentUserProfile.tenantId,
+
+createdAt:
+  new Date().toISOString()
   });
   empName.value = "";
   empRole.value = "";
@@ -1680,17 +1749,17 @@ async function addAsset() {
   }
 
   await addDoc(collection(db, "assets"), {
+    tenantId: window.currentUserProfile.tenantId,
     id,
     type,
     status: "active",
-    createdAt: new Date().toISOString()
+    createdAt: serverTimestamp()
   });
 
   document.getElementById("assetId").value = "";
   document.getElementById("assetType").value = "";
   document.getElementById("assetId").focus();
 }
-
 // ================= ASSIGN =================
 async function assign() {
 
@@ -1800,31 +1869,32 @@ async function assign() {
     mileageStatus
   });
   const docRef =
-    await addDoc(
-      collection(db, "assignments"),
-      {
-        employeeId,
-        siteId,
+  await addDoc(
+    collection(db, "assignments"),
+    {
+      tenantId:
+        window.currentUserProfile.tenantId,
 
-        assetId:
-          assignAsset.value || null,
+      employeeId,
+      siteId,
 
-        vehicleId:
-          assignVehicle.value || null,
+      assetId:
+        assignAsset.value || null,
 
-        mileageDistance,
-        mileageThreshold,
-        mileageIncentive,
-        mileageStatus,
+      vehicleId:
+        assignVehicle.value || null,
 
-        startTime:
-          new Date().toISOString(),
+      mileageDistance,
+      mileageThreshold,
+      mileageIncentive,
+      mileageStatus,
 
-        endTime: null
-      }
+      startTime:
+        serverTimestamp(),
 
-
-    );
+      endTime: null
+    }
+  );
 
   console.log(
     "Assignment created:",
@@ -1850,32 +1920,23 @@ async function logActivity(
 
   try {
 
-    await addDoc(
-      collection(db, "activityLogs"),
-      {
-        siteId,
+    await addDoc(collection(db, "activityLogs"), {
+  siteId,
+  siteName: metadata.siteName || "",
+  employeeId: metadata.employeeId || "",
+  officerName: metadata.officerName || user,
 
-        siteName:
-          metadata.siteName || "",
+  type,
+  message,
+  user,
+  scope,
 
-        employeeId:
-          metadata.employeeId || "",
+  tenantId: window.currentUserProfile.tenantId,
 
-        officerName:
-          metadata.officerName || user,
+  ...metadata,
 
-        type,
-
-        message,
-
-        user,
-
-        scope,
-
-        timestamp:
-          serverTimestamp()
-      }
-    );
+  timestamp: serverTimestamp()
+});
 
   } catch (err) {
 
@@ -1887,6 +1948,8 @@ async function logActivity(
   }
 
 }
+
+
 window.logActivity = logActivity;
 
 async function endBusinessDay() {
@@ -3608,6 +3671,8 @@ async function createSiteNote({
 
           createdBy,
 
+          tenantId: window.currentUserProfile.tenantId,
+
           createdAt:
             new Date().toISOString()
 
@@ -3659,6 +3724,7 @@ async function createSiteNote({
   }
 
 }
+
 async function saveSiteNote() {
 
   const siteId =
@@ -3862,12 +3928,15 @@ async function addVehicle() {
   const id = "VEH-" + Date.now();
 
   await addDoc(collection(db, "vehicles"), {
+    tenantId: window.currentUserProfile.tenantId,
+
     id,
     make: vehMake.value,
     model: vehModel.value,
     plate: vehPlate.value,
     unit: vehUnit.value,
-    createdAt: new Date().toISOString()
+
+    createdAt: serverTimestamp()
   });
 
   vehMake.value = "";
@@ -3899,16 +3968,23 @@ async function reportIssue() {
     }
 
     await addDoc(
-      collection(db, "issues"),
-      {
-        module,
-        description,
-        email,
-        severity,
-        createdAt: new Date().toISOString(),
-        status: "open"
-      }
-    );
+  collection(db, "issues"),
+  {
+    tenantId: window.currentUserProfile.tenantId,
+    userId: window.currentUserProfile.uid,
+
+    companyName: companyProfile?.companyName || "",
+
+    module,
+    description,
+    email,
+    severity,
+
+    status: "open",    
+
+    createdAt: serverTimestamp()
+  }
+);
 
     alert("Issue submitted");
 
@@ -4881,18 +4957,20 @@ async function deployDefaultCrews() {
           continue;
         }
 
-        await addDoc(
-          collection(db, "assignments"),
-          {
-            employeeId,
-            siteId: siteDoc.id,
-            assetId: null,
-            vehicleId: null,
-            startTime:
-              new Date().toISOString(),
-            endTime: null
-          }
-        );
+      await addDoc(
+  collection(db, "assignments"),
+  {
+    tenantId: window.currentUserProfile.tenantId,
+
+    employeeId,
+    siteId: siteDoc.id,
+    assetId: null,
+    vehicleId: null,
+
+    startTime: serverTimestamp(),
+    endTime: null
+  }
+);
 
         const employee =
           employees.find(
@@ -7887,26 +7965,29 @@ ${Math.round(allowedRadius)} meters`
     activeShift.id;
 
   await addDoc(
-    collection(
-      db,
-      "timeEntries"
-    ),
-    {
-      employeeId,
-      employeeName,
-      siteId,
-      siteName,
-      shiftId,
+  collection(
+    db,
+    "timeEntries"
+  ),
+  {
+    tenantId:
+      window.currentUserProfile.tenantId,
 
-      clockIn:
-        serverTimestamp(),
+    employeeId,
+    employeeName,
+    siteId,
+    siteName,
+    shiftId,
 
-      status:
-        "Clocked In",
+    clockIn:
+      serverTimestamp(),
 
-      preShiftPhoto:
-        preShiftPhoto
-          ? {
+    status:
+      "Clocked In",
+
+    preShiftPhoto:
+      preShiftPhoto
+        ? {
             imageBase64:
               preShiftPhoto,
             timestamp:
@@ -7916,21 +7997,21 @@ ${Math.round(allowedRadius)} meters`
             lng:
               officerLng
           }
-          : null,
+        : null,
 
-      monitoringActive:
-        true,
+    monitoringActive:
+      true,
 
-      lastGpsCheck:
-        null,
+    lastGpsCheck:
+      null,
 
-      gpsViolationCount:
-        0,
+    gpsViolationCount:
+      0,
 
-      currentlyInsideGeofence:
-        true
-    }
-  );
+    currentlyInsideGeofence:
+      true
+  }
+);
 
   startPostMonitoring();
 
@@ -8142,42 +8223,20 @@ async function clockOut() {
 
   if (outsideGeofence) {
 
-    await addDoc(
-      collection(
-        db,
-        "activityLogs"
-      ),
-      {
-        type:
-          "gpsViolation",
-
-        message:
-          `${activeEntry.employeeName} clocked out outside assigned geofence.`,
-
-        employeeId:
-          activeEntry.employeeId,
-
-        employeeName:
-          activeEntry.employeeName,
-
-        siteId:
-          activeEntry.siteId,
-
-        siteName:
-          activeEntry.siteName,
-
-        distanceMeters:
-          Math.round(distance),
-
-        distanceFeet:
-          Math.round(
-            distance * 3.28084
-          ),
-
-        timestamp:
-          serverTimestamp()
-      }
-    );
+    await logActivity(
+  activeEntry.siteId,
+  "gpsViolation",
+  `${activeEntry.employeeName} clocked out outside assigned geofence.`,
+  activeEntry.employeeName,
+  "site",
+  {
+    siteName: activeEntry.siteName,
+    employeeId: activeEntry.employeeId,
+    officerName: activeEntry.employeeName,
+    distanceMeters: Math.round(distance),
+    distanceFeet: Math.round(distance * 3.28084)
+  }
+);
 
   }
 
@@ -8207,7 +8266,7 @@ async function clockOut() {
 
     {
       clockOut:
-        clockOutTime.toISOString(),
+    serverTimestamp(),
 
       hoursWorked:
         Number(hoursWorked),
@@ -8558,10 +8617,17 @@ function showMissingClockIns() {
 
 async function checkPostAbandonment() {
 
-  const snapshot =
-    await getDocs(
-      collection(db, "timeEntries")
-    );
+ const snapshot =
+  await getDocs(
+    query(
+      collection(db, "timeEntries"),
+      where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+      )
+    )
+  );
 
   const activeEntries =
     snapshot.docs
@@ -8642,22 +8708,20 @@ async function checkPostAbandonment() {
       entry.currentlyInsideGeofence === true
     ) {
 
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type: "Post Abandonment",
-          employeeId: entry.employeeId,
-          employeeName: entry.employeeName,
-          siteId: entry.siteId,
-          siteName: entry.siteName,
-          description:
-            `Left post at ${entry.siteName}`,
-          timestamp: serverTimestamp()
-        }
-      );
+     await logActivity(
+  entry.siteId,
+  "Post Abandonment",
+  `Left post at ${entry.siteName}`,
+  entry.employeeName,
+  "site",
+  {
+    siteName: entry.siteName,
+    employeeId: entry.employeeId,
+    officerName: entry.employeeName,
+    distanceMeters: Math.round(distance),
+    distanceFeet: Math.round(distance * 3.28084)
+  }
+);
 
       await updateDoc(
         entryRef,
@@ -8704,22 +8768,18 @@ async function checkPostAbandonment() {
       entry.currentlyInsideGeofence === false
     ) {
 
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type: "Returned To Post",
-          employeeId: entry.employeeId,
-          employeeName: entry.employeeName,
-          siteId: entry.siteId,
-          siteName: entry.siteName,
-          description:
-            `Returned to ${entry.siteName}`,
-          timestamp: serverTimestamp()
-        }
-      );
+     await logActivity(
+  entry.siteId,
+  "Returned To Post",
+  `Returned to ${entry.siteName}`,
+  entry.employeeName,
+  "site",
+  {
+    siteName: entry.siteName,
+    employeeId: entry.employeeId,
+    officerName: entry.employeeName
+  }
+);
 
       await updateDoc(
         entryRef,
@@ -9525,34 +9585,35 @@ async function submitActivityReport() {
 
   }
 
-  await addDoc(
-    collection(
-      db,
-      "activityReports"
-    ),
-    {
+await addDoc(
+  collection(
+    db,
+    "activityReports"
+  ),
+  {
+    tenantId:
+      window.currentUserProfile.tenantId,
 
-      officerId:
-        currentOfficer.id,
+    officerId:
+      currentOfficer.id,
 
-      officerName:
-        currentOfficer.name,
+    officerName:
+      currentOfficer.name,
 
-      siteId:
-        activeEntry.siteId,
+    siteId:
+      activeEntry.siteId,
 
-      siteName:
-        activeEntry.siteName,
+    siteName:
+      activeEntry.siteName,
 
-      activityType,
+    activityType,
 
-      description,
+    description,
 
-      timestamp:
-        serverTimestamp()
-
-    }
-  );
+    timestamp:
+      serverTimestamp()
+  }
+);
 
   await logActivity(
   activeEntry.siteId,
@@ -9576,12 +9637,7 @@ async function submitActivityReport() {
 
   document.getElementById(
     "activityDescription"
-  ).value = "";
-
-  if (result.success) {
-
-    resetCommunicationForm();
-}
+  ).value = ""; 
 
 }
 
@@ -10297,22 +10353,18 @@ if (!result.success) {
       //
       // ACTIVITY LOG
       //
-      await addDoc(
-        collection(
-          db,
-          "activityLogs"
-        ),
-        {
-          type:
-            "Incident Report",
-
-          description:
-            `${caseNumber} created`,
-
-          timestamp:
-            serverTimestamp()
-        }
-      );
+      await logActivity(
+  incidentData.siteId,
+  "Incident Report",
+  `Incident ${caseNumber} submitted`,
+  currentOfficer?.name || "System",
+  "site",
+  {
+    siteName: incidentData.siteName,
+    employeeId: currentOfficer?.id,
+    officerName: currentOfficer?.name
+  }
+);
 
       alert(
         `Incident ${caseNumber} submitted successfully.`
@@ -11577,8 +11629,12 @@ async function createPatrolTemplate() {
       siteId,
       siteName:
         site?.name || "",
+
+        tenantId:
+      window.currentUserProfile.tenantId,
+
       createdAt:
-        Date.now()
+  serverTimestamp()
     }
   );
 
@@ -12366,7 +12422,7 @@ window.startPatrol =
             serverTimestamp(),
 
           scheduledStart:
-            Date.now(),
+  serverTimestamp(),
 
           expectedDuration:
             patrol.estimatedDuration ||
@@ -12374,6 +12430,9 @@ window.startPatrol =
 
           lastUpdated:
             serverTimestamp(),
+
+            tenantId:
+  window.currentUserProfile.tenantId,
 
           completed: false,
 
@@ -18506,6 +18565,21 @@ window.completeProfileVerification = async function () {
     document.getElementById(
         "setupCompletePage"
     ).style.display = "block";
+
+};
+
+window.forgotPassword = async function () {
+
+    const email = loginEmail.value.trim();
+
+    const result = await sendResetPassword(email);
+
+    if (!result.success) {
+        alert(result.message);
+        return;
+    }
+
+    alert(result.message);
 
 };
 
