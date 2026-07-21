@@ -2,8 +2,48 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // -------------------------
+    // Identity
+    // -------------------------
+
+    match /users/{userId} {
+
+      // Users can read only their own identity profile
+      allow read:
+        if signedIn()
+        && request.auth.uid == userId;
+
+      // No client-side modifications
+      allow create, update, delete: if false;
+    }
+
+    match /userSettings/{userId} {
+
+      // Users may read their own settings
+      allow read:
+        if signedIn()
+        && request.auth.uid == userId;
+
+      // Users may update only their own settings
+      allow update:
+        if signedIn()
+        && request.auth.uid == userId;
+
+      // Settings are created/administered elsewhere
+      allow create, delete: if false;
+    }
+
+    // -------------------------
+    // Everything else (temporary)
+    // -------------------------
+
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if signedIn();
     }
   }
 }
