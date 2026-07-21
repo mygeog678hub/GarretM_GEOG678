@@ -6352,6 +6352,12 @@ window.showCompanySettingsPage =
 
 function showDashboard() {
 
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        map.invalidateSize(true);
+    });
+});
+
   document.getElementById(
     "dashboardPage"
   ).style.display = "block";
@@ -6411,6 +6417,10 @@ function showDashboard() {
         ).style.display = "none";
 
   refreshSupervisorDashboard();
+
+    setTimeout(() => {
+    map.invalidateSize(true);
+}, 500);
 
 }
 
