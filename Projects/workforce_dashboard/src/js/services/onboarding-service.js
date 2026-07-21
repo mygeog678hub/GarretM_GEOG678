@@ -63,13 +63,13 @@ try {
         newPassword
     );
 
-    await updateDoc(
-        doc(db, "users", user.uid),
-        {
-            mustChangePassword: false,
-            passwordChangedAt: serverTimestamp()
-        }
-    );
+   await updateDoc(
+    doc(db, "userSettings", user.uid),
+    {
+        mustChangePassword: false,
+        passwordChangedAt: serverTimestamp()
+    }
+);
 
     return {
         success: true
@@ -156,13 +156,13 @@ export async function verifyProfile(
 
         }
 
-        await updateDoc(
-            doc(db, "users", user.uid),
-            {
-                profileVerified: true,
-                onboardedAt: serverTimestamp()
-            }
-        );
+      await updateDoc(
+    doc(db, "userSettings", user.uid),
+    {
+        profileVerified: true,
+        onboardedAt: serverTimestamp()
+    }
+);
 
         return {
             success: true

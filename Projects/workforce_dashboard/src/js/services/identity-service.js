@@ -16,48 +16,78 @@ import {
  */
 export async function getCurrentUserProfile() {
 
-  const firebaseUser =
-    auth.currentUser;
+    const firebaseUser = auth.currentUser;
 
     console.log("Firebase User:", firebaseUser);
 
-  if (!firebaseUser) {
+    if (!firebaseUser) {
 
-    return null;
+        return null;
 
-  }
+    }
 
-  const userRef = doc(
-    db,
-    "users",
-    firebaseUser.uid
-  );
+    // -------------------------
+    // Identity
+    // -------------------------
 
-  const userSnap =
-    await getDoc(userRef);
+    const userRef = doc(
+        db,
+        "users",
+        firebaseUser.uid
+    );
 
-    
+console.log("Reading users document...");
+
+const userSnap = await getDoc(userRef);
+
+console.log("✅ Users document read successfully.");
 console.log("Looking for UID:", firebaseUser.uid);
+console.log("User document exists:", userSnap.exists());
 
-    console.log("User document exists:", userSnap.exists());
-
-  if (!userSnap.exists()) {
+if (!userSnap.exists()) {
 
     return null;
 
-  }
+}
 
-const profile = userSnap.data();
+// -------------------------
+// User Settings
+// -------------------------
 
-return {
-    uid: firebaseUser.uid,
+const settingsRef = doc(
+    db,
+    "userSettings",
+    firebaseUser.uid
+);
 
-    ...profile,
+console.log("Reading userSettings document...");
 
-    onboardingRequired:
-        profile.mustChangePassword ||
-        !profile.profileVerified
-};
+const settingsSnap = await getDoc(settingsRef);
+
+console.log("✅ userSettings document read successfully.");
+console.log("userSettings exists:", settingsSnap.exists());
+
+    const profile = {
+
+        ...userSnap.data(),
+
+        ...(settingsSnap.exists()
+            ? settingsSnap.data()
+            : {})
+
+    };
+
+    return {
+
+        uid: firebaseUser.uid,
+
+        ...profile,
+
+        onboardingRequired:
+            profile.mustChangePassword ||
+            !profile.profileVerified
+
+    };
 
 }
 
