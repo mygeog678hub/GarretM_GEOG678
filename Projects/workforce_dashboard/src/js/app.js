@@ -603,6 +603,11 @@ onSnapshot(
 employees = employeeList;
 setEmployees(employeeList);
 
+employees = employeeList;
+setEmployees(employeeList);
+
+renderEmployees();
+
   console.log(
     "Employees Loaded:",
     employees.length
@@ -1847,7 +1852,7 @@ createdAt:
   new Date().toISOString()
   });
   empName.value = "";
-  empRole.value = "";
+  document.getElementById("employeeRole").value = "";
   empName.focus();
 }
 // ================= DELETE EMPLOYEE=================
@@ -1863,6 +1868,14 @@ async function deleteEmployee(id) {
 
   try {
     await deleteDoc(doc(db, "employees", id));
+
+    editingEmployeeId = null;
+
+    closeEditEmployeeModal();
+
+console.log("Modal closed");
+
+alert("Employee deleted successfully.");
   } catch (err) {
     console.error("Delete failed:", err);
   }
@@ -4476,6 +4489,8 @@ async function deleteSelectedSites() {
 
 function editEmployee(id) {
 
+  console.log("editEmployee called:", id);
+
   const emp =
     employees.find(e => e.id === id);
 
@@ -4517,7 +4532,7 @@ function editEmployee(id) {
   document.getElementById(
     "editLicenseSection"
   ).style.display =
-    emp.type === "Security Officer"
+    emp.designation === "Security Officer"
       ? "block"
       : "none";
 

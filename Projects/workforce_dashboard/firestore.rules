@@ -3,8 +3,50 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // -------------------------
+    // Helper Functions
+    // -------------------------
+
     function signedIn() {
       return request.auth != null;
+    }
+
+    function currentUser() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      );
+    }
+
+    function currentUserData() {
+      return currentUser().data;
+    }
+
+    function tenantId() {
+      return currentUserData().tenantId;
+    }
+
+    function role() {
+      return currentUserData().role;
+    }
+
+    function isAdmin() {
+      return role() == "Administrator";
+    }
+
+    function isSupervisor() {
+      return role() == "Supervisor";
+    }
+
+    function isOfficer() {
+      return role() == "Officer";
+    }
+
+    function sameTenant() {
+      return resource.data.tenantId == tenantId();
+    }
+
+    function sameTenantOnCreate() {
+      return request.resource.data.tenantId == tenantId();
     }
 
     // -------------------------
@@ -12,30 +54,53 @@ service cloud.firestore {
     // -------------------------
 
     match /users/{userId} {
-
-      // Users can read only their own identity profile
       allow read:
         if signedIn()
         && request.auth.uid == userId;
 
-      // No client-side modifications
       allow create, update, delete: if false;
     }
 
     match /userSettings/{userId} {
-
-      // Users may read their own settings
       allow read:
         if signedIn()
         && request.auth.uid == userId;
 
-      // Users may update only their own settings
       allow update:
         if signedIn()
         && request.auth.uid == userId;
 
-      // Settings are created/administered elsewhere
       allow create, delete: if false;
+    }
+
+        // -------------------------
+    // Employees
+    // -------------------------
+
+    match /employees/{employeeId} {
+
+      // Read employees within the same tenant
+      allow read:
+        if signedIn()
+        && sameTenant();
+
+      // Administrators and Supervisors may create employees
+      allow create:
+        if signedIn()
+        && sameTenantOnCreate()
+        && (isAdmin() || isSupervisor());
+
+      // Administrators and Supervisors may update employees
+      allow update:
+        if signedIn()
+        && sameTenant()
+        && (isAdmin() || isSupervisor());
+
+      // Only Administrators may delete employees
+      allow delete:
+        if signedIn()
+        && sameTenant()
+        && isAdmin();
     }
 
     // -------------------------
@@ -46,42 +111,4 @@ service cloud.firestore {
       allow read, write: if signedIn();
     }
   }
-}
-
-function signedIn() {
-  return request.auth != null;
-}
-
-function currentUser() {
-  return get(
-    /databases/$(database)/documents/users/$(request.auth.uid)
-  );
-}
-
-function currentUserData() {
-  return currentUser().data;
-}
-
-function tenantId() {
-  return currentUserData().tenantId;
-}
-
-function role() {
-  return currentUserData().role;
-}
-
-function isAdmin() {
-  return role() == "Administrator";
-}
-
-function isSupervisor() {
-  return role() == "Supervisor";
-}
-
-function isOfficer() {
-  return role() == "Officer";
-}
-
-function sameTenant() {
-  return resource.data.tenantId == tenantId();
 }
