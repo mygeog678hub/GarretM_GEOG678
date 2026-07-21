@@ -859,7 +859,8 @@ export async function updateScheduledShift({
     editingSeriesId,
     employees,
     sites,
-    shifts
+    shifts,
+    tenantId
 
 }) {
 
@@ -1036,17 +1037,22 @@ export async function updateScheduledShift({
       writeBatch(db);
 
     const seriesQuery =
-      query(
-        collection(
-          db,
-          "shifts"
-        ),
-        where(
-          "seriesId",
-          "==",
-          editingSeriesId
-        )
-      );
+  query(
+    collection(
+      db,
+      "shifts"
+    ),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    ),
+   where(
+  "tenantId",
+  "==",
+  tenantId
+)
+  );
 
     const snapshot =
       await getDocs(
@@ -1226,10 +1232,34 @@ export async function cancelMarketplaceShift(id) {
  * Realtime Listeners
  *********************************************************************/
 
-export function startShiftListener(callback) {
+export function startShiftListener(
+    tenantId,
+    callback
+) {
+
+    if (!tenantId) {
+
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
+
+        return () => {};
+
+    }
+
+    const q = query(
+        collection(db, "shifts"),
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        )
+    );
 
     return onSnapshot(
-        collection(db, "shifts"),
+
+        q,
 
         snapshot => {
 
@@ -1254,18 +1284,48 @@ export function startShiftListener(callback) {
             });
 
         }
+
     );
 
 }
 
-export function startOpenShiftsListener(callback) {
+export function startOpenShiftsListener(
+    tenantId,
+    callback
+) {
+
+    if (!tenantId) {
+
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
+
+        return () => {};
+
+    }
+
+    const q = query(
+
+        collection(db, "openShifts"),
+
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        ),
+
+        where(
+            "status",
+            "==",
+            "open"
+        )
+
+    );
 
     return onSnapshot(
 
-        query(
-            collection(db, "openShifts"),
-            where("status", "==", "open")
-        ),
+        q,
 
         snapshot => {
 
@@ -1300,15 +1360,43 @@ export function startOpenShiftsListener(callback) {
     );
 
 }
+export function startClaimRequestsListener(
+    tenantId,
+    callback
+) {
 
-export function startClaimRequestsListener(callback) {
+    if (!tenantId) {
+
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
+
+        return () => {};
+
+    }
+
+    const q = query(
+
+        collection(db, "openShifts"),
+
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        ),
+
+        where(
+            "status",
+            "==",
+            "claimed"
+        )
+
+    );
 
     return onSnapshot(
 
-        query(
-            collection(db, "openShifts"),
-            where("status", "==", "claimed")
-        ),
+        q,
 
         snapshot => {
 
@@ -1344,14 +1432,43 @@ export function startClaimRequestsListener(callback) {
 
 }
 
-export function startOfficerOpenShiftsListener(callback) {
+export function startOfficerOpenShiftsListener(
+    tenantId,
+    callback
+) {
+
+    if (!tenantId) {
+
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
+
+        return () => {};
+
+    }
+
+    const q = query(
+
+        collection(db, "openShifts"),
+
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        ),
+
+        where(
+            "status",
+            "==",
+            "open"
+        )
+
+    );
 
     return onSnapshot(
 
-        query(
-            collection(db, "openShifts"),
-            where("status", "==", "open")
-        ),
+        q,
 
         snapshot => {
 

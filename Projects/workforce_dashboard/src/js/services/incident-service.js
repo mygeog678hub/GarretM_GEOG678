@@ -461,63 +461,75 @@ export async function loadIncidentDraft(
 }
 
 
-export async function loadIncidentReviewQueueData() {
+export async function loadIncidentReviewQueueData(
+    tenantId
+) {
 
-  try {
+    if (!tenantId) {
 
-    const snapshot =
-      await getDocs(
-        query(
-          collection(
-            db,
-            "incidentReports"
-          ),
-          where(
-            "status",
-            "==",
-            "submitted"
-          ),
-          orderBy(
-            "submittedAt",
-            "desc"
-          )
-        )
-      );
+        return {
+            success: false,
+            message: "Tenant ID is required."
+        };
 
-    const incidentReports =
-      snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+    }
 
-    return {
+    try {
 
-      success: true,
+        const snapshot =
+            await getDocs(
+                query(
+                    collection(
+                        db,
+                        "incidentReports"
+                    ),
 
-      incidentReports
+                    where(
+                        "tenantId",
+                        "==",
+                        tenantId
+                    ),
 
-    };
+                    where(
+                        "status",
+                        "==",
+                        "submitted"
+                    ),
 
-  } catch (error) {
+                    orderBy(
+                        "submittedAt",
+                        "desc"
+                    )
+                )
+            );
 
-    console.error(
-      "Review Queue Error:",
-      error
-    );
+        const incidentReports =
+            snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
 
-    return {
+        return {
+            success: true,
+            incidentReports
+        };
 
-      success: false,
+    } catch (error) {
 
-      message:
-        "Error loading review queue."
+        console.error(
+            "Review Queue Error:",
+            error
+        );
 
-    };
+        return {
+            success: false,
+            message:
+                "Error loading review queue."
+        };
 
-  }
+    }
 
 }
-
 export async function loadIncidentAttachments(
   incidentId
 ) {
@@ -1209,86 +1221,141 @@ export async function getNextSupplementNumber(
  * Realtime Listeners
  *********************************************************************/
 
-export function startIncidentReportsListener(callback) {
+export function startIncidentReportsListener(
+    tenantId,
+    callback
+) {
 
-  return onSnapshot(
-    query(
-      collection(
-        db,
-        "incidentReports"
-      ),
-      orderBy(
-        "createdAt",
-        "desc"
-      )
-    ),
-    snapshot => {
+    if (!tenantId) {
 
-      const incidentReports =
-        snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
 
-      callback({
-        success: true,
-        incidentReports
-      });
-
-    },
-    error => {
-
-      console.error(
-        "Incident Reports listener error:",
-        error
-      );
-
-      callback({
-        success: false,
-        message:
-          "Unable to load incident reports."
-      });
+        return () => {};
 
     }
-  );
+
+    const q = query(
+        collection(
+            db,
+            "incidentReports"
+        ),
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        ),
+        orderBy(
+            "createdAt",
+            "desc"
+        )
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            const incidentReports =
+                snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+            callback({
+                success: true,
+                incidentReports
+            });
+
+        },
+
+        error => {
+
+            console.error(
+                "Incident Reports listener error:",
+                error
+            );
+
+            callback({
+                success: false,
+                message:
+                    "Unable to load incident reports."
+            });
+
+        }
+
+    );
 
 }
 
-export function startIncidentsListener(callback) {
+export function startIncidentsListener(
+    tenantId,
+    callback
+) {
 
-  return onSnapshot(
-    collection(
-      db,
-      "incidents"
-    ),
-    snapshot => {
+    if (!tenantId) {
 
-      const incidents =
-        snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        callback({
+            success: false,
+            message: "Tenant ID is required."
+        });
 
-      callback({
-        success: true,
-        incidents
-      });
-
-    },
-    error => {
-
-      console.error(
-        "Incidents listener error:",
-        error
-      );
-
-      callback({
-        success: false,
-        message:
-          "Unable to load incidents."
-      });
+        return () => {};
 
     }
-  );
+
+    const q = query(
+
+        collection(
+            db,
+            "incidents"
+        ),
+
+        where(
+            "tenantId",
+            "==",
+            tenantId
+        )
+
+    );
+
+    return onSnapshot(
+
+        q,
+
+        snapshot => {
+
+            const incidents =
+                snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+            callback({
+                success: true,
+                incidents
+            });
+
+        },
+
+        error => {
+
+            console.error(
+                "Incidents listener error:",
+                error
+            );
+
+            callback({
+                success: false,
+                message:
+                    "Unable to load incidents."
+            });
+
+        }
+
+    );
 
 }

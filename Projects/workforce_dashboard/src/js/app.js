@@ -335,40 +335,6 @@ function getStartOfWeek(date) {
 
 let incidents = [];
 
-startIncidentsListener(result => {
-
-  if (!result.success) {
-
-    console.error(result.message);
-
-    return;
-
-  }
-
-  incidents =
-    result.incidents;
-
-  refresh();
-  updateMap();
-
-});
-startIncidentReportsListener(result => {
-
-  if (!result.success) {
-
-    console.error(result.message);
-
-    return;
-
-  }
-
-  incidentReports =
-    result.incidentReports;
-
-  refresh();
-
-});
-
 // ================= MAP =================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -789,27 +755,68 @@ function startSiteListener() {
 
 
 function startAssetListener() {
-onSnapshot(collection(db, "assets"), snap => {
-  assets = snap.docs.map(d => ({
-    docId: d.id,
-    ...d.data()
-  }));
-  console.log("Assets Loaded:", assets);
-  refresh();
-  updateDailySummary();
-});
+
+  if (!currentUserProfile?.tenantId) {
+    console.error(
+      "Asset listener started before identity initialized."
+    );
+    return;
+  }
+
+  const q = query(
+    collection(db, "assets"),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(q, snap => {
+
+    assets = snap.docs.map(d => ({
+      docId: d.id,
+      ...d.data()
+    }));
+
+    console.log("Assets Loaded:", assets);
+
+    refresh();
+    updateDailySummary();
+
+  });
+
 }
 
 
 function startVehicleListener() {
-onSnapshot(collection(db, "vehicles"), snap => {
-  vehicles = snap.docs.map(d => ({
-    docId: d.id,
-    ...d.data()
-  }));
-  refresh();
-  updateDailySummary();
-});
+
+  if (!currentUserProfile?.tenantId) {
+    console.error("Vehicle listener started before identity initialized.");
+    return;
+  }
+
+  const q = query(
+    collection(db, "vehicles"),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(q, snap => {
+
+    vehicles = snap.docs.map(d => ({
+      docId: d.id,
+      ...d.data()
+    }));
+
+    refresh();
+    updateDailySummary();
+
+  });
+
 }
 
 
@@ -854,78 +861,129 @@ function startActivityLogListener() {
 
 }
 
-
 function startActivityReportListener() {
-onSnapshot(
-  collection(db, "activityReports"),
 
-  snap => {
-
-    console.log("SNAPSHOT FIRED");
-
-    activityReports = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    console.log(
-      "REPORT COUNT:",
-      snap.size
-    );
-
-  },
-
-  error => {
-
+  if (!currentUserProfile?.tenantId) {
     console.error(
-      "ACTIVITY REPORT SNAPSHOT ERROR:",
-      error
+      "Activity Report listener started before identity initialized."
     );
-
+    return;
   }
-);
+
+  const q = query(
+    collection(db, "activityReports"),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(
+
+    q,
+
+    snap => {
+
+      console.log("SNAPSHOT FIRED");
+
+      activityReports = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      console.log(
+        "REPORT COUNT:",
+        snap.size
+      );
+
+    },
+
+    error => {
+
+      console.error(
+        "ACTIVITY REPORT SNAPSHOT ERROR:",
+        error
+      );
+
+    }
+
+  );
+
 }
 
 function startSiteNoteListener() {
-onSnapshot(
-  collection(db, "siteNotes"),
-  snap => {
 
-    siteNotes = snap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    updateMap();
-
+  if (!currentUserProfile?.tenantId) {
+    console.error(
+      "Site Note listener started before identity initialized."
+    );
+    return;
   }
-);
+
+  const q = query(
+    collection(db, "siteNotes"),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(
+    q,
+    snap => {
+
+      siteNotes = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      updateMap();
+
+    }
+  );
 }
-
-
-
-
 
 function startTimeEntryListener() {
-onSnapshot(
-  collection(db, "timeEntries"),
-  snapshot => {
 
-    timeEntries =
-      snapshot.docs.map(
-        doc => ({
-          id: doc.id,
-          ...doc.data()
-        })
-      );
-
-    renderActiveTimeEntries();
-
-    updateMap();
-
+  if (!currentUserProfile?.tenantId) {
+    console.error(
+      "Time Entry listener started before identity initialized."
+    );
+    return;
   }
-);
+
+  const q = query(
+    collection(db, "timeEntries"),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(
+    q,
+    snapshot => {
+
+      timeEntries =
+        snapshot.docs.map(
+          doc => ({
+            id: doc.id,
+            ...doc.data()
+          })
+        );
+
+      renderActiveTimeEntries();
+
+      updateMap();
+
+    }
+  );
+
 }
+
 
 window.launchWorkForge = function () {
 
@@ -939,31 +997,49 @@ window.launchWorkForge = function () {
 
 
 function startCheckpointListener() {
-onSnapshot(
 
-  collection(
-    db,
-    "checkpoints"
-  ),
-
-  snapshot => {
-
-    checkpoints =
-      snapshot.docs.map(
-        doc => ({
-
-          id: doc.id,
-
-          ...doc.data()
-
-        })
-      );
-
-    renderPatrolTemplates();
-
+  if (!currentUserProfile?.tenantId) {
+    console.error(
+      "Checkpoint listener started before identity initialized."
+    );
+    return;
   }
 
-);
+  const q = query(
+    collection(
+      db,
+      "checkpoints"
+    ),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    )
+  );
+
+  return onSnapshot(
+
+    q,
+
+    snapshot => {
+
+      checkpoints =
+        snapshot.docs.map(
+          doc => ({
+
+            id: doc.id,
+
+            ...doc.data()
+
+          })
+        );
+
+      renderPatrolTemplates();
+
+    }
+
+  );
+
 }
 
 function hideAllPages() {
@@ -1023,8 +1099,9 @@ async function bootstrapApplication() {
   startActivityLogListener();
   startActivityReportListener();
   startSiteNoteListener();
-  startShiftListener(result => {
-
+  startShiftListener(
+    currentUserProfile.tenantId,
+    result => {
     if (!result.success) {
 
         console.error(result.message);
@@ -1046,41 +1123,67 @@ async function bootstrapApplication() {
 
     loadCompanyProfile();
 
-    startOpenShiftsListener(result => {
+    startOpenShiftsListener(
+    currentUserProfile.tenantId,
+    result => {
 
-    if (!result.success) {
+        if (!result.success) {
 
-        console.error(result.message);
-        return;
+            console.error(result.message);
+            return;
+
+        }
+
+        openShifts = result.openShifts;
+
+        console.log(
+            "Open Shifts:",
+            openShifts
+        );
+
+        renderOpenShifts();
 
     }
+);
 
-    openShifts = result.openShifts;
+startIncidentsListener(
+    currentUserProfile.tenantId,
+    result => {
 
-    console.log(
-        "Open Shifts:",
-        openShifts
-    );
+  if (!result.success) {
 
-    renderOpenShifts();
+    console.error(result.message);
+
+    return;
+
+  }
+
+  incidents =
+    result.incidents;
+
+  refresh();
+  updateMap();
 
 });
 
-    startOfficerOpenShiftsListener(result => {
+    startOfficerOpenShiftsListener(
+    currentUserProfile.tenantId,
+    result => {
 
-    if (!result.success) {
+        if (!result.success) {
 
-        console.error(result.message);
-        return;
+            console.error(result.message);
+            return;
+
+        }
+
+        officerOpenShifts =
+            result.officerOpenShifts;
+
+        renderOfficerOpenShifts();
 
     }
-
-    officerOpenShifts =
-        result.officerOpenShifts;
-
-    renderOfficerOpenShifts();
-
-});
+);
 
 onSnapshot(
 
@@ -1146,19 +1249,40 @@ document.getElementById(
         : "none";
   };
 
-    startClaimRequestsListener(result => {
+  startIncidentReportsListener(
+    currentUserProfile.tenantId,
+    result => {
 
-    if (!result.success) {
+  if (!result.success) {
 
-        console.error(result.message);
-        return;
+    console.error(result.message);
 
-    }
+    return;
 
-    claimedShifts =
-        result.claimedShifts;
+  }
 
-    renderClaimRequests();
+  incidentReports =
+    result.incidentReports;
+
+  refresh();
+
+});
+
+   startClaimRequestsListener(
+    currentUserProfile.tenantId,
+    result => {
+
+        if (!result.success) {
+
+            console.error(result.message);
+            return;
+
+        }
+
+        claimedShifts =
+            result.claimedShifts;
+
+        renderClaimRequests();
 
 });
 
@@ -3951,11 +4075,17 @@ async function addVehicle() {
     return;
   }
 
+  const tenantId = currentUserProfile?.tenantId;
+
+  if (!tenantId) {
+    alert("Unable to determine tenant.");
+    return;
+  }
+
   const id = "VEH-" + Date.now();
 
   await addDoc(collection(db, "vehicles"), {
-    tenantId: window.currentUserProfile.tenantId,
-
+    tenantId,
     id,
     make: vehMake.value,
     model: vehModel.value,
@@ -12023,24 +12153,27 @@ window.saveCheckpoint =
         "checkpoints"
       ),
 
-      {
-        patrolId:
-          currentPatrolId,
+    {
+    patrolId:
+        currentPatrolId,
 
-        checkpointName,
+    tenantId:
+        currentUserProfile.tenantId,
 
-        description,
+    checkpointName,
 
-        requiresPhoto,
+    description,
 
-        requiresNotes,
+    requiresPhoto,
 
-        sequence:
-          nextSequence,
+    requiresNotes,
 
-        createdAt:
-          serverTimestamp()
-      }
+    sequence:
+        nextSequence,
+
+    createdAt:
+        serverTimestamp()
+}
 
     );
     document.getElementById(
@@ -12524,10 +12657,19 @@ window.startPatrol =
 
 async function findActivePatrol(officerId) {
 
+  if (!currentUserProfile?.tenantId) {
+    return null;
+  }
+
   const snapshot =
     await getDocs(
       query(
         collection(db, "activePatrols"),
+        where(
+          "tenantId",
+          "==",
+          currentUserProfile.tenantId
+        ),
         where(
           "officerId",
           "==",
@@ -12558,10 +12700,19 @@ async function findActivePatrol(officerId) {
 window.logPatrolEvent =
   async function (eventData) {
 
+    if (!currentUserProfile?.tenantId) {
+  throw new Error(
+    "Cannot log patrol event: tenantId unavailable."
+  );
+}
+
     try {
 
       const payload = {
-        ...eventData
+        ...eventData,
+
+        tenantId:
+          currentUserProfile.tenantId
       };
 
       if (
@@ -12587,7 +12738,6 @@ window.logPatrolEvent =
       );
     }
   };
-
 window.loadCurrentCheckpoint =
   async function (activePatrolId) {
 
@@ -13085,6 +13235,9 @@ window.saveCheckpointEvidence =
         ),
 
         {
+
+          tenantId:
+      currentUserProfile.tenantId,
 
           patrolSessionId:
             currentActivePatrolId,
@@ -13727,23 +13880,32 @@ window.loadPatrolTimeline =
     patrolSessionId
   ) {
 
+    if (!currentUserProfile?.tenantId) {
+  return [];
+}
+
     // Load patrol events
-    const eventsQuery =
-      query(
-        collection(
-          db,
-          "patrolEvents"
-        ),
-        where(
-          "patrolSessionId",
-          "==",
-          patrolSessionId
-        ),
-        orderBy(
-          "timestamp",
-          "asc"
-        )
-      );
+   const eventsQuery =
+  query(
+    collection(
+      db,
+      "patrolEvents"
+    ),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    ),
+    where(
+      "patrolSessionId",
+      "==",
+      patrolSessionId
+    ),
+    orderBy(
+      "timestamp",
+      "asc"
+    )
+  );
 
     const eventsSnapshot =
       await getDocs(
@@ -13759,18 +13921,23 @@ window.loadPatrolTimeline =
       );
 
     // Load checkpoint evidence
-    const completionsQuery =
-      query(
-        collection(
-          db,
-          "patrolCompletions"
-        ),
-        where(
-          "patrolSessionId",
-          "==",
-          patrolSessionId
-        )
-      );
+   const completionsQuery =
+  query(
+    collection(
+      db,
+      "patrolCompletions"
+    ),
+    where(
+      "tenantId",
+      "==",
+      currentUserProfile.tenantId
+    ),
+    where(
+      "patrolSessionId",
+      "==",
+      patrolSessionId
+    )
+  );
 
     const completionsSnapshot =
       await getDocs(
@@ -16063,8 +16230,10 @@ window.loadIncidentReviewQueue =
 
     try {
 
-      const result =
-  await loadIncidentReviewQueueData();
+     const result =
+    await loadIncidentReviewQueueData(
+        currentUserProfile.tenantId
+    );
 
 if (!result.success) {
 
@@ -16538,23 +16707,40 @@ window.listenForNotifications =
 
     if (!user) return;
 
-    onSnapshot(
-      query(
-        collection(
-          db,
-          "notifications"
-        ),
-        where(
-          "officerId",
-          "==",
-          currentEmployee.id
-        ),
-        orderBy(
-          "createdAt",
-          "desc"
-        )
-      ),
-      (snapshot) => {
+   if (
+  !currentUserProfile?.tenantId ||
+  !currentEmployee?.id
+) {
+  console.error(
+    "Notification listener started before identity initialized."
+  );
+  return;
+}
+
+const q = query(
+  collection(
+    db,
+    "notifications"
+  ),
+  where(
+    "tenantId",
+    "==",
+    currentUserProfile.tenantId
+  ),
+  where(
+    "officerId",
+    "==",
+    currentEmployee.id
+  ),
+  orderBy(
+    "createdAt",
+    "desc"
+  )
+);
+
+return onSnapshot(
+  q,
+  (snapshot) => {
 
         console.log(
           "Notifications found:",
@@ -17298,14 +17484,38 @@ document
 
 window.loadMileageReport =
   async function () {
+
     console.log(
       "Mileage Report:",
       mileageReportShifts
     );
+
+    if (!currentUserProfile?.tenantId) {
+
+      console.error(
+        "No tenant ID available."
+      );
+
+      return;
+    }
+
     try {
+
       const q = query(
+
         collection(db, "shifts"),
-        orderBy("startTime", "desc")
+
+        where(
+          "tenantId",
+          "==",
+          currentUserProfile.tenantId
+        ),
+
+        orderBy(
+          "startTime",
+          "desc"
+        )
+
       );
 
       const snapshot =
@@ -17328,11 +17538,14 @@ window.loadMileageReport =
       renderMileageReport();
 
     } catch (error) {
+
       console.error(
         "Mileage Report Error:",
         error
       );
+
     }
+
   };
 
 window.renderMileageReport =
