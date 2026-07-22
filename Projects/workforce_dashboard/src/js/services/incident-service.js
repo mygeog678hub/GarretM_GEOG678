@@ -61,7 +61,8 @@ import {
     doc,
     serverTimestamp,
     onSnapshot,
-    orderBy
+    orderBy,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -1085,58 +1086,80 @@ export async function generateIncidentCaseNumber() {
     const currentYear =
       new Date().getFullYear();
 
+    const tenantId =
+      window.currentUserProfile.tenantId;
+
     const counterRef =
       doc(
         db,
         "counters",
-        "incidentCounter"
+        `${tenantId}_incidentCounter`
       );
 
-    const snap =
-      await getDoc(counterRef);
-
-    let year =
-      currentYear;
-
-    let currentNumber =
-      1;
-
-    if (snap.exists()) {
-
-      const data =
-        snap.data();
-
-      year =
-        data.year || currentYear;
-
-      currentNumber =
-        data.currentNumber || 1;
-
-      if (year !== currentYear) {
-
-        year =
-          currentYear;
-
-        currentNumber =
-          1;
-
-      }
-
-    }
-
     const caseNumber =
-      `IC-${year}${String(
-        currentNumber
-      ).padStart(5, "0")}`;
+      await runTransaction(
+        db,
+        async transaction => {
 
-    await setDoc(
-      counterRef,
-      {
-        year,
-        currentNumber:
-          currentNumber + 1
-      }
-    );
+          const snap =
+            await transaction.get(
+              counterRef
+            );
+
+          let year =
+            currentYear;
+
+          let currentNumber =
+            1;
+
+          if (snap.exists()) {
+
+            const data =
+              snap.data();
+
+            year =
+              data.year ||
+              currentYear;
+
+            currentNumber =
+              data.currentNumber ||
+              1;
+
+            if (
+              year !== currentYear
+            ) {
+
+              year =
+                currentYear;
+
+              currentNumber =
+                1;
+
+            }
+
+          }
+
+          const newCaseNumber =
+            `IC-${year}${String(
+              currentNumber
+            ).padStart(5, "0")}`;
+
+          transaction.set(
+            counterRef,
+            {
+              tenantId,
+
+              year,
+
+              currentNumber:
+                currentNumber + 1
+            }
+          );
+
+          return newCaseNumber;
+
+        }
+      );
 
     return {
 

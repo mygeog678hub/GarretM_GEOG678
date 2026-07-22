@@ -629,21 +629,8 @@ renderEmployees();
 
  if (employee) {
 
-    currentOfficer = employee;
-
-    
-    console.log("currentOfficer set:", currentOfficer);
-    console.log("currentEmployee:", currentEmployee);
-
-    console.log(
-        "Employee Session:",
-        employee.name
-    );
-
-    console.log(
-        "Employee ID:",
-        employee.id
-    );
+    currentOfficer = employee;   
+   
 
     listenForNotifications();
 
@@ -1282,11 +1269,10 @@ refresh();
 
 loadMyReports();
 
-loadReviewQueue();
+loadIncidentReviewQueueData();
 
-loadInvestigativeReports();
+loadIncidentReportsData();
 
-loadNotifications();
 
 });
 
@@ -6520,6 +6506,7 @@ window.showOfficerPortal =
     renderMySite();
     renderMyAttendanceStatus();
     await resumeActivePatrol();
+    resetIncidentEditor();
 
   };    
 
@@ -10608,49 +10595,23 @@ if (!result.success) {
         `Incident ${caseNumber} submitted successfully.`
       );
 
-      clearIncidentPhotos();
-
-      document.getElementById(
-        "editingIncidentId"
-      ).value = "";
-
-      document.getElementById(
-        "incidentType"
-      ).value = "";
-
-      document.getElementById(
-        "incidentSeverity"
-      ).selectedIndex = 0;
-
-      document.getElementById(
-        "incidentNarrative"
-      ).value = "";
-
-      document.getElementById(
-        "personsContainer"
-      ).innerHTML = "";
-
-      document.getElementById(
-        "vehiclesContainer"
-      ).innerHTML = "";
-
-      document.getElementById(
-        "incidentAgency"
-      ).value = "";
-
-      document.getElementById(
-        "incidentAgencyOfficer"
-      ).value = "";
-
-      document.getElementById(
-        "incidentAgencyBadge"
-      ).value = "";
-
-      document.getElementById(
-        "incidentAgencyCase"
-      ).value = "";
-
+      resetIncidentEditor();
+    
     } catch (error) {
+
+      console.log(
+  "Before reset:",
+  document.getElementById("editingIncidentId").value
+);
+
+document.getElementById(
+  "editingIncidentId"
+).value = "";
+
+console.log(
+  "After reset:",
+  document.getElementById("editingIncidentId").value
+);
 
       console.error(
         "Incident Save Error:",
@@ -15985,6 +15946,7 @@ function renderDraftReports(
 
 }
 
+
 window.editDraft =
   async function (
     reportId
@@ -16280,6 +16242,62 @@ renderIncidentAttachments(
     }
 
   };
+
+window.resetIncidentEditor = function () {
+
+  clearIncidentPhotos();
+
+  document.getElementById(
+    "editingIncidentId"
+  ).value = "";
+
+  document.getElementById(
+    "incidentType"
+  ).value = "";
+
+  document.getElementById(
+    "incidentSeverity"
+  ).selectedIndex = 0;
+
+  document.getElementById(
+    "incidentNarrative"
+  ).value = "";
+
+  document.getElementById(
+    "incidentAgency"
+  ).value = "";
+
+  document.getElementById(
+    "incidentAgencyOfficer"
+  ).value = "";
+
+  document.getElementById(
+    "incidentAgencyBadge"
+  ).value = "";
+
+  document.getElementById(
+    "incidentAgencyCase"
+  ).value = "";
+
+  document.getElementById(
+    "personsContainer"
+  ).innerHTML = "";
+
+  document.getElementById(
+    "vehiclesContainer"
+  ).innerHTML = "";
+
+  const commentsCard =
+    document.getElementById(
+      "supervisorCommentsCard"
+    );
+
+  if (commentsCard) {
+    commentsCard.style.display =
+      "none";
+  }
+
+};
 
 window.loadIncidentReviewQueue =
   async function () {
@@ -16904,72 +16922,20 @@ window.openNotification =
           readAt:
             serverTimestamp()
         }
-      );
+      );      
     }
 
     if (
       notification.incidentId
     ) {
 
-      editDraft(
+      await editDraft(
         notification.incidentId
       );
+
+      
     }
   };
-
-window.voidIncident =
-  async function (
-    reportId
-  ) {
-    try {
-
-      const reason =
-        prompt(
-          "Enter reason for voiding this report:"
-        );
-
-      if (reason === null) {
-        return;
-      }
-
-      const result =
-    await voidIncidentReport(
-        reportId,
-        reason,
-        currentEmployee
-    );
-
-if (!result.success) {
-
-    throw new Error(
-        result.message
-    );
-}
-
-      alert(
-        "Incident has been voided."
-      );
-
-      closeIncidentModal();
-
-      loadIncidentReports?.();
-      loadIncidentReviewQueue?.();
-
-    } catch (err) {
-
-      console.error(
-        "Void Incident Error:",
-        err
-      );
-
-      alert(
-        "Unable to void incident."
-      );
-    }
-  };
-
-window.currentReportFilter =
-  "all";
 
 window.filterMyReports =
   function (status) {
@@ -17086,30 +17052,6 @@ async function uploadIncidentPhotos(
   incidentId
 ) {
 
-  console.log(
-    "uploadIncidentPhotos called"
-  );
-
-  console.log(
-    "incidentPhotoFiles:",
-    incidentPhotoFiles
-  );
-
-  console.log(
-    "Length:",
-    incidentPhotoFiles.length
-  );
-
-  console.log(
-    "incidentPhotoFiles:",
-    incidentPhotoFiles
-  );
-
-  console.log(
-    "Length:",
-    incidentPhotoFiles.length
-  );
-
   const files =
     incidentPhotoFiles;
   console.log(
@@ -17165,9 +17107,7 @@ async function uploadIncidentPhotos(
 
 
 function clearIncidentPhotos() {
-  console.log(
-    "Clearing incident photos..."
-  );
+
 
   incidentPhotoFiles = [];
 
@@ -17178,11 +17118,16 @@ function clearIncidentPhotos() {
   document.getElementById(
     "photoPreviewContainer"
   ).innerHTML = "";
+
+    document.getElementById(
+    "existingPhotoContainer"
+  ).innerHTML = "";
 }
 
 function renderIncidentAttachments(
   attachments
 ) {
+
   const container =
     document.getElementById(
       "existingPhotoContainer"
@@ -17199,39 +17144,9 @@ function renderIncidentAttachments(
         document.createElement(
           "img"
         );
-      img.src =
-        photo.downloadURL;
-
-      img.onclick =
-        () =>
-          openEvidenceViewer(
-            photo.downloadURL
-          );
 
       img.src =
         photo.downloadURL;
-
-      img.style.width =
-        "100px";
-
-      img.style.height =
-        "100px";
-
-      img.style.objectFit =
-        "cover";
-
-      img.style.cursor =
-        "pointer";
-
-      img.onclick =
-        () =>
-          openEvidenceViewer(
-            photo.downloadURL
-          );
-
-      container.appendChild(
-        img
-      );
 
       img.style.width =
         "100px";
@@ -17251,11 +17166,19 @@ function renderIncidentAttachments(
       img.style.cursor =
         "pointer";
 
+      img.onclick =
+        () =>
+          openEvidenceViewer(
+            photo.downloadURL
+          );
+
       container.appendChild(
         img
       );
+
     }
   );
+
 }
 
 window.openEvidenceViewer =
