@@ -74,8 +74,8 @@ service cloud.firestore {
     }
 
         // -------------------------
-    // Employees
-    // -------------------------
+      // Employees
+      // -------------------------
 
     match /employees/{employeeId} {
 
@@ -102,6 +102,104 @@ service cloud.firestore {
         && sameTenant()
         && isAdmin();
     }
+
+     // -------------------------
+    // Sites
+    // -------------------------
+
+    match /sites/{siteId} {
+
+  allow read:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId);
+
+  allow create:
+    if signedIn() &&
+       sameTenantOnCreate() &&
+       (
+         isAdmin() ||
+         isSupervisor()
+       );
+
+  allow update:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       (
+         isAdmin() ||
+         isSupervisor()
+       );
+
+  allow delete:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       isAdmin();
+}
+
+    // -------------------------
+    // Shifts
+    // -------------------------
+
+match /shifts/{shiftId} {
+
+  allow read:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId);
+
+  allow create:
+    if signedIn() &&
+       sameTenantOnCreate() &&
+       (
+         isAdmin() ||
+         isSupervisor()
+       );
+
+  allow update:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       (
+         isAdmin() ||
+         isSupervisor()
+       );
+
+  allow delete:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       isAdmin();
+}
+
+ // -------------------------
+    // TimeEntries
+    // -------------------------
+
+match /timeEntries/{timeEntryId} {
+
+  allow read:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId);
+
+  allow create:
+    if signedIn() &&
+       sameTenantOnCreate() &&
+       (
+         isAdmin() ||
+         isSupervisor() ||
+         isOfficer()
+       );
+
+  allow update:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       (
+         isAdmin() ||
+         isSupervisor() ||
+         isOfficer()
+       );
+
+  allow delete:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       isAdmin();
+}
 
     // -------------------------
     // Everything else (temporary)

@@ -743,6 +743,7 @@ function startSiteListener() {
 );
 
       window.sites = sites;
+      renderSites();
 
       updateMap();
       populatePatrolSiteDropdown();
@@ -972,17 +973,23 @@ function startTimeEntryListener() {
     q,
     snapshot => {
 
-      timeEntries =
-        snapshot.docs.map(
-          doc => ({
-            id: doc.id,
-            ...doc.data()
-          })
-        );
+     timeEntries =
+  snapshot.docs.map(
+    doc => ({
+      id: doc.id,
+      ...doc.data()
+    })
+  );
 
-      renderActiveTimeEntries();
+renderActiveTimeEntries();
 
-      updateMap();
+renderSchedules();
+
+renderWeeklyScheduleBoard();
+
+updateMap();
+
+refreshSupervisorDashboard();
 
     }
   );
@@ -1125,6 +1132,8 @@ async function bootstrapApplication() {
     renderMySite();
 
     renderMyAttendanceStatus();
+
+    refreshSupervisorDashboard();
 
     loadCompanyProfile();
 
@@ -9003,31 +9012,41 @@ async function checkPostAbandonment() {
 
     // NO STATE CHANGE
 
-    else {
+else {
 
-      await updateDoc(
-        entryRef,
-        {
-          lastGpsCheck:
-            serverTimestamp()
-        }
-      );
-
-      if (
-        isInsideGeofence
-      ) {
-
-       
-
-      }
-      else {
-
-        
-
-      }
-
+  await updateDoc(
+    entryRef,
+    {
+      lastGpsCheck:
+        serverTimestamp()
     }
+  );
 
+  if (isInsideGeofence) {
+
+    alert(
+      `✓ Post Verified
+
+${entry.employeeName} is currently inside the assigned geofence.
+
+No GPS violations detected.`
+    );
+
+  }
+  else {
+
+    alert(
+      `⚠ Officer remains outside the assigned geofence.
+
+${entry.employeeName} has not returned to post.
+
+Current Distance:
+${Math.round(distance * 3.28084)} feet`
+    );
+
+  }
+
+}
   } // end for loop
 
 } // end checkPostAbandonment
