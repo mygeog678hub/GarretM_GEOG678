@@ -167,6 +167,37 @@ match /shifts/{shiftId} {
        isAdmin();
 }
 
+    // -------------------------
+    // OpenShifts
+    // -------------------------
+
+match /openShifts/{shiftId} {
+
+  allow read:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId);
+
+  allow create:
+    if signedIn() &&
+       sameTenantOnCreate() &&
+       (isAdmin() || isSupervisor());
+
+  allow update:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       (
+         isAdmin() ||
+         isSupervisor() ||
+         isOfficer()
+       );
+
+  allow delete:
+    if signedIn() &&
+       sameTenant(resource.data.tenantId) &&
+       isAdmin();
+
+}
+
  // -------------------------
     // TimeEntries
     // -------------------------
@@ -199,6 +230,34 @@ match /timeEntries/{timeEntryId} {
     if signedIn() &&
        sameTenant(resource.data.tenantId) &&
        isAdmin();
+}
+
+    // -------------------------
+    // Incidents
+    // -------------------------
+
+match /incidents/{incidentId} {
+
+  allow read:
+    if isSignedIn() &&
+       resource.data.tenantId == tenantId();
+
+  allow create:
+    if isSignedIn() &&
+       (isAdmin() || isSupervisor() || isOfficer()) &&
+       request.resource.data.tenantId == tenantId();
+
+  allow update:
+    if isSignedIn() &&
+       (isAdmin() || isSupervisor() || isOfficer()) &&
+       resource.data.tenantId == tenantId() &&
+       request.resource.data.tenantId == tenantId();
+
+  allow delete:
+    if isSignedIn() &&
+       isAdmin() &&
+       resource.data.tenantId == tenantId();
+
 }
 
     // -------------------------

@@ -1276,9 +1276,17 @@ document.getElementById(
   }
 
   incidentReports =
-    result.incidentReports;
+  result.incidentReports;
 
-  refresh();
+refresh();
+
+loadMyReports();
+
+loadReviewQueue();
+
+loadInvestigativeReports();
+
+loadNotifications();
 
 });
 
@@ -8826,7 +8834,7 @@ function showMissingClockIns() {
 
 }
 
-async function checkPostAbandonment() {
+async function checkPostAbandonment(showStatus = false) {
 
  const snapshot =
   await getDocs(
@@ -9010,39 +9018,42 @@ async function checkPostAbandonment() {
 
     }
 
-    // NO STATE CHANGE
+// NO STATE CHANGE
 
 else {
 
   await updateDoc(
     entryRef,
     {
-      lastGpsCheck:
-        serverTimestamp()
+      lastGpsCheck: serverTimestamp()
     }
   );
 
-  if (isInsideGeofence) {
+  if (showStatus) {
 
-    alert(
-      `✓ Post Verified
+    if (isInsideGeofence) {
+
+      alert(
+        `✓ Post Verified
 
 ${entry.employeeName} is currently inside the assigned geofence.
 
 No GPS violations detected.`
-    );
+      );
 
-  }
-  else {
+    }
+    else {
 
-    alert(
-      `⚠ Officer remains outside the assigned geofence.
+      alert(
+        `⚠ Officer remains outside the assigned geofence.
 
 ${entry.employeeName} has not returned to post.
 
 Current Distance:
 ${Math.round(distance * 3.28084)} feet`
-    );
+      );
+
+    }
 
   }
 
@@ -10440,6 +10451,9 @@ window.submitIncidentReport =
           {
             ...incidentData,
 
+            tenantId:
+        window.currentUserProfile.tenantId,
+
             caseNumber,
 
             status:
@@ -10510,6 +10524,9 @@ caseNumber =
             ),
             {
               ...incidentData,
+
+              tenantId: window.currentUserProfile.tenantId,
+
 
               caseNumber,
 
@@ -10871,6 +10888,9 @@ function collectIncidentData() {
     incidentType,
     severity,
     narrative,
+
+    tenantId:
+  window.currentUserProfile.tenantId,
 
     officerId:
       currentOfficer.id,
@@ -18465,6 +18485,7 @@ async function declineClaim(id) {
     );
 
 }
+
 window.declineClaim = declineClaim;
 
 async function cancelOpenShift(id) {
