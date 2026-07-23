@@ -137,9 +137,7 @@ onAuthStateChanged(auth, async (user) => {
     currentUserProfile =
         window.currentUserProfile;
 
-    applyRolePermissions(currentUserProfile);
-
-    console.log("Profile:", currentUserProfile);
+    applyRolePermissions(currentUserProfile);    
 
     if (currentUserProfile.onboardingRequired) {
 
@@ -153,21 +151,10 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    console.log(
-        "Employee ID:",
-        currentUserProfile.employeeId
-    );    
-
     await bootstrapApplication();    
 
     document.getElementById("appLayout")
         .style.display = "block";
-
-    console.log(
-        "Authenticated:",
-        user.email
-    );
-
 });
 
 // ================= DOM =================
@@ -637,10 +624,7 @@ renderEmployees();
 
 } else {
 
-    console.log(
-        "Administrator/Supervisor Login"
-    );
-
+    
     showDashboard();
 
 }
@@ -715,11 +699,7 @@ function startSiteListener() {
             ...doc.data()
           })
         );
-        console.log(
-  "Sites loaded:",
-  snapshot.size,
-  sites
-);
+ 
 
       window.sites = sites;
       renderSites();
@@ -764,8 +744,7 @@ function startAssetListener() {
       ...d.data()
     }));
 
-    console.log("Assets Loaded:", assets);
-
+    
     refresh();
     updateDailySummary();
 
@@ -870,17 +849,11 @@ function startActivityReportListener() {
 
     snap => {
 
-      console.log("SNAPSHOT FIRED");
 
       activityReports = snap.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
-
-      console.log(
-        "REPORT COUNT:",
-        snap.size
-      );
+      }));      
 
     },
 
@@ -1127,12 +1100,7 @@ async function bootstrapApplication() {
 
         }
 
-        openShifts = result.openShifts;
-
-        console.log(
-            "Open Shifts:",
-            openShifts
-        );
+        openShifts = result.openShifts;       
 
         renderOpenShifts();
         refreshSupervisorDashboard();
@@ -1315,12 +1283,7 @@ window.addIncidentVehicle =
       color: "",
       towed: false,
       notes: ""
-    });
-
-    console.log(
-      "After push:",
-      incidentVehicles
-    );
+    }); 
 
     renderIncidentVehicles();
   };
@@ -1925,10 +1888,7 @@ async function addAsset() {
 }
 // ================= ASSIGN =================
 async function assign() {
-
-  console.log(
-    "ASSIGN FUNCTION FIRED"
-  );
+ 
   alert(
     `Employee: ${assignEmployee.options[
       assignEmployee.selectedIndex
@@ -1955,8 +1915,7 @@ async function assign() {
     assets.find(
       a => a.id === assignAsset.value
     );
-  console.log("Asset Selected:", assignAsset.value);
-  console.log("Vehicle Selected:", assignVehicle.value);
+ 
   if (
     selectedAsset &&
     selectedAsset.status === "maintenance"
@@ -1971,11 +1930,7 @@ async function assign() {
   const employeeId = assignEmployee.value;
   const siteId = assignSite.value;
 
-  console.log(
-    "Employees Loaded:",
-    employees.length
-  );
-
+ 
   const employee =
     employees.find(
       e => e.id === employeeId
@@ -2024,13 +1979,7 @@ async function assign() {
     mileageStatus =
       "Calculated";
   }
-
-  console.log("Mileage Values", {
-    mileageDistance,
-    mileageThreshold,
-    mileageIncentive,
-    mileageStatus
-  });
+ 
   const docRef =
   await addDoc(
     collection(db, "assignments"),
@@ -2057,12 +2006,7 @@ async function assign() {
 
       endTime: null
     }
-  );
-
-  console.log(
-    "Assignment created:",
-    docRef.id
-  );
+  );  
 
   await logActivity(
     siteId,
@@ -2118,10 +2062,7 @@ window.logActivity = logActivity;
 async function endBusinessDay() {
 
   const activeAssignments =
-    assignments.filter(a => !a.endTime);
-
-  console.log(assignments);
-  console.log(activeAssignments);
+    assignments.filter(a => !a.endTime);  
 
   if (!activeAssignments.length) {
 
@@ -2338,10 +2279,7 @@ async function deleteSelectedEmployees() {
     );
 
     if (isAssigned) {
-      console.log(
-        "Skipping assigned employee:",
-        employeeId
-      );
+     
       continue;
     }
 
@@ -2711,11 +2649,7 @@ function updateDailySummary() {
 // ================= UPDATE MAP =================
 
 function updateMap() {
-  console.log(
-    "updateMap:",
-    incidents.length
-  );
-
+ 
   if (!window.map) return;
 
   // remove deleted markers
@@ -2912,12 +2846,7 @@ function updateMap() {
               lat: position.lat,
               lng: position.lng
             }
-          );
-
-          console.log(
-            `Updated ${site.name}:`,
-            position
-          );
+          );         
 
         } catch (err) {
 
@@ -4488,9 +4417,7 @@ async function deleteSelectedSites() {
 }
 
 function editEmployee(id) {
-
-  console.log("editEmployee called:", id);
-
+  
   const emp =
     employees.find(e => e.id === id);
 
@@ -7282,7 +7209,7 @@ if (!result || !result.success) {
 
 }   
 
-  console.log("Shift saved");
+
   document.getElementById(
     "scheduleEmployee"
   ).value = "";
@@ -7297,8 +7224,7 @@ if (!result || !result.success) {
 
   document.getElementById(
     "scheduleEnd"
-  ).value = "";
-  console.log("Fields cleared");
+  ).value = "";  
 
   document.getElementById(
     "schedulePay"
@@ -7908,10 +7834,6 @@ function nextWeek() {
 
 async function clockIn() {
 
-  console.log("clockIn currentOfficer:", currentOfficer);
-console.log("clockIn currentEmployee:", currentEmployee);
-
-
   if (!currentOfficer) {
     alert(
       "Officer session not found."
@@ -8035,27 +7957,7 @@ console.log("clockIn currentEmployee:", currentEmployee);
       "Assigned site not found."
     );
     return;
-  }
-
-  console.log(
-    "Officer Lat:",
-    officerLat
-  );
-
-  console.log(
-    "Officer Lng:",
-    officerLng
-  );
-
-  console.log(
-    "Site Object:",
-    site
-  );
-
-  console.log(
-    "Active Shift:",
-    activeShift
-  );
+  }  
 
   const distance =
     calculateDistance(
@@ -8072,22 +7974,7 @@ console.log("clockIn currentEmployee:", currentEmployee);
 
   const allowedRadius =
     allowedRadiusFeet *
-    0.3048;
-
-  console.log(
-    "Distance:",
-    distance,
-    "Allowed Feet:",
-    allowedRadiusFeet,
-    "Allowed Meters:",
-    allowedRadius,
-    "Site:",
-    site.siteName,
-    "Lat:",
-    site.lat,
-    "Lng:",
-    site.lng
-  );
+    0.3048; 
 
   if (
     distance >
@@ -12810,16 +12697,7 @@ window.loadCurrentCheckpoint =
     checkpoints.forEach(cp => {
 
 
-    });
-
-   
-
-    console.log(
-      "Checkpoint Patrol IDs:",
-      checkpoints.map(
-        cp => cp.patrolId
-      )
-    );    
+    });       
 
     checkpoints.forEach(cp => {
 
@@ -14183,11 +14061,7 @@ ${event.photoUrl
 `;
           }
         ).join("");
-    }
-
-    console.log(
-      "Opening timeline modal..."
-    );
+    }   
 
     document.getElementById(
       "patrolTimelineModal"
@@ -14920,11 +14794,7 @@ window.populateAnalyticsFilters =
 
     siteSelect.onchange = () => {
 
-      console.log(
-        "Site changed:",
-        siteSelect.value
-      );
-
+     
       analyticsSiteFilter =
         siteSelect.value;
 
@@ -14932,11 +14802,6 @@ window.populateAnalyticsFilters =
     };
 
     officerSelect.onchange = () => {
-
-      console.log(
-        "Officer changed:",
-        officerSelect.value
-      );
 
       analyticsOfficerFilter =
         officerSelect.value;
@@ -14954,12 +14819,7 @@ window.populateAnalyticsFilters =
         e => {
 
           analyticsStartDateFilter =
-            e.target.value;
-
-          console.log(
-            "Start Date:",
-            analyticsStartDateFilter
-          );
+            e.target.value;          
 
           renderPatrolAnalytics();
         };
@@ -14975,12 +14835,7 @@ window.populateAnalyticsFilters =
         e => {
 
           analyticsEndDateFilter =
-            e.target.value;
-
-          console.log(
-            "End Date:",
-            analyticsEndDateFilter
-          );
+            e.target.value;         
 
           renderPatrolAnalytics();
         };
@@ -15189,12 +15044,7 @@ window.saveCompanyProfile =
       const logoFile =
         document.getElementById(
           "companyLogoUpload"
-        ).files[0];
-
-      console.log(
-        "Selected logo file:",
-        logoFile
-      );
+        ).files[0];      
 
       if (logoFile) {
 
@@ -15207,16 +15057,7 @@ window.saveCompanyProfile =
           await fileToBase64(
             logoFile
           );
-
-        console.log(
-          "Base64 length:",
-          logoBase64?.length
-        );
-
-        console.log(
-          "Base64 starts with:",
-          logoBase64?.substring(0, 30)
-        );
+        
       }
 
       const patchFile =
@@ -15367,12 +15208,7 @@ window.loadCompanyProfile =
         docSnap.data();
 
       window.companyProfile =
-        companyProfile;
-
-      console.log(
-        "COMPANY PROFILE:",
-        companyProfile
-      );
+        companyProfile;      
 
       document.getElementById(
         "companyName"
@@ -15519,11 +15355,6 @@ window.uploadCompanyPatch =
 
 window.openSupplementModal =
   async function () {
-
-    console.log(
-      "Current Incident:",
-      window.currentIncident
-    );
 
     const incident =
       window.currentIncident;
@@ -15858,16 +15689,6 @@ window.showMyReports =
 window.loadMyReports =
   function () {
 
-    console.log(
-      "All Incident Reports:",
-      incidentReports
-    );
-
-    console.log(
-      "Current Officer:",
-      currentOfficer.id
-    );
-
     const drafts =
       incidentReports.filter(
         r =>
@@ -15876,11 +15697,6 @@ window.loadMyReports =
           r.status ===
           "draft"
       );
-
-    console.log(
-      "Drafts:",
-      drafts
-    );
 
     let myReports =
       incidentReports.filter(
@@ -15901,12 +15717,7 @@ window.loadMyReports =
             r.status ===
             window.currentReportFilter
         );
-    }
-
-    console.log(
-      "My Reports:",
-      myReports
-    );
+    }   
 
     renderDraftReports(
       drafts
@@ -16722,11 +16533,6 @@ window.renderSubmittedReports =
 window.listenForNotifications =
   function () {
 
-    console.log(
-      "Current Employee:",
-      currentEmployee
-    );
-
     const user =
       auth.currentUser;
 
@@ -16766,11 +16572,7 @@ const q = query(
 return onSnapshot(
   q,
   (snapshot) => {
-
-        console.log(
-          "Notifications found:",
-          snapshot.size
-        );
+  
 
         const container =
           document.getElementById(
@@ -16909,10 +16711,6 @@ document.getElementById(
   "change",
   function (e) {
 
-    console.log(
-      "Photo input changed"
-    );
-
     for (
       const file of e.target.files
     ) {
@@ -16920,11 +16718,6 @@ document.getElementById(
         file
       );
     }
-
-    console.log(
-      "Incident photo count:",
-      incidentPhotoFiles.length
-    );
 
     previewIncidentPhotos();
 
@@ -16997,11 +16790,7 @@ async function uploadIncidentPhotos(
 
   const files =
     incidentPhotoFiles;
-  console.log(
-    "Files being uploaded:",
-    files
-  );
-
+ 
   if (!files.length) {
     return [];
   }
@@ -17273,11 +17062,7 @@ window.downloadCurrentPhoto =
   };
 
 function renderAttachments() {
-  console.log(
-    "Rendering:",
-    photoGallery
-  );
-
+ 
   const attachmentsContainer =
     document.getElementById(
       "reviewAttachmentsContainer"
@@ -17415,11 +17200,6 @@ document
 window.loadMileageReport =
   async function () {
 
-    console.log(
-      "Mileage Report:",
-      mileageReportShifts
-    );
-
     if (!currentUserProfile?.tenantId) {
 
       console.error(
@@ -17460,11 +17240,6 @@ window.loadMileageReport =
       window.mileageReportShifts =
         mileageReportShifts;
 
-      console.log(
-        "Mileage Report Shifts:",
-        mileageReportShifts
-      );
-
       renderMileageReport();
 
     } catch (error) {
@@ -17480,11 +17255,6 @@ window.loadMileageReport =
 
 window.renderMileageReport =
   function () {
-
-    console.log(
-      "Mileage Report Shifts:",
-      mileageReportShifts
-    );
 
     let filteredShifts =
       mileageReportShifts.filter(
@@ -17676,8 +17446,7 @@ function getRepeatDays() {
 
 
 async function confirmDeleteShift() {
-  console.log("Reached confirmDeleteShift section");
-
+  
   const deleteMode =
     document.querySelector(
       'input[name="deleteRecurringMode"]:checked'
@@ -17813,9 +17582,7 @@ const snapshot = await getDocs(q);
     );
 
     const firstShift = shifts[0];
-    const lastShift = shifts[shifts.length - 1];
-
-    console.log("First shift:", firstShift);
+    const lastShift = shifts[shifts.length - 1];    
 
     const currentEnd = lastShift.endTime
   ? lastShift.endTime.substring(0, 10)
@@ -17894,7 +17661,7 @@ for (const date of newDates) {
 );
 
 if (duplicate) {
-  console.log("Skipping duplicate:", occurrenceStart);
+  
   continue;
 }
 
@@ -17910,7 +17677,7 @@ const conflict = shifts.some(
 );
 
 if (conflict) {
-  console.log("Skipping conflict:", occurrenceStart);
+  
   continue;
 }
 
@@ -17953,14 +17720,8 @@ alert(
   `Series extended by ${createdCount} shifts.`
 );
 
-console.log("Generated Dates:", generatedDates);
-console.log("New Dates:", newDates);
-
 newDates.forEach((date, index) => {
-  console.log(
-    `${index + 1}:`,
-    formatLocalDateTime(date)
-  );
+  
 });
 
   } catch (error) {
@@ -18034,8 +17795,7 @@ function updatePortalWelcome() {
     !welcome ||
     !subtitle ||
     !currentOfficer
-  ) return;
-  console.log(currentOfficer);
+  ) return; 
 
  welcome.textContent =
     `Welcome back, ${currentOfficer.name}!`;
@@ -18118,12 +17878,7 @@ function loadOpenShifts() {
       openShifts = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
-
-      console.log(
-        "Open Shifts:",
-        openShifts
-      );
+      }));    
 
       renderOpenShifts();
 
