@@ -603,15 +603,7 @@ onSnapshot(
 employees = employeeList;
 setEmployees(employeeList);
 
-employees = employeeList;
-setEmployees(employeeList);
-
-renderEmployees();
-
-  console.log(
-    "Employees Loaded:",
-    employees.length
-  );
+renderEmployees(); 
 
   if (!currentUser) return;
 
@@ -658,41 +650,45 @@ renderEmployees();
 
 function startPatrolTemplateListener() {
 
-  onSnapshot(
+    if (!currentUserProfile?.tenantId) {
 
-    query(
-
-      collection(
-        db,
-        "patrolTemplates"
-      ),
-
-      where(
-        "tenantId",
-        "==",
-        window.currentUserProfile.tenantId
-      )
-
-    ),
-
-    snapshot => {
-
-      patrolTemplates =
-        snapshot.docs.map(
-          doc => ({
-            id: doc.id,
-            ...doc.data()
-          })
+        console.error(
+            "Patrol Template listener started before identity initialized."
         );
 
-      renderPatrolTemplates();
+        return;
 
     }
 
-  );
+    return onSnapshot(
+
+        query(
+
+            collection(db, "patrolTemplates"),
+
+            where(
+                "tenantId",
+                "==",
+                currentUserProfile.tenantId
+            )
+
+        ),
+
+        snapshot => {
+
+            patrolTemplates =
+                snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+            renderPatrolTemplates();
+
+        }
+
+    );
 
 }
-
 
 function startSiteListener() {
 
@@ -711,10 +707,6 @@ function startSiteListener() {
     ),
 
     snapshot => {
-      console.log(
-  "Site snapshot size:",
-  snapshot.size
-);
 
       sites =
         snapshot.docs.map(
@@ -1143,6 +1135,7 @@ async function bootstrapApplication() {
         );
 
         renderOpenShifts();
+        refreshSupervisorDashboard();
 
     }
 );
@@ -1273,6 +1266,9 @@ loadIncidentReviewQueueData();
 
 loadIncidentReportsData();
 
+refreshSupervisorDashboard();
+
+refreshPatrolMetrics();
 
 });
 
@@ -1291,6 +1287,7 @@ loadIncidentReportsData();
             result.claimedShifts;
 
         renderClaimRequests();
+        refreshSupervisorDashboard();
 
 });
 
@@ -10362,6 +10359,42 @@ window.addPerson = function () {
 
 };
 
+window.resetIncidentEditor = function () {
+
+  clearIncidentPhotos();
+
+  document.getElementById("editingIncidentId").value = "";
+  document.getElementById("incidentType").value = "";
+  document.getElementById("incidentSeverity").selectedIndex = 0;
+  document.getElementById("incidentNarrative").value = "";
+
+  document.getElementById("incidentAgency").value = "";
+  document.getElementById("incidentAgencyOfficer").value = "";
+  document.getElementById("incidentAgencyBadge").value = "";
+  document.getElementById("incidentAgencyCase").value = "";
+
+  document.getElementById("personsContainer").innerHTML = "";
+  document.getElementById("vehiclesContainer").innerHTML = "";
+
+  incidentVehicles = [];
+
+  const commentsCard =
+    document.getElementById("supervisorCommentsCard");
+
+  if (commentsCard) {
+    commentsCard.style.display = "none";
+  }
+
+  const commentsText =
+    document.getElementById("supervisorCommentsText");
+
+  if (commentsText) {
+    commentsText.textContent = "";
+  }
+
+  renderIncidentVehicles();
+};
+
 window.submitIncidentReport =
   async function () {
 
@@ -10599,24 +10632,9 @@ if (!result.success) {
     
     } catch (error) {
 
-      console.log(
-  "Before reset:",
-  document.getElementById("editingIncidentId").value
-);
-
 document.getElementById(
   "editingIncidentId"
 ).value = "";
-
-console.log(
-  "After reset:",
-  document.getElementById("editingIncidentId").value
-);
-
-      console.error(
-        "Incident Save Error:",
-        error
-      );
 
       alert(
         "Unable to save incident report."
@@ -15948,29 +15966,27 @@ function renderDraftReports(
 
 
 window.editDraft =
-  async function (
-    reportId
-  ) {
+  async function (reportId) {
 
     try {
 
       const result =
-  await loadIncidentDraft(
-    reportId
-  );
+        await loadIncidentDraft(
+          reportId
+        );
 
-if (!result.success) {
+      if (!result.success) {
 
-  alert(
-    result.message
-  );
+        alert(result.message);
 
-  return;
+        return;
 
-}
+      }
 
-const report =
-  result.report;
+      showOfficerIncidentReport();
+
+      const report =
+        result.report;
 
       document.getElementById(
         "editingIncidentId"
@@ -15995,45 +16011,38 @@ const report =
       document.getElementById(
         "incidentAgency"
       ).value =
-        report.lawEnforcement
-          ?.agency || "";
+        report.lawEnforcement?.agency || "";
 
       document.getElementById(
         "incidentAgencyOfficer"
       ).value =
-        report.lawEnforcement
-          ?.officer || "";
+        report.lawEnforcement?.officer || "";
 
       document.getElementById(
         "incidentAgencyBadge"
       ).value =
-        report.lawEnforcement
-          ?.badge || "";
+        report.lawEnforcement?.badge || "";
 
       document.getElementById(
         "incidentAgencyCase"
       ).value =
-        report.lawEnforcement
-          ?.caseNumber || "";
+        report.lawEnforcement?.caseNumber || "";
 
-      document.getElementById(
-        "personsContainer"
-      ).innerHTML = "";
+      const personsContainer =
+        document.getElementById(
+          "personsContainer"
+        );
+
+      personsContainer.innerHTML =
+        "";
 
       report.persons?.forEach(
         person => {
 
           addPerson();
 
-          const cards =
-            document.querySelectorAll(
-              ".person-card"
-            );
-
           const card =
-            cards[
-            cards.length - 1
-            ];
+            personsContainer.lastElementChild;
 
           card.querySelector(
             ".personRole"
@@ -16169,6 +16178,7 @@ const report =
             ".personPreferredContact"
           ).value =
             person.preferredContact || "";
+
         }
       );
 
@@ -16177,56 +16187,46 @@ const report =
 
       renderIncidentVehicles();
 
-      if (
-        report.supervisorComments
-      ) {
-        alert(
-          `Supervisor Comments:\n\n${report.returnComments}`
-        );
-      }
-
-      if (
-        report.supervisorComments
-      ) {
-
+      const commentsCard =
         document.getElementById(
           "supervisorCommentsCard"
-        ).style.display =
+        );
+
+      if (report.returnComments) {
+
+        commentsCard.style.display =
           "block";
 
         document.getElementById(
           "supervisorCommentsText"
         ).textContent =
-          report.supervisorComments;
+          report.returnComments;
 
       } else {
 
-        document.getElementById(
-          "supervisorCommentsCard"
-        ).style.display =
+        commentsCard.style.display =
           "none";
 
       }
-     const attachmentResult =
-  await loadIncidentAttachments(
-    reportId
-  );
 
-if (!attachmentResult.success) {
+      const attachmentResult =
+        await loadIncidentAttachments(
+          reportId
+        );
 
-  alert(
-    attachmentResult.message
-  );
+      if (!attachmentResult.success) {
 
-  return;
+        alert(
+          attachmentResult.message
+        );
 
-}
+        return;
 
-renderIncidentAttachments(
-  attachmentResult.attachments
-);
+      }
 
-      showOfficerIncidentReport();
+      renderIncidentAttachments(
+        attachmentResult.attachments
+      );
 
     } catch (error) {
 
@@ -16236,68 +16236,12 @@ renderIncidentAttachments(
       );
 
       alert(
-        "Unable to open draft."
+        "Unable to open incident report."
       );
 
     }
 
   };
-
-window.resetIncidentEditor = function () {
-
-  clearIncidentPhotos();
-
-  document.getElementById(
-    "editingIncidentId"
-  ).value = "";
-
-  document.getElementById(
-    "incidentType"
-  ).value = "";
-
-  document.getElementById(
-    "incidentSeverity"
-  ).selectedIndex = 0;
-
-  document.getElementById(
-    "incidentNarrative"
-  ).value = "";
-
-  document.getElementById(
-    "incidentAgency"
-  ).value = "";
-
-  document.getElementById(
-    "incidentAgencyOfficer"
-  ).value = "";
-
-  document.getElementById(
-    "incidentAgencyBadge"
-  ).value = "";
-
-  document.getElementById(
-    "incidentAgencyCase"
-  ).value = "";
-
-  document.getElementById(
-    "personsContainer"
-  ).innerHTML = "";
-
-  document.getElementById(
-    "vehiclesContainer"
-  ).innerHTML = "";
-
-  const commentsCard =
-    document.getElementById(
-      "supervisorCommentsCard"
-    );
-
-  if (commentsCard) {
-    commentsCard.style.display =
-      "none";
-  }
-
-};
 
 window.loadIncidentReviewQueue =
   async function () {
@@ -16477,20 +16421,19 @@ window.returnIncident =
       }
 
       const result =
-  await returnIncidentReport({
+await returnIncidentReport({
 
-    reportId: id,
+  reportId: id,
 
-    supervisorComments:
-      comments,
+  comments,
 
-    returnedBy:
-      currentEmployee.id,
+  returnedBy:
+    currentEmployee.id,
 
-    returnedByName:
-      currentEmployee.name
+  returnedByName:
+    currentEmployee.name
 
-  });
+});
 
 if (!result.success) {
 
