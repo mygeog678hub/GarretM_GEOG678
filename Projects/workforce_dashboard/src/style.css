@@ -776,7 +776,8 @@ tr:hover {
       text-align: left;
       margin-top: 10px;
       font-size: 14px;
-      color: #cbd5f5;
+      color: #111827;
+      font-weight: 600;
     }
     .login-logo {
   width: 120px;
@@ -3485,3 +3486,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     font-weight: 600;
 
 }
+#vehiclesModal {
+    z-index: 1000;
+}
+
+#editVehicleModal {
+    z-index: 1001;
+}
+

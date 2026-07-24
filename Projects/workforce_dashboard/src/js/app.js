@@ -778,6 +778,7 @@ function startVehicleListener() {
 
     refresh();
     updateDailySummary();
+    renderVehicles();
 
   });
 
@@ -4012,7 +4013,19 @@ async function markActive() {
 // ================= ADD VEHICLE =================
 async function addVehicle() {
 
-  if (!vehMake.value || !vehModel.value) {
+  const make =
+    document.getElementById("addVehicleMake");
+
+  const model =
+    document.getElementById("addVehicleModel");
+
+  const plate =
+    document.getElementById("addVehiclePlate");
+
+  const unit =
+    document.getElementById("addVehicleUnit");
+
+  if (!make.value || !model.value) {
     alert("Enter vehicle make and model");
     return;
   }
@@ -4027,23 +4040,33 @@ async function addVehicle() {
   const id = "VEH-" + Date.now();
 
   await addDoc(collection(db, "vehicles"), {
+
     tenantId,
     id,
-    make: vehMake.value,
-    model: vehModel.value,
-    plate: vehPlate.value,
-    unit: vehUnit.value,
+
+    make: make.value.trim(),
+    model: model.value.trim(),
+    plate: plate.value.trim(),
+    unit: unit.value.trim(),
 
     createdAt: serverTimestamp()
+
   });
 
-  vehMake.value = "";
-  vehModel.value = "";
-  vehPlate.value = "";
-  vehUnit.value = "";
-  vehMake.focus();
-}
+  make.value = "";
+  model.value = "";
+  plate.value = "";
+  unit.value = "";
 
+  document.getElementById(
+    "addVehicleModal"
+  ).style.display = "none";
+
+  document.getElementById(
+    "vehiclesModal"
+  ).style.display = "block";
+
+}
 async function reportIssue() {
 
   try {
@@ -8574,6 +8597,7 @@ async function refreshSupervisorDashboard() {
   <thead>
     <tr>
       <th>Officer</th>
+      <th>Date</th>
       <th>Site</th>
       <th>Status</th>
       <th>Clock In</th>
@@ -8599,7 +8623,19 @@ async function refreshSupervisorDashboard() {
     const escalationLevel =
       getEscalationLevel(
         entry.gpsViolationCount || 0
-      );   
+      );  
+      
+       const attendanceDate =
+  entry.clockIn
+    ? entry.clockIn.toDate().toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        }
+      )
+    : "-";
 
     const clockInTime = entry.clockIn
       ? entry.clockIn.toDate
@@ -8611,11 +8647,12 @@ async function refreshSupervisorDashboard() {
       ? entry.clockOut.toDate
         ? entry.clockOut.toDate().toLocaleTimeString()
         : new Date(entry.clockOut).toLocaleTimeString()
-      : "-";
+      : "-";   
 
     html += `
     <tr class="${rowClass}">
       <td>${entry.employeeName || "-"}</td>
+      <td>${attendanceDate}</td>
       <td>${entry.siteName || "-"}</td>
       <td>${entry.status || "-"}</td>
       <td>${clockInTime}</td>
@@ -18584,6 +18621,215 @@ window.forgotPassword = async function () {
     }
 
     alert(result.message);
+
+};
+
+window.showAddVehicleModal = function () {
+
+    document.getElementById(
+        "vehiclesModal"
+    ).style.display = "none";
+
+    document.getElementById(
+        "addVehicleModal"
+    ).style.display = "flex";
+
+};
+
+window.showVehicles = function () {
+
+    console.log("showVehicles called");
+
+    const modal = document.getElementById("vehiclesModal");
+
+    console.log("Modal:", modal);
+
+    if (!modal) {
+        console.error("vehiclesModal not found");
+        return;
+    }
+
+    modal.style.display = "flex";
+
+    console.log("Display:", modal.style.display);
+
+    renderVehicles();
+
+};
+
+window.closeVehicles = function () {
+
+    document.getElementById(
+        "vehiclesModal"
+    ).style.display = "none";
+
+};
+
+window.closeAddVehicleModal = function () {
+
+    document.getElementById(
+        "addVehicleModal"
+    ).style.display = "none";
+
+};
+
+window.renderVehicles = function () {
+
+    const rows = vehicles.map(vehicle => `
+
+        <tr>
+
+            <td>${vehicle.unit || ""}</td>
+
+            <td>${vehicle.make || ""}</td>
+
+            <td>${vehicle.model || ""}</td>
+
+            <td>${vehicle.plate || ""}</td>
+
+            <td>${vehicle.status || "Active"}</td>
+
+            <td>
+
+                <button
+                    onclick="editVehicle('${vehicle.docId}')">
+
+                    Edit
+
+                </button>
+
+                <button
+                    onclick="deleteVehicle('${vehicle.docId}')">
+
+                    Delete
+
+                </button>
+
+            </td>
+
+        </tr>
+
+    `).join("");
+
+    document.getElementById(
+        "vehiclesTable"
+    ).innerHTML = `
+
+        <thead>
+
+            <tr>
+
+                <th>Unit</th>
+                <th>Make</th>
+                <th>Model</th>
+                <th>Plate</th>
+                <th>Status</th>
+                <th>Action</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            ${rows}
+
+        </tbody>
+
+    `;
+
+};
+
+window.editVehicle = function (docId) {
+
+    console.log("Edit clicked", docId);
+
+    const vehicle = vehicles.find(v => v.docId === docId);
+
+    console.log(vehicle);
+
+    if (!vehicle) return;
+
+    document.getElementById("editingVehicleDocId").value = vehicle.docId;
+    document.getElementById("editVehicleUnit").value = vehicle.unit || "";
+    document.getElementById("editVehicleMake").value = vehicle.make || "";
+    document.getElementById("editVehicleModel").value = vehicle.model || "";
+    document.getElementById("editVehiclePlate").value = vehicle.plate || "";
+
+    console.log("Opening modal...");
+
+    document.getElementById("editVehicleModal").style.display = "flex";
+};
+
+window.saveVehicleEdit = async function () {
+
+    const docId =
+        document.getElementById("editingVehicleDocId").value;
+
+    await updateDoc(
+        doc(db, "vehicles", docId),
+        {
+            unit: document.getElementById("editVehicleUnit").value.trim(),
+            make: document.getElementById("editVehicleMake").value.trim(),
+            model: document.getElementById("editVehicleModel").value.trim(),
+            plate: document.getElementById("editVehiclePlate").value.trim()
+        }
+    );
+
+    document.getElementById("editVehicleModal").style.display = "none";
+
+    document.getElementById("vehiclesModal").style.display = "flex";
+};
+
+window.closeEditVehicleModal = function () {
+
+    document.getElementById("editVehicleModal").style.display = "none";
+
+    document.getElementById("vehiclesModal").style.display = "flex";
+
+};
+
+window.closeVehiclesModal = function () {
+
+    document.getElementById(
+        "vehiclesModal"
+    ).style.display = "none";
+
+};
+
+window.deleteVehicle = async function (docId) {
+
+    const vehicle =
+        vehicles.find(v => v.docId === docId);
+
+    if (!vehicle) return;
+
+    // Prevent deleting assigned vehicles
+    const assigned =
+        assignments.some(
+            a => a.vehicleId === docId
+        );
+
+    if (assigned) {
+
+        alert(
+            "This vehicle is currently assigned and cannot be deleted."
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            `Delete vehicle ${vehicle.unit || vehicle.id}?`
+        )
+    ) {
+        return;
+    }
+
+    await deleteDoc(
+        doc(db, "vehicles", docId)
+    );
 
 };
 

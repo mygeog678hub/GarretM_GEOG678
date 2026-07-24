@@ -955,14 +955,15 @@ Version 5.6 RC3
 
 
 <div class="dashboard-card">
-<h2>Add Vehicle</h2>
-<form onsubmit="addVehicle(); return false;">
-<input id="vehMake" placeholder="Make">
-<input id="vehModel" placeholder="Model">
-<input id="vehPlate" placeholder="Plate">
-<input id="vehUnit" placeholder="Unit">
-<button>Add</button>
-</form>
+<h3>Fleet Vehicles</h3>
+
+<p class="card-description">
+    Manage company fleet vehicles, unit assignments, and vehicle records.
+</p>
+
+<button onclick="showVehicles()">
+    Manage Fleet Vehicles
+</button>
 </div>
 <div class="dashboard-card">
 
@@ -1600,6 +1601,172 @@ Version 5.6 RC3
 
 </div>
 
+
+</div>
+
+<div id="addVehicleModal"
+     style="
+       display:none;
+       position:fixed;
+       z-index:9999;
+       left:0;
+       top:0;
+       width:100%;
+       height:100%;
+       background-color:rgba(0,0,0,0.45);
+     ">
+
+  <div style="
+    background:white;
+    color:black;
+    margin:2vh auto;
+    padding:20px;
+    width:500px;
+    max-width:90%;
+    max-height:95vh;
+    overflow-y:auto;
+    border-radius:8px;
+  ">
+
+    <h2>Add Fleet Vehicle</h2>
+
+    <label>Unit Number</label>
+
+    <input id="addVehicleUnit"
+           placeholder="Unit Number">
+
+    <br><br>
+
+    <label>Make</label>
+
+    <input id="addVehicleMake"
+           placeholder="Vehicle Make">
+
+    <br><br>
+
+    <label>Model</label>
+
+    <input id="addVehicleModel"
+           placeholder="Vehicle Model">
+
+    <br><br>
+
+    <label>License Plate</label>
+
+    <input id="addVehiclePlate"
+           placeholder="License Plate">
+
+    <br><br>
+
+    <div style="
+        position:sticky;
+        bottom:0;
+        background:white;
+        padding-top:15px;
+        border-top:1px solid #ddd;
+    ">
+
+        <button onclick="addVehicle()">
+            Save
+        </button>
+
+        <button onclick="closeAddVehicleModal()">
+            Cancel
+        </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="editVehicleModal"
+     style="
+       display:none;
+       position:fixed;
+       z-index:9999;
+       left:0;
+       top:0;
+       width:100%;
+       height:100%;
+       background-color:rgba(0,0,0,0.45);
+     ">
+
+  <div style="
+    background:white;
+    color:black;
+    margin:2vh auto;
+    padding:20px;
+    width:500px;
+    max-width:90%;
+    max-height:95vh;
+    overflow-y:auto;
+    border-radius:8px;
+  ">
+
+    <h2>Edit Fleet Vehicle</h2>
+
+    <input
+      id="editingVehicleDocId"
+      type="hidden"
+    >
+
+    <label>Unit Number</label>
+
+    <input
+      id="editVehicleUnit"
+      placeholder="Unit Number"
+    >
+
+    <br><br>
+
+    <label>Make</label>
+
+    <input
+      id="editVehicleMake"
+      placeholder="Vehicle Make"
+    >
+
+    <br><br>
+
+    <label>Model</label>
+
+    <input
+      id="editVehicleModel"
+      placeholder="Vehicle Model"
+    >
+
+    <br><br>
+
+    <label>License Plate</label>
+
+    <input
+      id="editVehiclePlate"
+      placeholder="License Plate"
+    >
+
+    <br><br>
+
+    <div
+      style="
+        position:sticky;
+        bottom:0;
+        background:white;
+        padding-top:15px;
+        border-top:1px solid #ddd;
+      ">
+
+      <button onclick="saveVehicleEdit()">
+        Save
+      </button>
+
+      <button onclick="closeEditVehicleModal()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
@@ -3059,6 +3226,7 @@ Version 5.6 RC3
 
 </div>
 
+
 <div
   id="returnCommentsCard"
   class="dashboard-card"
@@ -3115,6 +3283,56 @@ Version 5.6 RC3
 </button>
 
 </div>
+
+<div id="vehiclesModal" class="modal" style="display:none;">
+
+    <div class="modal-content">
+
+        <span class="close" onclick="closeVehicles()">
+            &times;
+        </span>
+
+        <div style="
+    background:#243147;
+    color:#f2c94c;
+    padding:16px;
+    border-radius:10px;
+    margin-bottom:25px;
+">
+    <h2 style="margin:0;">Fleet Vehicles</h2>
+</div>
+
+        <input
+    id="vehicleSearch"
+    placeholder="Search fleet vehicles..."
+    oninput="renderVehicles()"
+>
+
+<button onclick="showAddVehicleModal()">
+    Add Vehicle
+</button>
+
+        <div class="table-container">
+
+    <div class="table-container">
+
+    <table id="vehiclesTable">
+    </table>
+
+</div>
+
+<br>
+
+<button onclick="closeVehicles()">
+    Close
+</button>
+
+</div>
+
+    </div>
+
+</div>
+
 
 
  
