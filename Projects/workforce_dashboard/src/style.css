@@ -779,6 +779,19 @@ tr:hover {
       color: #111827;
       font-weight: 600;
     }
+
+    #schedulingPage label {
+  display: block;
+  text-align: left;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4f6;   /* light text */
+}
+
+#fleetVehiclesPage label {
+  color: #111827;
+}
     .login-logo {
   width: 120px;
   height: auto;
@@ -2716,10 +2729,13 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   min-width: 80px;
   text-align: center;
 }
-#editEmployeeModal h2,
-#editEmployeeModal h4,
-#editEmployeeModal label {
-  color: #000 !important;
+#editEmployeeModal .modal-header h2 {
+    color: #fff;
+}
+
+#editEmployeeModal label,
+#editEmployeeModal h4 {
+    color: #000;
 }
 
 #editEmployeeModal input,
@@ -3493,4 +3509,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #editVehicleModal {
     z-index: 1001;
 }
+#editShiftModal label {
+    color: #ffffff;
+}
+#deleteShiftModal label {
+    color: #fff;
+}
+
 

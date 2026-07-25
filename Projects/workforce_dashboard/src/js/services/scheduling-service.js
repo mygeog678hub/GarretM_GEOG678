@@ -139,7 +139,8 @@ export async function createScheduledShift({
     employees,
     sites,
     shifts,
-    companyProfile
+    companyProfile,
+    currentUserProfile
 }) {
 
   const {
@@ -187,6 +188,33 @@ if (!site) {
     };
 
 }
+
+const levels = {
+  "LVL 2": 2,
+  "LVL 3": 3,
+  "LVL 4": 4
+};
+
+const licenseMap = {
+  "Non-Commissioned (Level II)": 2,
+  "Commissioned (Level III)": 3,
+  "Personal Protection (Level IV)": 4
+};
+
+const officerLevel =
+  licenseMap[employee.licenseLevel] || 0;
+
+const shiftLevel =
+  levels[classification] || 0;
+
+if (officerLevel < shiftLevel) {
+
+  return {
+    success: false,
+    message: "Officer is not licensed for this assignment."
+  };
+
+}
     
 
   if (
@@ -201,6 +229,102 @@ if (!site) {
 
 } 
 
+const now = new Date();
+
+let pastShiftOverride = false;
+
+if (new Date(startTime) < now) {
+
+  const role =
+    currentUserProfile?.role;
+
+  const canOverride =
+    role === "Admin" ||
+    role === "Supervisor";
+
+  if (!canOverride) {
+
+    return {
+      success: false,
+      message: "Cannot create a shift in the past."
+    };
+
+  }
+
+  const approved = confirm(
+    "This shift begins in the past.\n\n" +
+    "Do you want to create it anyway?"
+  );
+
+  if (!approved) {
+
+    return {
+      success: false,
+      message: "Shift creation cancelled."
+    };
+
+  }
+
+  pastShiftOverride = true;
+
+}
+
+let longShiftOverride = false;
+
+const durationHours =
+  (new Date(endTime) - new Date(startTime)) / 3600000;
+
+const standardHours = 8;
+const maxHours = 24;
+
+if (durationHours > maxHours) {
+
+  return {
+    success: false,
+    message: `Shift duration cannot exceed ${maxHours} hours.`
+  };
+
+}
+
+if (durationHours > standardHours) {
+
+  const role =
+    currentUserProfile?.role;
+
+    console.log("Current User Role:", currentUserProfile?.role);
+
+  const canOverride =
+    role === "Admin" ||
+    role === "Supervisor";
+
+  if (!canOverride) {
+
+    return {
+      success: false,
+      message:
+        `Shifts longer than ${standardHours} hours require supervisor approval.`
+    };
+
+  }
+
+  const approved = confirm(
+    `This shift is ${durationHours.toFixed(1)} hours long.\n\n` +
+    `Do you want to override the standard ${standardHours}-hour limit?`
+  );
+
+  if (!approved) {
+
+    return {
+      success: false,
+      message: "Shift creation cancelled."
+    };
+
+  }
+
+  longShiftOverride = true;
+
+}
+
 let generatedDates = [];
 
 if (repeatEnabled) {
@@ -212,6 +336,13 @@ if (repeatEnabled) {
     );
 
 }
+
+const originalStart = new Date(startTime);
+const originalEnd = new Date(endTime);
+
+const overnight =
+  originalEnd.toDateString() !==
+  originalStart.toDateString();
 
   let mileageDistance = 0;
   let mileageIncentive = false;
@@ -380,6 +511,31 @@ if (repeatEnabled) {
     tenantId:
     window.currentUserProfile.tenantId,
 
+    pastShiftOverride,
+
+pastShiftOverrideBy:
+  pastShiftOverride
+    ? currentUserProfile.uid
+    : null,
+
+pastShiftOverrideAt:
+  pastShiftOverride
+    ? new Date().toISOString()
+    : null,
+
+overrideApproved:
+  longShiftOverride,
+
+overrideApprovedBy:
+  longShiftOverride
+    ? currentUserProfile.uid
+    : null,
+
+overrideApprovedAt:
+  longShiftOverride
+    ? new Date().toISOString()
+    : null,
+
     status:
       "Scheduled",
 
@@ -432,15 +588,21 @@ createdShiftId = shiftRef.id;
           date
         );
 
-        const occurrenceStart =
-  formatLocalDateTime(
-    newStart
-  );
+      if (overnight) {
+        newEnd.setDate(
+          newEnd.getDate() + 1
+        );
+      }
 
-const occurrenceEnd =
-  formatLocalDateTime(
-    newEnd
-  ); 
+      const occurrenceStart =
+        formatLocalDateTime(
+          newStart
+        );
+
+      const occurrenceEnd =
+        formatLocalDateTime(
+          newEnd
+        );
 
   const duplicate =
   shifts.some(
@@ -860,7 +1022,8 @@ export async function updateScheduledShift({
     employees,
     sites,
     shifts,
-    tenantId
+    tenantId,
+    currentUserProfile
 
 }) {
 
@@ -935,6 +1098,54 @@ export async function updateScheduledShift({
         success: false,
         message: "End time must be after start time."
     };
+
+}
+
+const durationHours =
+  (new Date(endTime) - new Date(startTime)) / 3600000;
+
+const standardHours = 8;
+const maxHours = 24;
+
+if (durationHours > maxHours) {
+
+    return {
+        success: false,
+        message: `Shift duration cannot exceed ${maxHours} hours.`
+    };
+
+}
+
+if (durationHours > standardHours) {
+
+    const role = currentUserProfile?.role;
+
+    const canOverride =
+        role === "Admin" ||
+        role === "Supervisor";
+
+    if (!canOverride) {
+
+        return {
+            success: false,
+            message: `Shifts longer than ${standardHours} hours require supervisor approval.`
+        };
+
+    }
+
+    const approved = confirm(
+        `This shift is ${durationHours.toFixed(1)} hours long.\n\n` +
+        `Continue with supervisor override?`
+    );
+
+    if (!approved) {
+
+        return {
+            success: false,
+            message: "Shift update cancelled."
+        };
+
+    }
 
 }
     
@@ -1017,7 +1228,20 @@ export async function updateScheduledShift({
     
         shiftPay,
     
-        classification
+        classification,
+
+        overrideApproved:
+        durationHours > standardHours,
+
+        overrideApprovedBy:
+          durationHours > standardHours
+            ? currentUserProfile.uid
+            : null,
+
+        overrideApprovedAt:
+          durationHours > standardHours
+            ? new Date().toISOString()
+            : null,
     
       };      
 
@@ -1035,24 +1259,20 @@ export async function updateScheduledShift({
 
     const batch =
       writeBatch(db);
-
+console.log("editingSeriesId:", editingSeriesId);
     const seriesQuery =
   query(
-    collection(
-      db,
-      "shifts"
-    ),
-    where(
-      "tenantId",
-      "==",
-      currentUserProfile.tenantId
-    ),
-   where(
-  "tenantId",
-  "==",
-  tenantId
-)
+
+    
+    collection(db, "shifts"),
+    where("tenantId", "==", tenantId),
+    where("seriesId", "==", editingSeriesId)
   );
+  console.log(
+  shiftDoc.id,
+  shift.seriesId,
+  shift.employeeName
+);
 
     const snapshot =
       await getDocs(

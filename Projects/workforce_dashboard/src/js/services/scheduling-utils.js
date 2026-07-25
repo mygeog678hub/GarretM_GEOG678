@@ -32,39 +32,25 @@ export function generateRecurringDates(
   repeatDays,
   repeatEndDate
 ) {
-
   const dates = [];
 
-  const start =
-    new Date(startTime);
+  const start = new Date(startTime);
 
-  const end =
-    new Date(repeatEndDate);
+  const end = new Date(repeatEndDate);
+  end.setHours(23, 59, 59, 999);
 
-  const current =
-    new Date(start);
+  const current = new Date(start);
 
   while (current <= end) {
 
-    if (
-      repeatDays.includes(
-        current.getDay()
-      )
-    ) {
-
-      dates.push(
-        new Date(current)
-      );
-
+    if (repeatDays.includes(current.getDay())) {
+      dates.push(new Date(current));
     }
 
-    current.setDate(
-      current.getDate() + 1
-    );
+    current.setDate(current.getDate() + 1);
   }
 
   return dates;
-
 }
 
 export function applyTimeToDate(

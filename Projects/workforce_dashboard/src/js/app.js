@@ -97,6 +97,9 @@ import {
 from "./knowledge-data.js";
 
 import {
+  generateRecurringDates,
+  applyTimeToDate,
+  formatLocalDateTime,
     calculateDistance
 } from "./services/scheduling-utils.js";
 
@@ -1982,6 +1985,7 @@ async function assign() {
   }
  
   const docRef =
+  
   await addDoc(
     collection(db, "assignments"),
     {
@@ -2406,6 +2410,16 @@ function render() {
     )
 
     .map(a => {
+
+      const start =
+  a.startTime?.toDate
+    ? a.startTime.toDate()
+    : new Date(a.startTime);
+
+const end =
+  a.endTime?.toDate
+    ? a.endTime.toDate()
+    : new Date(a.endTime);
       const emp = employees.find(e => e.id === a.employeeId);
       const site = sites.find(s => s.id === a.siteId);
       const asset = assets.find(
@@ -2415,25 +2429,30 @@ function render() {
       const vehicle = vehicles.find(
         v => v.id === a.vehicleId
       );
+      console.log("Assignment vehicleId:", a.vehicleId);
+console.log("Vehicle found:", vehicle);
+      
       return `
   <tr>
 
-    <td>
-      ${a.startTime
-          ? new Date(a.startTime).toLocaleDateString() +
-          " " +
-          new Date(a.startTime).toLocaleTimeString()
-          : ""
-        }
-    </td>
+<td>
+  ${
+    a.startTime
+      ? start.toLocaleDateString() +
+        " " +
+        start.toLocaleTimeString()
+      : ""
+  }
+</td>
 
-    <td>
-  ${a.endTime
-          ? new Date(a.endTime).toLocaleDateString() +
-          " " +
-          new Date(a.endTime).toLocaleTimeString()
-          : ""
-        }
+<td>
+  ${
+    a.endTime
+      ? end.toLocaleDateString() +
+        " " +
+        end.toLocaleTimeString()
+      : ""
+  }
 </td>
 
     <td>
@@ -2449,7 +2468,7 @@ function render() {
     </td>    
 
     <td>
-      ${vehicle ? vehicle.id : ""}
+      ${vehicle?.unit || ""}
     </td>
 
     <td>
@@ -3539,7 +3558,7 @@ function refresh() {
     `<option value="">None</option>` +
     vehicles.map(v => `
       <option value="${v.id}">
-        ${v.id}
+        ${v.unit}
       </option>
     `).join("");
 
@@ -7218,7 +7237,8 @@ const result =
         employees,
         sites,
         shifts,
-        companyProfile
+        companyProfile,
+        currentUserProfile
     });
 
 if (!result || !result.success) {
@@ -7672,7 +7692,10 @@ async function saveShiftEdit() {
 
         employees,
         sites,
-        shifts
+        shifts,
+
+        tenantId: currentUserProfile.tenantId,
+        currentUserProfile,
 
     });
 
@@ -17598,6 +17621,11 @@ async function extendRecurringSeries(seriesId) {
 
 const snapshot = await getDocs(q);
 
+console.log(
+  "Recurring shifts found:",
+  snapshot.size
+);
+
     if (snapshot.empty) {
       alert("Recurring series not found.");
       return;
@@ -17660,6 +17688,10 @@ const lastStart = new Date(lastShift.startTime);
 const newDates = generatedDates.filter(
   date => date > lastStart
 );
+
+console.log("Generated Dates:", generatedDates);
+console.log("Last Start:", lastStart);
+console.log("New Dates:", newDates);
 
 const shiftTemplate = {
   ...firstShift,
@@ -17761,15 +17793,15 @@ newDates.forEach((date, index) => {
   
 });
 
-  } catch (error) {
+} catch (error) {
 
-    console.error(error);
+  console.error("Extend series error:", error);
 
-    alert(
-      "Unable to load recurring series."
-    );
+  alert(
+    `${error.name}\n\n${error.message}`
+  );
 
-  }
+}
 
 }
 
@@ -18642,16 +18674,12 @@ window.showVehicles = function () {
 
     const modal = document.getElementById("vehiclesModal");
 
-    console.log("Modal:", modal);
-
     if (!modal) {
         console.error("vehiclesModal not found");
         return;
     }
 
-    modal.style.display = "flex";
-
-    console.log("Display:", modal.style.display);
+    modal.style.display = "flex";  
 
     renderVehicles();
 
