@@ -13,12 +13,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4      
+      - uses: actions/checkout@v4
+
       - name: Deploy to Firebase
-  uses: FirebaseExtended/action-hosting-deploy@v0
-  with:
-    repoToken: ${{ secrets.GITHUB_TOKEN }}
-    firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WORKFORGE_3B77F }}
-    channelId: live
-    projectId: workforge-3b77f
-    entryPoint: Projects/workforce_dashboard
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WORKFORGE_3B77F }}
+          channelId: live
+          projectId: workforge-3b77f
+          entryPoint: Projects/workforce_dashboard
