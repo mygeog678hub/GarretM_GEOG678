@@ -735,120 +735,149 @@ Version 5.6 RC3
     <div id="map"></div>
 
   </div>
-  <div class="dashboard-card">
-<h2>Add Employee</h2>
-<form id="employeeForm" onsubmit="addEmployee(); return false;">
-<label for="employeeLastName">Last Name</label>
-<input
-    id="employeeLastName"
-    placeholder="Last Name"
-    required
->
 
-<label for="employeeFirstName">First Name</label>
-<input
-    id="employeeFirstName"
-    placeholder="First Name"
-    required
->
+  
+ <div class="dashboard-card">
 
-<label for="employeeMiddleName">Middle Name</label>
-<input
-    id="employeeMiddleName"
-    placeholder="Middle Name (Optional)"
->
-<label for="employeeSystemRole">
-  System Role
-</label>
+  <h2>Add Employee</h2>
 
-<select id="employeeSystemRole">
+  <form id="employeeForm" onsubmit="addEmployee(); return false;">
 
-  <option value="">
-    Select System Role
-  </option>
+    <div class="employee-grid">
 
-  <option value="Officer">
-    Officer
-  </option>
+      <div class="form-group">
+        <label for="employeeLastName">Last Name</label>
+        <input
+          id="employeeLastName"
+          placeholder="Last Name"
+          required
+        >
+      </div>
 
-  <option value="Supervisor">
-    Supervisor
-  </option>
+      <div class="form-group">
+        <label for="employeeFirstName">First Name</label>
+        <input
+          id="employeeFirstName"
+          placeholder="First Name"
+          required
+        >
+      </div>
 
-  <option value="Administrator">
-    Administrator
-  </option>
+      <div class="form-group">
+        <label for="employeeMiddleName">Middle Name</label>
+        <input
+          id="employeeMiddleName"
+          placeholder="Middle Name (Optional)"
+        >
+      </div>
 
-  <option value="Dispatcher">
-    Dispatcher
-  </option>
+      <div class="form-group">
+        <label for="employeeSystemRole">System Role</label>
 
-</select>
+        <select id="employeeSystemRole">
 
-<label for="employeeDesignation">
-  Job Designation
-</label>
+          <option value="">
+            Select System Role
+          </option>
 
-<select id="employeeDesignation">
+          <option value="Officer">
+            Officer
+          </option>
 
-  <option value="">
-    Select Designation
-  </option>
+          <option value="Supervisor">
+            Supervisor
+          </option>
 
-  <option value="Security Officer">
-    Security Officer
-  </option>
+          <option value="Administrator">
+            Administrator
+          </option>
 
-  <option value="Investigator">
-    Investigator
-  </option>
+          <option value="Dispatcher">
+            Dispatcher
+          </option>
 
-  <option value="Dispatcher">
-    Dispatcher
-  </option>
+        </select>
+      </div>
 
-  <option value="Office Staff">
-    Office Staff
-  </option>
+      <div class="form-group">
+        <label for="employeeDesignation">Job Designation</label>
 
-</select>
+        <select id="employeeDesignation">
 
-<div
-  id="securityLicenseSection"
-  style="display:none;">
+          <option value="">
+            Select Designation
+          </option>
 
-  <h4>
-    🛡 Security License Information
-  </h4>
+          <option value="Security Officer">
+            Security Officer
+          </option>
 
-  <select
-    id="employeeSecurityLevel">
+          <option value="Investigator">
+            Investigator
+          </option>
 
-    <option value="">
-      Select License Level
-    </option>
+          <option value="Dispatcher">
+            Dispatcher
+          </option>
 
-    <option value="LVL 2">
-      LVL 2 - Unarmed
-    </option>
+          <option value="Office Staff">
+            Office Staff
+          </option>
 
-    <option value="LVL 3">
-      LVL 3 - Armed
-    </option>
+        </select>
+      </div>
 
-    <option value="LVL 4">
-      LVL 4 - Bodyguard
-    </option>
+      <div
+        class="form-group"
+        id="securityLicenseSection"
+        style="display:none;"
+      >
 
-  </select>
+        <label for="employeeSecurityLevel">
+          🛡 Security License Level
+        </label>
+
+        <select id="employeeSecurityLevel">
+
+          <option value="">
+            Select License Level
+          </option>
+
+          <option value="LVL 2">
+            LVL 2 - Unarmed
+          </option>
+
+          <option value="LVL 3">
+            LVL 3 - Armed
+          </option>
+
+          <option value="LVL 4">
+            LVL 4 - Bodyguard
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <button
+      type="submit"
+      style="margin-top:20px;"
+    >
+      Add
+    </button>
+
+  </form>
+
+  <button
+    onclick="openEmployeeModal()"
+    style="margin-top:10px;"
+  >
+    View Employees
+  </button>
 
 </div>
-<button>Add</button>
-</form>
-<button onclick="openEmployeeModal()" style="margin-top:10px;">
-  View Employees
-</button>
-</div> 
 
 <div class="dashboard-card">
 <h2>Add Site</h2>

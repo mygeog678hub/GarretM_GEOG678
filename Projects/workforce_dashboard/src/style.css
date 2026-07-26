@@ -3335,6 +3335,15 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #deleteShiftModal label {
     color: #fff;
 }
+.employee-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 320px);
+    gap: 20px;
+}
+
+#employeeForm {
+    max-width: 680px;
+}
 /*=============================================
         Mobile (≤768px)
 ==============================================*/
