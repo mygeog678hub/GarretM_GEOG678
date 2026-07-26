@@ -3304,6 +3304,36 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     gap: 10px;
 
 }
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive .data-table {
+    min-width: 900px; /* or whatever width the table needs */
+}
+#passwordSetupPage .form-group label {
+
+    color: #374151;
+
+    font-weight: 600;
+
+}
+#vehiclesModal {
+    z-index: 1000;
+}
+
+#editVehicleModal {
+    z-index: 1001;
+}
+#editShiftModal label {
+    color: #ffffff;
+}
+#deleteShiftModal label {
+    color: #fff;
+}
 /*=============================================
         Mobile (≤768px)
 ==============================================*/
@@ -3330,6 +3360,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   .map-filters button{
     flex-shrink:0;
   }
+  
+  #map{
+    height:300px;
+}
 
   /*------------------------------------------
       Activity Filters
@@ -3387,6 +3421,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     flex-shrink:0;
   }
 
+  .dashboard-card h2,
+  .dashboard-card h3{
+    font-size:24px;
+}
+
   /*------------------------------------------
       Navigation Ribbon
   ------------------------------------------*/
@@ -3420,6 +3459,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   .nav-card button{
     flex-shrink:0;
   }
+
+  .nav-card{
+    padding:16px;
+}
 
   /*------------------------------------------
       Dashboard Cards
@@ -3485,35 +3528,3 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   }
 
 }
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.table-responsive .data-table {
-    min-width: 900px; /* or whatever width the table needs */
-}
-#passwordSetupPage .form-group label {
-
-    color: #374151;
-
-    font-weight: 600;
-
-}
-#vehiclesModal {
-    z-index: 1000;
-}
-
-#editVehicleModal {
-    z-index: 1001;
-}
-#editShiftModal label {
-    color: #ffffff;
-}
-#deleteShiftModal label {
-    color: #fff;
-}
-
-
