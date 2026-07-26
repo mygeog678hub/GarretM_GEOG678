@@ -15101,7 +15101,14 @@ function getFilteredPatrols() {
 }
 
 window.saveCompanyProfile =
-  async function () {
+  async function () {    
+
+const tenantId = window.currentUserProfile?.tenantId;
+
+if (!tenantId) {
+    alert("Tenant ID not available.");
+    return;
+}
 
     try {
 
@@ -15209,7 +15216,7 @@ window.saveCompanyProfile =
 
         updatedAt:
           serverTimestamp()
-      };
+      };      
 
       await setDoc(
         doc(
@@ -15230,7 +15237,6 @@ window.saveCompanyProfile =
   success: true,
   companyProfile
 };
-
     } catch (error) {
 
       console.error(
