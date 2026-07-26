@@ -3550,3 +3550,21 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     }
 
 }
+
+@media (max-width:768px){
+
+    .supervisor-metrics{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:16px;
+    }
+
+    .metric-box{
+        padding:16px;
+    }
+
+    .metric-box span{
+        font-size:26px;
+    }
+
+}
