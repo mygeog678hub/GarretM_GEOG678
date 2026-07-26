@@ -3305,10 +3305,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 }
 
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+.table-responsive{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
 }
 
 .table-responsive .data-table {
@@ -3360,7 +3361,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   .map-filters button{
     flex-shrink:0;
   }
-  
+
   #map{
     height:300px;
 }
@@ -3526,5 +3527,26 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     width: max-content;
     min-width: 0;
   }
+
+}
+
+@media (max-width:768px){
+
+    .table-responsive{
+        width:100%;
+        overflow-x:auto;
+    }
+
+    .data-table{
+        min-width:700px;
+    }
+
+}
+
+@media (max-width:768px){
+
+    .table-responsive .data-table{
+        min-width:600px;
+    }
 
 }
