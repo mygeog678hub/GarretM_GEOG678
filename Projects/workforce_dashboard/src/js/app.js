@@ -17419,7 +17419,8 @@ window.renderMileageReport =
     ).textContent =
       uniqueOfficers.size;
 
-    let html = `
+ let html = `
+<div class="table-responsive">
 <table class="dashboard-table">
 <thead>
 <tr>
@@ -17465,9 +17466,10 @@ window.renderMileageReport =
       }
     );
 
-    html += `
+ html += `
 </tbody>
 </table>
+</div>
 `;
 
     document.getElementById(
