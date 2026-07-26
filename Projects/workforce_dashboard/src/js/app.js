@@ -1197,7 +1197,7 @@ setInterval(() => {
 }, 10000);
 
 document.getElementById(
-  "employeeRole"
+  "employeeDesignation"
 ).onchange =
   function () {
 
@@ -1756,26 +1756,41 @@ async function addSite() {
 }
 // ================= ADD EMPLOYEE=================
 async function addEmployee() {
-  const name = empName.value.trim();
-  const role =
-    document.getElementById(
-      "employeeRole"
-    ).value;
+
+  const firstName = document.getElementById("employeeFirstName").value.trim();
+  const middleName = document.getElementById("employeeMiddleName").value.trim();
+  const lastName = document.getElementById("employeeLastName").value.trim();
+
+  const fullName = (
+    middleName
+        ? `${firstName} ${middleName} ${lastName}`
+        : `${firstName} ${lastName}`
+    ).replace(/\s+/g, " ").trim();
+
+ const role =
+  document.getElementById(
+    "employeeSystemRole"
+  ).value;
+
+const designation =
+  document.getElementById(
+    "employeeDesignation"
+  ).value;
 
   const securityLevel =
     document.getElementById(
       "employeeSecurityLevel"
     ).value;
 
-  if (!name) {
-    alert("Enter employee name");
+ if (!firstName || !lastName) {
+    alert("Enter the employee's first and last name.");
     return;
-  }
+}
 
   // 🔥 Prevent duplicates
   const exists = employees.some(e =>
-    e.name.toLowerCase() === name.toLowerCase()
-  );
+    e.name.toLowerCase() === fullName.toLowerCase()
+);
 
   if (exists) {
     alert("Employee already exists");
@@ -1783,18 +1798,16 @@ async function addEmployee() {
   }
 
   await addDoc(collection(db, "employees"), {
-    name,
-    designation: role,
-
-    role:
-      role === "Dispatcher"
-        ? "Dispatcher"
-        : "Officer",
-
+    firstName,
+    middleName,
+    lastName,
+    name: fullName,
+    designation,
+    role,
     securityLevel:
-      role === "Security Officer"
-        ? securityLevel
-        : "",
+    designation === "Security Officer"
+      ? securityLevel
+      : "",
 
     employeeId: "",
     email: "",
@@ -1818,9 +1831,8 @@ async function addEmployee() {
 createdAt:
   new Date().toISOString()
   });
-  empName.value = "";
-  document.getElementById("employeeRole").value = "";
-  empName.focus();
+  document.getElementById("employeeForm").reset();
+document.getElementById("employeeLastName").focus();
 }
 // ================= DELETE EMPLOYEE=================
 async function deleteEmployee(id) {
@@ -4460,6 +4472,7 @@ async function deleteSelectedSites() {
 
 function editEmployee(id) {
   
+  
   const emp =
     employees.find(e => e.id === id);
 
@@ -4467,36 +4480,32 @@ function editEmployee(id) {
 
   editingEmployeeId = id;
 
-  document.getElementById(
-    "editEmpName"
-  ).value = emp.name || "";
+  console.log(emp);
+console.log("securityLevel:", emp.securityLevel);
 
-  document.getElementById(
-    "editEmpRole"
-  ).value = emp.designation || "Worker";
+  document.getElementById("editEmpLastName").value =
+    emp.lastName || "";
 
-  document.getElementById(
-    "editLicenseSection"
-  ).style.display =
-    emp.designation ===
-      "Security Officer"
-      ? "block"
-      : "none";
+document.getElementById("editEmpFirstName").value =
+    emp.firstName || "";
 
-  document.getElementById(
-    "editEmployeeLicenseLevel"
-  ).value =
-    emp.licenseLevel || "";
+document.getElementById("editEmpMiddleName").value =
+    emp.middleName || "";
 
-  document.getElementById(
-    "editEmployeeLicenseNumber"
-  ).value =
-    emp.licenseNumber || "";
+document.getElementById("editEmpSystemRole").value =
+    emp.role || "Officer";
 
-  document.getElementById(
-    "editEmployeeLicenseExpiration"
-  ).value =
-    emp.licenseExpiration || "";
+document.getElementById("editEmpDesignation").value =
+    emp.designation || "";
+
+document.getElementById("editEmployeeLicenseLevel").value =
+    emp.securityLevel || "";
+
+document.getElementById("editEmployeeLicenseNumber").value =
+    emp.securityLicenseNumber || "";
+
+document.getElementById("editEmployeeLicenseExpiration").value =
+    emp.securityLicenseExpiration || "";
 
   document.getElementById(
     "editLicenseSection"
@@ -4578,30 +4587,33 @@ async function saveEmployeeEdit() {
   let newHomeLat = null;
   let newHomeLng = null;
 
-  const name =
-    document.getElementById(
-      "editEmpName"
-    ).value.trim();
+  const firstName =
+    document.getElementById("editEmpFirstName").value.trim();
 
-  const designation =
-    document.getElementById(
-      "editEmpRole"
-    ).value.trim();
+const middleName =
+    document.getElementById("editEmpMiddleName").value.trim();
 
-  const licenseLevel =
-    document.getElementById(
-      "editEmployeeLicenseLevel"
-    ).value;
+const lastName =
+    document.getElementById("editEmpLastName").value.trim();
 
-  const licenseNumber =
-    document.getElementById(
-      "editEmployeeLicenseNumber"
-    ).value.trim();
+const name = middleName
+    ? `${firstName} ${middleName} ${lastName}`
+    : `${firstName} ${lastName}`;
 
-  const licenseExpiration =
-    document.getElementById(
-      "editEmployeeLicenseExpiration"
-    ).value;
+  const role =
+    document.getElementById("editEmpSystemRole").value;
+
+const designation =
+    document.getElementById("editEmpDesignation").value;
+
+const securityLevel =
+    document.getElementById("editEmployeeLicenseLevel").value;
+
+const securityLicenseNumber =
+    document.getElementById("editEmployeeLicenseNumber").value;
+
+const securityLicenseExpiration =
+    document.getElementById("editEmployeeLicenseExpiration").value;
 
   const employeeId =
     document.getElementById(
@@ -4718,18 +4730,19 @@ async function saveEmployeeEdit() {
   try {
 
     await updateDoc(
-      doc(
-        db,
-        "employees",
-        editingEmployeeId
-      ),
-      {
-        name,
-        designation,
+  doc(db, "employees", editingEmployeeId),
+  {
+    firstName,
+    middleName,
+    lastName,
+    name,
 
-        licenseLevel,
-        licenseNumber,
-        licenseExpiration,
+    role,
+    designation,
+
+        securityLevel,
+        securityLicenseNumber,
+        securityLicenseExpiration,
 
         employeeId,
         email,
@@ -6952,7 +6965,7 @@ window.showIncidentReportsPage =
     startTime,
     endTime,
     classification,
-    licenseLevel,
+    securityLevel,
     shiftPay,
     mileageDistance,
     mileageIncentive,
@@ -15154,7 +15167,7 @@ window.saveCompanyProfile =
             "companyWebsite"
           ).value,
 
-        licenseNumber:
+        securityLicenseNumber:
           document.getElementById(
             "companyLicenseNumber"
           ).value,
@@ -15293,7 +15306,7 @@ window.loadCompanyProfile =
       document.getElementById(
         "companyLicenseNumber"
       ).value =
-        companyProfile.licenseNumber || "";
+        companyProfile.securityLicenseNumber || "";
 
       document.getElementById(
         "companyAddress"

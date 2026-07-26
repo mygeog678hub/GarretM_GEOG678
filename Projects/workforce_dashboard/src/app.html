@@ -737,35 +737,77 @@ Version 5.6 RC3
   </div>
   <div class="dashboard-card">
 <h2>Add Employee</h2>
-<form onsubmit="addEmployee(); return false;">
-<input id="empName" placeholder="Employee Name">
-<select id="employeeRole">
+<form id="employeeForm" onsubmit="addEmployee(); return false;">
+<label for="employeeLastName">Last Name</label>
+<input
+    id="employeeLastName"
+    placeholder="Last Name"
+    required
+>
+
+<label for="employeeFirstName">First Name</label>
+<input
+    id="employeeFirstName"
+    placeholder="First Name"
+    required
+>
+
+<label for="employeeMiddleName">Middle Name</label>
+<input
+    id="employeeMiddleName"
+    placeholder="Middle Name (Optional)"
+>
+<label for="employeeSystemRole">
+  System Role
+</label>
+
+<select id="employeeSystemRole">
 
   <option value="">
-    Select Role
+    Select System Role
   </option>
 
-  <option>
-    Administrator
+  <option value="Officer">
+    Officer
   </option>
 
-  <option>
+  <option value="Supervisor">
     Supervisor
   </option>
 
-  <option>
-    Security Officer
+  <option value="Administrator">
+    Administrator
   </option>
 
-  <option>
+  <option value="Dispatcher">
     Dispatcher
   </option>
 
-  <option>
+</select>
+
+<label for="employeeDesignation">
+  Job Designation
+</label>
+
+<select id="employeeDesignation">
+
+  <option value="">
+    Select Designation
+  </option>
+
+  <option value="Security Officer">
+    Security Officer
+  </option>
+
+  <option value="Investigator">
     Investigator
   </option>
 
-  <option>
+  <option value="Dispatcher">
+    Dispatcher
+  </option>
+
+  <option value="Office Staff">
     Office Staff
   </option>
 
@@ -1173,42 +1215,53 @@ Version 5.6 RC3
   border-radius:8px;
 ">
 
-    <h2>Edit Employee</h2>
+    <h2>Edit Employee</h2>  
 
-    <input
-      id="editEmpName"
-      placeholder="Employee Name"
-    >
+<label for="editEmpLastName">Last Name</label>
+<input
+    id="editEmpLastName"
+    placeholder="Last Name"
+>
 
-  <select id="editEmpRole">
+<label for="editEmpFirstName">First Name</label>
+<input
+    id="editEmpFirstName"
+    placeholder="First Name"
+>
 
-  <option value="">
-    Select Role
-  </option>
+<label for="editEmpMiddleName">Middle Name</label>
+<input
+    id="editEmpMiddleName"
+    placeholder="Middle Name (Optional)"
+>
 
-  <option>
-    Administrator
-  </option>
+<label for="editEmpSystemRole">System Role</label>
 
-  <option>
-    Supervisor
-  </option>
+<select id="editEmpSystemRole">
 
-  <option>
-    Security Officer
-  </option>
+  <option value="Officer">Officer</option>
 
-  <option>
-    Dispatcher
-  </option>
+  <option value="Supervisor">Supervisor</option>
 
-  <option>
-    Investigator
-  </option>
+  <option value="Administrator">Administrator</option>
 
-  <option>
-    Office Staff
-  </option>
+  <option value="Dispatcher">Dispatcher</option>
+
+</select>
+
+<label for="editEmpDesignation">Job Designation</label>
+
+<select id="editEmpDesignation">
+
+  <option value="">Select Designation</option>
+
+  <option value="Security Officer">Security Officer</option>
+
+  <option value="Investigator">Investigator</option>
+
+  <option value="Dispatcher">Dispatcher</option>
+
+  <option value="Office Staff">Office Staff</option>
 
 </select>
 
@@ -1220,16 +1273,19 @@ Version 5.6 RC3
 
   <select id="editEmployeeLicenseLevel">
     <option value="">Select License Level</option>
-    <option value="Non-Commissioned (Level II)">
-      Non-Commissioned (Level II)
+
+    <option value="LVL 2">
+        Non-Commissioned (Level II)
     </option>
-    <option value="Commissioned (Level III)">
-      Commissioned (Level III)
+
+    <option value="LVL 3">
+        Commissioned (Level III)
     </option>
-    <option value="Personal Protection Officer (Level IV)">
-      Personal Protection Officer (Level IV)
+
+    <option value="LVL 4">
+        Personal Protection Officer (Level IV)
     </option>
-  </select>
+</select>
 
   <br><br>
 

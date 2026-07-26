@@ -195,25 +195,17 @@ const levels = {
   "LVL 4": 4
 };
 
-const licenseMap = {
-  "Non-Commissioned (Level II)": 2,
-  "Commissioned (Level III)": 3,
-  "Personal Protection (Level IV)": 4
-};
-
 const officerLevel =
-  licenseMap[employee.licenseLevel] || 0;
+  levels[employee.securityLevel] || 0;
 
 const shiftLevel =
   levels[classification] || 0;
 
 if (officerLevel < shiftLevel) {
-
   return {
     success: false,
     message: "Officer is not licensed for this assignment."
   };
-
 }
     
 
@@ -484,8 +476,8 @@ const overnight =
     employeeName:
       employee.name,
 
-    licenseLevel:
-      employee.licenseLevel || "",
+    securityLevel:
+      employee.securityLevel || "",
 
     siteId,
 
@@ -1055,7 +1047,7 @@ export async function updateScheduledShift({
     
       const officerLevel =
         licenseMap[
-        employee.licenseLevel
+        employee.securityLevel
         ] || 0;
     
       const shiftLevel =
