@@ -6847,39 +6847,38 @@ function populateScheduleDropdowns() {
   employeeSelect.innerHTML =
     '<option value="">Select Officer</option>';
 
-  employeeSelect.innerHTML =
-    '<option value="">Select Officer</option>';
+  if (clockSelect) {
+    clockSelect.innerHTML =
+      '<option value="">Select Officer</option>';
+  }
 
   siteSelect.innerHTML =
     '<option value="">Select Site</option>';
 
+  // Populate employee dropdowns
   employees.forEach(emp => {
 
-    employeeSelect.innerHTML += `
-    <option value="${emp.id}">
-      ${emp.name}
-    </option>
-  `;
+    employeeSelect.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${emp.id}">${emp.name}</option>`
+    );
 
     if (clockSelect) {
-
-      clockSelect.innerHTML += `
-      <option value="${emp.id}">
-        ${emp.name}
-      </option>
-    `;
-
+      clockSelect.insertAdjacentHTML(
+        "beforeend",
+        `<option value="${emp.id}">${emp.name}</option>`
+      );
     }
 
   });
 
+  // Populate site dropdown
   sites.forEach(site => {
 
-    siteSelect.innerHTML += `
-      <option value="${site.id}">
-        ${site.name}
-      </option>
-    `;
+    siteSelect.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${site.id}">${site.name}</option>`
+    );
 
   });
 
