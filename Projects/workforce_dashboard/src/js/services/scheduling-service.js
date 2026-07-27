@@ -189,17 +189,8 @@ if (!site) {
 
 }
 
-const levels = {
-  "LVL 2": 2,
-  "LVL 3": 3,
-  "LVL 4": 4
-};
-
-const officerLevel =
-  levels[employee.securityLevel] || 0;
-
-const shiftLevel =
-  levels[classification] || 0;
+const officerLevel = getSecurityLevel(employee.securityLevel);
+const shiftLevel = getSecurityLevel(classification);
 
 if (officerLevel < shiftLevel) {
   return {
@@ -999,6 +990,16 @@ export async function deleteScheduledShift({
 
 }
 
+function getSecurityLevel(value) {
+  const levels = {
+    "LVL 2": 2,
+    "LVL 3": 3,
+    "LVL 4": 4
+  };
+
+  return levels[value] || 0;
+}
+
 export async function updateScheduledShift({
 
     id,
@@ -1033,27 +1034,8 @@ export async function updateScheduledShift({
 
 }    
     
-      const levels = {
-        "LVL 2": 2,
-        "LVL 3": 3,
-        "LVL 4": 4
-      };
-    
-      const licenseMap = {
-        "Non-Commissioned (Level II)": 2,
-        "Commissioned (Level III)": 3,
-        "Personal Protection (Level IV)": 4
-      };
-    
-      const officerLevel =
-        licenseMap[
-        employee.securityLevel
-        ] || 0;
-    
-      const shiftLevel =
-        levels[
-        classification
-        ] || 0;
+    const officerLevel = getSecurityLevel(employee.securityLevel);
+    const shiftLevel = getSecurityLevel(classification);
      
     
       if (
@@ -1260,11 +1242,7 @@ console.log("editingSeriesId:", editingSeriesId);
     where("tenantId", "==", tenantId),
     where("seriesId", "==", editingSeriesId)
   );
-  console.log(
-  shiftDoc.id,
-  shift.seriesId,
-  shift.employeeName
-);
+
 
     const snapshot =
       await getDocs(
