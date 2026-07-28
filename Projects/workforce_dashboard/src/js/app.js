@@ -18114,6 +18114,8 @@ function formatRepeatDays(days) {
 
 function renderClaimRequests() {
 
+    console.log("NEW renderClaimRequests()");
+
     const tbody =
         document.getElementById(
             "claimRequestsBody"
@@ -18125,7 +18127,7 @@ function renderClaimRequests() {
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="6">
+                <td colspan="9">
                     No claim requests.
                 </td>
             </tr>
@@ -18149,39 +18151,51 @@ function renderClaimRequests() {
                 </td>
 
                 <td>
-                    ${formatDate(
-                        shift.startTime
-                    )}
+                    ${formatDate(shift.startTime)}
                 </td>
 
                 <td>
-                    ${formatTime(
-                        shift.startTime
-                    )}
+                    ${formatTime(shift.startTime)}
                     -
-                    ${formatTime(
-                        shift.endTime
-                    )}
+                    ${formatTime(shift.endTime)}
+                </td>
+
+                <td>
+                    $${Number(shift.shiftPay).toFixed(2)}
                 </td>
 
                 <td>
                     ${shift.classification}
                 </td>
 
+                <td
+                    title="${
+                        shift.repeatEnabled && shift.repeatEndDate
+                            ? `Repeats until ${formatDate(shift.repeatEndDate)}`
+                            : ""
+                    }"
+                >
+                    ${
+                        shift.repeatEnabled
+                            ? formatRepeatDays(shift.repeatDays)
+                            : "—"
+                    }
+                </td>
+
+                <td>
+                    ${shift.status}
+                </td>
+
                 <td>
 
                     <button
                         onclick="approveClaim('${shift.id}')">
-
                         Approve
-
                     </button>
 
                     <button
                         onclick="declineClaim('${shift.id}')">
-
                         Decline
-
                     </button>
 
                 </td>
