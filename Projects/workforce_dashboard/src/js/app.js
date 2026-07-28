@@ -7033,13 +7033,27 @@ function renderOfficerOpenShifts() {
                     ${formatTime(shift.endTime)}
                 </p>
 
-                <p>
-                    ${shift.classification}
-                </p>
+               <p>
+                  ${shift.classification}
+              </p>
 
-                <p>
-                    $${shift.shiftPay}/hr
-                </p>
+              <p
+                  title="${
+                      shift.repeatEnabled && shift.repeatEndDate
+                          ? `Repeats until ${formatDate(shift.repeatEndDate)}`
+                          : ""
+                  }"
+              >
+                  ${
+                      shift.repeatEnabled
+                          ? formatRepeatDays(shift.repeatDays)
+                          : "—"
+                  }
+              </p>
+
+              <p>
+                💵 $${Number(shift.shiftPay).toFixed(2)} Shift Pay
+              </p>
 
                 <button onclick="claimOpenShift('${shift.id}')">
                   Claim Shift
@@ -7308,27 +7322,6 @@ if (!result || !result.success) {
   ).classList.add("hidden");
 }
 
-function formatRepeatDays(
-  days
-) {
-  const names = [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat"
-  ];
-
-  return (
-    days || []
-  )
-    .map(
-      d => names[d]
-    )
-    .join(", ");
-}
 
 function timesOverlap(
   start1,
@@ -18034,7 +18027,7 @@ function renderOpenShifts() {
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" class="empty-state">
+        <td colspan="8" class="empty-state">
           No Open Shifts Published
         </td>
       </tr>
@@ -18049,43 +18042,73 @@ function renderOpenShifts() {
     const row =
       document.createElement("tr");
 
-    row.innerHTML = `
+   row.innerHTML = `
 
-    
+  <td>
+    <button
+      class="btn-danger"
+      onclick="cancelOpenShift('${shift.id}')">
+      Cancel
+    </button>
+  </td>
 
-      <td>${shift.siteName}</td>
+  <td>${shift.siteName}</td>
 
-      <td>${formatDate(shift.startTime)}</td>
+  <td>${formatDate(shift.startTime)}</td>
 
-      <td>
-        ${formatTime(shift.startTime)}
-        -
-        ${formatTime(shift.endTime)}
-      </td>
+  <td>
+    ${formatTime(shift.startTime)}
+    -
+    ${formatTime(shift.endTime)}
+  </td>
 
-      <td>
-        $${Number(
-          shift.shiftPay
-        ).toFixed(2)}
-      </td>
+  <td>
+    $${Number(shift.shiftPay).toFixed(2)}
+  </td>
 
-      <td>${shift.classification}</td>
+  <td>${shift.classification}</td>
 
-      <td>${shift.status}</td>
+ <td
+  title="${
+    shift.repeatEnabled && shift.repeatEndDate
+      ? `Repeats until ${formatDate(shift.repeatEndDate)}`
+      : ""
+  }"
+>
+  ${
+    shift.repeatEnabled
+      ? formatRepeatDays(shift.repeatDays)
+      : "—"
+  }
+</td>
 
-      <td>
-      <button
-        class="btn-danger"
-        onclick="cancelOpenShift('${shift.id}')">
-        Cancel
-      </button>
-    </td>
+  <td>${shift.status}</td>
 
-    `;
+`;
 
     tbody.appendChild(row);
 
   });
+
+}
+
+function formatRepeatDays(days) {
+
+  if (!Array.isArray(days) || !days.length) {
+    return "—";
+  }
+
+  const dayNames = {
+    0: "Sun",
+    1: "Mon",
+    2: "Tue",
+    3: "Wed",
+    4: "Thu",
+    5: "Fri",
+    6: "Sat"
+  };
+
+  return "🔁 " + days.map(day => dayNames[day]).join(" • ");
 
 }
 
