@@ -3359,6 +3359,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #employeeForm {
     max-width: 680px;
 }
+
+#siteStatusLabel,
+#siteInformationHeading {
+    color: #111827;
+    font-weight: 600;
+}
 /*=============================================
         Mobile (≤768px)
 ==============================================*/
