@@ -1674,13 +1674,37 @@ Version 5.6 RC3
   </option>
 </select>
 
-<button onclick="saveSiteEdit()">
-  Save
-</button>
+<hr style="margin:20px 0;">
+
+<h3 style="margin-bottom:8px;">
+    Site Information
+</h3>
+
+<p style="margin-bottom:10px; color:#555;">
+    Enter post orders, emergency procedures, client contacts,
+    access instructions, or any other information officers
+    should have while assigned to this location.
+</p>
+
+<textarea
+    id="editSiteInformation"
+    rows="16"
+    style="
+        width:100%;
+        box-sizing:border-box;
+        resize:vertical;
+    "
+    placeholder="Enter site information here..."></textarea>
+
+<div style="margin-top:20px;">
+    <button onclick="saveSiteEdit()">
+        Save
+    </button>
 
     <button onclick="closeEditSiteModal()">
-      Cancel
+        Cancel
     </button>
+</div>
 
   </div>
 
@@ -3372,6 +3396,86 @@ Version 5.6 RC3
 >
   Submit Report
 </button>
+
+</div>
+
+<div id="siteInformationModal" class="modal" style="display:none;">
+
+  <div class="modal-content" style="max-width:800px;">
+
+    <h2 id="siteInformationTitle">
+      Site Information
+    </h2>
+
+    <div id="siteInformationContent"
+         style="
+            white-space:pre-wrap;
+            max-height:60vh;
+            overflow-y:auto;
+            margin-top:20px;
+         ">
+    </div>
+
+    <div style="margin-top:20px; text-align:right;">
+      <button onclick="closeSiteInformationModal()">
+        Close
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="siteInformationModal"
+     style="
+        display:none;
+        position:fixed;
+        z-index:9999;
+        left:0;
+        top:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,.45);
+     ">
+
+    <div style="
+        background:#fff;
+        margin:5% auto;
+        width:800px;
+        max-width:95%;
+        max-height:80vh;
+        overflow-y:auto;
+        border-radius:8px;
+        padding:20px;
+    ">
+
+        <h2 id="siteInformationTitle">
+            Site Information
+        </h2>
+
+        <div id="siteInformationLastUpdated"
+             style="
+                color:#666;
+                margin-bottom:20px;
+                font-size:14px;
+             ">
+        </div>
+
+        <div id="siteInformationContent"
+             style="
+                white-space:pre-wrap;
+                line-height:1.6;
+                color:#111827;
+             ">
+        </div>
+
+        <div style="margin-top:24px;text-align:right;">
+            <button onclick="closeSiteInformationModal()">
+                Close
+            </button>
+        </div>
+
+    </div>
 
 </div>
 

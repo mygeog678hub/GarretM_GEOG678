@@ -4842,6 +4842,11 @@ function editSite(id) {
   ).value =
     site.status || "Active";
 
+    document.getElementById(
+  "editSiteInformation"
+).value =
+  site.siteInformation || "";
+
   document.getElementById(
     "editSiteModal"
   ).style.display = "block";
@@ -4909,6 +4914,12 @@ async function saveSiteEdit() {
     document.getElementById(
       "editSiteSubtype"
     ).value;
+
+    const siteInformation =
+  document.getElementById(
+    "editSiteInformation"
+  ).value.trim();
+
   if (
     !name ||
     !address ||
@@ -5007,6 +5018,7 @@ async function saveSiteEdit() {
         status,
 
         geofenceRadius,
+        siteInformation,
 
         lat: +coords[0].lat,
         lng: +coords[0].lon
@@ -9401,7 +9413,7 @@ if (!siteId) {
     return;
   }
 
-  container.innerHTML = `
+container.innerHTML = `
 
     <strong>
       ${site.name}
@@ -9427,7 +9439,15 @@ if (!siteId) {
     Geofence:
     ${site.geofenceRadius} ft
 
-  `;
+  ${site.siteInformation?.trim() ? `
+    <br><br>
+
+    <button onclick="viewSiteInformation()">
+        📄 View Site Information
+    </button>
+` : ""}
+
+`;
 
 }
 
@@ -18917,6 +18937,46 @@ window.deleteVehicle = async function (docId) {
     );
 
 };
+
+window.viewSiteInformation = function () {
+
+  const siteId = getCurrentOfficerSiteId();
+
+  if (!siteId) return;
+
+  const site = sites.find(
+    s => s.id === siteId
+  );
+
+  if (!site) return;
+
+  document.getElementById(
+    "siteInformationTitle"
+  ).textContent = site.name;
+
+  document.getElementById(
+    "siteInformationLastUpdated"
+  ).textContent = "";
+
+  document.getElementById(
+    "siteInformationContent"
+  ).textContent =
+    site.siteInformation ||
+    "No site information has been provided for this location.";
+
+  document.getElementById(
+    "siteInformationModal"
+  ).style.display = "block";
+
+};
+
+window.closeSiteInformationModal = function() {
+
+  document.getElementById(
+    "siteInformationModal"
+  ).style.display = "none";
+
+}
 
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;

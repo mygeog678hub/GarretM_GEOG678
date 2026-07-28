@@ -234,12 +234,8 @@ button:hover {
 
 .dashboard-grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(340px, 1fr));
-
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 24px;
-
   margin-top: 24px;
 }
 .dashboard-card {
@@ -3335,10 +3331,29 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 #deleteShiftModal label {
     color: #fff;
 }
-.employee-grid {
-    display: inline-grid;
-    grid-template-columns: repeat(2, 320px);
+.employee-grid,
+.site-grid,
+.vehicle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+
+    .employee-grid,
+    .site-grid,
+    .vehicle-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    #employeeForm,
+    #siteForm,
+    #vehicleForm {
+        max-width: 100%;
+    }
+
 }
 
 #employeeForm {
@@ -3584,5 +3599,17 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .table-responsive .dashboard-table{
     min-width:700px;
 }
+
+}
+@media (max-width: 768px) {
+
+    #employeeForm {
+        max-width: 100%;
+    }
+
+    .employee-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 
 }
