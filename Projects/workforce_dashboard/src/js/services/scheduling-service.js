@@ -1233,7 +1233,7 @@ if (durationHours > standardHours) {
 
     const batch =
       writeBatch(db);
-console.log("editingSeriesId:", editingSeriesId);
+
     const seriesQuery =
   query(
 
@@ -1252,6 +1252,10 @@ console.log("editingSeriesId:", editingSeriesId);
     const now =
       new Date();
 
+      const editedStart = new Date(startTime);
+      const editedEnd = new Date(endTime);
+      const durationMs = editedEnd.getTime() - editedStart.getTime();
+
     for (
       const shiftDoc of
       snapshot.docs
@@ -1267,42 +1271,49 @@ console.log("editingSeriesId:", editingSeriesId);
         ) < now
       ) {
         continue;
-      }
+      }      
+      // Preserve the original occurrence date
+const occurrenceDate =
+  new Date(shift.startTime);
 
-      // Keep the original date for this occurrence
-      const shiftDate =
-        shift.startTime.split("T")[0];
+// Apply the edited start time to this occurrence
+const newStart = new Date(occurrenceDate);
 
-      // Use the new times selected in the edit form
-      const newStartTime =
-        startTime.split("T")[1];
+newStart.setHours(
+  editedStart.getHours(),
+  editedStart.getMinutes(),
+  0,
+  0
+);
 
-      const newEndTime =
-        endTime.split("T")[1];
+// Preserve the edited duration
+const newEnd = new Date(
+  newStart.getTime() + durationMs
+);
 
-      const seriesUpdate = {
+const seriesUpdate = {
 
-        employeeId,
+  employeeId,
 
-        employeeName:
-          employee.name,
+  employeeName:
+    employee.name,
 
-        siteId,
+  siteId,
 
-        siteName:
-          site.name,
+  siteName:
+    site.name,
 
-        shiftPay,
+  shiftPay,
 
-        classification,
+  classification,
 
-        startTime:
-          `${shiftDate}T${newStartTime}`,
+  startTime:
+    formatLocalDateTime(newStart),
 
-        endTime:
-          `${shiftDate}T${newEndTime}`
+  endTime:
+    formatLocalDateTime(newEnd)
 
-      };
+};
 
       batch.update(
         shiftDoc.ref,

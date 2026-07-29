@@ -17734,19 +17734,27 @@ const shiftTemplate = {
 
 // Remove fields we don't want to copy
 delete shiftTemplate.id;
+
+// Preserve the original duration
+const originalStart = new Date(firstShift.startTime);
+const originalEnd   = new Date(firstShift.endTime);
+
+const durationMs =
+  originalEnd.getTime() -
+  originalStart.getTime();
+  
 let createdCount = 0;
 
 for (const date of newDates) {
 
   const newStart = applyTimeToDate(
-    firstShift.startTime,
-    date
-  );
+  firstShift.startTime,
+  date
+);
 
-  const newEnd = applyTimeToDate(
-    firstShift.endTime,
-    date
-  );
+const newEnd = new Date(
+  newStart.getTime() + durationMs
+);
 
   const occurrenceStart =
     formatLocalDateTime(newStart);
