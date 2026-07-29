@@ -123,7 +123,7 @@ window.migrateAllCollections = migrateAllCollections;
 
 import {
   uploadPreShiftPhoto
-} from "./storage-service.js";
+} from "./services/storage-service.js";
 
 
 // ================= AUTH =================
