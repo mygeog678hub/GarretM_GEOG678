@@ -17921,21 +17921,19 @@ function updatePortalWelcome() {
 
   const now = new Date();
 
-  const activeShift =
-    currentOfficerShifts.find(
-      shift =>
-        new Date(shift.startTime) <= now &&
-        new Date(shift.endTime) >= now
-    );
+  const activeTimeEntry = timeEntries.find(entry =>
+  entry.employeeId === currentOfficer.id &&
+  entry.status === "Clocked In"
+);
 
-  if (activeShift) {
+ if (activeTimeEntry) {
 
-    subtitle.textContent =
-      `You are currently on duty at ${activeShift.siteName}.`;
+  subtitle.textContent =
+    `You are currently on duty at ${activeTimeEntry.siteName}.`;
 
-    return;
+  return;
 
-  }
+}
 
   const nextShift =
     currentOfficerShifts.find(
