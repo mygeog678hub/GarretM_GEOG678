@@ -17921,12 +17921,12 @@ function updatePortalWelcome() {
 
   const now = new Date();
 
-  const activeTimeEntry = timeEntries.find(entry =>
+const activeTimeEntry = timeEntries.find(entry =>
   entry.employeeId === currentOfficer.id &&
   entry.status === "Clocked In"
 );
 
- if (activeTimeEntry) {
+if (activeTimeEntry) {
 
   subtitle.textContent =
     `You are currently on duty at ${activeTimeEntry.siteName}.`;
@@ -17935,24 +17935,32 @@ function updatePortalWelcome() {
 
 }
 
-  const nextShift =
-    currentOfficerShifts.find(
-      shift =>
-        new Date(shift.startTime) > now
-    );
+// Find the next scheduled shift
+const nextShift =
+  currentOfficerShifts.find(
+    shift =>
+      new Date(shift.startTime) > now
+  );
 
-  if (nextShift) {
+if (nextShift) {
 
-    const startTime =
-      new Date(
-        nextShift.startTime
-      ).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit"
-      });
+  const nextStart = new Date(nextShift.startTime);
 
-    subtitle.textContent =
-      `Your next shift starts at ${startTime} at ${nextShift.siteName}.`;
+  const startDate =
+    nextStart.toLocaleDateString([], {
+      weekday: "short",
+      month: "short",
+      day: "numeric"
+    });
+
+  const startTime =
+    nextStart.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+  subtitle.textContent =
+    `Your next shift is ${startDate} at ${startTime} at ${nextShift.siteName}.`;
 
     return;
 
