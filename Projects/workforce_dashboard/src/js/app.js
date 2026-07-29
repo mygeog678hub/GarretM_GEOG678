@@ -121,6 +121,10 @@ import {
 window.migrateTenantCollection = migrateTenantCollection;
 window.migrateAllCollections = migrateAllCollections;
 
+import {
+  uploadPreShiftPhoto
+} from "./storage-service.js";
+
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -7949,22 +7953,30 @@ async function clockIn() {
   // =====================
 
   let preShiftPhoto =
-    null;
+  null;
 
-  const photoInput =
-    document.getElementById(
-      "preShiftPhoto"
+const photoInput =
+  document.getElementById(
+    "preShiftPhoto"
+  );
+
+if (
+  photoInput &&
+  photoInput.files.length
+) {
+
+  preShiftPhoto =
+    await uploadPreShiftPhoto(
+
+      photoInput.files[0],
+
+      window.currentUserProfile.tenantId,
+
+      employeeId
+
     );
 
-  if (
-    photoInput &&
-    photoInput.files.length
-  ) {
-    preShiftPhoto =
-      await fileToBase64(
-        photoInput.files[0]
-      );
-  }
+}
 
   alert(
     `GPS Acquired\n\nLat: ${officerLat}\nLng: ${officerLng}`
@@ -8117,19 +8129,25 @@ ${Math.round(allowedRadius)} meters`
     status:
       "Clocked In",
 
-    preShiftPhoto:
-      preShiftPhoto
-        ? {
-            imageBase64:
-              preShiftPhoto,
-            timestamp:
-              serverTimestamp(),
-            lat:
-              officerLat,
-            lng:
-              officerLng
-          }
-        : null,
+   preShiftPhoto:
+  preShiftPhoto
+    ? {
+        url:
+          preShiftPhoto.url,
+
+        path:
+          preShiftPhoto.path,
+
+        timestamp:
+          serverTimestamp(),
+
+        lat:
+          officerLat,
+
+        lng:
+          officerLng
+      }
+    : null,
 
     monitoringActive:
       true,
