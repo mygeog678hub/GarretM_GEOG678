@@ -84,6 +84,26 @@ async function getImageDimensions(
   );
 }
 
+async function downloadImageAsDataURL(url) {
+
+  const response = await fetch(url);
+
+  const blob = await response.blob();
+
+  return new Promise((resolve, reject) => {
+
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+
+  });
+
+}
+
 window.downloadIncidentPdf =
 async function() {
  
@@ -989,13 +1009,29 @@ photos.forEach((p, i) => {
   ) {
     try {
 
-      if (!photo.imageBase64) {
-  
-  continue;
+      let dataUrl = null;
+
+if (photo.downloadURL) {
+
+  dataUrl =
+    await downloadImageAsDataURL(
+      photo.downloadURL
+    );
+
 }
 
-const dataUrl =
-  photo.imageBase64;
+else if (photo.imageBase64) {
+
+  dataUrl =
+    photo.imageBase64;
+
+}
+
+if (!dataUrl) {
+
+  continue;
+
+}
 
       const dims =
         await getImageDimensions(

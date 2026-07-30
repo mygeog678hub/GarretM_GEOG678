@@ -8,65 +8,83 @@ import {
   getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
+
+async function uploadImage({
+  tenantId,
+  folder,
+  entityId,
+  file
+}) {
+
+  if (!tenantId)
+    throw new Error("tenantId is required.");
+
+  if (!folder)
+    throw new Error("folder is required.");
+
+  if (!entityId)
+    throw new Error("entityId is required.");
+
+  if (!file)
+    throw new Error("file is required.");
+
+  const safeName =
+    file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+const fileName =
+    `${Date.now()}-${safeName}`;
+
+  const uploadRef = storageRef(
+    storage,
+    `tenants/${tenantId}/${folder}/${entityId}/${fileName}`
+  );
+
+  const snapshot =
+    await uploadBytes(
+      uploadRef,
+      file
+    );
+
+  const url =
+    await getDownloadURL(
+      snapshot.ref
+    );
+
+  return {
+    success: true,
+    url,
+    path: snapshot.ref.fullPath,
+    timestamp: Date.now()
+  };
+
+}
+
+
 async function uploadPreShiftPhoto(
   file,
   tenantId,
   employeeId
 ) {
-    console.log("storage:", storage);
 
-  const fileName =
-    `${Date.now()}-${file.name}`;
+  return uploadImage({
 
-    console.log("storage =", storage);
-    console.log("storage.app =", storage.app);
-    console.log("storageRef =", storageRef);
-    console.log("typeof storageRef =", typeof storageRef);
-    console.log("tenantId:", tenantId);
-    console.log("employeeId:", employeeId);
-    console.log("file:", file);
-    console.log("file.name:", file?.name);
-    console.log(import.meta.url);
+    tenantId,
 
-let uploadRef;
+    folder: "preShiftPhotos",
 
-try {
+    entityId: employeeId,
 
-  uploadRef = storageRef(
-    storage,
-    `tenants/${tenantId}/preShiftPhotos/${employeeId}/${fileName}`
-  );
+    file
 
-  console.log("uploadRef", uploadRef);
-
-} catch (e) {
-
-  console.error("storageRef failed", e);
-  console.error(e.stack);
-
-  throw e;
-}
-
-console.log("Starting upload...");
-
-const snapshot = await uploadBytes(
-  uploadRef,
-  file
-);
-
-console.log("Upload complete", snapshot);
-
-const url = await getDownloadURL(snapshot.ref);
-
-console.log("Download URL", url);
-
-return {
-  url,
-  path: snapshot.ref.fullPath
-};
+  });
 
 }
+
 
 export {
+
+  uploadImage,
+
   uploadPreShiftPhoto
+
 };

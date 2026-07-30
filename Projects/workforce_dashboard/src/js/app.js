@@ -122,7 +122,8 @@ window.migrateTenantCollection = migrateTenantCollection;
 window.migrateAllCollections = migrateAllCollections;
 
 import {
-  uploadPreShiftPhoto
+  uploadPreShiftPhoto,
+  uploadImage
 } from "./services/storage-service.js";
 
 
@@ -10464,7 +10465,8 @@ window.submitIncidentReport =
 
           const photos =
   await uploadIncidentPhotos(
-    editingId
+    editingId,
+    window.currentUserProfile.tenantId
   );
 
 const result =
@@ -10549,10 +10551,11 @@ caseNumber =
         //
         // SAVE ATTACHMENTS
         //
-        const photos =
-          await uploadIncidentPhotos(
-            docRef.id
-          );
+       const photos =
+  await uploadIncidentPhotos(
+    docRef.id,
+    window.currentUserProfile.tenantId
+  );
 
        const result =
   await saveIncidentAttachments(
@@ -16870,56 +16873,54 @@ function previewIncidentPhotos() {
 }
 
 async function uploadIncidentPhotos(
-  incidentId
+  incidentId,
+  tenantId
 ) {
 
   const files =
     incidentPhotoFiles;
- 
+
   if (!files.length) {
     return [];
   }
+
   const uploadedPhotos = [];
 
   for (const file of files) {
-    const fileName =
-      `${Date.now()}_${file.name}`;
 
-    const storageRef = ref(
-      storage,
-      `incident-evidence/${incidentId}/${fileName}`
-    );
+    const upload =
+      await uploadImage({
 
-    await uploadBytes(
-      storageRef,
-      file
-    );
+        tenantId,
 
-    const downloadURL =
-      await getDownloadURL(
-        storageRef
-      );
+        folder: "incidentAttachments",
 
-    const imageBase64 =
-      await fileToBase64(
+        entityId: incidentId,
+
         file
-      );
+
+      });
 
     uploadedPhotos.push({
+
       type: "photo",
-      fileName,
-      originalName:
-        file.name,
-      downloadURL,
-      imageBase64,
-      uploadedBy:
-        currentOfficer.id,
-      uploadedAt:
-        serverTimestamp()
+
+      originalName: file.name,
+
+      downloadURL: upload.url,
+
+      storagePath: upload.path,
+
+      uploadedBy: currentOfficer.id,
+
+      uploadedAt: serverTimestamp()
+
     });
+
   }
 
   return uploadedPhotos;
+
 }
 
 
