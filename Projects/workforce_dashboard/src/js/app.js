@@ -123,6 +123,7 @@ window.migrateAllCollections = migrateAllCollections;
 
 import {
   uploadPreShiftPhoto,
+  uploadPostShiftPhoto,
   uploadImage
 } from "./services/storage-service.js";
 
@@ -943,6 +944,8 @@ function startTimeEntryListener() {
   );
 
 renderActiveTimeEntries();
+
+renderCompletedTimeEntries();
 
 renderSchedules();
 
@@ -8241,25 +8244,120 @@ ${entry.preShiftPhoto
 
 }
 
-async function clockOut() {
+function renderCompletedTimeEntries() {
 
-  let postShiftPhoto =
-    null;
-
-  const photoInput =
+  const container =
     document.getElementById(
-      "postShiftPhoto"
+      "completedTimeEntries"
     );
 
+  if (!container) return;
+
+  const today =
+    new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  const completedEntries =
+    timeEntries.filter(entry => {
+
+      if (
+        entry.status !==
+        "Clocked Out"
+      ) {
+        return false;
+      }
+
+      if (!entry.clockOut) {
+        return false;
+      }
+
+      const clockOut =
+        entry.clockOut.toDate
+          ? entry.clockOut.toDate()
+          : new Date(entry.clockOut);
+
+      return clockOut >= today;
+
+    });
+
   if (
-    photoInput &&
-    photoInput.files.length
+    completedEntries.length === 0
   ) {
-    postShiftPhoto =
-      await fileToBase64(
-        photoInput.files[0]
-      );
+
+    container.innerHTML =
+      "No completed shifts today.";
+
+    return;
+
   }
+
+  container.innerHTML =
+    completedEntries.map(entry => `
+
+      <div class="activity-item">
+
+        <strong>
+          ${entry.employeeName}
+        </strong>
+
+        <br>
+
+        ${entry.siteName}
+
+        <br>
+
+        Clock Out:
+        ${
+          entry.clockOut
+            ? (
+                entry.clockOut.toDate
+                  ? entry.clockOut.toDate()
+                  : new Date(entry.clockOut)
+              ).toLocaleTimeString()
+            : "Unknown"
+        }
+
+        <br>
+
+        Hours:
+        ${entry.hoursWorked ?? "0"}
+
+        <br><br>
+
+        ${
+          entry.preShiftPhoto
+            ? `
+            <button
+              class="btn btn-sm btn-primary"
+              onclick="viewPreShiftPhoto('${entry.id}')"
+            >
+              Uniform Photo
+            </button>
+            `
+            : ""
+        }
+
+        ${
+          entry.postShiftPhoto
+            ? `
+            <button
+              class="btn btn-sm btn-success"
+              onclick="viewPostShiftPhoto('${entry.id}')"
+            >
+              Post-Shift Photo
+            </button>
+            `
+            : ""
+        }
+
+      </div>
+
+    `).join("");
+
+}
+
+async function clockOut() {
 
   if (!currentOfficer) {
 
@@ -8272,6 +8370,30 @@ async function clockOut() {
 
   const employeeId =
     currentOfficer.id;
+
+    let postShiftPhoto =
+    null;
+
+  const photoInput =
+    document.getElementById(
+      "postShiftPhoto"
+    );
+  
+  if (
+    photoInput &&
+    photoInput.files.length
+  ) {
+   postShiftPhoto =
+  await uploadPostShiftPhoto(
+
+    photoInput.files[0],
+
+    window.currentUserProfile.tenantId,
+
+    employeeId
+
+  );
+  }  
 
   const position =
     await new Promise(
@@ -8402,18 +8524,24 @@ async function clockOut() {
         "Clocked Out",
 
       postShiftPhoto:
-        postShiftPhoto
-          ? {
-            imageBase64:
-              postShiftPhoto,
-            timestamp:
-              serverTimestamp(),
-            lat:
-              latitude,
-            lng:
-              longitude
-          }
-          : null,
+  postShiftPhoto
+    ? {
+        url:
+          postShiftPhoto.url,
+
+        path:
+          postShiftPhoto.path,
+
+        timestamp:
+          serverTimestamp(),
+
+        lat:
+          latitude,
+
+        lng:
+          longitude
+      }
+    : null,
     }
 
   );
@@ -15121,11 +15249,11 @@ if (!tenantId) {
 
     try {
 
-      let logoUrl =
-        companyProfile.logoUrl || "";
+      let logoStoragePath =
+    companyProfile.logoStoragePath || "";
 
-      let logoBase64 =
-        companyProfile.logoBase64 || "";
+      let logoUrl =
+        companyProfile.logoUrl || "";      
 
       let patchUrl =
         companyProfile.patchUrl || "";
@@ -15137,15 +15265,16 @@ if (!tenantId) {
 
       if (logoFile) {
 
-        logoUrl =
-          await uploadCompanyLogo(
-            logoFile
-          );
+        const logo =
+    await uploadCompanyLogo(
+        logoFile
+    );
 
-        logoBase64 =
-          await fileToBase64(
-            logoFile
-          );
+logoUrl =
+    logo.downloadURL;
+
+const logoStoragePath =
+    logo.storagePath;       
         
       }
 
@@ -15209,7 +15338,7 @@ if (!tenantId) {
           ).value,
 
         logoUrl,
-        logoBase64,
+        logoStoragePath,        
         patchUrl,
 
         mileageThreshold:
@@ -15355,15 +15484,18 @@ window.loadCompanyProfile =
         error
       );
     }
-   if (companyProfile.logoBase64) {
+const logoPreview =
+  document.getElementById(
+    "companyLogoPreview"
+  );
 
-  const logoPreview =
-    document.getElementById(
-      "companyLogoPreview"
-    );
+if (
+  logoPreview &&
+  companyProfile.logoUrl
+) {
 
   logoPreview.src =
-    companyProfile.logoBase64;
+    companyProfile.logoUrl;
 
   logoPreview.style.display =
     "block";
@@ -15376,11 +15508,11 @@ const headerLogo =
 
 if (
   headerLogo &&
-  companyProfile.logoBase64
+  companyProfile.logoUrl
 ) {
 
   headerLogo.src =
-    companyProfile.logoBase64;
+    companyProfile.logoUrl;
 
   headerLogo.classList.remove(
     "hidden"
@@ -15404,23 +15536,32 @@ if (
   };
 
 window.uploadCompanyLogo =
-  async function (file) {
+async function (file) {
 
-    const storageRef =
-      ref(
-        storage,
-        `company-assets/${tenantId}/logo`
-      );
+  const tenantId =
+    window.currentUserProfile?.tenantId;
 
-    await uploadBytes(
-      storageRef,
-      file
+  if (!tenantId) {
+    throw new Error(
+      "Tenant ID not available."
     );
+  }
 
-    return await getDownloadURL(
-      storageRef
-    );
+  const storageRef = ref(
+    storage,
+    `company-assets/${tenantId}/logo`
+  );
+
+  await uploadBytes(
+    storageRef,
+    file
+  );
+
+  return {
+    downloadURL: await getDownloadURL(storageRef),
+    storagePath: storageRef.fullPath
   };
+};
 
 window.uploadCompanyPatch =
   async function (file) {
@@ -17285,6 +17426,43 @@ document
       );
     }
   );
+
+  window.viewPostShiftPhoto =
+  function (timeEntryId) {
+
+    const entry =
+      timeEntries.find(
+        t => t.id === timeEntryId
+      );
+
+    if (
+      !entry ||
+      !entry.postShiftPhoto
+    ) {
+      return;
+    }
+
+    photoGallery = [
+      entry.postShiftPhoto
+    ];
+
+    currentPhotoIndex = 0;
+
+    const image =
+      document.getElementById(
+        "photoViewerImage"
+      );
+
+    image.src =
+      entry.postShiftPhoto.url ??
+      entry.postShiftPhoto.imageBase64;
+
+    document.getElementById(
+      "photoViewerModal"
+    ).style.display =
+      "flex";
+
+  };
 
 window.loadMileageReport =
   async function () {

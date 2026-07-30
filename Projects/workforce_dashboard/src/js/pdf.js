@@ -86,19 +86,46 @@ async function getImageDimensions(
 
 async function downloadImageAsDataURL(url) {
 
-  const response = await fetch(url);
-
-  const blob = await response.blob();
-
   return new Promise((resolve, reject) => {
 
-    const reader = new FileReader();
+    const img = new Image();
 
-    reader.onload = () => resolve(reader.result);
+    img.crossOrigin = "anonymous";
 
-    reader.onerror = reject;
+    img.onload = () => {
 
-    reader.readAsDataURL(blob);
+      const canvas =
+        document.createElement("canvas");
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx =
+        canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        0,
+        0
+      );
+
+      try {
+
+        resolve(
+          canvas.toDataURL("image/jpeg")
+        );
+
+      } catch (e) {
+
+        reject(e);
+
+      }
+
+    };
+
+    img.onerror = reject;
+
+    img.src = url;
 
   });
 
@@ -323,20 +350,51 @@ const headerTop = y;
 // Company Logo
 // ======================
 
-if (
-  window.companyProfile
-    ?.logoBase64
-) {
+if (window.companyProfile?.logoUrl) {
 
- const img = new Image();
-img.src = window.companyProfile.logoBase64;
+  try {
 
-const logoWidth = 28;
-const logoHeight =
-  (img.height * logoWidth) /
-  img.width;
+    const logoData =
+      await downloadImageAsDataURL(
+        window.companyProfile.logoUrl
+      );
 
-headerTextX = 55;
+    const img = new Image();
+
+    await new Promise((resolve, reject) => {
+
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = logoData;
+
+    });
+
+    const logoWidth = 28;
+
+    const logoHeight =
+      (img.height * logoWidth) /
+      img.width;
+
+    doc.addImage(
+      logoData,
+      "PNG",
+      15,
+      15,
+      logoWidth,
+      logoHeight
+    );
+
+    headerTextX = 55;
+
+  } catch (error) {
+
+    console.error(
+      "Unable to load company logo:",
+      error
+    );
+
+  }
+
 }
 
 // ======================

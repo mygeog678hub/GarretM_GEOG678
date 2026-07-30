@@ -85,6 +85,28 @@ export {
 
   uploadImage,
 
-  uploadPreShiftPhoto
+  uploadPreShiftPhoto,
+
+  uploadPostShiftPhoto
 
 };
+
+async function uploadPostShiftPhoto(
+  file,
+  tenantId,
+  employeeId
+) {
+
+  return uploadImage({
+
+    tenantId,
+
+    folder: "postShiftPhotos",
+
+    entityId: employeeId,
+
+    file
+
+  });
+
+}
