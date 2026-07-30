@@ -1027,14 +1027,7 @@ function hideAllPages() {
 let bootstrapComplete = false;
 
 async function bootstrapApplication() {
-
-  console.log("Mileage page display:",
-    getComputedStyle(
-        document.getElementById("mileageReportPage")
-    ).display
-);
-  console.log("Bootstrap Profile:", window.currentUserProfile);
-
+ 
   if (bootstrapComplete) {
     console.log("Bootstrap already completed.");
     return;
@@ -1651,19 +1644,13 @@ async function addSite() {
     // FIRST ATTEMPT
     const fullQuery = encodeURIComponent(
       `${address}, ${city}, ${state} ${zip}, USA`
-    );
-
-    console.log("Primary Query:", fullQuery);
-    console.log(
-      `${address}, ${city}, ${state} ${zip}, USA`
-    );
+    );   
 
     let response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${fullQuery}&format=json&limit=1`
     );
 
-    coords = await response.json();
-    console.log("Geocode Results:", coords);
+    coords = await response.json();    
 
     // FALLBACK ATTEMPT
     if (!coords.length) {
@@ -1672,17 +1659,13 @@ async function addSite() {
         `${address}, ${city}, ${state}, USA`
       );
 
-      console.log("Fallback Query:", fallbackQuery);
-
       response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${fallbackQuery}&format=json&limit=1`
       );
 
       coords = await response.json();
 
-    }
-
-    console.log("Geocode Result:", coords);
+    }    
 
     if (!coords.length) {
 
@@ -1855,8 +1838,6 @@ async function deleteEmployee(id) {
     editingEmployeeId = null;
 
     closeEditEmployeeModal();
-
-console.log("Modal closed");
 
 alert("Employee deleted successfully.");
   } catch (err) {
@@ -2445,8 +2426,6 @@ const end =
       const vehicle = vehicles.find(
         v => v.id === a.vehicleId
       );
-      console.log("Assignment vehicleId:", a.vehicleId);
-console.log("Vehicle found:", vehicle);
       
       return `
   <tr>
@@ -4482,10 +4461,7 @@ function editEmployee(id) {
 
   if (!emp) return;
 
-  editingEmployeeId = id;
-
-  console.log(emp);
-console.log("securityLevel:", emp.securityLevel);
+  editingEmployeeId = id; 
 
   document.getElementById("editEmpLastName").value =
     emp.lastName || "";
@@ -17259,11 +17235,14 @@ window.viewPreShiftPhoto =
 
     currentPhotoIndex = 0;
 
-    document.getElementById(
-      "photoViewerImage"
-    ).src =
-      entry.preShiftPhoto
-        .imageBase64;
+    const image =
+  document.getElementById(
+    "photoViewerImage"
+  );
+
+image.src =
+  entry.preShiftPhoto.url ??
+  entry.preShiftPhoto.imageBase64;
 
     document.getElementById(
       "photoViewerModal"
@@ -17672,11 +17651,6 @@ async function extendRecurringSeries(seriesId) {
 
 const snapshot = await getDocs(q);
 
-console.log(
-  "Recurring shifts found:",
-  snapshot.size
-);
-
     if (snapshot.empty) {
       alert("Recurring series not found.");
       return;
@@ -17739,10 +17713,6 @@ const lastStart = new Date(lastShift.startTime);
 const newDates = generatedDates.filter(
   date => date > lastStart
 );
-
-console.log("Generated Dates:", generatedDates);
-console.log("Last Start:", lastStart);
-console.log("New Dates:", newDates);
 
 const shiftTemplate = {
   ...firstShift,
@@ -18165,9 +18135,7 @@ function formatRepeatDays(days) {
 }
 
 function renderClaimRequests() {
-
-    console.log("NEW renderClaimRequests()");
-
+   
     const tbody =
         document.getElementById(
             "claimRequestsBody"
@@ -18778,9 +18746,7 @@ window.showAddVehicleModal = function () {
 };
 
 window.showVehicles = function () {
-
-    console.log("showVehicles called");
-
+    
     const modal = document.getElementById("vehiclesModal");
 
     if (!modal) {
@@ -18879,11 +18845,7 @@ window.renderVehicles = function () {
 
 window.editVehicle = function (docId) {
 
-    console.log("Edit clicked", docId);
-
-    const vehicle = vehicles.find(v => v.docId === docId);
-
-    console.log(vehicle);
+    const vehicle = vehicles.find(v => v.docId === docId); 
 
     if (!vehicle) return;
 
@@ -18892,8 +18854,7 @@ window.editVehicle = function (docId) {
     document.getElementById("editVehicleMake").value = vehicle.make || "";
     document.getElementById("editVehicleModel").value = vehicle.model || "";
     document.getElementById("editVehiclePlate").value = vehicle.plate || "";
-
-    console.log("Opening modal...");
+   
 
     document.getElementById("editVehicleModal").style.display = "flex";
 };
