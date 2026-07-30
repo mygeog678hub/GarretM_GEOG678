@@ -8332,7 +8332,7 @@ function renderCompletedTimeEntries() {
               class="btn btn-sm btn-primary"
               onclick="viewPreShiftPhoto('${entry.id}')"
             >
-              Uniform Photo
+              Pre-Shift Photo
             </button>
             `
             : ""
@@ -16263,6 +16263,10 @@ window.editDraft =
         return;
 
       }
+      console.log(
+  "Loaded attachments:",
+  attachmentResult.attachments
+);
 
       renderIncidentAttachments(
         attachmentResult.attachments
@@ -17014,9 +17018,11 @@ function previewIncidentPhotos() {
 }
 
 async function uploadIncidentPhotos(
-  incidentId,
-  tenantId
+  incidentId
 ) {
+
+  const tenantId =
+    window.currentUserProfile.tenantId;
 
   const files =
     incidentPhotoFiles;

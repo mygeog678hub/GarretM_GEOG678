@@ -231,7 +231,11 @@ button:hover {
   margin: 30px auto;
   padding: 20px;
 }
-
+.dashboard-scroll-list {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));

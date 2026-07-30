@@ -711,6 +711,29 @@ if (
 
 }
 
+// Recurring shift validation
+if (repeatEnabled) {
+
+    if (repeatDays.length === 0) {
+
+        return {
+            success: false,
+            message: "Please select at least one repeat day."
+        };
+
+    }
+
+    if (!repeatEndDate) {
+
+        return {
+            success: false,
+            message: "Please select a repeat end date."
+        };
+
+    }
+
+}
+
     // site lookup
     const siteDoc = await getDoc(
   doc(db, "sites", siteId)
