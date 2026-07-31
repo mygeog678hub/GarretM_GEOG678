@@ -10721,6 +10721,63 @@ if (!result.success) {
   }
 );
 
+//
+// ARCHIVE RETURN NOTIFICATION
+//
+if (editingId) {
+
+  const notificationQuery = query(
+    collection(db, "notifications"),
+
+    where(
+      "tenantId",
+      "==",
+      window.currentUserProfile.tenantId
+    ),
+
+    where(
+      "officerId",
+      "==",
+      currentOfficer.id
+    ),
+
+    where(
+      "incidentId",
+      "==",
+      editingId
+    ),
+
+    where(
+      "archived",
+      "==",
+      false
+    ),
+
+    where(
+      "type",
+      "==",
+      "incident-returned"
+    )
+  );
+
+  const notificationSnap =
+    await getDocs(notificationQuery);
+
+  for (const docSnap of notificationSnap.docs) {
+
+    await updateDoc(
+      docSnap.ref,
+      {
+        archived: true,
+        archivedAt:
+          serverTimestamp()
+      }
+    );
+
+  }
+
+}
+
       alert(
         `Incident ${caseNumber} submitted successfully.`
       );
@@ -16496,7 +16553,7 @@ await addReviewHistory(
 const report =
   result.report;
 
-     await addDoc(
+ await addDoc(
   collection(
     db,
     "notifications"
@@ -16514,12 +16571,17 @@ const report =
     title:
       "Report Returned",
 
+    type: "incident-returned",
+
     message:
-      `Case ${report.caseNumber ||
-      "Draft Report"
+      `Case ${
+        report.caseNumber ||
+        "Draft Report"
       } was returned for corrections.`,
 
     read: false,
+
+    archived: false,
 
     createdAt:
       serverTimestamp()
@@ -16795,6 +16857,11 @@ const q = query(
     "officerId",
     "==",
     currentEmployee.id
+  ),
+  where(
+    "archived",
+    "==",
+    false
   ),
   orderBy(
     "createdAt",
