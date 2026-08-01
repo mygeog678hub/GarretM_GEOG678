@@ -534,6 +534,9 @@ overrideApprovedAt:
 
 let createdShiftId = null;
 
+let createdCount = 0;
+const conflicts = [];
+
   if (!repeatEnabled) {
 
     const shiftRef = await addDoc(
@@ -555,7 +558,7 @@ createdShiftId = shiftRef.id;
 
     console.log(
       `Creating ${generatedDates.length} recurring shifts`
-    );
+    );  
 
     for (const date of generatedDates) {
 
@@ -625,7 +628,9 @@ const conflict =
       )
   );
 
-if (conflict) {  
+if (conflict) {
+
+  conflicts.push(occurrenceStart);
 
   continue;
 
@@ -646,6 +651,8 @@ if (conflict) {
     }
 ); 
 
+createdCount++;
+
 if (!createdShiftId) {
 
     createdShiftId = shiftRef.id;
@@ -655,6 +662,32 @@ if (!createdShiftId) {
     }
 
   }
+if (repeatEnabled) {
+
+    if (createdCount === 0) {
+
+        return {
+            success: false,
+            message: "Officer is already scheduled for all selected occurrences."
+        };
+
+    }
+
+    if (conflicts.length > 0) {
+
+        return {
+            success: true,
+            partialSuccess: true,
+            message:
+                `${createdCount} recurring shift(s) created. ` +
+                `${conflicts.length} conflicting occurrence(s) were skipped.`,
+            shiftId: createdShiftId
+        };
+
+    }
+
+}
+
 return {
     success: true,
     shiftId: createdShiftId

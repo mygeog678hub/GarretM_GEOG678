@@ -7273,6 +7273,8 @@ const result =
         currentUserProfile
     });
 
+    console.log("createScheduledShift result:", result);
+
 if (!result || !result.success) {
 
     alert(
@@ -7282,7 +7284,13 @@ if (!result || !result.success) {
 
     return;
 
-}   
+}  
+
+if (result.partialSuccess) {
+
+    alert(result.message);
+
+}
 
 
   document.getElementById(
