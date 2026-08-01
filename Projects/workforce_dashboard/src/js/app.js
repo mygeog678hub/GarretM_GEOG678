@@ -6488,6 +6488,16 @@ window.showOfficerPortal =
 window.showOfficerIncidentReport =
   function () {
 
+    // Always start a brand-new incident
+    resetIncidentEditor();
+
+    console.log(
+    "Opening incident editor",
+    document.querySelectorAll(
+        "#personsContainer .person-card"
+    ).length
+);
+
     document.getElementById(
       "dashboardPage"
     ).style.display = "none";
@@ -9954,6 +9964,8 @@ await addDoc(
 
 window.addPerson = function () {
 
+  console.trace("addPerson called");
+
   const container =
     document.getElementById(
       "personsContainer"
@@ -9961,6 +9973,11 @@ window.addPerson = function () {
 
   const personNumber =
     container.children.length + 1;
+
+    console.log(
+    "Children before add:",
+    container.children.length
+);
 
   container.insertAdjacentHTML(
     "beforeend",
@@ -10493,10 +10510,25 @@ window.resetIncidentEditor = function () {
 window.submitIncidentReport =
   async function () {
 
+    console.log("submitIncidentReport fired");
+
     try {
 
       const incidentData =
-        collectIncidentData();      
+        collectIncidentData();        
+        
+
+console.log(
+  "STEP 1 - collectIncidentData:",
+  incidentData.persons.length,
+  structuredClone(incidentData.persons)
+);
+        
+        console.log(
+  "Submit persons:",
+  incidentData.persons.length,
+  structuredClone(incidentData.persons)
+);
 
       if (
         !incidentData.incidentType ||
@@ -10632,6 +10664,13 @@ if (!caseNumberResult.success) {
 caseNumber =
   caseNumberResult.caseNumber;
 
+  
+console.log(
+  "STEP 2 - Before addDoc:",
+  incidentData.persons.length,
+  structuredClone(incidentData.persons)
+);
+
         const docRef =
           await addDoc(
             collection(
@@ -10675,6 +10714,15 @@ caseNumber =
               reviewHistory: []
             }
           );
+
+          const verify =
+  await getDoc(docRef);
+
+console.log(
+  "STEP 3 - Firestore:",
+  verify.data().persons.length,
+  verify.data().persons
+);
 
         //
         // SAVE ATTACHMENTS
@@ -11016,6 +11064,10 @@ function collectIncidentData() {
   const vehicles =
     window.incidentVehicles || []; 
 
+    console.log("Person cards in DOM:",
+    document.querySelectorAll(".person-card").length);
+    console.log("Persons being saved:", persons);
+
   return {
 
     incidentType,
@@ -11335,6 +11387,15 @@ window.viewIncident =
 
     const incident =
       snap.data();
+
+      console.log(
+  "STEP 4 - Loaded from Firestore:",
+  incident.persons.length,
+  incident.persons
+);
+
+      console.log("Firestore persons:", incident.persons);
+console.log("Firestore person count:", incident.persons?.length);
 
     incident.id = id;
     window.currentIncident = incident;
