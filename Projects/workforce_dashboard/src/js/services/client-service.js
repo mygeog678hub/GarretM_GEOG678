@@ -11,18 +11,7 @@ import {
     formatRelativeTime
 } from "../utils.js";
 
-export async function loadTodaysOfficers() {
-
-    console.log(
-    "Loader Profile:",
-    window.currentUserProfile
-);
-
-console.log(
-    "Loader Site ID:",
-    window.currentUserProfile?.siteId
-);
-
+export async function loadTodaysOfficers() {  
 
    try {
 
@@ -45,43 +34,132 @@ if (!currentSiteId) {
                 .substring(0, 10);
 
         const q = query(
-            collection(db, "shifts"),
-            where("siteId", "==", currentSiteId)
-        );
+    collection(db, "shifts"),
+    where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+    ),
+    where(
+        "siteId",
+        "==",
+        currentSiteId
+    )
+);
 
 
         const snapshot = await getDocs(q);
+        
+        const timeEntryQuery = query(
+    collection(db, "timeEntries"),
+    where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+    ),
+    where(
+        "siteId",
+        "==",
+        currentSiteId
+    ),
+    where(
+        "status",
+        "==",
+        "Clocked In"
+    )
+);
+
+const timeSnapshot =
+    await getDocs(timeEntryQuery);
+
+const activeEntries =
+    new Map();
+
+timeSnapshot.forEach(doc => {
+
+    const entry = doc.data();
+
+    activeEntries.set(
+        entry.employeeId,
+        entry
+    );
+
+});
+
+window.activeTimeEntries =
+    activeEntries;
+
+snapshot.docs.forEach(doc => {
+
+});
 
         const officers =
-            snapshot.docs
+            snapshot.docs       
 
-                .map(doc => ({
-                    shiftId: doc.id,
-                    ...doc.data()
-                }))
+                .map(doc => {
+
+    const data = doc.data();
+
+    return {
+
+        shiftId: doc.id,
+
+        employeeId: data.employeeId,
+
+        employeeName: data.employeeName,
+
+        siteId: data.siteId,
+
+        siteName: data.siteName,
+
+        startTime: data.startTime,
+
+        endTime: data.endTime,
+
+        status: data.status
+
+    };
+
+})
 
                 .filter(shift =>
                     shift.startTime &&
                     shift.startTime.startsWith(today)
                 )
 
-                .map(shift => ({
+               .map(shift => {
 
-                    shiftId: shift.shiftId,
+    const activeEntry =
+        activeEntries.get(
+            shift.employeeId
+        );
 
-                    employeeId: shift.employeeId,
+    return {
 
-                    name: shift.employeeName,
+        shiftId: shift.shiftId,
 
-                    post: shift.siteName,
+        employeeId: shift.employeeId,
 
-                    shift: `${shift.startTime} - ${shift.endTime}`,
+        name: shift.employeeName,
 
-                    status: shift.status || "Scheduled",
+        post: shift.siteName,
 
-                    clock: "--"
+        shift:
+            `${formatShiftTime(shift.startTime)} - ${formatShiftTime(shift.endTime)}`,
 
-                }));
+        status:
+            shift.status || "Scheduled",
+
+        clock:
+            activeEntry
+                ? formatTimeOnPost(
+                    activeEntry.clockIn
+                )
+                : "--"
+
+    };
+
+});
        
 
         return officers;
@@ -97,6 +175,49 @@ if (!currentSiteId) {
         return [];
 
     }
+
+}
+
+export function formatTimeOnPost(clockIn) {
+
+    if (!clockIn) return "--";
+
+    const start =
+        clockIn?.toDate
+            ? clockIn.toDate()
+            : new Date(clockIn);
+
+    const elapsed =
+        Math.floor(
+            (Date.now() - start.getTime()) / 60000
+        );
+
+    const hours =
+        Math.floor(elapsed / 60);
+
+    const minutes =
+        elapsed % 60;
+
+    if (hours === 0) {
+        return `${minutes}m`;
+    }
+
+    return `${hours}h ${minutes}m`;
+}
+
+function formatShiftTime(dateTime) {
+
+    if (!dateTime) return "--";
+
+    const date =
+        dateTime?.toDate
+            ? dateTime.toDate()
+            : new Date(dateTime);
+
+    return date.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+    });
 
 }
 
@@ -122,7 +243,16 @@ if (!currentSiteId) {
 
 const q = query(
     collection(db, "patrolEvents"),
-    where("siteId", "==", currentSiteId)
+    where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+    ),
+    where(
+        "siteId",
+        "==",
+        currentSiteId
+    )
 );
 
 const snapshot =
@@ -174,32 +304,34 @@ const snapshot =
 
                 return {
 
-                    type,
-                    title,
-                    location:
-                        event.checkpointName || "-",
+    type,
 
-                    time:
-                        event.timestamp?.toDate
-                            ? event.timestamp
-                                .toDate()
-                                .toLocaleTimeString([], {
-                                    hour: "numeric",
-                                    minute: "2-digit"
-                                })
-                            : ""
+    title,
 
-                };
+    location:
+        event.checkpointName || "-",
+
+    timestamp:
+        event.timestamp,
+
+    time:
+        event.timestamp?.toDate()
+            .toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+            })
+
+};
 
             })
             .filter(Boolean);
 
-    patrols.sort((a, b) => {
+   patrols.sort((a, b) =>
 
-        // We'll improve sorting later if needed.
-        return 0;
+    b.timestamp.toMillis() -
+    a.timestamp.toMillis()
 
-    }); 
+);
 
     return patrols;
 
@@ -222,7 +354,16 @@ if (!currentSiteId) {
 
 const q = query(
     collection(db, "incidents"),
-    where("siteId", "==", currentSiteId)
+    where(
+        "tenantId",
+        "==",
+        window.currentUserProfile.tenantId
+    ),
+    where(
+        "siteId",
+        "==",
+        currentSiteId
+    )
 );
 
 const snapshot =
@@ -235,30 +376,60 @@ const snapshot =
 
     return snapshot.docs
 
-        .map(doc => ({
+      .map(doc => {
 
-            id: doc.id,
-            ...doc.data()
+    const data = doc.data();
 
-        }))
+    return {
+
+        id: doc.id,
+
+        siteId: data.siteId,
+
+        siteName: data.siteName,
+
+        status: data.status,
+
+        severity: data.severity,
+
+        description: data.description,
+
+        createdAt: data.createdAt
+
+    };
+
+})
 
         .filter(incident => {
 
-            if (!incident.createdAt)
-                return false;
+    if (!incident.createdAt)
+        return false;
 
-            return incident.createdAt.startsWith(today);
+    const incidentDate =
+        incident.createdAt?.toDate
+            ? incident.createdAt
+                .toDate()
+                .toISOString()
+                .split("T")[0]
+            : "";
 
-        })
+    return incidentDate === today;
+
+})
 
         .sort((a, b) =>
 
-            new Date(b.createdAt) -
-            new Date(a.createdAt)
+    b.createdAt.toMillis() -
+    a.createdAt.toMillis()
 
-        )
+)
 
        .map(incident => {
+
+        console.log(
+    "Incident Status:",
+    incident.status
+);
 
         return {
 
@@ -274,7 +445,7 @@ const snapshot =
                 incident.createdAt
             ),
 
-            status: incident.status
+            status: incident.status || "Open"
 
         };
 
@@ -289,12 +460,23 @@ export async function loadClientKPIs({
     communications
 }) {
 
+    console.log(
+    "Open Incident Count:",
+    incidents.filter(
+        i => i.status !== "Resolved"
+    )
+);
+
     return {
         officers: officers.length,
-        patrols: patrols.length,
-        incidents: incidents.filter(
-            i => i.status !== "resolved"
-        ).length,
+        patrols:
+    patrols.filter(
+        patrol =>
+            patrol.type === "completed"
+    ).length,
+     incidents: incidents.filter(
+    i => (i.status || "").toLowerCase() !== "resolved"
+).length,
         communications: communications.length
     };
 

@@ -106,29 +106,42 @@ export async function createIncidentAlert({
   try {
 
     const incidentRef =
-      await addDoc(
-        collection(db, "incidents"),
-        {
+     await addDoc(
+    collection(db, "incidents"),
+    {
 
-          siteId,
+        siteId,
 
-          siteName:
+        siteName:
             site.name,
 
-          severity,
+        severity,
 
-          description,
+        description,
 
-          reportedBy:
+        reportedBy:
             reportedBy || "Unknown",
 
-            tenantId: window.currentUserProfile.tenantId,
+        tenantId:
+            window.currentUserProfile.tenantId,
 
-          createdAt:
-  serverTimestamp()
+        status:
+            "Open",
 
-        }
-      );
+        resolvedAt:
+            null,
+
+        resolvedBy:
+            null,
+
+        resolution:
+            null,
+
+        createdAt:
+            serverTimestamp()
+
+    }
+);
 
 await logActivity(
   siteId,

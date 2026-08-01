@@ -9,7 +9,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  getAuth
+  getAuth,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import { formatRelativeTime } from "./js/utils.js";
@@ -22,15 +23,16 @@ import {
     loadTodaysOfficers,
     loadTodaysPatrolActivity,
     loadTodaysIncidents,
-    loadClientKPIs
+    loadClientKPIs,
+    formatTimeOnPost
 } from "./js/services/client-service.js";
+
+import {
+    loadSite
+} from "./js/services/site-service.js";
 
 
 const auth = getAuth();
-
-// Temporary until authentication (Phase 9B)
-const currentSiteId =
-    window.currentUserProfile?.siteId;
 
 async function loadCompanyProfile() {
 
@@ -134,9 +136,37 @@ function renderSiteStatus(status) {
 
     }
 
+    //
+// UPDATE WELCOME BANNER
+//
+document.getElementById(
+    "clientSiteName"
+).textContent =
+    window.currentSite?.name ||
+    "Property";
+
+document.getElementById(
+    "clientWelcomeMessage"
+).textContent =
+    status.message;
+
+const statusPill =
+    document.getElementById(
+        "clientStatusPill"
+    );
+
+statusPill.textContent =
+    status.title.replace(
+        /^[🟢🟡🔴]\s*/,
+        ""
+    );
+
+statusPill.className =
+    `status-pill ${status.cssClass}`;
+
 }
 
-function renderKPIs(kpis) {
+function renderKPIs(kpis) {  
 
     document.getElementById("kpiOfficerCount").textContent =
         kpis.officers;
@@ -165,12 +195,7 @@ function renderClientHeader(site) {
 
 }
 
-export async function initializeClientPortal() {
-
-    console.log(
-    "Client Portal Profile:",
-    window.currentUserProfile
-);    
+export async function initializeClientPortal() {   
 
    const liveOfficers =
     await loadTodaysOfficers();
@@ -188,8 +213,7 @@ const incidents =
 renderIncidentSummary(incidents);
 
 // We'll add communications next
-const communications =
-    await loadTodaysCommunications();
+const communications = [];
 
 const kpis =
     await loadClientKPIs({
@@ -217,10 +241,30 @@ renderPatrolActivity(
 renderIncidentSummary(
     incidents
 );
+
+refreshTimeOnPost();
+
+if (!window.timeOnPostTimer) {
+
+    window.timeOnPostTimer =
+        setInterval(
+            refreshTimeOnPost,
+            60000
+        );
+
+}
 }
 
 
+function formatShiftTime(dateTime) {
 
+    return new Date(dateTime)
+        .toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit"
+        });
+
+}
 
 function renderOfficerCard(officer) {
 
@@ -296,9 +340,11 @@ function renderOfficerCard(officer) {
                     ⏱ Time on Post
                 </span>
 
-                <span class="detail-value">
-                    ${officer.clock}
-                </span>
+               <span
+    class="detail-value officer-clock"
+    data-employee-id="${officer.employeeId}">
+    ${officer.clock}
+</span>
 
             </div>
 
@@ -417,8 +463,8 @@ function renderIncidentSummary(incidents) {
                 title: "No Incidents Reported Today",
 
                 message:
-                    "There are currently no reported incidents for this property."
-
+                    "There are currently no reported incidents for this property."                
+                    
             });
 
         return;
@@ -560,6 +606,12 @@ function loadSiteStatus({
                 incident.status !== "resolved"
         ).length;
 
+         const completedPatrols =
+        patrols.filter(
+            patrol =>
+                patrol.type === "completed"
+        ).length;
+
     let title = "🟢 Normal Operations";
     let message =
         "No active incidents have been reported today.";
@@ -583,7 +635,7 @@ function loadSiteStatus({
 
         officers: officers.length,
 
-        patrols: patrols.length,
+        patrols: completedPatrols,
 
         incidents: activeIncidents,
 
@@ -595,5 +647,84 @@ function loadSiteStatus({
         cssClass
 
     };
+
+}
+
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    const identityReady =
+        await initializeIdentity();
+
+    if (!identityReady) return;
+
+    const siteResult =
+    await loadSite(
+        window.currentUserProfile.siteId
+    );
+
+if (!siteResult.success) {
+
+    alert(siteResult.message);
+
+    return;
+
+}
+
+window.currentSite =
+    siteResult.site;
+
+    if (
+        window.currentUserProfile.role !== "Client"
+    ) {
+        window.location.href = "app.html";
+        return;
+    }
+
+    //await loadCompanyProfile();
+
+    await initializeClientPortal();
+
+});
+
+window.logout = async function () {
+
+    await signOut(auth);
+
+    window.location.href =
+        "index.html";
+
+};
+
+function refreshTimeOnPost() {
+
+    document
+        .querySelectorAll(".officer-clock")
+        .forEach(clock => {
+
+            const employeeId =
+                clock.dataset.employeeId;
+
+            const entry =
+                window.activeTimeEntries?.get(
+                    employeeId
+                );
+
+            if (!entry) return;
+
+            clock.textContent =
+                formatTimeOnPost(
+                    entry.clockIn
+                );
+
+        });
 
 }

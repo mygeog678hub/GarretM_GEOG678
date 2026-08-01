@@ -155,7 +155,7 @@ onAuthStateChanged(auth, async (user) => {
 
     }
 
-    if (currentUserProfile.role === "client") {
+    if (currentUserProfile.role === "Client") {
         window.location.href = "client-portal.html";
         return;
     }

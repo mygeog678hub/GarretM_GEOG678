@@ -1,7 +1,15 @@
-export function formatRelativeTime(dateString) {
+export function formatRelativeTime(dateValue) {
+
+    if (!dateValue) {
+        return "";
+    }
 
     const now = new Date();
-    const date = new Date(dateString);
+
+    const date =
+        dateValue?.toDate
+            ? dateValue.toDate()
+            : new Date(dateValue);
 
     const seconds =
         Math.floor((now - date) / 1000);
