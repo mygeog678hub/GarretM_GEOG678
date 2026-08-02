@@ -1033,16 +1033,13 @@ let bootstrapComplete = false;
 async function bootstrapApplication() {
  
   if (bootstrapComplete) {
-    console.log("Bootstrap already completed.");
+    
     return;
   }  
 
   hideAllPages();
 
-// ================= BOOTSTRAP =================
-
-  console.log("========== BOOTSTRAP START ==========");
-  
+// ================= BOOTSTRAP =================  
   startEmployeeListener();
   startPatrolTemplateListener();
   startSiteListener();
@@ -1267,9 +1264,7 @@ refreshPatrolMetrics();
 });
   startTimeEntryListener();
   startCheckpointListener();
-  await refreshSupervisorDashboard();
-
-  console.log("========== BOOTSTRAP COMPLETE ==========");
+  await refreshSupervisorDashboard();  
 
   bootstrapComplete = true;
 
@@ -1354,12 +1349,7 @@ window.renderIncidentVehicles =
   value="${vehicle.owner || ""}"
   oninput="
     incidentVehicles[${index}].owner =
-      this.value;
-
-    console.log(
-      'Vehicles:',
-      incidentVehicles
-    );
+      this.value    
   "
 >
   </div>

@@ -426,11 +426,6 @@ const snapshot =
 
        .map(incident => {
 
-        console.log(
-    "Incident Status:",
-    incident.status
-);
-
         return {
 
             id: incident.id,
@@ -459,13 +454,6 @@ export async function loadClientKPIs({
     incidents,
     communications
 }) {
-
-    console.log(
-    "Open Incident Count:",
-    incidents.filter(
-        i => i.status !== "Resolved"
-    )
-);
 
     return {
         officers: officers.length,

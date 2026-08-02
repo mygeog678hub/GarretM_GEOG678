@@ -18,8 +18,6 @@ export async function getCurrentUserProfile() {
 
     const firebaseUser = auth.currentUser;
 
-    console.log("Firebase User:", firebaseUser);
-
     if (!firebaseUser) {
 
         return null;
@@ -36,13 +34,7 @@ export async function getCurrentUserProfile() {
         firebaseUser.uid
     );
 
-console.log("Reading users document...");
-
 const userSnap = await getDoc(userRef);
-
-console.log("✅ Users document read successfully.");
-console.log("Looking for UID:", firebaseUser.uid);
-console.log("User document exists:", userSnap.exists());
 
 if (!userSnap.exists()) {
 
@@ -60,12 +52,7 @@ const settingsRef = doc(
     firebaseUser.uid
 );
 
-console.log("Reading userSettings document...");
-
 const settingsSnap = await getDoc(settingsRef);
-
-console.log("✅ userSettings document read successfully.");
-console.log("userSettings exists:", settingsSnap.exists());
 
     const profile = {
 
@@ -96,12 +83,7 @@ export async function initializeIdentity() {
     try {
 
         const currentUserProfile =
-            await getCurrentUserProfile();
-
-            console.log(
-    "initializeIdentity received:",
-    currentUserProfile
-);
+            await getCurrentUserProfile();  
 
         if (!currentUserProfile) {
 
@@ -114,16 +96,7 @@ export async function initializeIdentity() {
         }
 
         window.currentUserProfile =
-            currentUserProfile;
-            console.log(
-    "Tenant:",
-    currentUserProfile.tenantId
-);
-
-        console.log(
-            "Application Profile:",
-            currentUserProfile
-        );
+            currentUserProfile;     
 
         return true;
 

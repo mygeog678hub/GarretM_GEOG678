@@ -272,9 +272,7 @@ if (durationHours > maxHours) {
 if (durationHours > standardHours) {
 
   const role =
-    currentUserProfile?.role;
-
-    console.log("Current User Role:", currentUserProfile?.role);
+    currentUserProfile?.role;    
 
   const canOverride =
     role === "Admin" ||
@@ -363,21 +361,7 @@ const overnight =
       mileageThreshold;
 
     mileageStatus =
-      "Calculated";
-
-    console.log(
-      "Mileage calculated:",
-      {
-        employee:
-          employee.name,
-        site:
-          site.name,
-        miles:
-          mileageDistance,
-        incentive:
-          mileageIncentive
-      }
-    );
+      "Calculated";   
 
   } else {
 
@@ -525,12 +509,7 @@ overrideApprovedAt:
     createdAt:
       new Date().toISOString()
 
-  };
-
-  console.log("Saving shift:", {
-  startTime,
-  endTime
-});
+  }; 
 
 let createdShiftId = null;
 
@@ -554,11 +533,7 @@ createdShiftId = shiftRef.id;
   } else {
 
     const seriesId =
-      crypto.randomUUID();
-
-    console.log(
-      `Creating ${generatedDates.length} recurring shifts`
-    );  
+      crypto.randomUUID();    
 
     for (const date of generatedDates) {
 
