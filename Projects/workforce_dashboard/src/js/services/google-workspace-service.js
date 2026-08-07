@@ -1,0 +1,101 @@
+/**
+ * ==================================================
+ * WorkForge v1.1.0
+ * Google Workspace Service
+ * ==================================================
+ *
+ * Manages tenant-level Google Workspace integration.
+ *
+ * Responsibilities:
+ *  - Connection status
+ *  - OAuth lifecycle
+ *  - Workspace metadata
+ *
+ * This service does NOT create meetings.
+ * Operations Meetings are handled by meetings-service.js.
+ * ==================================================
+ */
+
+import {
+    db
+} from "./firebase-config.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+export async function getGoogleWorkspaceStatus() {
+
+    try {
+
+        const tenantId =
+            window.currentUserProfile?.tenantId;
+
+        if (!tenantId) {
+
+            return {
+                success: false,
+                message: "Tenant not available."
+            };
+
+        }
+
+        const ref =
+            doc(
+                db,
+                "tenantIntegrations",
+                tenantId
+            );
+
+        const snap =
+            await getDoc(ref);
+
+        if (!snap.exists()) {
+
+            return {
+                success: true,
+                connected: false
+            };
+
+        }
+
+        return {
+            success: true,
+            ...snap.data()
+        };
+
+    }
+    catch (error) {
+
+        console.error(
+            "Google Workspace:",
+            error
+        );
+
+        return {
+            success: false,
+            message: error.message
+        };
+
+    }
+
+}
+
+export async function connectGoogleWorkspace() {
+
+    return {
+        success: false,
+        message: "Not implemented."
+    };
+
+}
+
+export async function disconnectGoogleWorkspace() {
+
+    return {
+        success: false,
+        message: "Not implemented."
+    };
+
+}

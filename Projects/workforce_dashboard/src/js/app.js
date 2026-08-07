@@ -127,6 +127,12 @@ import {
   uploadImage
 } from "./services/storage-service.js";
 
+import {
+    getGoogleWorkspaceStatus,
+    connectGoogleWorkspace,
+    disconnectGoogleWorkspace
+} from "./services/google-workspace-service.js";
+
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -15593,6 +15599,29 @@ if (
       patchPreview.style.display =
         "block";
     }
+
+    const workspace =
+    await getGoogleWorkspaceStatus();
+
+if (!workspace.success) return;
+
+document.getElementById(
+    "googleWorkspaceStatus"
+).textContent =
+    workspace.connected
+        ? "Connected"
+        : "Not Connected";
+
+document.getElementById(
+    "googleWorkspaceAccount"
+).textContent =
+    workspace.accountEmail || "—";
+
+document.getElementById(
+    "googleWorkspaceCalendar"
+).textContent =
+    workspace.calendarId || "—";
+
   };
 
 window.uploadCompanyLogo =
