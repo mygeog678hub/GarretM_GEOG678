@@ -108,7 +108,22 @@ export async function connectGoogleWorkspace() {
     const result =
         await startOAuth();
 
-    console.log(result.data);
+    if (
+        result.data.success &&
+        result.data.authorizationUrl
+    ) {
+
+        window.location.href =
+            result.data.authorizationUrl;
+
+    } else {
+
+        console.error(
+            "OAuth initialization failed.",
+            result.data
+        );
+
+    }
 
 }
 
