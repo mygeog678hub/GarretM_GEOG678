@@ -99,14 +99,22 @@ export async function connectGoogleWorkspace() {
         "Starting Google Workspace authorization..."
     );
 
-    const startOAuth =
-        httpsCallable(
-            functions,
-            "startGoogleWorkspaceOAuth"
-        );
+    console.log(
+    "Tenant ID:",
+    window.currentUserProfile.tenantId,
+);
 
-    const result =
-        await startOAuth();
+    const startOAuth =
+    httpsCallable(
+        functions,
+        "startGoogleWorkspaceOAuth",
+    );
+
+const result =
+    await startOAuth({
+        tenantId:
+            window.currentUserProfile.tenantId,
+    });
 
     if (
         result.data.success &&

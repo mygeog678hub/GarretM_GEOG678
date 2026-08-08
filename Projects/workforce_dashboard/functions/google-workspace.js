@@ -1,8 +1,11 @@
-const {onCall} =
+const {onCall, onRequest} =
     require("firebase-functions/v2/https");
 
 const {defineSecret} =
     require("firebase-functions/params");
+
+const {google} =
+    require("googleapis");
 
 const crypto = require("node:crypto");
 
@@ -14,6 +17,16 @@ const googleClientSecret =
 
 const googleRedirectUri =
     defineSecret("GOOGLE_REDIRECT_URI");
+
+const admin =
+    require("firebase-admin");
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db =
+    admin.firestore();
 
 exports.startGoogleWorkspaceOAuth =
 onCall(
@@ -30,7 +43,14 @@ onCall(
       }
 
       const state =
-        crypto.randomBytes(32).toString("hex");
+    JSON.stringify({
+      tenantId:
+            request.data.tenantId,
+      uid:
+            request.auth.uid,
+      nonce:
+            crypto.randomBytes(16).toString("hex"),
+    });
 
       // Temporary until callback validation
       // We'll persist this in the next step.
@@ -57,7 +77,8 @@ onCall(
             "https://www.googleapis.com/auth/calendar.events",
           ].join(" "),
 
-          state,
+          state:
+              Buffer.from(state).toString("base64"),
 
         }).toString();
 
@@ -71,3 +92,131 @@ onCall(
 
       };
     });
+
+exports.googleWorkspaceCallback =
+    onRequest(
+        {
+          secrets: [
+            googleClientId,
+            googleClientSecret,
+            googleRedirectUri,
+          ],
+        },
+        async (req, res) => {
+          console.log(
+              "Google OAuth callback reached.",
+          );
+
+          const code =
+    req.query.code;
+
+          const state =
+    JSON.parse(
+        Buffer.from(
+            req.query.state,
+            "base64",
+        ).toString(),
+    );
+
+          console.log(
+              "OAuth state:",
+              state,
+          );
+
+          const oauth2Client =
+    new google.auth.OAuth2(
+        googleClientId.value(),
+        googleClientSecret.value(),
+        googleRedirectUri.value(),
+    );
+
+          console.log(
+              "OAuth client created:",
+              !!oauth2Client,
+          );
+
+          const {tokens} =
+    await oauth2Client.getToken(
+        code,
+    );
+
+          oauth2Client.setCredentials(tokens);
+
+          const calendar =
+    google.calendar({
+      version: "v3",
+      auth: oauth2Client,
+    });
+
+          const calendarList =
+    await calendar.calendarList.list();
+
+          const primaryCalendar =
+    calendarList.data.items.find(
+        (item) => item.primary,
+    );
+
+          await db
+              .collection(
+                  "tenantIntegrations",
+              )
+              .doc(
+                  state.tenantId,
+              )
+
+              .set({
+                provider: "google",
+
+                connected: true,
+
+                connectedAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+
+                connectedBy:
+            state.uid,
+
+                accountEmail:
+            primaryCalendar.id,
+
+                primaryCalendarId:
+            primaryCalendar.id,
+
+                primaryCalendarName:
+            primaryCalendar.summary,
+
+                scopes:
+            tokens.scope,
+
+                calendarEnabled: true,
+
+                meetEnabled: true,
+
+                updatedAt:
+            admin.firestore.FieldValue.serverTimestamp(),
+              });
+
+          console.log(
+              "Refresh token received:",
+              !!tokens.refresh_token,
+          );
+
+          console.log(
+              "Scopes:",
+              tokens.scope,
+          );
+
+          console.log(
+              "Access token received:",
+              !!tokens.access_token,
+          );
+
+          console.log(
+              "Authorization code:",
+              code,
+          );
+
+          res.redirect(
+              "https://workforge-dashboard.com",
+          );
+        },
+    );

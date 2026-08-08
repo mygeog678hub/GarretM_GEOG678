@@ -15620,12 +15620,41 @@ if (
 
 if (!workspace.success) return;
 
+const status =
+    document.getElementById(
+        "googleWorkspaceStatus",
+    );
+
+if (workspace.connected) {
+
+    status.innerHTML =
+        '<span class="status-badge status-connected">Connected</span>';
+
+} else {
+
+    status.innerHTML =
+        '<span class="status-badge status-disconnected">Not Connected</span>';
+
+}
+
+const connectedSince =
+    workspace.connectedAt
+    ?.toDate()
+    .toLocaleString(
+        "en-US",
+        {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+        },
+    );
+
 document.getElementById(
-    "googleWorkspaceStatus"
+    "googleWorkspaceConnectedAt"
 ).textContent =
-    workspace.connected
-        ? "Connected"
-        : "Not Connected";
+    connectedSince || "—";
 
 document.getElementById(
     "googleWorkspaceAccount"
@@ -15635,7 +15664,17 @@ document.getElementById(
 document.getElementById(
     "googleWorkspaceCalendar"
 ).textContent =
-    workspace.calendarId || "—";
+    workspace.primaryCalendarName || "—";
+
+    const button =
+    document.getElementById(
+        "connectGoogleWorkspaceBtn",
+    );
+
+button.textContent =
+    workspace.connected
+        ? "Manage Connection"
+        : "Connect Google Workspace";
 
   };
 

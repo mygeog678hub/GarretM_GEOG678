@@ -9,10 +9,14 @@
 
 const {
   startGoogleWorkspaceOAuth,
+  googleWorkspaceCallback,
 } = require("./google-workspace");
 
 exports.startGoogleWorkspaceOAuth =
     startGoogleWorkspaceOAuth;
+
+exports.googleWorkspaceCallback =
+    googleWorkspaceCallback;
 
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
