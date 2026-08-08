@@ -578,6 +578,21 @@ function fileToBase64(file) {
 }
 
 // ================= LOAD =================
+
+const connectBtn =
+    document.getElementById(
+        "connectGoogleWorkspaceBtn"
+    );
+
+if (connectBtn) {
+
+    connectBtn.addEventListener(
+        "click",
+        connectGoogleWorkspace
+    );
+
+}
+
 function startEmployeeListener() {
 onSnapshot(
 

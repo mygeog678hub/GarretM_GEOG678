@@ -20,10 +20,21 @@ import {
     db
 } from "./firebase-config.js";
 
+import { app } from "./firebase-config.js";
+
 import {
     doc,
     getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+    getFunctions,
+    httpsCallable
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+const functions =
+    getFunctions(app);
 
 export async function getGoogleWorkspaceStatus() {
 
@@ -84,10 +95,20 @@ export async function getGoogleWorkspaceStatus() {
 
 export async function connectGoogleWorkspace() {
 
-    return {
-        success: false,
-        message: "Not implemented."
-    };
+    console.log(
+        "Starting Google Workspace authorization..."
+    );
+
+    const startOAuth =
+        httpsCallable(
+            functions,
+            "startGoogleWorkspaceOAuth"
+        );
+
+    const result =
+        await startOAuth();
+
+    console.log(result.data);
 
 }
 
