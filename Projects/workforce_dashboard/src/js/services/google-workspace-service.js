@@ -93,16 +93,7 @@ export async function getGoogleWorkspaceStatus() {
 
 }
 
-export async function connectGoogleWorkspace() {
-
-    console.log(
-        "Starting Google Workspace authorization..."
-    );
-
-    console.log(
-    "Tenant ID:",
-    window.currentUserProfile.tenantId,
-);
+export async function connectGoogleWorkspace() { 
 
     const startOAuth =
     httpsCallable(
@@ -125,11 +116,7 @@ const result =
             result.data.authorizationUrl;
 
     } else {
-
-        console.error(
-            "OAuth initialization failed.",
-            result.data
-        );
+        
 
     }
 
@@ -145,18 +132,24 @@ export async function disconnectGoogleWorkspace() {
 }
 
 export async function createGoogleCalendarTestEvent() {
-
+    
     const createTest =
         httpsCallable(
             functions,
             "createGoogleCalendarTestEvent",
         );
 
-    const result =
-    await createTest({});
+    try {        
 
-    return result.data;
+        const result =
+            await createTest({});        
 
+        return result.data;
+
+    } catch (error) {        
+
+        throw error;
+    }
 }
 
 window.createGoogleCalendarTestEvent =

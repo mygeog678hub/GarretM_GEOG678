@@ -28,14 +28,6 @@ if (!admin.apps.length) {
 const db =
     admin.firestore();
 
-const {
-  getAuthenticatedClient,
-} = require("./google-auth");
-
-const {
-  createCalendarEvent,
-} = require("./google-workspace-service");
-
 exports.startGoogleWorkspaceOAuth =
 onCall(
     {
@@ -47,7 +39,10 @@ onCall(
     },
     async (request) => {
       if (!request.auth) {
-        throw new Error("Authentication required.");
+        throw new HttpsError(
+            "unauthenticated",
+            "Authentication required.",
+        );
       }
 
       const state =
@@ -112,10 +107,6 @@ exports.googleWorkspaceCallback =
         },
         async (req, res) => {
           try {
-            console.log(
-                "Google OAuth callback reached.",
-            );
-
             const code =
     req.query.code;
 
@@ -127,11 +118,6 @@ exports.googleWorkspaceCallback =
         ).toString(),
     );
 
-            console.log(
-                "OAuth state:",
-                state,
-            );
-
             const oauth2Client =
     new google.auth.OAuth2(
         googleClientId.value(),
@@ -139,20 +125,10 @@ exports.googleWorkspaceCallback =
         googleRedirectUri.value(),
     );
 
-            console.log(
-                "OAuth client created:",
-                !!oauth2Client,
-            );
-
             const {tokens} =
     await oauth2Client.getToken(
         code,
     );
-
-            console.log(
-                "Google tokens:",
-                tokens,
-            );
 
             oauth2Client.setCredentials(tokens);
 
@@ -220,26 +196,6 @@ exports.googleWorkspaceCallback =
                   merge: true,
                 });
 
-            console.log(
-                "Refresh token received:",
-                !!tokens.refresh_token,
-            );
-
-            console.log(
-                "Scopes:",
-                tokens.scope,
-            );
-
-            console.log(
-                "Access token received:",
-                !!tokens.access_token,
-            );
-
-            console.log(
-                "Authorization code:",
-                code,
-            );
-
             return res.redirect(
                 "http://127.0.0.1:5500/Projects/workforce_dashboard/src/app.html?workspace=connected",
             );
@@ -256,160 +212,3 @@ exports.googleWorkspaceCallback =
         },
     );
 
-exports.createGoogleCalendarTestEvent =
-onCall(
-    {
-      secrets: [
-        googleClientId,
-        googleClientSecret,
-        googleRedirectUri,
-      ],
-    },
-
-    
-    async (request) => {
-        console.log("Calling createGoogleCalendarTestEvent...");
-      try {
-        if (!request.auth) {
-          throw new HttpsError(
-              "unauthenticated",
-              "Authentication required.",
-          );
-        }
-
-        const uid =
-    request.auth.uid;
-
-        console.log("=== Google Calendar Test ===");
-
-        console.log(
-            "Authenticated UID:",
-            request.auth?.uid,
-        );
-
-        console.log(
-            "Looking up user profile...",
-        );
-
-
-        const userDoc =
-    await db
-        .collection("users")
-        .doc(uid)
-        .get();
-
-        console.log(
-            "User document exists:",
-            userDoc.exists,
-        );
-
-
-        if (!userDoc.exists) {
-          throw new HttpsError(
-              "permission-denied",
-              "User profile not found.",
-          );
-        }
-
-
-        const tenantId =
-    userDoc.data().tenantId;
-
-
-        if (!tenantId) {
-          throw new HttpsError(
-              "failed-precondition",
-              "User is not assigned to a tenant.",
-          );
-        }
-
-        console.log(
-            "Resolved tenant:",
-            tenantId,
-        );
-
-        console.log(
-            "Getting authenticated Google client...",
-        );
-
-        const oauth2Client =
-            await getAuthenticatedClient(
-                tenantId,
-            );
-
-        const event = {
-
-          summary:
-                "WorkForge Test Event",
-
-          description:
-                "Google Workspace integration test.",
-
-          start: {
-
-            dateTime:
-                    new Date(
-                        Date.now() +
-                        5 * 60 * 1000,
-                    ).toISOString(),
-
-          },
-
-          end: {
-
-            dateTime:
-                    new Date(
-                        Date.now() +
-                        35 * 60 * 1000,
-                    ).toISOString(),
-
-          },
-
-        };
-
-        console.log(
-            "Google client authenticated.",
-        );
-
-        console.log(
-            "Creating Calendar event...",
-        );
-
-        const createdEvent =
-            await createCalendarEvent(
-                oauth2Client,
-                event,
-            );
-
-        console.log(
-            "Calendar event created:",
-            createdEvent.id,
-        );
-
-        return {
-
-          success: true,
-
-          eventId:
-                createdEvent.id,
-
-          htmlLink:
-                createdEvent.htmlLink,
-
-        };
-      } catch (error) {
-        console.error(
-            "Calendar test failed:",
-            error,
-        );
-
-        return {
-
-          success: false,
-
-          message:
-                error.message,
-
-        };
-      }
-    });

@@ -1,4 +1,4 @@
-const {onCall} =
+const {onCall, HttpsError} =
     require("firebase-functions/v2/https");
 
 const {
@@ -6,6 +6,16 @@ const {
   googleClientSecret,
   googleRedirectUri,
 } = require("./google-config");
+
+const admin =
+    require("firebase-admin");
+
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+const db =
+    admin.firestore();
 
 const {
   getAuthenticatedClient,
@@ -26,12 +36,36 @@ onCall(
     },
     async (request) => {
       try {
+        if (!request.auth) {
+          throw new HttpsError(
+              "unauthenticated",
+              "Authentication required.",
+          );
+        }
+
+        const uid =
+    request.auth.uid;
+
+        const userDoc =
+    await db
+        .collection("users")
+        .doc(uid)
+        .get();
+
+        if (!userDoc.exists) {
+          throw new HttpsError(
+              "permission-denied",
+              "User profile not found.",
+          );
+        }
+
         const tenantId =
-        request.data.tenantId;
+    userDoc.data().tenantId;
 
         if (!tenantId) {
-          throw new Error(
-              "Missing tenantId.",
+          throw new HttpsError(
+              "failed-precondition",
+              "User is not assigned to a tenant.",
           );
         }
 
