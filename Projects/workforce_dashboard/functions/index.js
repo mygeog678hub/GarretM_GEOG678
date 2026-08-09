@@ -12,6 +12,12 @@ const {
   googleWorkspaceCallback,
 } = require("./google-workspace");
 
+const calendarFunctions =
+    require("./calendar-functions");
+
+exports.createGoogleCalendarTestEvent =
+    calendarFunctions.createGoogleCalendarTestEvent;
+
 exports.startGoogleWorkspaceOAuth =
     startGoogleWorkspaceOAuth;
 

@@ -143,3 +143,26 @@ export async function disconnectGoogleWorkspace() {
     };
 
 }
+
+export async function createGoogleCalendarTestEvent() {
+
+    const createTest =
+        httpsCallable(
+            functions,
+            "createGoogleCalendarTestEvent",
+        );
+
+    const result =
+        await createTest({
+
+            tenantId:
+                window.currentUserProfile.tenantId,
+
+        });
+
+    return result.data;
+
+}
+
+window.createGoogleCalendarTestEvent =
+    createGoogleCalendarTestEvent;

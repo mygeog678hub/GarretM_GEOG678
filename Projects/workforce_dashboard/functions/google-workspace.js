@@ -1,22 +1,22 @@
 const {onCall, onRequest} =
     require("firebase-functions/v2/https");
 
-const {defineSecret} =
-    require("firebase-functions/params");
-
 const {google} =
     require("googleapis");
 
 const crypto = require("node:crypto");
 
-const googleClientId =
-    defineSecret("GOOGLE_CLIENT_ID");
+const {
 
-const googleClientSecret =
-    defineSecret("GOOGLE_CLIENT_SECRET");
+  googleClientId,
 
-const googleRedirectUri =
-    defineSecret("GOOGLE_REDIRECT_URI");
+  googleClientSecret,
+
+  googleRedirectUri,
+
+} = require(
+    "./google-config",
+);
 
 const admin =
     require("firebase-admin");
@@ -27,6 +27,14 @@ if (!admin.apps.length) {
 
 const db =
     admin.firestore();
+
+const {
+  getAuthenticatedClient,
+} = require("./google-auth");
+
+const {
+  createCalendarEvent,
+} = require("./google-workspace-service");
 
 exports.startGoogleWorkspaceOAuth =
 onCall(
@@ -247,3 +255,86 @@ exports.googleWorkspaceCallback =
           }
         },
     );
+
+exports.createGoogleCalendarTestEvent =
+onCall(
+    {
+      secrets: [
+        googleClientId,
+        googleClientSecret,
+        googleRedirectUri,
+      ],
+    },
+    async (request) => {
+      try {
+        const tenantId =
+            request.data.tenantId;
+
+        const oauth2Client =
+            await getAuthenticatedClient(
+                tenantId,
+            );
+
+        const event = {
+
+          summary:
+                "WorkForge Test Event",
+
+          description:
+                "Google Workspace integration test.",
+
+          start: {
+
+            dateTime:
+                    new Date(
+                        Date.now() +
+                        5 * 60 * 1000,
+                    ).toISOString(),
+
+          },
+
+          end: {
+
+            dateTime:
+                    new Date(
+                        Date.now() +
+                        35 * 60 * 1000,
+                    ).toISOString(),
+
+          },
+
+        };
+
+        const createdEvent =
+            await createCalendarEvent(
+                oauth2Client,
+                event,
+            );
+
+        return {
+
+          success: true,
+
+          eventId:
+                createdEvent.id,
+
+          htmlLink:
+                createdEvent.htmlLink,
+
+        };
+      } catch (error) {
+        console.error(
+            "Calendar test failed:",
+            error,
+        );
+
+        return {
+
+          success: false,
+
+          message:
+                error.message,
+
+        };
+      }
+    });
