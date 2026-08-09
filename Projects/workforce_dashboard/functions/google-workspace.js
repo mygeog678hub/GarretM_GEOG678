@@ -1,4 +1,4 @@
-const {onCall, onRequest} =
+const {onCall, onRequest, HttpsError} =
     require("firebase-functions/v2/https");
 
 const {google} =
@@ -265,10 +265,72 @@ onCall(
         googleRedirectUri,
       ],
     },
+
+    
     async (request) => {
+        console.log("Calling createGoogleCalendarTestEvent...");
       try {
+        if (!request.auth) {
+          throw new HttpsError(
+              "unauthenticated",
+              "Authentication required.",
+          );
+        }
+
+        const uid =
+    request.auth.uid;
+
+        console.log("=== Google Calendar Test ===");
+
+        console.log(
+            "Authenticated UID:",
+            request.auth?.uid,
+        );
+
+        console.log(
+            "Looking up user profile...",
+        );
+
+
+        const userDoc =
+    await db
+        .collection("users")
+        .doc(uid)
+        .get();
+
+        console.log(
+            "User document exists:",
+            userDoc.exists,
+        );
+
+
+        if (!userDoc.exists) {
+          throw new HttpsError(
+              "permission-denied",
+              "User profile not found.",
+          );
+        }
+
+
         const tenantId =
-            request.data.tenantId;
+    userDoc.data().tenantId;
+
+
+        if (!tenantId) {
+          throw new HttpsError(
+              "failed-precondition",
+              "User is not assigned to a tenant.",
+          );
+        }
+
+        console.log(
+            "Resolved tenant:",
+            tenantId,
+        );
+
+        console.log(
+            "Getting authenticated Google client...",
+        );
 
         const oauth2Client =
             await getAuthenticatedClient(
@@ -305,11 +367,24 @@ onCall(
 
         };
 
+        console.log(
+            "Google client authenticated.",
+        );
+
+        console.log(
+            "Creating Calendar event...",
+        );
+
         const createdEvent =
             await createCalendarEvent(
                 oauth2Client,
                 event,
             );
+
+        console.log(
+            "Calendar event created:",
+            createdEvent.id,
+        );
 
         return {
 

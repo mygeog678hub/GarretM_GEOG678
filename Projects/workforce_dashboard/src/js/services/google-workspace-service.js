@@ -153,12 +153,7 @@ export async function createGoogleCalendarTestEvent() {
         );
 
     const result =
-        await createTest({
-
-            tenantId:
-                window.currentUserProfile.tenantId,
-
-        });
+    await createTest({});
 
     return result.data;
 
