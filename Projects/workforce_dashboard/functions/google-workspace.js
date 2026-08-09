@@ -103,14 +103,15 @@ exports.googleWorkspaceCallback =
           ],
         },
         async (req, res) => {
-          console.log(
-              "Google OAuth callback reached.",
-          );
+          try {
+            console.log(
+                "Google OAuth callback reached.",
+            );
 
-          const code =
+            const code =
     req.query.code;
 
-          const state =
+            const state =
     JSON.parse(
         Buffer.from(
             req.query.state,
@@ -118,105 +119,131 @@ exports.googleWorkspaceCallback =
         ).toString(),
     );
 
-          console.log(
-              "OAuth state:",
-              state,
-          );
+            console.log(
+                "OAuth state:",
+                state,
+            );
 
-          const oauth2Client =
+            const oauth2Client =
     new google.auth.OAuth2(
         googleClientId.value(),
         googleClientSecret.value(),
         googleRedirectUri.value(),
     );
 
-          console.log(
-              "OAuth client created:",
-              !!oauth2Client,
-          );
+            console.log(
+                "OAuth client created:",
+                !!oauth2Client,
+            );
 
-          const {tokens} =
+            const {tokens} =
     await oauth2Client.getToken(
         code,
     );
 
-          oauth2Client.setCredentials(tokens);
+            console.log(
+                "Google tokens:",
+                tokens,
+            );
 
-          const calendar =
+            oauth2Client.setCredentials(tokens);
+
+            const calendar =
     google.calendar({
       version: "v3",
       auth: oauth2Client,
     });
 
-          const calendarList =
+            const calendarList =
     await calendar.calendarList.list();
 
-          const primaryCalendar =
+            const primaryCalendar =
     calendarList.data.items.find(
         (item) => item.primary,
     );
 
-          await db
-              .collection(
-                  "tenantIntegrations",
-              )
-              .doc(
-                  state.tenantId,
-              )
+            await db
+                .collection(
+                    "tenantIntegrations",
+                )
+                .doc(
+                    state.tenantId,
+                )
+                .set({
+                  provider: "google",
 
-              .set({
-                provider: "google",
+                  connected: true,
 
-                connected: true,
+                  accessToken:
+            tokens.access_token,
 
-                connectedAt:
+                  refreshToken:
+            tokens.refresh_token,
+
+                  tokenExpiry:
+            tokens.expiry_date,
+
+                  connectedAt:
             admin.firestore.FieldValue.serverTimestamp(),
 
-                connectedBy:
+                  connectedBy:
             state.uid,
 
-                accountEmail:
+                  accountEmail:
             primaryCalendar.id,
 
-                primaryCalendarId:
+                  primaryCalendarId:
             primaryCalendar.id,
 
-                primaryCalendarName:
+                  primaryCalendarName:
             primaryCalendar.summary,
 
-                scopes:
+                  scopes:
             tokens.scope,
 
-                calendarEnabled: true,
+                  calendarEnabled: true,
 
-                meetEnabled: true,
+                  meetEnabled: true,
 
-                updatedAt:
+                  updatedAt:
             admin.firestore.FieldValue.serverTimestamp(),
-              });
 
-          console.log(
-              "Refresh token received:",
-              !!tokens.refresh_token,
-          );
+                }, {
+                  merge: true,
+                });
 
-          console.log(
-              "Scopes:",
-              tokens.scope,
-          );
+            console.log(
+                "Refresh token received:",
+                !!tokens.refresh_token,
+            );
 
-          console.log(
-              "Access token received:",
-              !!tokens.access_token,
-          );
+            console.log(
+                "Scopes:",
+                tokens.scope,
+            );
 
-          console.log(
-              "Authorization code:",
-              code,
-          );
+            console.log(
+                "Access token received:",
+                !!tokens.access_token,
+            );
 
-          res.redirect(
-              "https://workforge-dashboard.com",
-          );
+            console.log(
+                "Authorization code:",
+                code,
+            );
+
+            return res.redirect(
+                "http://127.0.0.1:5500/Projects/workforce_dashboard/src/app.html?workspace=connected",
+            );
+          } catch (error) {
+            console.error(
+                "Google OAuth callback failed:",
+                error,
+            );
+
+            return res.redirect(
+                "http://127.0.0.1:5500/Projects/workforce_dashboard/src/app.html?workspace=error",
+            );
+          }
         },
     );
