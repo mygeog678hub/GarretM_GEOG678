@@ -51,6 +51,10 @@ import {
     timesOverlap
 } from "./scheduling-utils.js";
 
+import {
+    syncShiftToGoogleCalendar,
+} from "./google-workspace-service.js";
+
 
 
 
@@ -658,6 +662,25 @@ if (repeatEnabled) {
                 `${conflicts.length} conflicting occurrence(s) were skipped.`,
             shiftId: createdShiftId
         };
+
+    }
+
+}
+
+if (createdShiftId) {
+
+    try {
+
+        await syncShiftToGoogleCalendar(
+            createdShiftId
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Google Calendar sync failed:",
+            error
+        );
 
     }
 

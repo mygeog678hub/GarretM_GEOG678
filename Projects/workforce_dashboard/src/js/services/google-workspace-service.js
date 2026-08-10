@@ -137,7 +137,7 @@ export async function createGoogleCalendarTestEvent() {
         httpsCallable(
             functions,
             "createGoogleCalendarTestEvent",
-        );
+        );        
 
     try {        
 
@@ -150,6 +150,27 @@ export async function createGoogleCalendarTestEvent() {
 
         throw error;
     }
+}
+
+export async function syncShiftToGoogleCalendar(
+    shiftId,
+) {
+
+    const syncShift =
+        httpsCallable(
+            functions,
+            "syncShiftToGoogleCalendar",
+        );
+
+    const result =
+        await syncShift({
+
+            shiftId,
+
+        });
+
+    return result.data;
+
 }
 
 window.createGoogleCalendarTestEvent =

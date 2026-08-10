@@ -18,6 +18,9 @@ const calendarFunctions =
 exports.createGoogleCalendarTestEvent =
     calendarFunctions.createGoogleCalendarTestEvent;
 
+exports.syncShiftToGoogleCalendar =
+    calendarFunctions.syncShiftToGoogleCalendar;
+
 exports.startGoogleWorkspaceOAuth =
     startGoogleWorkspaceOAuth;
 

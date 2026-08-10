@@ -19306,32 +19306,6 @@ window.closeSiteInformationModal = function() {
   ).style.display = "none";
 
 }
-
-document
-    .getElementById(
-        "testGoogleCalendarButton",
-    )
-    .addEventListener(
-        "click",
-        async () => {
-
-            try {
-
-                const result =
-                    await
-                    createGoogleCalendarTestEvent();
-
-                console.log(result);
-
-            } catch (error) {
-
-                console.error(error);
-
-            }
-
-        },
-    );
-
 // ================= GLOBAL =================
 window.addEmployee = addEmployee;
 window.addSite = addSite;

@@ -11,23 +11,34 @@ async function createCalendarEvent(
     oauth2Client,
     event,
 ) {
-  const calendar =
-        google.calendar({
-          version: "v3",
-          auth: oauth2Client,
-        });
+  const calendar = google.calendar({
+    version: "v3",
+    auth: oauth2Client,
+  });
 
-  const response =
-        await calendar.events.insert({
-          calendarId: "primary",
-          requestBody: event,
-        });
+  try {
+    const response =
+    await calendar.events.insert({
+      calendarId: "primary",
+      requestBody: event,
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.error("FULL ERROR:", error);
+
+    console.error("STACK:");
+    console.error(error.stack);
+
+    console.error(
+        "GOOGLE RESPONSE:",
+        JSON.stringify(error.response?.data, null, 2),
+    );
+
+    throw error;
+  }
 }
 
 module.exports = {
-
   createCalendarEvent,
-
 };
