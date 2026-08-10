@@ -39,6 +39,46 @@ async function createCalendarEvent(
   }
 }
 
+async function updateCalendarEvent(
+    oauth2Client,
+    eventId,
+    event,
+) {
+  const calendar = google.calendar({
+    version: "v3",
+    auth: oauth2Client,
+  });
+
+  try {
+    const response =
+            await calendar.events.update({
+
+              calendarId: "primary",
+
+              eventId,
+
+              requestBody: event,
+
+            });
+
+    return response.data;
+  } catch (error) {
+    console.error("FULL ERROR:", error);
+
+    console.error(
+        "GOOGLE RESPONSE:",
+        JSON.stringify(
+            error.response?.data,
+            null,
+            2,
+        ),
+    );
+
+    throw error;
+  }
+}
+
 module.exports = {
   createCalendarEvent,
+  updateCalendarEvent,
 };

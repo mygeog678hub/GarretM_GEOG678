@@ -1,3 +1,4 @@
+/* ===================CLOUD FUNCTIONS===================*/
 const {onCall, HttpsError} =
     require("firebase-functions/v2/https");
 
@@ -23,6 +24,7 @@ const {
 
 const {
   createCalendarEvent,
+  updateCalendarEvent,
 } = require("./google-workspace-service");
 
 exports.createGoogleCalendarTestEvent =
@@ -232,85 +234,70 @@ async function syncShiftToGoogleCalendar(
     shiftId,
     tenantId,
 ) {
-  console.log("=== syncShiftToGoogleCalendar ===");
-
-  console.log("Loading context...");
-
   const context =
         await loadShiftContext(
             shiftId,
         );
-
-  console.log("Context loaded.");
-
-  console.log(
-      JSON.stringify(
-          context,
-          null,
-          2,
-      ),
-  );
-
-  console.log("Building event...");
 
   const event =
         buildShiftCalendarEvent(
             context,
         );
 
-  console.log("Event built.");
-
-  console.log(
-      JSON.stringify(
-          event,
-          null,
-          2,
-      ),
-  );
-
-  console.log("Authenticating...");
-
   const oauth2Client =
         await getAuthenticatedClient(
             tenantId,
         );
 
-  console.log("Authenticated.");
+  let calendarEvent;
 
-  console.log("Creating Google event...");
+  if (
+    context.shift.googleCalendar &&
+    context.shift.googleCalendar.eventId
+  ) {
+    console.log(
+        "Updating existing Google Calendar event...",
+    );
 
-  const createdEvent =
-        await createCalendarEvent(
+    calendarEvent =
+        await updateCalendarEvent(
+
             oauth2Client,
+
+            context.shift.googleCalendar.eventId,
+
             event,
+
         );
+  } else {
+    console.log(
+        "Creating new Google Calendar event...",
+    );
 
-  console.log("Google event created.");
+    calendarEvent =
+        await createCalendarEvent(
 
-  console.log(
-      JSON.stringify(
-          createdEvent,
-          null,
-          2,
-      ),
-  );
+            oauth2Client,
+
+            event,
+
+        );
+  }
 
   await db
       .collection("shifts")
       .doc(shiftId)
       .update({
         googleCalendar: {
-          eventId: createdEvent.id,
-          htmlLink: createdEvent.htmlLink,
+          eventId: calendarEvent.id,
+          htmlLink: calendarEvent.htmlLink,
           synced: true,
           syncedAt:
                     admin.firestore.FieldValue.serverTimestamp(),
         },
       });
 
-  console.log("Firestore updated.");
-
-  return createdEvent;
+  return calendarEvent;
 }
 
 exports.syncShiftToGoogleCalendar =

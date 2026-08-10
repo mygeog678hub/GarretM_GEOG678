@@ -1380,6 +1380,25 @@ const seriesUpdate = {
 
   }
 
+  if (!editingRecurring || editMode === "occurrence") {
+
+    try {
+
+        await syncShiftToGoogleCalendar(
+            id
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Google Calendar sync failed:",
+            error
+        );
+
+    }
+
+}
+
   return {
     success: true
 };
