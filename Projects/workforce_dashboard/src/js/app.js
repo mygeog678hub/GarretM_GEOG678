@@ -17883,63 +17883,27 @@ async function confirmDeleteShift() {
     deleteMode === "occurrence"
   ) {
 
-    await deleteDoc(
-      doc(
-        db,
-        "shifts",
-        deletingShiftId
-      )
-    );
+    await deleteScheduledShift({
+
+    shiftId: deletingShiftId,
+
+    recurring: false,
+
+    seriesId: null,
+
+});
 
   } else {
 
-    const batch =
-      writeBatch(db);
+ await deleteScheduledShift({
 
-    const seriesQuery =
-      query(
-        collection(
-          db,
-          "shifts"
-        ),
-        where(
-          "seriesId",
-          "==",
-          deletingSeriesId
-        )
-      );
+    shiftId: deletingShiftId,
 
-    const snapshot =
-      await getDocs(
-        seriesQuery
-      );
+    recurring: true,
 
-    const now =
-      new Date();
+    seriesId: deletingSeriesId,
 
-    for (
-      const shiftDoc of
-      snapshot.docs
-    ) {
-
-      const shift =
-        shiftDoc.data();
-
-      if (
-        new Date(
-          shift.startTime
-        ) < now
-      ) {
-        continue;
-      }
-
-      batch.delete(
-        shiftDoc.ref
-      );
-
-    }
-
-    await batch.commit();
+});
 
   }
 

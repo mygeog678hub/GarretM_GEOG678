@@ -21,6 +21,9 @@ exports.createGoogleCalendarTestEvent =
 exports.syncShiftToGoogleCalendar =
     calendarFunctions.syncShiftToGoogleCalendar;
 
+exports.deleteGoogleCalendarEvent =
+    calendarFunctions.deleteGoogleCalendarEvent;
+
 exports.startGoogleWorkspaceOAuth =
     startGoogleWorkspaceOAuth;
 

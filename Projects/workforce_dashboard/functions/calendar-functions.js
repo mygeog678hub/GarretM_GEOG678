@@ -11,6 +11,8 @@ const {
 const admin =
     require("firebase-admin");
 
+const {google} = require("googleapis");
+
 if (!admin.apps.length) {
   admin.initializeApp();
 }
@@ -300,6 +302,111 @@ async function syncShiftToGoogleCalendar(
   return calendarEvent;
 }
 
+async function deleteGoogleCalendarEvent(
+    shiftId,
+    tenantId,
+) {
+  const context =
+        await loadShiftContext(
+            shiftId,
+        );
+
+  console.log(
+      "Delete request for shift:",
+      shiftId,
+  );
+
+  console.log(
+      "googleCalendar:",
+      JSON.stringify(
+          context.shift.googleCalendar,
+          null,
+          2,
+      ),
+  );
+
+  if (
+    !context.shift.googleCalendar ||
+        !context.shift.googleCalendar.eventId
+  ) {
+    console.log(
+        "Shift has no Google Calendar event.",
+    );
+
+    return {
+      success: true,
+      message: "No calendar event to delete.",
+    };
+  }
+
+  const oauth2Client =
+        await getAuthenticatedClient(
+            tenantId,
+        );
+
+  console.log(
+      "Deleting Google Calendar event...",
+  );
+
+  try {
+    console.log(
+        "Deleting eventId:",
+        context.shift.googleCalendar.eventId,
+    );
+    await deleteCalendarEvent(
+        oauth2Client,
+        context.shift.googleCalendar.eventId,
+    );
+  } catch (error) {
+    console.error(
+        "Google Calendar delete failed:",
+        error,
+    );
+
+    console.error(
+        "Google response:",
+        JSON.stringify(
+            error.response?.data,
+            null,
+            2,
+        ),
+    );
+
+    throw error;
+  }
+
+  await deleteCalendarEvent(
+      oauth2Client,
+      context.shift.googleCalendar.eventId,
+  );
+
+  console.log(
+      "Google Calendar event deleted successfully.",
+  );
+}
+
+async function deleteCalendarEvent(
+    oauth2Client,
+    eventId,
+) {
+  const calendar =
+        google.calendar({
+
+          version: "v3",
+
+          auth: oauth2Client,
+
+        });
+
+  await calendar.events.delete({
+
+    calendarId: "primary",
+
+    eventId,
+
+  });
+}
+
 exports.syncShiftToGoogleCalendar =
 onCall(
     {
@@ -336,6 +443,48 @@ onCall(
     userDoc.data().tenantId;
 
       return await syncShiftToGoogleCalendar(
+          request.data.shiftId,
+          tenantId,
+      );
+    });
+
+exports.deleteGoogleCalendarEvent =
+onCall(
+    {
+      secrets: [
+        googleClientId,
+        googleClientSecret,
+        googleRedirectUri,
+      ],
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError(
+            "unauthenticated",
+            "Authentication required.",
+        );
+      }
+
+      const uid =
+        request.auth.uid;
+
+      const userDoc =
+        await db
+            .collection("users")
+            .doc(uid)
+            .get();
+
+      if (!userDoc.exists) {
+        throw new HttpsError(
+            "permission-denied",
+            "User profile not found.",
+        );
+      }
+
+      const tenantId =
+        userDoc.data().tenantId;
+
+      return await deleteGoogleCalendarEvent(
           request.data.shiftId,
           tenantId,
       );

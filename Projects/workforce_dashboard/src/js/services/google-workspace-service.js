@@ -173,5 +173,26 @@ export async function syncShiftToGoogleCalendar(
 
 }
 
+export async function deleteGoogleCalendarEvent(
+    shiftId,
+) {
+
+    const deleteEvent =
+        httpsCallable(
+            functions,
+            "deleteGoogleCalendarEvent",
+        );
+
+    const result =
+        await deleteEvent({
+
+            shiftId,
+
+        });
+
+    return result.data;
+
+}
+
 window.createGoogleCalendarTestEvent =
     createGoogleCalendarTestEvent;

@@ -53,6 +53,7 @@ import {
 
 import {
     syncShiftToGoogleCalendar,
+    deleteGoogleCalendarEvent,
 } from "./google-workspace-service.js";
 
 
@@ -957,17 +958,39 @@ export async function deleteScheduledShift({
 
 }) {
 
+  console.log("deleteScheduledShift() entered");
+
     try {
 
         if (!recurring) {
+          console.log("Calling deleteGoogleCalendarEvent()");
 
-            await deleteDoc(
-                doc(
-                    db,
-                    "shifts",
-                    shiftId
-                )
-            );
+            // Remove Google Calendar event first.
+// Continue even if Google deletion fails.
+
+try {  
+
+    await deleteGoogleCalendarEvent(
+        shiftId
+    );
+console.log("Returned from deleteGoogleCalendarEvent()");
+} catch (error) {
+
+    console.error(
+        "Google Calendar delete failed:",
+        error
+    );
+    
+
+}
+
+await deleteDoc(
+    doc(
+        db,
+        "shifts",
+        shiftId
+    )
+);
 
         } else {
 
