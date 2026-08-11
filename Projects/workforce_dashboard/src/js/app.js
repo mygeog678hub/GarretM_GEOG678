@@ -17891,17 +17891,23 @@ async function confirmDeleteShift() {
 
     seriesId: null,
 
+    tenantId:
+        window.currentUserProfile.tenantId,
+
 });
 
   } else {
 
- await deleteScheduledShift({
+await deleteScheduledShift({
 
     shiftId: deletingShiftId,
 
     recurring: true,
 
     seriesId: deletingSeriesId,
+
+    tenantId:
+        window.currentUserProfile.tenantId,
 
 });
 

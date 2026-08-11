@@ -339,11 +339,6 @@ async function deleteGoogleCalendarEvent(
 
     throw error;
   }
-
-  await deleteCalendarEvent(
-      oauth2Client,
-      context.shift.googleCalendar.eventId,
-  );
 }
 
 async function deleteCalendarEvent(

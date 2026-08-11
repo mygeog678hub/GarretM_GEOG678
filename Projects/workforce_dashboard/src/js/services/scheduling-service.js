@@ -981,7 +981,9 @@ export async function deleteScheduledShift({
 
     recurring,
 
-    seriesId
+    seriesId,
+
+    tenantId
 
 }) {
 
@@ -1023,16 +1025,12 @@ await deleteDoc(
 
             const seriesQuery =
                 query(
-                    collection(
-                        db,
-                        "shifts"
-                    ),
-                    where(
-                        "seriesId",
-                        "==",
-                        seriesId
-                    )
-                );
+              collection(db, "shifts"),
+              where("tenantId", "==", tenantId),
+              where("seriesId", "==", seriesId)
+              
+            );
+              
 
             const snapshot =
                 await getDocs(
@@ -1042,26 +1040,47 @@ await deleteDoc(
             const now =
                 new Date();
 
-            for (const shiftDoc of snapshot.docs) {
+          for (const shiftDoc of snapshot.docs) {
 
-                const shift =
-                    shiftDoc.data();
+    const shift =
+        shiftDoc.data();
 
-                if (
-                    new Date(
-                        shift.startTime
-                    ) < now
-                ) {
-                    continue;
-                }
+    // Preserve history
+    if (
+        new Date(shift.startTime) < now
+    ) {
+        continue;
+    }
 
-                batch.delete(
-                    shiftDoc.ref
-                );
+    console.log(
+        "Deleting recurring shift:",
+        shiftDoc.id,
+        shift.startTime,
+        shift.googleCalendar?.eventId
+    );
 
-            }
+    try {
 
-            await batch.commit();
+        await deleteGoogleCalendarEvent(
+            shiftDoc.id
+        );
+
+    } catch (error) {
+
+        console.error(
+            `Google Calendar delete failed for recurring shift ${shiftDoc.id}:`,
+            error
+        );
+
+    }
+
+    batch.delete(
+        shiftDoc.ref
+    );
+
+}
+
+await batch.commit();
 
         }
 
