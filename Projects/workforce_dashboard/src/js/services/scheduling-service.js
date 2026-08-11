@@ -517,6 +517,7 @@ overrideApprovedAt:
   }; 
 
 let createdShiftId = null;
+const createdShiftIds = [];
 
 let createdCount = 0;
 const conflicts = [];
@@ -616,20 +617,25 @@ if (conflict) {
 
 }
       
-      const shiftRef = await addDoc(
+   const shiftRef = await addDoc(
     collection(db, "shifts"),
     {
         ...shiftData,
-
-        startTime:
-            occurrenceStart,
-
-        endTime:
-            occurrenceEnd,
-
+        startTime: occurrenceStart,
+        endTime: occurrenceEnd,
         seriesId
     }
-); 
+);
+
+createdShiftIds.push(
+    shiftRef.id
+);
+
+createdCount++;
+
+if (!createdShiftId) {
+    createdShiftId = shiftRef.id;
+}
 
 createdCount++;
 
@@ -668,7 +674,28 @@ if (repeatEnabled) {
 
 }
 
-if (createdShiftId) {
+if (repeatEnabled) {
+
+    for (const shiftId of createdShiftIds) {
+
+        try {
+
+            await syncShiftToGoogleCalendar(
+                shiftId        
+            );
+
+        } catch (error) {
+
+            console.error(
+                `Google Calendar sync failed for recurring shift ${shiftId}:`,
+                error
+            );
+
+        }
+
+    }
+
+} else if (createdShiftId) {
 
     try {
 
@@ -958,12 +985,9 @@ export async function deleteScheduledShift({
 
 }) {
 
-  console.log("deleteScheduledShift() entered");
-
     try {
 
-        if (!recurring) {
-          console.log("Calling deleteGoogleCalendarEvent()");
+        if (!recurring) {          
 
             // Remove Google Calendar event first.
 // Continue even if Google deletion fails.
@@ -973,7 +997,7 @@ try {
     await deleteGoogleCalendarEvent(
         shiftId
     );
-console.log("Returned from deleteGoogleCalendarEvent()");
+
 } catch (error) {
 
     console.error(
@@ -1400,6 +1424,39 @@ const seriesUpdate = {
     }
 
     await batch.commit();
+
+    //
+// Synchronize every updated occurrence
+// to Google Calendar
+//
+for (const shiftDoc of snapshot.docs) {
+
+    const shift = shiftDoc.data();
+
+    // Skip historical shifts just as we did
+    // during the Firestore update.
+    if (
+        new Date(shift.startTime) < now
+    ) {
+        continue;
+    }
+
+    try {
+
+        await syncShiftToGoogleCalendar(
+            shiftDoc.id
+        );
+
+    } catch (error) {
+
+        console.error(
+            `Google Calendar sync failed for recurring shift ${shiftDoc.id}:`,
+            error
+        );
+
+    }
+
+}
 
   }
 

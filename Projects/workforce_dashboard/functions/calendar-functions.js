@@ -234,7 +234,6 @@ function buildShiftCalendarEvent(
 
 async function syncShiftToGoogleCalendar(
     shiftId,
-    tenantId,
 ) {
   const context =
         await loadShiftContext(
@@ -247,9 +246,9 @@ async function syncShiftToGoogleCalendar(
         );
 
   const oauth2Client =
-        await getAuthenticatedClient(
-            tenantId,
-        );
+    await getAuthenticatedClient(
+        context.shift.tenantId,
+    );
 
   let calendarEvent;
 
@@ -257,10 +256,6 @@ async function syncShiftToGoogleCalendar(
     context.shift.googleCalendar &&
     context.shift.googleCalendar.eventId
   ) {
-    console.log(
-        "Updating existing Google Calendar event...",
-    );
-
     calendarEvent =
         await updateCalendarEvent(
 
@@ -272,10 +267,6 @@ async function syncShiftToGoogleCalendar(
 
         );
   } else {
-    console.log(
-        "Creating new Google Calendar event...",
-    );
-
     calendarEvent =
         await createCalendarEvent(
 
@@ -311,28 +302,10 @@ async function deleteGoogleCalendarEvent(
             shiftId,
         );
 
-  console.log(
-      "Delete request for shift:",
-      shiftId,
-  );
-
-  console.log(
-      "googleCalendar:",
-      JSON.stringify(
-          context.shift.googleCalendar,
-          null,
-          2,
-      ),
-  );
-
   if (
     !context.shift.googleCalendar ||
         !context.shift.googleCalendar.eventId
   ) {
-    console.log(
-        "Shift has no Google Calendar event.",
-    );
-
     return {
       success: true,
       message: "No calendar event to delete.",
@@ -344,15 +317,7 @@ async function deleteGoogleCalendarEvent(
             tenantId,
         );
 
-  console.log(
-      "Deleting Google Calendar event...",
-  );
-
   try {
-    console.log(
-        "Deleting eventId:",
-        context.shift.googleCalendar.eventId,
-    );
     await deleteCalendarEvent(
         oauth2Client,
         context.shift.googleCalendar.eventId,
@@ -378,10 +343,6 @@ async function deleteGoogleCalendarEvent(
   await deleteCalendarEvent(
       oauth2Client,
       context.shift.googleCalendar.eventId,
-  );
-
-  console.log(
-      "Google Calendar event deleted successfully.",
   );
 }
 
