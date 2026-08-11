@@ -38,6 +38,10 @@ const userSnap = await getDoc(userRef);
 
 if (!userSnap.exists()) {
 
+    console.error(
+        `User profile document not found for UID: ${firebaseUser.uid}`
+    );
+
     return null;
 
 }
@@ -52,17 +56,28 @@ const settingsRef = doc(
     firebaseUser.uid
 );
 
-const settingsSnap = await getDoc(settingsRef);
+const settingsSnap =
+    await getDoc(settingsRef);
 
-    const profile = {
+if (!settingsSnap.exists()) {
 
-        ...userSnap.data(),
+    console.error(
+        `Missing userSettings document for user ${firebaseUser.uid}.`
+    );
 
-        ...(settingsSnap.exists()
-            ? settingsSnap.data()
-            : {})
+    throw new Error(
+    `User settings document is missing for UID: ${firebaseUser.uid}`
+);
 
-    };
+}
+
+const profile = {
+
+    ...userSnap.data(),
+
+    ...settingsSnap.data()
+
+};
 
     return {
 
@@ -71,8 +86,8 @@ const settingsSnap = await getDoc(settingsRef);
         ...profile,
 
         onboardingRequired:
-            profile.mustChangePassword ||
-            !profile.profileVerified
+    profile.mustChangePassword === true ||
+    profile.profileVerified !== true
 
     };
 
