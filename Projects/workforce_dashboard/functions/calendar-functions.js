@@ -174,9 +174,15 @@ async function loadShiftContext(
 
   const context = {
 
+    shiftId,
+
     shift,
 
+    employeeId: shift.employeeId,
+
     employee,
+
+    siteId: shift.siteId,
 
     site,
 
@@ -252,10 +258,13 @@ async function syncShiftToGoogleCalendar(
 
   let calendarEvent;
 
-  if (
-    context.shift.googleCalendar &&
-    context.shift.googleCalendar.eventId
-  ) {
+  const isUpdate =
+    !!(
+      context.shift.googleCalendar &&
+        context.shift.googleCalendar.eventId
+    );
+
+  if (isUpdate) {
     calendarEvent =
         await updateCalendarEvent(
 
