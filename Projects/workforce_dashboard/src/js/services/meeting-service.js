@@ -2800,3 +2800,258 @@ export async function updateAttendee({
     }
 
 }
+
+/*********************************************************************
+ * Schedule Meeting
+ *********************************************************************/
+
+export async function scheduleMeeting({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to schedule meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "draft"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only draft meetings can be scheduled."
+            };
+
+        }
+
+        // -------------------------
+        // Attendees
+        // -------------------------
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeesSnap =
+            await getDocs(
+                attendeesRef
+            );
+
+        if (
+            attendeesSnap.empty
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "A meeting must have at least one attendee before it can be scheduled."
+            };
+
+        }
+
+        // -------------------------
+        // Schedule Meeting
+        // -------------------------
+
+        await updateDoc(
+            meetingRef,
+            {
+
+                status:
+                    "scheduled",
+
+                updatedAt:
+                    serverTimestamp(),
+
+                updatedBy:
+                    currentUserProfile.uid
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_SCHEDULED",
+
+            `Meeting "${meeting.title}" scheduled.`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                meetingType:
+                    meeting.meetingType,
+
+                organizerId:
+                    meeting.organizerId,
+
+                locationType:
+                    meeting.locationType
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "scheduleMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to schedule meeting."
+
+        };
+
+    }
+
+}
