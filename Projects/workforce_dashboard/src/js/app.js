@@ -133,7 +133,6 @@ import {
     disconnectGoogleWorkspace
 } from "./services/google-workspace-service.js";
 
-
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
 

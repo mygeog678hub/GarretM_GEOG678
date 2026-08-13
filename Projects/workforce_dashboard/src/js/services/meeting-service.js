@@ -3,6 +3,7 @@ import { db } from "./firebase-config.js";
 import {
     collection,
     addDoc,
+    updateDoc,
     serverTimestamp,
     doc,
     getDoc,
@@ -1218,6 +1219,413 @@ export async function removeAttendee({
 
             message:
                 "Unable to remove meeting attendee."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Update Meeting
+ *********************************************************************/
+
+export async function updateMeeting({
+
+    meetingId,
+    title,
+    description = "",
+    meetingType,
+    startTime,
+    endTime,
+    timezone,
+    locationType
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to update meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "draft" &&
+            meeting.status !== "scheduled"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meetings cannot be updated in their current state."
+            };
+
+        }
+
+        // -------------------------
+        // Title
+        // -------------------------
+
+        if (
+            typeof title !== "string" ||
+            !title.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting title is required."
+            };
+
+        }
+
+        if (
+            title.trim().length > 200
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting title cannot exceed 200 characters."
+            };
+
+        }
+
+        // -------------------------
+        // Description
+        // -------------------------
+
+        if (
+            typeof description !== "string"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting description must be text."
+            };
+
+        }
+
+        if (
+            description.length > 2000
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting description cannot exceed 2,000 characters."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting Type
+        // -------------------------
+
+        if (
+            !isValidMeetingType(
+                meetingType
+            )
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Invalid meeting type."
+            };
+
+        }
+
+        // -------------------------
+        // Location Type
+        // -------------------------
+
+        if (
+            !isValidLocationType(
+                locationType
+            )
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Invalid meeting location type."
+            };
+
+        }
+
+        // -------------------------
+        // Timezone
+        // -------------------------
+
+        if (
+            typeof timezone !== "string" ||
+            !timezone.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting timezone is required."
+            };
+
+        }
+
+        // -------------------------
+        // Time Validation
+        // -------------------------
+
+        const startDate =
+            getTimestampDate(
+                startTime
+            );
+
+        const endDate =
+            getTimestampDate(
+                endTime
+            );
+
+        if (!startDate) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting start time is required."
+            };
+
+        }
+
+        if (!endDate) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting end time is required."
+            };
+
+        }
+
+        if (
+            endDate.getTime() <=
+            startDate.getTime()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting end time must be after start time."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting Update
+        // -------------------------
+
+        const updateData = {
+
+            title:
+                title.trim(),
+
+            description:
+                description.trim(),
+
+            meetingType,
+
+            startTime,
+
+            endTime,
+
+            timezone:
+                timezone.trim(),
+
+            locationType,
+
+            updatedAt:
+                serverTimestamp(),
+
+            updatedBy:
+                currentUserProfile.uid
+
+        };
+
+        // -------------------------
+        // Firestore
+        // -------------------------
+
+        await updateDoc(
+            meetingRef,
+            updateData
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_UPDATED",
+
+            `Meeting "${title.trim()}" updated.`,
+
+            userName,
+
+            "meeting",
+
+            {
+                meetingId,
+
+                meetingType,
+
+                organizerId:
+                    meeting.organizerId,
+
+                locationType
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "updateMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to update meeting."
 
         };
 
