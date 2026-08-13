@@ -8,7 +8,10 @@ import {
     doc,
     getDoc,
     getDocs,
-    deleteDoc
+    deleteDoc,
+    query,
+    where,
+    orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -1867,6 +1870,139 @@ export async function deleteMeeting({
 
             message:
                 "Unable to delete meeting."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Get Meetings
+ *********************************************************************/
+
+export async function getMeetings() {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to view meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting Query
+        // -------------------------
+
+        const meetingsRef =
+            collection(
+                db,
+                "meetings"
+            );
+
+        const meetingsQuery =
+            query(
+                meetingsRef,
+                where(
+                    "tenantId",
+                    "==",
+                    currentUserProfile.tenantId
+                ),
+                orderBy(
+                    "startTime",
+                    "asc"
+                )
+            );
+
+        const meetingsSnap =
+            await getDocs(
+                meetingsQuery
+            );
+
+        // -------------------------
+        // Transform Results
+        // -------------------------
+
+        const meetings =
+            meetingsSnap.docs.map(
+                meetingDoc => ({
+
+                    id:
+                        meetingDoc.id,
+
+                    ...meetingDoc.data()
+
+                })
+            );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true,
+
+            meetings
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "getMeetings:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to load meetings."
 
         };
 
