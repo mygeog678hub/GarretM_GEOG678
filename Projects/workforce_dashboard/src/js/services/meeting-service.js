@@ -3281,3 +3281,455 @@ export async function cancelMeeting({
     }
 
 }
+
+/*********************************************************************
+ * Start Meeting
+ *********************************************************************/
+
+export async function startMeeting({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to start meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "scheduled"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only scheduled meetings can be started."
+            };
+
+        }
+
+        // -------------------------
+        // Start Meeting
+        // -------------------------
+
+        await updateDoc(
+            meetingRef,
+            {
+
+                status:
+                    "in_progress",
+
+                updatedAt:
+                    serverTimestamp(),
+
+                updatedBy:
+                    currentUserProfile.uid
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_STARTED",
+
+            `Meeting "${meeting.title}" started.`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                meetingType:
+                    meeting.meetingType,
+
+                organizerId:
+                    meeting.organizerId,
+
+                locationType:
+                    meeting.locationType
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "startMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to start meeting."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Complete Meeting
+ *********************************************************************/
+
+export async function completeMeeting({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to complete meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "in_progress"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only in-progress meetings can be completed."
+            };
+
+        }
+
+        // -------------------------
+        // Complete Meeting
+        // -------------------------
+
+        await updateDoc(
+            meetingRef,
+            {
+
+                status:
+                    "completed",
+
+                updatedAt:
+                    serverTimestamp(),
+
+                updatedBy:
+                    currentUserProfile.uid
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_COMPLETED",
+
+            `Meeting "${meeting.title}" completed.`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                meetingType:
+                    meeting.meetingType,
+
+                organizerId:
+                    meeting.organizerId,
+
+                locationType:
+                    meeting.locationType
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "completeMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to complete meeting."
+
+        };
+
+    }
+
+}
