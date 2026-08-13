@@ -1632,3 +1632,244 @@ export async function updateMeeting({
     }
 
 }
+
+/*********************************************************************
+ * Delete Meeting
+ *********************************************************************/
+
+export async function deleteMeeting({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to delete meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "draft" &&
+            meeting.status !== "scheduled"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meetings cannot be deleted in their current state."
+            };
+
+        }
+
+        // -------------------------
+        // Attendees
+        // -------------------------
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeesSnap =
+            await getDocs(
+                attendeesRef
+            );
+
+        for (
+            const attendeeDoc
+            of attendeesSnap.docs
+        ) {
+
+            await deleteDoc(
+                attendeeDoc.ref
+            );
+
+        }
+
+        // -------------------------
+        // Delete Meeting
+        // -------------------------
+
+        await deleteDoc(
+            meetingRef
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_DELETED",
+
+            `Meeting "${meeting.title}" deleted.`,
+
+            userName,
+
+            "meeting",
+
+            {
+                meetingId,
+
+                meetingType:
+                    meeting.meetingType,
+
+                organizerId:
+                    meeting.organizerId,
+
+                locationType:
+                    meeting.locationType
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "deleteMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to delete meeting."
+
+        };
+
+    }
+
+}
