@@ -2009,3 +2009,163 @@ export async function getMeetings() {
     }
 
 }
+
+/*********************************************************************
+ * Get Meeting
+ *********************************************************************/
+
+export async function getMeeting({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to view meetings."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true,
+
+            meeting: {
+
+                id:
+                    meetingSnap.id,
+
+                ...meeting
+
+            }
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "getMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to load meeting."
+
+        };
+
+    }
+
+}
