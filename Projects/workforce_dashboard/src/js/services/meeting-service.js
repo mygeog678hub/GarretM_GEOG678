@@ -6,7 +6,8 @@ import {
     serverTimestamp,
     doc,
     getDoc,
-    getDocs
+    getDocs,
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -934,6 +935,289 @@ export async function addAttendee({
 
             message:
                 "Unable to add meeting attendee."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Remove Attendee
+ *********************************************************************/
+
+export async function removeAttendee({
+
+    meetingId,
+    attendeeId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to manage meeting attendees."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Validate IDs
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        if (
+            typeof attendeeId !== "string" ||
+            !attendeeId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendee ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "draft" &&
+            meeting.status !== "scheduled"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendees cannot be removed from a meeting in its current state."
+            };
+
+        }
+
+        // -------------------------
+        // Attendee
+        // -------------------------
+
+        const attendeeRef =
+            doc(
+                db,
+                "meetings",
+                meetingId,
+                "attendees",
+                attendeeId
+            );
+
+        const attendeeSnap =
+            await getDoc(attendeeRef);
+
+        if (!attendeeSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Attendee not found."
+            };
+
+        }
+
+        const attendee =
+            attendeeSnap.data();
+
+        // -------------------------
+        // Organizer Protection
+        // -------------------------
+
+        if (
+            attendee.attendeeType ===
+                "internal" &&
+            attendee.userId ===
+                meeting.organizerId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "The meeting organizer cannot be removed."
+            };
+
+        }
+
+        // -------------------------
+        // Delete Attendee
+        // -------------------------
+
+        await deleteDoc(
+            attendeeRef
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_ATTENDEE_REMOVED",
+
+            `${attendee.name || attendee.email || "Attendee"} removed from meeting "${meeting.title}".`,
+
+            userName,
+
+            "meeting",
+
+            {
+                meetingId,
+
+                attendeeId,
+
+                attendeeType:
+                    attendee.attendeeType,
+
+                attendeeUserId:
+                    attendee.userId || null,
+
+                attendeeName:
+                    attendee.name || "",
+
+                attendeeEmail:
+                    attendee.email || "",
+
+                role:
+                    attendee.role || ""
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "removeAttendee:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to remove meeting attendee."
 
         };
 
