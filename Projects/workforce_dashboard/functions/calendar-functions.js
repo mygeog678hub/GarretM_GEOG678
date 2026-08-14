@@ -651,6 +651,140 @@ async function createGoogleMeeting(
   };
 }
 
+exports.deleteGoogleMeeting =
+onCall(
+    {
+      secrets: [
+        googleClientId,
+        googleClientSecret,
+        googleRedirectUri,
+      ],
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError(
+            "unauthenticated",
+            "Authentication required.",
+        );
+      }
+
+      const uid =
+          request.auth.uid;
+
+      const userDoc =
+          await db
+              .collection("users")
+              .doc(uid)
+              .get();
+
+      if (!userDoc.exists) {
+        throw new HttpsError(
+            "permission-denied",
+            "User profile not found.",
+        );
+      }
+
+      const tenantId =
+          userDoc.data().tenantId;
+
+      if (!tenantId) {
+        throw new HttpsError(
+            "failed-precondition",
+            "User is not assigned to a tenant.",
+        );
+      }
+
+      const meetingId =
+          request.data?.meetingId;
+
+      if (
+        typeof meetingId !== "string" ||
+        !meetingId.trim()
+      ) {
+        throw new HttpsError(
+            "invalid-argument",
+            "Meeting ID is required.",
+        );
+      }
+
+      const meetingRef =
+          db
+              .collection("meetings")
+              .doc(meetingId);
+
+      const meetingSnap =
+          await meetingRef.get();
+
+      if (!meetingSnap.exists) {
+        throw new HttpsError(
+            "not-found",
+            "Meeting not found.",
+        );
+      }
+
+      const meeting =
+          meetingSnap.data();
+
+      if (
+        meeting.tenantId !== tenantId
+      ) {
+        throw new HttpsError(
+            "permission-denied",
+            "You do not have access to this meeting.",
+        );
+      }
+
+      const googleEventId =
+          meeting.googleEventId;
+
+      if (!googleEventId) {
+        return {
+          success: true,
+          message:
+              "No Google Calendar event to delete.",
+        };
+      }
+
+      const oauth2Client =
+          await getAuthenticatedClient(
+              tenantId,
+          );
+
+      try {
+        await deleteCalendarEvent(
+            oauth2Client,
+            googleEventId,
+        );
+      } catch (error) {
+        console.error(
+            "Google meeting delete failed:",
+            error,
+        );
+
+        console.error(
+            "Google response:",
+            JSON.stringify(
+                error.response?.data,
+                null,
+                2,
+            ),
+        );
+
+        throw new HttpsError(
+            "internal",
+            error.message ||
+            "Unable to delete Google meeting.",
+        );
+      }
+
+      return {
+        success: true,
+        eventId:
+            googleEventId,
+      };
+    },
+);
+
 exports.createGoogleMeeting =
 onCall(
     {

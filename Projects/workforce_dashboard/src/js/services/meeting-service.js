@@ -3232,6 +3232,36 @@ export async function cancelMeeting({
         }
 
         // -------------------------
+// Cancel Google Meeting
+// -------------------------
+
+const functions =
+    getFunctions(app);
+
+const deleteGoogleMeeting =
+    httpsCallable(
+        functions,
+        "deleteGoogleMeeting"
+    );
+
+const googleResult =
+    await deleteGoogleMeeting({
+        meetingId
+    });
+
+if (
+    !googleResult.data ||
+    !googleResult.data.success
+) {
+    return {
+        success: false,
+        message:
+            googleResult.data?.message ||
+            "Unable to cancel Google meeting."
+    };
+}
+
+        // -------------------------
         // Cancel Meeting
         // -------------------------
 
