@@ -18,6 +18,9 @@ const calendarFunctions =
 exports.createGoogleCalendarTestEvent =
     calendarFunctions.createGoogleCalendarTestEvent;
 
+exports.createGoogleMeeting =
+    calendarFunctions.createGoogleMeeting;
+
 exports.syncShiftToGoogleCalendar =
     calendarFunctions.syncShiftToGoogleCalendar;
 

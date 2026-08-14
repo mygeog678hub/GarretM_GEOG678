@@ -5,11 +5,13 @@ const {google} = require("googleapis");
  *
  * @param {google.auth.OAuth2} oauth2Client
  * @param {Object} event
+ * @param {Object} options
  * @return {Promise<Object>}
  */
 async function createCalendarEvent(
     oauth2Client,
     event,
+    options = {},
 ) {
   const calendar = google.calendar({
     version: "v3",
@@ -17,22 +19,42 @@ async function createCalendarEvent(
   });
 
   try {
-    const response =
-    await calendar.events.insert({
+    const request = {
       calendarId: "primary",
       requestBody: event,
-    });
+    };
+
+    if (
+      options.conferenceDataVersion
+    ) {
+      request.conferenceDataVersion =
+        options.conferenceDataVersion;
+    }
+
+    const response =
+      await calendar.events.insert(
+          request,
+      );
 
     return response.data;
   } catch (error) {
-    console.error("FULL ERROR:", error);
+    console.error(
+        "FULL ERROR:",
+        error,
+    );
 
-    console.error("STACK:");
-    console.error(error.stack);
+    console.error(
+        "STACK:",
+        error.stack,
+    );
 
     console.error(
         "GOOGLE RESPONSE:",
-        JSON.stringify(error.response?.data, null, 2),
+        JSON.stringify(
+            error.response?.data,
+            null,
+            2,
+        ),
     );
 
     throw error;

@@ -18,6 +18,13 @@ import {
     getCurrentUserProfile
 } from "./identity-service.js";
 
+import {
+    getFunctions,
+    httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+import { app } from "./firebase-config.js";
+
 
 /*********************************************************************
  * Meeting Constants
@@ -2967,25 +2974,56 @@ export async function scheduleMeeting({
 
         }
 
-        // -------------------------
-        // Schedule Meeting
-        // -------------------------
+       // -------------------------
+// Create Google Meeting
+// -------------------------
 
-        await updateDoc(
-            meetingRef,
-            {
+const functions =
+    getFunctions(app);
 
-                status:
-                    "scheduled",
+const createGoogleMeeting =
+    httpsCallable(
+        functions,
+        "createGoogleMeeting"
+    );
 
-                updatedAt:
-                    serverTimestamp(),
+const googleResult =
+    await createGoogleMeeting({
+        meetingId
+    });
 
-                updatedBy:
-                    currentUserProfile.uid
+if (
+    !googleResult.data ||
+    !googleResult.data.success
+) {
 
-            }
-        );
+    return {
+        success: false,
+        message:
+            googleResult.data?.message ||
+            "Unable to create Google Meet."
+    };
+
+}
+// -------------------------
+// Schedule Meeting
+// -------------------------
+
+await updateDoc(
+    meetingRef,
+    {
+
+        status:
+            "scheduled",
+
+        updatedAt:
+            serverTimestamp(),
+
+        updatedBy:
+            currentUserProfile.uid
+
+    }
+);
 
         // -------------------------
         // Activity Log
