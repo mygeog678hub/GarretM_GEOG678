@@ -196,6 +196,12 @@
       </button>
 
       <button
+        id="meetingsBtn"
+        onclick="showMeetingsPage()">
+        Meetings
+      </button>
+
+      <button
         id="incidentReportsBtn"
         onclick="showIncidentReportsPage()">
         Investigative Reports
@@ -3698,6 +3704,247 @@ Version 5.6 RC3
   <div
     id="myPatrolsList"
   ></div>
+
+</div>
+
+<div
+  id="meetingsPage"
+  style="display:none;"
+>
+
+  <!-- =====================================================
+       Meetings Header
+       ===================================================== -->
+
+  <div class="page-header">
+
+    <div>
+      <h2>Meetings</h2>
+
+      <p>
+        Manage organizational meetings, attendees,
+        Google Calendar events, and Google Meet sessions.
+      </p>
+    </div>
+
+    <div>
+      <button
+        id="newMeetingBtn">
+        + New Meeting
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Meeting Filters
+       ===================================================== -->
+
+  <div class="dashboard-card">
+
+    <h3>Meeting Status</h3>
+
+    <div class="meeting-status-filters">
+
+      <button
+        type="button"
+        class="meeting-status-filter active"
+        data-status="all">
+        All
+      </button>
+
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="draft">
+        Draft
+      </button>
+
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="scheduled">
+        Scheduled
+      </button>
+
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="in_progress">
+        In Progress
+      </button>
+
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="completed">
+        Completed
+      </button>
+
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="cancelled">
+        Cancelled
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Upcoming Meetings
+       ===================================================== -->
+
+  <div class="dashboard-card">
+
+    <h3>Upcoming Meetings</h3>
+
+    <div class="table-responsive">
+
+      <table class="data-table">
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Meeting</th>
+            <th>Type</th>
+            <th>Organizer</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="meetingsTableBody">
+
+          <tr>
+
+            <td colspan="8">
+              No meetings to display.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Meeting Details
+       ===================================================== -->
+
+  <div
+    id="meetingDetailsCard"
+    class="dashboard-card"
+    style="display:none;"
+  >
+
+    <h3>Meeting Details</h3>
+
+    <div id="meetingDetailsContent">
+
+      Select a meeting to view its details.
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Meeting Attendees
+       ===================================================== -->
+
+  <div
+    id="meetingAttendeesCard"
+    class="dashboard-card"
+    style="display:none;"
+  >
+
+    <h3>Attendees</h3>
+
+    <div id="meetingAttendeesContent">
+
+      Select a meeting to view attendees.
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Meeting Lifecycle
+       ===================================================== -->
+
+  <div
+    id="meetingActionsCard"
+    class="dashboard-card"
+    style="display:none;"
+  >
+
+    <h3>Meeting Actions</h3>
+
+    <div id="meetingActionsContent">
+
+      Select a meeting to view available actions.
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       Meeting History
+       ===================================================== -->
+
+  <div class="dashboard-card">
+
+    <h3>Meeting History</h3>
+
+    <div class="table-responsive">
+
+      <table class="data-table">
+
+        <thead>
+
+          <tr>
+            <th>Date</th>
+            <th>Meeting</th>
+            <th>Type</th>
+            <th>Organizer</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="meetingHistoryTableBody">
+
+          <tr>
+
+            <td colspan="6">
+              No meeting history to display.
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
 
 </div>
 

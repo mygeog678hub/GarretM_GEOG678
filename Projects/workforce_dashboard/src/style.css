@@ -314,21 +314,23 @@ button:hover {
     padding:24px;
 
     display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
+    justify-content:flex-start;
+    align-items:flex-start;
+    gap:10px;
 
     backdrop-filter:blur(12px);
     box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+    flex-wrap:wrap;
 }
 
 .nav-card button{
 
-    min-width: 115px;
+    min-width:115px;
 
-    height: 56px;
+    height:56px;
 
-    padding: 0 18px;
+    padding:0 18px;
 
     display:flex;
 
@@ -343,34 +345,36 @@ button:hover {
     line-height:1.2;
 
 }
-.nav-left {
 
-    display: flex;
+.nav-left{
 
-    align-items: center;
+    display:flex;
 
-    gap: 18px;
+    align-items:center;
 
-    flex: 1;
+    gap:10px;
 
-    flex-wrap: nowrap;
+    flex:1;
 
-}
+    flex-wrap:wrap;
 
-.nav-right {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 18px;
-
-    margin-left: auto;
-
-    flex-shrink: 0;
+    min-width:0;
 
 }
 
+.nav-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    margin-left:auto;
+
+    flex-shrink:0;
+
+}
 .header-left {
   display: flex;
 

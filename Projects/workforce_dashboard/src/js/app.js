@@ -100,7 +100,7 @@ import {
   generateRecurringDates,
   applyTimeToDate,
   formatLocalDateTime,
-    calculateDistance
+  calculateDistance
 } from "./services/scheduling-utils.js";
 
 import {
@@ -132,6 +132,12 @@ import {
     connectGoogleWorkspace,
     disconnectGoogleWorkspace
 } from "./services/google-workspace-service.js";
+
+import {
+  getMeetings,
+  getMeeting,
+  getMeetingAttendees
+} from "./services/meeting-service.js";
 
 // ================= AUTH =================
 onAuthStateChanged(auth, async (user) => {
@@ -6350,6 +6356,10 @@ window.showCompanySettingsPage =
             "knowledgeCenterPage"
         ).style.display = "none";
 
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
+
 
   };
 
@@ -6419,6 +6429,10 @@ function showDashboard() {
             "knowledgeCenterPage"
         ).style.display = "none";
 
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
+
   refreshSupervisorDashboard();
 
     setTimeout(() => {
@@ -6486,6 +6500,10 @@ window.showOfficerPortal =
        document.getElementById(
       "patrolAnalyticsPage"
     ).style.display = "none";
+
+    document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
 
     renderMySchedule();
     renderMySite();
@@ -6563,6 +6581,10 @@ window.showOfficerIncidentReport =
             "knowledgeCenterPage"
         ).style.display = "none";
 
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
+
   };
 
 function showSchedulingPage() {
@@ -6623,14 +6645,494 @@ function showSchedulingPage() {
     "mileageReportPage"
   ).style.display = "none";
 
-  document
-        .getElementById(
-            "knowledgeCenterPage"
-        ).style.display = "none";
+  document.getElementById(
+    "knowledgeCenterPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
   
   populateScheduleDropdowns();
   renderWeeklyScheduleBoard();
   updateScheduleType();
+
+}
+
+function showMeetingsPage() {
+
+  document.getElementById(
+    "dashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "schedulingPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "meetingsPage"
+  ).style.display = "block";
+
+  document.getElementById(
+    "officerPortal"
+  ).style.display = "none";
+
+  document.getElementById(
+    "officerIncidentReportPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myPatrolsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolDashboardPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolAnalyticsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "companySettingsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "myReportsPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "patrolExecutionPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "incidentReviewPage"
+  ).style.display = "none";
+
+  document.getElementById(
+    "mileageReportPage"
+  ).style.display = "none";
+
+    document.getElementById(
+    "knowledgeCenterPage"
+  ).style.display = "none";
+
+  loadMeetings();
+
+}
+
+async function loadMeetings() {
+
+  const tableBody =
+    document.getElementById(
+      "meetingsTableBody"
+    );
+
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="8">
+        Loading meetings...
+      </td>
+    </tr>
+  `;
+
+  const result =
+    await getMeetings();
+
+  if (!result.success) {
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          ${result.message || "Unable to load meetings."}
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  renderMeetings(
+    result.meetings || []
+  );
+
+}
+
+
+function renderMeetings(meetings) {
+
+  const tableBody =
+    document.getElementById(
+      "meetingsTableBody"
+    );
+
+  if (!tableBody) {
+    return;
+  }
+
+  if (!meetings.length) {
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          No meetings to display.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  tableBody.innerHTML =
+    meetings.map(
+      meeting => {
+
+        const startDate =
+          meeting.startTime?.toDate
+            ? meeting.startTime.toDate()
+            : new Date(
+                meeting.startTime
+              );
+
+        const endDate =
+          meeting.endTime?.toDate
+            ? meeting.endTime.toDate()
+            : new Date(
+                meeting.endTime
+              );
+
+        const dateText =
+          Number.isNaN(
+            startDate.getTime()
+          )
+            ? "—"
+            : startDate.toLocaleDateString();
+
+        const startText =
+          Number.isNaN(
+            startDate.getTime()
+          )
+            ? "—"
+            : startDate.toLocaleTimeString(
+                [],
+                {
+                  hour: "numeric",
+                  minute: "2-digit"
+                }
+              );
+
+        const endText =
+          Number.isNaN(
+            endDate.getTime()
+          )
+            ? "—"
+            : endDate.toLocaleTimeString(
+                [],
+                {
+                  hour: "numeric",
+                  minute: "2-digit"
+                }
+              );
+
+        const timeText =
+          `${startText} - ${endText}`;
+
+        return `
+          <tr>
+
+            <td>
+              ${dateText}
+            </td>
+
+            <td>
+              ${timeText}
+            </td>
+
+            <td>
+              ${meeting.title || "—"}
+            </td>
+
+            <td>
+              ${meeting.meetingType || "—"}
+            </td>
+
+            <td>
+              ${meeting.organizerId || "—"}
+            </td>
+
+            <td>
+              ${meeting.locationType || "—"}
+            </td>
+
+            <td>
+              ${meeting.status || "—"}
+            </td>
+
+            <td>
+             <button
+              type="button"
+              onclick="loadMeetingDetails('${meeting.id}')">
+              View
+            </button>
+            </td>
+
+          </tr>
+        `;
+
+      }
+    ).join("");
+
+}
+
+async function loadMeetingDetails(
+  meetingId
+) {
+
+  const detailsCard =
+    document.getElementById(
+      "meetingDetailsCard"
+    );
+
+  const detailsContent =
+    document.getElementById(
+      "meetingDetailsContent"
+    );
+
+  if (!detailsCard || !detailsContent) {
+    return;
+  }
+
+  detailsCard.style.display = "block";
+
+  detailsContent.innerHTML = `
+    Loading meeting details...
+  `;
+
+  const result =
+    await getMeeting({
+      meetingId
+    });
+
+  if (!result.success) {
+
+    detailsContent.innerHTML = `
+      <p>
+        ${result.message || "Unable to load meeting."}
+      </p>
+    `;
+
+    return;
+  }
+
+  const meeting =
+    result.meeting;
+
+      const attendeesResult =
+    await getMeetingAttendees({
+      meetingId
+    });
+
+  const attendees =
+    attendeesResult.success
+      ? attendeesResult.attendees || []
+      : [];
+
+  detailsContent.innerHTML = `
+    <div class="meeting-detail-grid">
+
+      <div>
+        <strong>Title</strong>
+        <div>
+          ${meeting.title || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Status</strong>
+        <div>
+          ${meeting.status || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Meeting Type</strong>
+        <div>
+          ${meeting.meetingType || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Location</strong>
+        <div>
+          ${meeting.locationType || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Start</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.startTime
+          )}
+        </div>
+      </div>
+
+      <div>
+        <strong>End</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.endTime
+          )}
+        </div>
+      </div>
+
+      <div>
+        <strong>Timezone</strong>
+        <div>
+          ${meeting.timezone || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Organizer</strong>
+        <div>
+          ${meeting.organizerId || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Description</strong>
+        <div>
+          ${meeting.description || "—"}
+        </div>
+      </div>
+
+      <div>
+        <strong>Google Meet</strong>
+        <div>
+          ${
+            meeting.meetLink
+              ? `<a
+                   href="${meeting.meetLink}"
+                   target="_blank"
+                   rel="noopener">
+                   Join Google Meet
+                 </a>`
+              : "Not scheduled"
+          }
+        </div>
+      </div>
+
+    </div>
+
+          <div class="meeting-attendees-section">
+
+        <strong>Attendees</strong>
+
+        <div id="meetingAttendeesContent">
+
+          ${
+            attendeesResult.success
+              ? attendees.length
+                ? attendees.map(
+                    attendee => `
+                      <div class="meeting-attendee-row">
+
+                        <div>
+                          <strong>
+                            ${attendee.name || "—"}
+                          </strong>
+
+                          <div>
+                            ${attendee.email || "—"}
+                          </div>
+                        </div>
+
+                        <div>
+                          ${
+                            attendee.attendeeType ||
+                            "—"
+                          }
+                        </div>
+
+                        <div>
+                          ${
+                            attendee.role ||
+                            "—"
+                          }
+                        </div>
+
+                      </div>
+                    `
+                  ).join("")
+                : `
+                    <p>
+                      No attendees added.
+                    </p>
+                  `
+              : `
+                  <p>
+                    Unable to load attendees.
+                  </p>
+                `
+          }
+
+        </div>
+
+      </div>
+  `;
+
+  
+
+  detailsCard.scrollIntoView({
+  behavior: "smooth",
+  block: "start"
+});
+
+}
+window.loadMeetingDetails = loadMeetingDetails;
+
+
+function formatMeetingDateTime(
+  value
+) {
+
+  if (!value) {
+    return "—";
+  }
+
+  const date =
+    value?.toDate
+      ? value.toDate()
+      : new Date(value);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "—";
+  }
+
+  return date.toLocaleString(
+    [],
+    {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }
+  );
 
 }
 
@@ -6698,6 +7200,10 @@ window.showPatrolExecution =
         .getElementById(
             "knowledgeCenterPage"
         ).style.display = "none";
+
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
   };
 
 window.showIncidentReviewPage =
@@ -6765,6 +7271,10 @@ window.showIncidentReviewPage =
             "knowledgeCenterPage"
         ).style.display = "none";
 
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
+
     await loadIncidentReviewQueue();
   };
 
@@ -6828,6 +7338,10 @@ window.showMileageReportPage =
         .getElementById(
             "knowledgeCenterPage"
         ).style.display = "none";
+
+        document.getElementById(
+    "meetingsPage"
+  ).style.display = "none";
 
     await loadMileageReport();
   };
@@ -19359,3 +19873,4 @@ window.cancelOpenShift = cancelOpenShift;
 window.claimOpenShift = claimOpenShift;
 window.toggleCommunicationForm = toggleCommunicationForm;
 window.approveClaim = approveClaim;
+window.showMeetingsPage = showMeetingsPage;
