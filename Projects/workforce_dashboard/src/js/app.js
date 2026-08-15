@@ -138,7 +138,9 @@ import {
   getMeeting,
   getMeetingAttendees,
   getMeetingAttendeeUsers,
-  addAttendee
+  addAttendee,
+  updateAttendee,
+  removeAttendee
 } from "./services/meeting-service.js";
 
 // ================= AUTH =================
@@ -7228,31 +7230,59 @@ async function loadMeetingDetails(
                     attendee => `
                       <div class="meeting-attendee-row">
 
-                        <div>
-                          <strong>
-                            ${attendee.name || "—"}
-                          </strong>
+  <div>
+    <strong>
+      ${attendee.name || "—"}
+    </strong>
 
-                          <div>
-                            ${attendee.email || "—"}
-                          </div>
-                        </div>
+    <div>
+      ${attendee.email || "—"}
+    </div>
+  </div>
 
-                        <div>
-                          ${
-                            attendee.attendeeType ||
-                            "—"
-                          }
-                        </div>
+  <div>
+    ${
+      attendee.attendeeType ||
+      "—"
+    }
+  </div>
 
-                        <div>
-                          ${
-                            attendee.role ||
-                            "—"
-                          }
-                        </div>
+  <div>
+    ${
+      attendee.role ||
+      "—"
+    }
+  </div>
 
-                      </div>
+  <div
+    style="
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    "
+  >
+
+    <button
+      type="button"
+      onclick="editMeetingAttendee(
+        '${attendee.id}'
+      )"
+    >
+      Edit
+    </button>
+
+    <button
+  type="button"
+  onclick="removeMeetingAttendee(
+    '${attendee.id}'
+  )"
+>
+  Remove
+</button>
+
+  </div>
+
+</div>
                     `
                   ).join("")
                 : `
@@ -7609,6 +7639,468 @@ async function saveMeetingAttendee() {
   );
 
 }
+
+async function removeMeetingAttendee(
+  attendeeId
+) {
+
+  const detailsCard =
+    document.getElementById(
+      "meetingDetailsCard"
+    );
+
+  if (!detailsCard) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const meetingId =
+    detailsCard.dataset.meetingId;
+
+  if (!meetingId) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const confirmed =
+    confirm(
+      "Are you sure you want to remove this attendee?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const result =
+    await removeAttendee({
+
+      meetingId,
+
+      attendeeId
+
+    });
+
+  if (!result.success) {
+
+    alert(
+      result.message ||
+      "Unable to remove attendee."
+    );
+
+    return;
+
+  }
+
+  await loadMeetingDetails(
+    meetingId
+  );
+
+}
+
+window.removeMeetingAttendee =
+  removeMeetingAttendee;
+
+  async function editMeetingAttendee(
+  attendeeId
+) {
+
+  const detailsCard =
+    document.getElementById(
+      "meetingDetailsCard"
+    );
+
+  if (!detailsCard) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const meetingId =
+    detailsCard.dataset.meetingId;
+
+  if (!meetingId) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const attendeeRow =
+    document.querySelector(
+      `.meeting-attendee-row button[onclick*="${attendeeId}"]`
+    )?.closest(
+      ".meeting-attendee-row"
+    );
+
+  if (!attendeeRow) {
+
+    alert(
+      "Attendee could not be found."
+    );
+
+    return;
+
+  }
+
+  const attendeeResult =
+    await getMeetingAttendees({
+      meetingId
+    });
+
+  if (!attendeeResult.success) {
+
+    alert(
+      attendeeResult.message ||
+      "Unable to load attendee."
+    );
+
+    return;
+
+  }
+
+  const attendee =
+    attendeeResult.attendees.find(
+      item =>
+        item.id === attendeeId
+    );
+
+  if (!attendee) {
+
+    alert(
+      "Attendee could not be found."
+    );
+
+    return;
+
+  }
+
+  const isExternal =
+    attendee.attendeeType ===
+    "external";
+
+  attendeeRow.innerHTML = `
+
+    <div
+      style="
+        display:grid;
+        gap:10px;
+        width:100%;
+      "
+    >
+
+      ${
+        isExternal
+          ? `
+            <div>
+
+              <label>
+                Name
+              </label>
+
+              <input
+                type="text"
+                id="editAttendeeName_${attendeeId}"
+                value="${attendee.name || ""}"
+              >
+
+            </div>
+
+            <div>
+
+              <label>
+                Email
+              </label>
+
+              <input
+                type="email"
+                id="editAttendeeEmail_${attendeeId}"
+                value="${attendee.email || ""}"
+              >
+
+            </div>
+          `
+          : `
+            <div>
+
+              <strong>
+                ${attendee.name || "—"}
+              </strong>
+
+              <div>
+                ${attendee.email || "—"}
+              </div>
+
+            </div>
+          `
+      }
+
+      <div>
+
+        <label>
+          Role
+        </label>
+
+        <select
+          id="editAttendeeRole_${attendeeId}"
+        >
+
+          <option
+            value="required"
+            ${
+              attendee.role === "required"
+                ? "selected"
+                : ""
+            }
+          >
+            Required
+          </option>
+
+          <option
+            value="optional"
+            ${
+              attendee.role === "optional"
+                ? "selected"
+                : ""
+            }
+          >
+            Optional
+          </option>
+
+        </select>
+
+      </div>
+
+      <div
+        style="
+          display:flex;
+          gap:8px;
+          flex-wrap:wrap;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="saveEditedMeetingAttendee(
+            '${attendeeId}'
+          )"
+        >
+          Save
+        </button>
+
+        <button
+          type="button"
+          onclick="loadMeetingDetails(
+            '${meetingId}'
+          )"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+window.editMeetingAttendee =
+  editMeetingAttendee;
+
+  async function saveEditedMeetingAttendee(
+  attendeeId
+) {
+
+  const detailsCard =
+    document.getElementById(
+      "meetingDetailsCard"
+    );
+
+  if (!detailsCard) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const meetingId =
+    detailsCard.dataset.meetingId;
+
+  if (!meetingId) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const attendeeResult =
+    await getMeetingAttendees({
+      meetingId
+    });
+
+  if (!attendeeResult.success) {
+
+    alert(
+      attendeeResult.message ||
+      "Unable to load attendee."
+    );
+
+    return;
+
+  }
+
+  const attendee =
+    attendeeResult.attendees.find(
+      item =>
+        item.id === attendeeId
+    );
+
+  if (!attendee) {
+
+    alert(
+      "Attendee could not be found."
+    );
+
+    return;
+
+  }
+
+  const roleSelect =
+    document.getElementById(
+      `editAttendeeRole_${attendeeId}`
+    );
+
+  if (!roleSelect) {
+
+    alert(
+      "Attendee role could not be determined."
+    );
+
+    return;
+
+  }
+
+  const role =
+    roleSelect.value;
+
+  let name =
+    attendee.name || "";
+
+  let email =
+    attendee.email || "";
+
+  // -------------------------
+  // External Attendee
+  // -------------------------
+
+  if (
+    attendee.attendeeType ===
+    "external"
+  ) {
+
+    const nameInput =
+      document.getElementById(
+        `editAttendeeName_${attendeeId}`
+      );
+
+    const emailInput =
+      document.getElementById(
+        `editAttendeeEmail_${attendeeId}`
+      );
+
+    name =
+      nameInput?.value.trim();
+
+    email =
+      emailInput?.value.trim();
+
+    if (!name) {
+
+      alert(
+        "Please enter the attendee name."
+      );
+
+      return;
+
+    }
+
+    if (!email) {
+
+      alert(
+        "Please enter the attendee email."
+      );
+
+      return;
+
+    }
+
+  }
+
+  // -------------------------
+  // Update
+  // -------------------------
+
+  const result =
+    await updateAttendee({
+
+      meetingId,
+
+      attendeeId,
+
+      name,
+
+      email,
+
+      role
+
+    });
+
+  if (!result.success) {
+
+    alert(
+      result.message ||
+      "Unable to update attendee."
+    );
+
+    return;
+
+  }
+
+  // -------------------------
+  // Refresh
+  // -------------------------
+
+  await loadMeetingDetails(
+    meetingId
+  );
+
+}
+
+window.saveEditedMeetingAttendee =
+  saveEditedMeetingAttendee;
 
 
 function formatMeetingDateTime(
