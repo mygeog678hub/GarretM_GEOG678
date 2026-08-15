@@ -140,7 +140,11 @@ import {
   getMeetingAttendeeUsers,
   addAttendee,
   updateAttendee,
-  removeAttendee
+  removeAttendee,
+  scheduleMeeting,
+  cancelMeeting,
+  startMeeting,
+  completeMeeting
 } from "./services/meeting-service.js";
 
 // ================= AUTH =================
@@ -6956,7 +6960,202 @@ async function loadMeetingDetails(
       ? attendeesResult.attendees || []
       : [];
 
-  detailsContent.innerHTML = `
+        // --------------------------------------------------
+  // Meeting Lifecycle Actions
+  // --------------------------------------------------
+
+  const actionsCard =
+    document.getElementById(
+      "meetingActionsCard"
+    );
+
+  const actionsContent =
+    document.getElementById(
+      "meetingActionsContent"
+    );
+
+  if (
+    actionsCard &&
+    actionsContent
+  ) {
+
+    actionsCard.style.display = "block";
+
+    let actionsHtml = "";
+
+    switch (meeting.status) {
+
+      case "draft":
+
+        actionsHtml = `
+          <button
+            type="button"
+            data-meeting-action="schedule"
+            data-meeting-id="${meetingId}"
+          >
+            Schedule Meeting
+          </button>
+        `;
+
+        break;
+
+      case "scheduled":
+
+        actionsHtml = `
+          <button
+            type="button"
+            data-meeting-action="start"
+            data-meeting-id="${meetingId}"
+          >
+            Start Meeting
+          </button>
+
+          <button
+            type="button"
+            data-meeting-action="cancel"
+            data-meeting-id="${meetingId}"
+          >
+            Cancel Meeting
+          </button>
+        `;
+
+        break;
+
+      case "in_progress":
+
+        actionsHtml = `
+          <button
+            type="button"
+            data-meeting-action="complete"
+            data-meeting-id="${meetingId}"
+          >
+            Complete Meeting
+          </button>
+        `;
+
+        break;
+
+      case "completed":
+
+        actionsHtml = `
+          <p>
+            This meeting has been completed.
+          </p>
+        `;
+
+        break;
+
+      case "cancelled":
+
+        actionsHtml = `
+          <p>
+            This meeting has been cancelled.
+          </p>
+        `;
+
+        break;
+
+      default:
+
+        actionsHtml = `
+          <p>
+            No actions available.
+          </p>
+        `;
+
+    }
+
+    actionsContent.innerHTML =
+      actionsHtml;
+
+      actionsContent.onclick = async function (event) {
+
+      const button =
+        event.target.closest(
+          "[data-meeting-action]"
+        );
+
+      if (!button) {
+        return;
+      }
+
+      const action =
+        button.dataset.meetingAction;
+
+      const selectedMeetingId =
+        button.dataset.meetingId;
+
+      if (!selectedMeetingId) {
+        return;
+      }
+
+      let result;
+
+      if (action === "schedule") {
+
+        result =
+          await scheduleMeeting({
+            meetingId:
+              selectedMeetingId
+          });
+
+      }
+
+      else if (action === "start") {
+
+        result =
+          await startMeeting({
+            meetingId:
+              selectedMeetingId
+          });
+
+      }
+
+      else if (action === "cancel") {
+
+        result =
+          await cancelMeeting({
+            meetingId:
+              selectedMeetingId
+          });
+
+      }
+
+      else if (action === "complete") {
+
+        result =
+          await completeMeeting({
+            meetingId:
+              selectedMeetingId
+          });
+
+      }
+
+      else {
+        return;
+      }
+
+      if (!result || !result.success) {
+
+        alert(
+          result?.message ||
+          "Unable to update meeting."
+        );
+
+        return;
+      }
+
+      await loadMeetingDetails(
+        selectedMeetingId
+      );
+
+      await loadMeetings();
+
+    };
+
+}
+
+detailsContent.innerHTML = `
     <div class="meeting-detail-grid">
 
       <div>
