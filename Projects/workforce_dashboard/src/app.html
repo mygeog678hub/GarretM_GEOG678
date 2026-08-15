@@ -3858,28 +3858,213 @@ Version 5.6 RC3
 
     </div>
 
-  </div>
-
+  </div>  
 
   <!-- =====================================================
-       Meeting Attendees
-       ===================================================== -->
+     Meeting Attendees
+     ===================================================== -->
+
+<div
+  id="meetingAttendeesCard"
+  class="dashboard-card"
+  style="display:none;"
+>
 
   <div
-    id="meetingAttendeesCard"
-    class="dashboard-card"
-    style="display:none;"
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+    "
   >
 
     <h3>Attendees</h3>
 
-    <div id="meetingAttendeesContent">
+    <button
+      type="button"
+      id="addMeetingAttendeeBtn"
+      onclick="showAddMeetingAttendeeForm()"
+    >
+      + Add Attendee
+    </button>
 
-      Select a meeting to view attendees.
+  </div>
+
+
+  <!-- =====================================================
+       Add Attendee Form
+       ===================================================== -->
+
+  <div
+    id="addMeetingAttendeeForm"
+    style="display:none;"
+  >
+
+    <hr>
+
+    <h4>Add Attendee</h4>
+
+
+    <!-- Attendee Type -->
+
+    <div class="form-group">
+
+      <label for="meetingAttendeeType">
+        Attendee Type
+      </label>
+
+      <select
+        id="meetingAttendeeType"
+        onchange="updateMeetingAttendeeType()"
+      >
+
+        <option value="internal">
+          Internal User
+        </option>
+
+        <option value="external">
+          External Guest
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- Internal User -->
+
+    <div
+      id="internalMeetingAttendeeSection"
+    >
+
+      <div class="form-group">
+
+        <label for="meetingAttendeeUser">
+          Internal User
+        </label>
+
+        <select
+          id="meetingAttendeeUser"
+        >
+
+          <option value="">
+            Select User
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <!-- External Guest -->
+
+    <div
+      id="externalMeetingAttendeeSection"
+      style="display:none;"
+    >
+
+      <div class="form-group">
+
+        <label for="meetingAttendeeName">
+          Name
+        </label>
+
+        <input
+          type="text"
+          id="meetingAttendeeName"
+          placeholder="Guest Name"
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="meetingAttendeeEmail">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="meetingAttendeeEmail"
+          placeholder="guest@example.com"
+        >
+
+      </div>
+
+    </div>
+
+
+    <!-- Role -->
+
+    <div class="form-group">
+
+      <label for="meetingAttendeeRole">
+        Role
+      </label>
+
+      <select
+        id="meetingAttendeeRole"
+      >
+
+        <option value="required">
+          Required
+        </option>
+
+        <option value="optional">
+          Optional
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- Form Actions -->
+
+    <div
+      style="
+        display:flex;
+        gap:10px;
+        margin-top:16px;
+      "
+    >
+
+      <button
+        type="button"
+        id="saveMeetingAttendeeBtn"
+        onclick="saveMeetingAttendee()"
+      >
+        Add Attendee
+      </button>
+
+      <button
+        type="button"
+        onclick="hideAddMeetingAttendeeForm()"
+      >
+        Cancel
+      </button>
 
     </div>
 
   </div>
+
+
+  <!-- =====================================================
+       Existing Attendees
+       ===================================================== -->
+
+  <div id="meetingAttendeesContent">
+
+    Select a meeting to view attendees.
+
+  </div>
+
+</div>
 
 
   <!-- =====================================================

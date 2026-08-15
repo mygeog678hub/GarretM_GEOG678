@@ -136,7 +136,9 @@ import {
 import {
   getMeetings,
   getMeeting,
-  getMeetingAttendees
+  getMeetingAttendees,
+  getMeetingAttendeeUsers,
+  addAttendee
 } from "./services/meeting-service.js";
 
 // ================= AUTH =================
@@ -6916,6 +6918,9 @@ async function loadMeetingDetails(
 
   detailsCard.style.display = "block";
 
+  detailsCard.dataset.meetingId =
+  meetingId;
+
   detailsContent.innerHTML = `
     Loading meeting details...
   `;
@@ -7037,11 +7042,184 @@ async function loadMeetingDetails(
 
     </div>
 
-          <div class="meeting-attendees-section">
+                <div class="meeting-attendees-section">
 
-        <strong>Attendees</strong>
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            flex-wrap:wrap;
+          "
+        >
 
-        <div id="meetingAttendeesContent">
+          <strong>Attendees</strong>
+
+          <button
+            type="button"
+            onclick="showAddMeetingAttendeeForm()"
+          >
+            + Add Attendee
+          </button>
+
+        </div>
+
+
+        <div
+          id="meetingAttendeeForm"
+          style="
+            display:none;
+            margin-top:16px;
+            padding:16px;
+            border:1px solid rgba(255,255,255,.08);
+            border-radius:12px;
+          "
+        >
+
+          <h4>Add Attendee</h4>
+
+
+          <div class="form-group">
+
+            <label for="meetingAttendeeType">
+              Attendee Type
+            </label>
+
+            <select
+              id="meetingAttendeeType"
+              onchange="updateMeetingAttendeeType()"
+            >
+
+              <option value="internal">
+                Internal User
+              </option>
+
+              <option value="external">
+                External Guest
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div
+            id="internalMeetingAttendeeSection"
+          >
+
+            <div class="form-group">
+
+              <label for="meetingAttendeeUser">
+                Internal User
+              </label>
+
+              <select
+                id="meetingAttendeeUser"
+              >
+
+                <option value="">
+                  Select User
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="externalMeetingAttendeeSection"
+            style="display:none;"
+          >
+
+            <div class="form-group">
+
+              <label for="meetingAttendeeName">
+                Name
+              </label>
+
+              <input
+                type="text"
+                id="meetingAttendeeName"
+                placeholder="Guest Name"
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label for="meetingAttendeeEmail">
+                Email
+              </label>
+
+              <input
+                type="email"
+                id="meetingAttendeeEmail"
+                placeholder="guest@example.com"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label for="meetingAttendeeRole">
+              Role
+            </label>
+
+            <select
+              id="meetingAttendeeRole"
+            >
+
+              <option value="required">
+                Required
+              </option>
+
+              <option value="optional">
+                Optional
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div
+            style="
+              display:flex;
+              gap:10px;
+              margin-top:16px;
+            "
+          >
+
+            <button
+              type="button"
+              onclick="saveMeetingAttendee()"
+            >
+              Add Attendee
+            </button>
+
+            <button
+              type="button"
+              onclick="hideAddMeetingAttendeeForm()"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="meetingAttendeesContent"
+          style="margin-top:16px;"
+        >
 
           ${
             attendeesResult.success
@@ -7103,6 +7281,334 @@ async function loadMeetingDetails(
 
 }
 window.loadMeetingDetails = loadMeetingDetails;
+
+function showAddMeetingAttendeeForm() {
+
+  const form =
+    document.getElementById(
+      "meetingAttendeeForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+  form.style.display = "block";
+
+  loadMeetingAttendeeUsers();
+
+}
+
+
+async function loadMeetingAttendeeUsers() {
+
+  const userSelect =
+    document.getElementById(
+      "meetingAttendeeUser"
+    );
+
+  if (!userSelect) {
+    return;
+  }
+
+  userSelect.innerHTML =
+    `<option value="">
+      Loading users...
+    </option>`;
+
+  const result =
+    await getMeetingAttendeeUsers();
+
+  if (!result.success) {
+
+    userSelect.innerHTML =
+      `<option value="">
+        Unable to load users
+      </option>`;
+
+    console.error(
+      "loadMeetingAttendeeUsers:",
+      result.message
+    );
+
+    return;
+
+  }
+
+  userSelect.innerHTML =
+    `<option value="">
+      Select User
+    </option>`;
+
+  result.users.forEach(
+    user => {
+
+      userSelect.insertAdjacentHTML(
+        "beforeend",
+        `
+          <option value="${user.id}">
+            ${user.displayName}
+          </option>
+        `
+      );
+
+    }
+  );
+
+}
+
+
+function updateMeetingAttendeeType() {
+
+  const typeSelect =
+    document.getElementById(
+      "meetingAttendeeType"
+    );
+
+  const internalSection =
+    document.getElementById(
+      "internalMeetingAttendeeSection"
+    );
+
+  const externalSection =
+    document.getElementById(
+      "externalMeetingAttendeeSection"
+    );
+
+  if (
+    !typeSelect ||
+    !internalSection ||
+    !externalSection
+  ) {
+    return;
+  }
+
+  if (
+    typeSelect.value === "external"
+  ) {
+
+    internalSection.style.display =
+      "none";
+
+    externalSection.style.display =
+      "block";
+
+  } else {
+
+    internalSection.style.display =
+      "block";
+
+    externalSection.style.display =
+      "none";
+
+  }
+
+}
+
+
+function hideAddMeetingAttendeeForm() {
+
+  const form =
+    document.getElementById(
+      "meetingAttendeeForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+  form.style.display = "none";
+
+}
+
+async function saveMeetingAttendee() {
+
+  const typeSelect =
+    document.getElementById(
+      "meetingAttendeeType"
+    );
+
+  const roleSelect =
+    document.getElementById(
+      "meetingAttendeeRole"
+    );
+
+  if (!typeSelect || !roleSelect) {
+    return;
+  }
+
+  const attendeeType =
+    typeSelect.value;
+
+  const role =
+    roleSelect.value;
+
+  // --------------------------------
+  // Determine current meeting
+  // --------------------------------
+
+  const meetingDetailsCard =
+    document.getElementById(
+      "meetingDetailsCard"
+    );
+
+  if (!meetingDetailsCard) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  const meetingId =
+    meetingDetailsCard.dataset.meetingId;
+
+  if (!meetingId) {
+
+    alert(
+      "No meeting is currently selected."
+    );
+
+    return;
+
+  }
+
+  // --------------------------------
+  // Internal attendee
+  // --------------------------------
+
+  if (
+    attendeeType === "internal"
+  ) {
+
+    const userSelect =
+      document.getElementById(
+        "meetingAttendeeUser"
+      );
+
+    if (
+      !userSelect ||
+      !userSelect.value
+    ) {
+
+      alert(
+        "Please select an internal user."
+      );
+
+      return;
+
+    }
+
+    const result =
+      await addAttendee({
+
+        meetingId,
+
+        attendeeType,
+
+        userId:
+          userSelect.value,
+
+        role
+
+      });
+
+    if (!result.success) {
+
+      alert(
+        result.message ||
+        "Unable to add attendee."
+      );
+
+      return;
+
+    }
+
+  }
+
+  // --------------------------------
+  // External attendee
+  // --------------------------------
+
+  if (
+    attendeeType === "external"
+  ) {
+
+    const nameInput =
+      document.getElementById(
+        "meetingAttendeeName"
+      );
+
+    const emailInput =
+      document.getElementById(
+        "meetingAttendeeEmail"
+      );
+
+    const name =
+      nameInput?.value.trim();
+
+    const email =
+      emailInput?.value.trim();
+
+    if (!name) {
+
+      alert(
+        "Please enter the attendee name."
+      );
+
+      return;
+
+    }
+
+    if (!email) {
+
+      alert(
+        "Please enter the attendee email."
+      );
+
+      return;
+
+    }
+
+    const result =
+      await addAttendee({
+
+        meetingId,
+
+        attendeeType,
+
+        name,
+
+        email,
+
+        role
+
+      });
+
+    if (!result.success) {
+
+      alert(
+        result.message ||
+        "Unable to add attendee."
+      );
+
+      return;
+
+    }
+
+  }
+
+  // --------------------------------
+  // Refresh meeting details
+  // --------------------------------
+
+  await loadMeetingDetails(
+    meetingId
+  );
+
+}
 
 
 function formatMeetingDateTime(
@@ -19874,3 +20380,7 @@ window.claimOpenShift = claimOpenShift;
 window.toggleCommunicationForm = toggleCommunicationForm;
 window.approveClaim = approveClaim;
 window.showMeetingsPage = showMeetingsPage;
+window.showAddMeetingAttendeeForm = showAddMeetingAttendeeForm;
+window.updateMeetingAttendeeType = updateMeetingAttendeeType;
+window.hideAddMeetingAttendeeForm = hideAddMeetingAttendeeForm;
+window.saveMeetingAttendee = saveMeetingAttendee;

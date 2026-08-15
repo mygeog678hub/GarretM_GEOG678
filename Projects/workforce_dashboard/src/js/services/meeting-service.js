@@ -2178,6 +2178,173 @@ export async function getMeeting({
 }
 
 /*********************************************************************
+ * Get Meeting Attendee Users
+ *********************************************************************/
+
+export async function getMeetingAttendeeUsers() {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Authorization
+        // -------------------------
+
+        if (
+            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Supervisor"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have permission to view meeting attendees."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Users
+        // -------------------------
+
+        const usersRef =
+            collection(
+                db,
+                "users"
+            );
+
+        const usersQuery =
+            query(
+                usersRef,
+                where(
+                    "tenantId",
+                    "==",
+                    currentUserProfile.tenantId
+                )
+            );
+
+        const usersSnap =
+            await getDocs(
+                usersQuery
+            );
+
+        // -------------------------
+        // Transform Results
+        // -------------------------
+
+        const users =
+            usersSnap.docs.map(
+                userDoc => {
+
+                    const user =
+                        userDoc.data();
+
+                    return {
+
+                        id:
+                            userDoc.id,
+
+                        displayName:
+                            user.displayName ||
+                            user.name ||
+                            "",
+
+                        email:
+                            user.email ||
+                            user.accountEmail ||
+                            "",
+
+                        role:
+                            user.role ||
+                            "",
+
+                        active:
+                            user.active !== false
+
+                    };
+
+                }
+            ).filter(
+                user =>
+                    user.active &&
+                    user.displayName &&
+                    user.email
+            );
+
+        // -------------------------
+        // Sort
+        // -------------------------
+
+        users.sort(
+            (a, b) =>
+                a.displayName.localeCompare(
+                    b.displayName
+                )
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true,
+
+            users
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "getMeetingAttendeeUsers:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to load internal users."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
  * Get Meeting Attendees
  *********************************************************************/
 
