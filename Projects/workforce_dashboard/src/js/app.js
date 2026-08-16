@@ -141,7 +141,9 @@ import {
   addAttendee,
   updateAttendee,
   removeAttendee,
+  createMeeting,
   scheduleMeeting,
+  updateMeeting,
   cancelMeeting,
   startMeeting,
   completeMeeting
@@ -6737,6 +6739,345 @@ function showMeetingsPage() {
 
 }
 
+function showNewMeetingForm() {
+
+  const form =
+    document.getElementById(
+      "newMeetingForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+  form.style.display = "block";
+
+}
+
+function cancelNewMeetingForm() {
+
+  const form =
+    document.getElementById(
+      "newMeetingForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+  form.style.display = "none";
+
+}
+
+function formatDateTimeLocal(date) {
+
+  if (!(date instanceof Date)) {
+    return "";
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(2, "0");
+
+  const hours =
+    String(
+      date.getHours()
+    ).padStart(2, "0");
+
+  const minutes =
+    String(
+      date.getMinutes()
+    ).padStart(2, "0");
+
+  return (
+    `${year}-${month}-${day}` +
+    `T${hours}:${minutes}`
+  );
+
+}
+
+async function showMeetingEditForm(meetingId) {
+
+  const form =
+    document.getElementById(
+      "editMeetingForm"
+    );
+
+  if (!form) {
+    return;
+  }
+
+  const result =
+    await getMeeting({
+      meetingId
+    });
+
+  if (!result || !result.success) {
+
+    alert(
+      result?.message ||
+      "Unable to load meeting."
+    );
+
+    return;
+
+  }
+
+  const meeting =
+    result.meeting;
+
+  const startDate =
+    meeting.startTime?.toDate
+      ? meeting.startTime.toDate()
+      : new Date(
+          meeting.startTime
+        );
+
+  const endDate =
+    meeting.endTime?.toDate
+      ? meeting.endTime.toDate()
+      : new Date(
+          meeting.endTime
+        );
+
+  document.getElementById(
+    "editMeetingId"
+  ).value =
+    meetingId;
+
+  document.getElementById(
+    "editMeetingTitle"
+  ).value =
+    meeting.title || "";
+
+  document.getElementById(
+    "editMeetingDescription"
+  ).value =
+    meeting.description || "";
+
+  document.getElementById(
+    "editMeetingType"
+  ).value =
+    meeting.meetingType || "general";
+
+  document.getElementById(
+    "editMeetingStartTime"
+  ).value =
+    formatDateTimeLocal(
+      startDate
+    );
+
+  document.getElementById(
+    "editMeetingEndTime"
+  ).value =
+    formatDateTimeLocal(
+      endDate
+    );
+
+  document.getElementById(
+    "editMeetingTimezone"
+  ).value =
+    meeting.timezone || "";
+
+  document.getElementById(
+    "editMeetingLocationType"
+  ).value =
+    meeting.locationType || "virtual";
+
+  form.style.display =
+    "block";
+}
+
+async function saveEditedMeeting() {
+
+  const meetingId =
+    document.getElementById(
+      "editMeetingId"
+    ).value;
+
+  const title =
+    document.getElementById(
+      "editMeetingTitle"
+    ).value;
+
+  const description =
+    document.getElementById(
+      "editMeetingDescription"
+    ).value;
+
+  const meetingType =
+    document.getElementById(
+      "editMeetingType"
+    ).value;
+
+  const startValue =
+    document.getElementById(
+      "editMeetingStartTime"
+    ).value;
+
+  const endValue =
+    document.getElementById(
+      "editMeetingEndTime"
+    ).value;
+
+  const timezone =
+    document.getElementById(
+      "editMeetingTimezone"
+    ).value;
+
+  const locationType =
+    document.getElementById(
+      "editMeetingLocationType"
+    ).value;
+
+  const startTime =
+    startValue
+      ? new Date(startValue)
+      : null;
+
+  const endTime =
+    endValue
+      ? new Date(endValue)
+      : null;
+
+  const result =
+    await updateMeeting({
+
+      meetingId,
+      title,
+      description,
+      meetingType,
+      startTime,
+      endTime,
+      timezone,
+      locationType
+
+    });
+
+  if (!result || !result.success) {
+
+    alert(
+      result?.message ||
+      "Unable to update meeting."
+    );
+
+    return;
+
+  }
+
+  document.getElementById(
+    "editMeetingForm"
+  ).style.display =
+    "none";
+
+  await loadMeetings();
+
+  await loadMeetingDetails(
+    meetingId
+  );
+
+}
+
+async function createNewMeeting() {
+
+  const title =
+    document.getElementById(
+      "newMeetingTitle"
+    ).value;
+
+  const description =
+    document.getElementById(
+      "newMeetingDescription"
+    ).value;
+
+  const meetingType =
+    document.getElementById(
+      "newMeetingType"
+    ).value;
+
+  const startValue =
+    document.getElementById(
+      "newMeetingStartTime"
+    ).value;
+
+  const endValue =
+    document.getElementById(
+      "newMeetingEndTime"
+    ).value;
+
+  const timezone =
+    document.getElementById(
+      "newMeetingTimezone"
+    ).value;
+
+  const locationType =
+    document.getElementById(
+      "newMeetingLocationType"
+    ).value;
+
+  const startTime =
+    startValue
+      ? new Date(startValue)
+      : null;
+
+  const endTime =
+    endValue
+      ? new Date(endValue)
+      : null;
+
+  const result =
+    await createMeeting({
+
+      title,
+      description,
+      meetingType,
+      startTime,
+      endTime,
+      timezone,
+      locationType
+
+    });
+
+  if (!result || !result.success) {
+
+    alert(
+      result?.message ||
+      "Unable to create meeting."
+    );
+
+    return;
+
+  }
+
+  alert(
+    "Meeting draft created successfully."
+  );
+
+  document.getElementById(
+    "newMeetingForm"
+  ).style.display = "none";
+
+  await loadMeetings();
+
+  await loadMeetingDetails(
+    result.meetingId
+  );
+
+}
+
 async function loadMeetings() {
 
   const tableBody =
@@ -6772,14 +7113,31 @@ async function loadMeetings() {
     return;
   }
 
+    const usersResult =
+    await getMeetingAttendeeUsers();
+
+  const organizerMap =
+    new Map(
+      (usersResult.users || []).map(
+        user => [
+          user.id,
+          user.displayName
+        ]
+      )
+    );
+
   renderMeetings(
-    result.meetings || []
+    result.meetings || [],
+    organizerMap
   );
 
 }
 
 
-function renderMeetings(meetings) {
+function renderMeetings(
+  meetings,
+  organizerMap
+) {
 
   const tableBody =
     document.getElementById(
@@ -6877,7 +7235,13 @@ function renderMeetings(meetings) {
             </td>
 
             <td>
-              ${meeting.organizerId || "—"}
+              ${
+                organizerMap.get(
+                  meeting.organizerId
+                ) ||
+                meeting.organizerId ||
+                "—"
+              }
             </td>
 
             <td>
@@ -6950,6 +7314,19 @@ async function loadMeetingDetails(
   const meeting =
     result.meeting;
 
+    const usersResult =
+  await getMeetingAttendeeUsers();
+
+const organizerMap =
+  new Map(
+    (usersResult.users || []).map(
+      user => [
+        user.id,
+        user.displayName
+      ]
+    )
+  );
+
       const attendeesResult =
     await getMeetingAttendees({
       meetingId
@@ -6988,36 +7365,52 @@ async function loadMeetingDetails(
       case "draft":
 
         actionsHtml = `
-          <button
-            type="button"
-            data-meeting-action="schedule"
-            data-meeting-id="${meetingId}"
-          >
-            Schedule Meeting
-          </button>
-        `;
+  <button
+    type="button"
+    data-meeting-action="edit"
+    data-meeting-id="${meetingId}"
+  >
+    Edit Meeting
+  </button>
+
+  <button
+    type="button"
+    data-meeting-action="schedule"
+    data-meeting-id="${meetingId}"
+  >
+    Schedule Meeting
+  </button>
+`;
 
         break;
 
       case "scheduled":
 
         actionsHtml = `
-          <button
-            type="button"
-            data-meeting-action="start"
-            data-meeting-id="${meetingId}"
-          >
-            Start Meeting
-          </button>
+  <button
+    type="button"
+    data-meeting-action="edit"
+    data-meeting-id="${meetingId}"
+  >
+    Edit Meeting
+  </button>
 
-          <button
-            type="button"
-            data-meeting-action="cancel"
-            data-meeting-id="${meetingId}"
-          >
-            Cancel Meeting
-          </button>
-        `;
+  <button
+    type="button"
+    data-meeting-action="start"
+    data-meeting-id="${meetingId}"
+  >
+    Start Meeting
+  </button>
+
+  <button
+    type="button"
+    data-meeting-action="cancel"
+    data-meeting-id="${meetingId}"
+  >
+    Cancel Meeting
+  </button>
+`;
 
         break;
 
@@ -7091,6 +7484,15 @@ async function loadMeetingDetails(
 
       let result;
 
+      if (action === "edit") {
+
+  await showMeetingEditForm(
+    selectedMeetingId
+  );
+
+  return;
+
+}
       if (action === "schedule") {
 
         result =
@@ -7212,11 +7614,17 @@ detailsContent.innerHTML = `
       </div>
 
       <div>
-        <strong>Organizer</strong>
-        <div>
-          ${meeting.organizerId || "—"}
-        </div>
-      </div>
+  <strong>Organizer</strong>
+  <div>
+    ${
+      organizerMap.get(
+        meeting.organizerId
+      ) ||
+      meeting.organizerId ||
+      "—"
+    }
+  </div>
+</div>
 
       <div>
         <strong>Description</strong>
@@ -21075,3 +21483,7 @@ window.showAddMeetingAttendeeForm = showAddMeetingAttendeeForm;
 window.updateMeetingAttendeeType = updateMeetingAttendeeType;
 window.hideAddMeetingAttendeeForm = hideAddMeetingAttendeeForm;
 window.saveMeetingAttendee = saveMeetingAttendee;
+window.showNewMeetingForm = showNewMeetingForm;
+window.cancelNewMeetingForm = cancelNewMeetingForm;
+window.createNewMeeting = createNewMeeting;
+window.saveEditedMeeting = saveEditedMeeting;

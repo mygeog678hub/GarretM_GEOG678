@@ -3729,9 +3729,193 @@ Version 5.6 RC3
 
     <div>
       <button
-        id="newMeetingBtn">
-        + New Meeting
-      </button>
+  id="newMeetingBtn"
+  onclick="showNewMeetingForm()"
+>
+  + New Meeting
+</button>
+    </div>
+
+  </div>
+
+    <!-- =====================================================
+       New Meeting Form
+       ===================================================== -->
+
+  <div
+    id="newMeetingForm"
+    class="dashboard-card"
+    style="display:none;"
+  >
+
+    <h3>New Meeting</h3>
+
+    <div class="form-group">
+
+      <label for="newMeetingTitle">
+        Title
+      </label>
+
+      <input
+        type="text"
+        id="newMeetingTitle"
+        maxlength="200"
+        placeholder="Meeting title"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingDescription">
+        Description
+      </label>
+
+      <textarea
+        id="newMeetingDescription"
+        maxlength="2000"
+        rows="4"
+        placeholder="Meeting description"
+      ></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingType">
+        Meeting Type
+      </label>
+
+      <select id="newMeetingType">
+
+        <option value="general">
+          General
+        </option>
+
+        <option value="roll_call">
+          Roll Call
+        </option>
+
+        <option value="shift_briefing">
+          Shift Briefing
+        </option>
+
+        <option value="training">
+          Training
+        </option>
+
+        <option value="incident_review">
+          Incident Review
+        </option>
+
+        <option value="client_meeting">
+          Client Meeting
+        </option>
+
+        <option value="safety">
+          Safety
+        </option>
+
+        <option value="performance">
+          Performance
+        </option>
+
+        <option value="other">
+          Other
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingStartTime">
+        Start
+      </label>
+
+      <input
+        type="datetime-local"
+        id="newMeetingStartTime"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingEndTime">
+        End
+      </label>
+
+      <input
+        type="datetime-local"
+        id="newMeetingEndTime"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingTimezone">
+        Timezone
+      </label>
+
+      <input
+        type="text"
+        id="newMeetingTimezone"
+        value="America/Chicago"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="newMeetingLocationType">
+        Location Type
+      </label>
+
+      <select id="newMeetingLocationType">
+
+        <option value="virtual">
+          Virtual
+        </option>
+
+        <option value="physical">
+          Physical
+        </option>
+
+        <option value="hybrid">
+          Hybrid
+        </option>
+
+      </select>
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <button
+  type="button"
+  id="createMeetingBtn"
+  onclick="createNewMeeting()"
+>
+  Create Draft
+</button>
+
+      <button
+  type="button"
+  id="cancelNewMeetingBtn"
+  onclick="cancelNewMeetingForm()"
+>
+  Cancel
+</button>
+
     </div>
 
   </div>
@@ -3787,6 +3971,191 @@ Version 5.6 RC3
         class="meeting-status-filter"
         data-status="cancelled">
         Cancelled
+      </button>
+
+    </div>
+
+  </div>
+
+    <!-- =====================================================
+       Edit Meeting Form
+       ===================================================== -->
+
+  <div
+    id="editMeetingForm"
+    class="dashboard-card"
+    style="display:none;"
+  >
+
+    <h3>Edit Meeting</h3>
+
+    <input
+      type="hidden"
+      id="editMeetingId"
+    >
+
+    <div class="form-group">
+
+      <label for="editMeetingTitle">
+        Title
+      </label>
+
+      <input
+        type="text"
+        id="editMeetingTitle"
+        maxlength="200"
+        placeholder="Meeting title"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingDescription">
+        Description
+      </label>
+
+      <textarea
+        id="editMeetingDescription"
+        maxlength="2000"
+        rows="4"
+        placeholder="Meeting description"
+      ></textarea>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingType">
+        Meeting Type
+      </label>
+
+      <select id="editMeetingType">
+
+        <option value="general">
+          General
+        </option>
+
+        <option value="roll_call">
+          Roll Call
+        </option>
+
+        <option value="shift_briefing">
+          Shift Briefing
+        </option>
+
+        <option value="training">
+          Training
+        </option>
+
+        <option value="incident_review">
+          Incident Review
+        </option>
+
+        <option value="client_meeting">
+          Client Meeting
+        </option>
+
+        <option value="safety">
+          Safety
+        </option>
+
+        <option value="performance">
+          Performance
+        </option>
+
+        <option value="other">
+          Other
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingStartTime">
+        Start
+      </label>
+
+      <input
+        type="datetime-local"
+        id="editMeetingStartTime"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingEndTime">
+        End
+      </label>
+
+      <input
+        type="datetime-local"
+        id="editMeetingEndTime"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingTimezone">
+        Timezone
+      </label>
+
+      <input
+        type="text"
+        id="editMeetingTimezone"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label for="editMeetingLocationType">
+        Location Type
+      </label>
+
+      <select id="editMeetingLocationType">
+
+        <option value="virtual">
+          Virtual
+        </option>
+
+        <option value="physical">
+          Physical
+        </option>
+
+        <option value="hybrid">
+          Hybrid
+        </option>
+
+      </select>
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        gap:12px;
+        flex-wrap:wrap;
+      "
+    >
+
+     <button
+  type="button"
+  id="saveEditedMeetingBtn"
+  onclick="saveEditedMeeting()"
+>
+        Save Changes
+      </button>
+
+      <button
+        type="button"
+        id="cancelEditMeetingBtn"
+      >
+        Cancel
       </button>
 
     </div>
