@@ -21,6 +21,9 @@ exports.createGoogleCalendarTestEvent =
 exports.createGoogleMeeting =
     calendarFunctions.createGoogleMeeting;
 
+exports.updateGoogleMeeting =
+    calendarFunctions.updateGoogleMeeting;
+
 exports.deleteGoogleMeeting =
     calendarFunctions.deleteGoogleMeeting;
 

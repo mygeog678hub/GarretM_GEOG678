@@ -399,26 +399,6 @@ async function createGoogleMeeting(
         "Google Meet is only available for virtual or hybrid meetings.",
     );
   }
-
-  // -------------------------
-  // Meeting Times
-  // -------------------------
-
-  if (
-    !meeting.startTime ||
-    !meeting.endTime
-  ) {
-    throw new Error(
-        "Meeting start and end times are required.",
-    );
-  }
-
-  const startDate =
-      meeting.startTime.toDate();
-
-  const endDate =
-      meeting.endTime.toDate();
-
   // -------------------------
   // Attendees
   // -------------------------
@@ -470,6 +450,25 @@ async function createGoogleMeeting(
       await getAuthenticatedClient(
           tenantId,
       );
+
+  // -------------------------
+  // Meeting Times
+  // -------------------------
+
+  if (
+    !meeting.startTime ||
+  !meeting.endTime
+  ) {
+    throw new Error(
+        "Meeting start and end times are required.",
+    );
+  }
+
+  const startDate =
+    meeting.startTime.toDate();
+
+  const endDate =
+    meeting.endTime.toDate();
 
   // -------------------------
   // Google Calendar Event
@@ -647,6 +646,247 @@ async function createGoogleMeeting(
     meetLink,
 
     conferenceId,
+
+  };
+}
+
+async function updateGoogleMeeting(
+    meetingId,
+    tenantId,
+    meetingData,
+) {
+  // -------------------------
+  // Load Meeting
+  // -------------------------
+
+  const meetingSnap =
+      await db
+          .collection("meetings")
+          .doc(meetingId)
+          .get();
+
+  if (!meetingSnap.exists) {
+    throw new Error(
+        "Meeting not found.",
+    );
+  }
+
+  const meeting =
+      meetingSnap.data();
+
+  const updatedMeeting = {
+
+    ...meeting,
+
+    ...meetingData,
+
+  };
+
+  // -------------------------
+  // Tenant Validation
+  // -------------------------
+
+  if (
+    meeting.tenantId !== tenantId
+  ) {
+    throw new Error(
+        "You do not have access to this meeting.",
+    );
+  }
+
+  // -------------------------
+  // Google Event
+  // -------------------------
+
+  if (
+    !meeting.googleEventId
+  ) {
+    throw new Error(
+        "Meeting does not have a Google Calendar event.",
+    );
+  }
+
+  // -------------------------
+  // Meeting Location
+  // -------------------------
+
+  if (
+    meeting.locationType !== "virtual" &&
+    meeting.locationType !== "hybrid"
+  ) {
+    throw new Error(
+        "Google Meet is only available for virtual or hybrid meetings.",
+    );
+  }
+
+  // -------------------------
+  // Meeting Times
+  // -------------------------
+
+  if (
+    !meeting.startTime ||
+    !meeting.endTime
+  ) {
+    throw new Error(
+        "Meeting start and end times are required.",
+    );
+  }
+
+  // -------------------------
+  // Attendees
+  // -------------------------
+
+  const attendeesSnap =
+      await db
+          .collection("meetings")
+          .doc(meetingId)
+          .collection("attendees")
+          .get();
+
+  const attendees =
+      attendeesSnap.docs
+          .map((attendeeDoc) => {
+            const attendee =
+                attendeeDoc.data();
+
+            if (
+              !attendee.email ||
+              typeof attendee.email !== "string"
+            ) {
+              return null;
+            }
+
+            return {
+              email:
+                  attendee.email.trim(),
+
+              displayName:
+                  attendee.name ||
+                  undefined,
+            };
+          })
+          .filter(Boolean);
+
+  // -------------------------
+  // Google Authentication
+  // -------------------------
+
+  const oauth2Client =
+      await getAuthenticatedClient(
+          tenantId,
+      );
+
+  // -------------------------
+  // Google Calendar Event
+  // -------------------------
+
+  const event = {
+
+    summary:
+        updatedMeeting.title,
+
+    description:
+        updatedMeeting.description ||
+        "",
+
+    start: {
+
+      dateTime:
+    new Date(
+        updatedMeeting.startTime,
+    ).toISOString(),
+
+      timeZone:
+            updatedMeeting.timezone,
+
+    },
+
+    end: {
+
+      dateTime:
+    new Date(
+        updatedMeeting.endTime,
+    ).toISOString(),
+
+      timeZone:
+            updatedMeeting.timezone,
+
+    },
+
+    attendees,
+
+  };
+
+  // -------------------------
+  // Google Calendar ID
+  // -------------------------
+
+  const googleCalendarId =
+      meeting.googleCalendarId ||
+      "primary";
+
+  // -------------------------
+  // Update Google Event
+  // -------------------------
+
+  const updatedEvent =
+      await updateCalendarEvent(
+
+          oauth2Client,
+
+          meeting.googleEventId,
+
+          event,
+
+          googleCalendarId,
+
+      );
+
+  console.log(
+      "updateGoogleMeeting diagnostics:",
+      JSON.stringify({
+        meetingId,
+        timezone: meeting.timezone,
+        firestoreStartTime:
+          meeting.startTime?.toDate?.()?.toISOString?.() ||
+          null,
+        firestoreEndTime:
+          meeting.endTime?.toDate?.()?.toISOString?.() ||
+          null,
+        googleEventStart:
+          event.start,
+        googleEventEnd:
+          event.end,
+        updatedEventStart:
+          updatedEvent.start || null,
+        updatedEventEnd:
+          updatedEvent.end || null,
+      }, null, 2),
+  );
+
+  // -------------------------
+  // Return Result
+  // -------------------------
+
+  return {
+
+    success: true,
+
+    eventId:
+        updatedEvent.id ||
+        meeting.googleEventId,
+
+    calendarId:
+        googleCalendarId,
+
+    meetLink:
+        updatedEvent.hangoutLink ||
+        meeting.meetLink ||
+        null,
+
+    conferenceId:
+        meeting.conferenceId ||
+        null,
 
   };
 }
@@ -865,6 +1105,92 @@ onCall(
             "internal",
             error.message ||
             "Unable to create Google meeting.",
+        );
+      }
+    },
+);
+
+exports.updateGoogleMeeting =
+onCall(
+    {
+      secrets: [
+        googleClientId,
+        googleClientSecret,
+        googleRedirectUri,
+      ],
+    },
+    async (request) => {
+      if (!request.auth) {
+        throw new HttpsError(
+            "unauthenticated",
+            "Authentication required.",
+        );
+      }
+
+      const uid =
+          request.auth.uid;
+
+      const userDoc =
+          await db
+              .collection("users")
+              .doc(uid)
+              .get();
+
+      if (!userDoc.exists) {
+        throw new HttpsError(
+            "permission-denied",
+            "User profile not found.",
+        );
+      }
+
+      const tenantId =
+          userDoc.data().tenantId;
+
+      if (!tenantId) {
+        throw new HttpsError(
+            "failed-precondition",
+            "User is not assigned to a tenant.",
+        );
+      }
+
+      const meetingId =
+          request.data?.meetingId;
+
+      if (
+        typeof meetingId !== "string" ||
+        !meetingId.trim()
+      ) {
+        throw new HttpsError(
+            "invalid-argument",
+            "Meeting ID is required.",
+        );
+      }
+
+      try {
+        return await updateGoogleMeeting(
+            meetingId,
+            tenantId,
+            request.data,
+        );
+      } catch (error) {
+        console.error(
+            "updateGoogleMeeting failed:",
+            error,
+        );
+
+        console.error(
+            "Google response:",
+            JSON.stringify(
+                error.response?.data,
+                null,
+                2,
+            ),
+        );
+
+        throw new HttpsError(
+            "internal",
+            error.message ||
+            "Unable to update Google meeting.",
         );
       }
     },

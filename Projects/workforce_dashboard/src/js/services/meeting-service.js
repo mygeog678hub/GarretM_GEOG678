@@ -337,9 +337,11 @@ export async function createMeeting({
             organizerId:
                 currentUserProfile.uid,
 
-            startTime,
+           startTime:
+                startTime.toDate().toISOString(),
 
-            endTime,
+            endTime:
+                endTime.toDate().toISOString(),
 
             timezone:
                 timezone.trim(),
@@ -1569,14 +1571,70 @@ export async function updateMeeting({
 
         };
 
-        // -------------------------
-        // Firestore
-        // -------------------------
+       // -------------------------
+// Google Calendar
+// -------------------------
 
-        await updateDoc(
-            meetingRef,
-            updateData
+if (
+    meeting.status === "scheduled" &&
+    meeting.googleEventId
+) {
+
+    const functions =
+        getFunctions(app);
+
+    const updateGoogleMeeting =
+        httpsCallable(
+            functions,
+            "updateGoogleMeeting"
         );
+
+    const googleResult =
+    await updateGoogleMeeting({
+
+        meetingId,
+
+        title:
+            title.trim(),
+
+        description:
+            description.trim(),
+
+        startTime,
+
+        endTime,
+
+        timezone:
+            timezone.trim(),
+
+        locationType
+
+    });
+
+    if (
+        !googleResult.data ||
+        !googleResult.data.success
+    ) {
+
+        return {
+            success: false,
+            message:
+                googleResult.data?.message ||
+                "Unable to update Google Calendar meeting."
+        };
+
+    }
+
+}
+
+// -------------------------
+// Firestore
+// -------------------------
+
+await updateDoc(
+    meetingRef,
+    updateData
+);
 
         // -------------------------
         // Activity Log
