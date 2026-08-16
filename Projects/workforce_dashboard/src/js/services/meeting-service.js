@@ -337,11 +337,11 @@ export async function createMeeting({
             organizerId:
                 currentUserProfile.uid,
 
-           startTime:
-                startTime.toDate().toISOString(),
+          startTime:
+    startDate,
 
-            endTime:
-                endTime.toDate().toISOString(),
+endTime:
+    endDate,
 
             timezone:
                 timezone.trim(),
@@ -1571,7 +1571,7 @@ export async function updateMeeting({
 
         };
 
-       // -------------------------
+// -------------------------
 // Google Calendar
 // -------------------------
 
@@ -1583,33 +1583,71 @@ if (
     const functions =
         getFunctions(app);
 
-    const updateGoogleMeeting =
-        httpsCallable(
-            functions,
-            "updateGoogleMeeting"
-        );
+    let googleResult;
 
-    const googleResult =
-    await updateGoogleMeeting({
+    if (
+        locationType === "physical"
+    ) {
 
-        meetingId,
+        const updateGoogleCalendarEvent =
+            httpsCallable(
+                functions,
+                "updateGoogleCalendarEvent"
+            );
 
-        title:
-            title.trim(),
+        googleResult =
+            await updateGoogleCalendarEvent({
 
-        description:
-            description.trim(),
+                meetingId,
 
-        startTime,
+                title:
+                    title.trim(),
 
-        endTime,
+                description:
+                    description.trim(),
 
-        timezone:
-            timezone.trim(),
+                startTime,
 
-        locationType
+                endTime,
 
-    });
+                timezone:
+                    timezone.trim(),
+
+                locationType
+
+            });
+
+    } else {
+
+        const updateGoogleMeeting =
+            httpsCallable(
+                functions,
+                "updateGoogleMeeting"
+            );
+
+        googleResult =
+            await updateGoogleMeeting({
+
+                meetingId,
+
+                title:
+                    title.trim(),
+
+                description:
+                    description.trim(),
+
+                startTime,
+
+                endTime,
+
+                timezone:
+                    timezone.trim(),
+
+                locationType
+
+            });
+
+    }
 
     if (
         !googleResult.data ||
@@ -3199,23 +3237,44 @@ export async function scheduleMeeting({
 
         }
 
-       // -------------------------
-// Create Google Meeting
+// -------------------------
+// Google Calendar / Meet
 // -------------------------
 
 const functions =
     getFunctions(app);
 
-const createGoogleMeeting =
-    httpsCallable(
-        functions,
-        "createGoogleMeeting"
-    );
+let googleResult;
 
-const googleResult =
-    await createGoogleMeeting({
-        meetingId
-    });
+if (
+    meeting.locationType === "physical"
+) {
+
+    const createGoogleCalendarEvent =
+        httpsCallable(
+            functions,
+            "createGoogleCalendarEvent"
+        );
+
+    googleResult =
+        await createGoogleCalendarEvent({
+            meetingId
+        });
+
+} else {
+
+    const createGoogleMeeting =
+        httpsCallable(
+            functions,
+            "createGoogleMeeting"
+        );
+
+    googleResult =
+        await createGoogleMeeting({
+            meetingId
+        });
+
+}
 
 if (
     !googleResult.data ||
@@ -3226,7 +3285,7 @@ if (
         success: false,
         message:
             googleResult.data?.message ||
-            "Unable to create Google Meet."
+            "Unable to create Google Calendar event."
     };
 
 }
@@ -3456,23 +3515,43 @@ export async function cancelMeeting({
 
         }
 
-        // -------------------------
+// -------------------------
 // Cancel Google Meeting
 // -------------------------
-
 const functions =
     getFunctions(app);
 
-const deleteGoogleMeeting =
+let googleResult;
+
+if (
+    meeting.locationType === "physical"
+) {
+
+    const deletePhysicalGoogleCalendarEvent =
     httpsCallable(
         functions,
-        "deleteGoogleMeeting"
+        "deletePhysicalGoogleCalendarEvent"
     );
 
-const googleResult =
-    await deleteGoogleMeeting({
+    googleResult =
+    await deletePhysicalGoogleCalendarEvent({
         meetingId
     });
+
+} else {
+
+    const deleteGoogleMeeting =
+        httpsCallable(
+            functions,
+            "deleteGoogleMeeting"
+        );
+
+    googleResult =
+        await deleteGoogleMeeting({
+            meetingId
+        });
+
+}
 
 if (
     !googleResult.data ||
@@ -3482,7 +3561,7 @@ if (
         success: false,
         message:
             googleResult.data?.message ||
-            "Unable to cancel Google meeting."
+            "Unable to cancel Google Calendar event."
     };
 }
 
