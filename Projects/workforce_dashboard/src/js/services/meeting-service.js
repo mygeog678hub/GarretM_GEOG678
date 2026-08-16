@@ -110,7 +110,8 @@ export async function createMeeting({
     startTime,
     endTime,
     timezone,
-    locationType
+    locationType,
+    location = ""
 
 }) {
 
@@ -337,11 +338,11 @@ export async function createMeeting({
             organizerId:
                 currentUserProfile.uid,
 
-          startTime:
-    startDate,
+            startTime:
+                startDate,
 
-endTime:
-    endDate,
+            endTime:
+                endDate,
 
             timezone:
                 timezone.trim(),
@@ -350,6 +351,11 @@ endTime:
                 "draft",
 
             locationType,
+
+            location:
+                typeof location === "string"
+                    ? location.trim()
+                    : "",
 
             googleEventId:
                 null,
@@ -1251,7 +1257,8 @@ export async function updateMeeting({
     startTime,
     endTime,
     timezone,
-    locationType
+    locationType,
+    location = ""
 
 }) {
 
@@ -1562,6 +1569,10 @@ export async function updateMeeting({
                 timezone.trim(),
 
             locationType,
+            location:
+                typeof location === "string"
+                    ? location.trim()
+                    : "",
 
             updatedAt:
                 serverTimestamp(),
@@ -1613,9 +1624,14 @@ if (
                 timezone:
                     timezone.trim(),
 
-                locationType
+                locationType,
 
-            });
+                location:
+                    typeof location === "string"
+                        ? location.trim()
+                        : ""
+
+                });
 
     } else {
 
@@ -1643,9 +1659,14 @@ if (
                 timezone:
                     timezone.trim(),
 
-                locationType
+              locationType,
 
-            });
+                location:
+                    typeof location === "string"
+                        ? location.trim()
+                        : ""
+
+                });
 
     }
 

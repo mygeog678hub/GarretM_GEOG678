@@ -1276,6 +1276,10 @@ async function createGoogleCalendarEvent(
         meeting.description ||
         "",
 
+    location:
+      meeting.location ||
+      "",
+
     start: {
       dateTime:
           startDate.toISOString(),
@@ -1681,6 +1685,10 @@ async function updateGoogleCalendarEvent(
     description:
         updatedMeeting.description ||
         "",
+
+    location:
+    updatedMeeting.location ||
+    "",
 
     start: {
       dateTime:

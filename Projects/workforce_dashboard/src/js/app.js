@@ -1054,6 +1054,25 @@ function startCheckpointListener() {
 
 }
 
+document
+    .getElementById(
+        "editMeetingLocationType"
+    )
+    ?.addEventListener(
+        "change",
+        updateEditMeetingLocationVisibility
+    );
+
+document
+    .getElementById(
+        "newMeetingLocationType"
+    )
+    ?.addEventListener(
+        "change",
+        updateNewMeetingLocationVisibility
+    );
+    updateNewMeetingLocationVisibility();
+
 function hideAllPages() {
 
     document.querySelectorAll(
@@ -6750,6 +6769,36 @@ function showNewMeetingForm() {
     return;
   }
 
+  document.getElementById(
+    "newMeetingTitle"
+  ).value = "";
+
+  document.getElementById(
+    "newMeetingDescription"
+  ).value = "";
+
+  document.getElementById(
+    "newMeetingType"
+  ).value = "general";
+
+  document.getElementById(
+    "newMeetingStartTime"
+  ).value = "";
+
+  document.getElementById(
+    "newMeetingEndTime"
+  ).value = "";
+
+  document.getElementById(
+    "newMeetingLocationType"
+  ).value = "virtual";
+
+  document.getElementById(
+    "newMeetingLocation"
+  ).value = "";
+
+  updateNewMeetingLocationVisibility();
+
   form.style.display = "block";
 
 }
@@ -6892,10 +6941,17 @@ async function showMeetingEditForm(meetingId) {
   ).value =
     meeting.timezone || "";
 
-  document.getElementById(
+ document.getElementById(
     "editMeetingLocationType"
-  ).value =
+).value =
     meeting.locationType || "virtual";
+
+document.getElementById(
+    "editMeetingLocation"
+).value =
+    meeting.location || "";
+
+updateEditMeetingLocationVisibility();
 
   form.style.display =
     "block";
@@ -6963,7 +7019,12 @@ async function saveEditedMeeting() {
       startTime,
       endTime,
       timezone,
-      locationType
+      locationType,
+
+location:
+    document.getElementById(
+        "editMeetingLocation"
+    )?.value || ""
 
     });
 
@@ -6989,6 +7050,31 @@ async function saveEditedMeeting() {
     meetingId
   );
 
+}
+
+function updateEditMeetingLocationVisibility() {
+
+  const locationType =
+      document.getElementById(
+          "editMeetingLocationType"
+      )?.value;
+
+  const locationGroup =
+      document
+          .getElementById(
+              "editMeetingLocation"
+          )
+          ?.closest(".form-group");
+
+  if (!locationGroup) {
+    return;
+  }
+
+  locationGroup.style.display =
+      locationType === "physical" ||
+      locationType === "hybrid"
+          ? "block"
+          : "none";
 }
 
 async function createNewMeeting() {
@@ -7047,9 +7133,13 @@ async function createNewMeeting() {
       startTime,
       endTime,
       timezone,
-      locationType
+      locationType,
+        location:
+            document.getElementById(
+                "newMeetingLocation"
+            )?.value || ""
 
-    });
+            });
 
   if (!result || !result.success) {
 
@@ -7065,7 +7155,7 @@ async function createNewMeeting() {
   alert(
     "Meeting draft created successfully."
   );
-
+  
   document.getElementById(
     "newMeetingForm"
   ).style.display = "none";
@@ -7245,7 +7335,7 @@ function renderMeetings(
             </td>
 
             <td>
-              ${meeting.locationType || "—"}
+              ${meeting.location || "—"}
             </td>
 
             <td>
@@ -7584,7 +7674,7 @@ detailsContent.innerHTML = `
       <div>
         <strong>Location</strong>
         <div>
-          ${meeting.locationType || "—"}
+          ${meeting.location || "—"}
         </div>
       </div>
 
@@ -8739,6 +8829,31 @@ function formatMeetingDateTime(
     }
   );
 
+}
+
+function updateNewMeetingLocationVisibility() {
+
+  const locationType =
+      document.getElementById(
+          "newMeetingLocationType"
+      )?.value;
+
+  const locationGroup =
+      document
+          .getElementById(
+              "newMeetingLocation"
+          )
+          ?.closest(".form-group");
+
+  if (!locationGroup) {
+    return;
+  }
+
+  locationGroup.style.display =
+      locationType === "physical" ||
+      locationType === "hybrid"
+          ? "block"
+          : "none";
 }
 
 window.showPatrolExecution =
