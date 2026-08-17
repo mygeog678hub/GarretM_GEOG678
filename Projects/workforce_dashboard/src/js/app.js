@@ -7913,6 +7913,50 @@ async function handleMeetingJoin(
 
 }
 
+function formatMeetingResponseStatus(
+  status
+) {
+
+  switch (status) {
+
+    case "accepted":
+      return "Accepted";
+
+    case "declined":
+      return "Declined";
+
+    case "pending":
+      return "Pending";
+
+    default:
+      return status || "Pending";
+
+  }
+
+}
+
+function formatMeetingAttendanceStatus(
+  status
+) {
+
+  switch (status) {
+
+    case "attended":
+      return "Attended";
+
+    case "left":
+      return "Left";
+
+    case "not_attended":
+      return "Not Attended";
+
+    default:
+      return status || "Not Attended";
+
+  }
+
+}
+
 async function loadMeetingDetails(
   meetingId
 ) {
@@ -8548,6 +8592,46 @@ detailsContent.innerHTML = `
     ${
       attendee.role ||
       "—"
+    }
+  </div>
+
+    <div>
+    <strong>Response:</strong>
+    ${
+      formatMeetingResponseStatus(
+  attendee.responseStatus
+)
+    }
+  </div>
+
+  <div>
+    <strong>Attendance:</strong>
+    ${
+      formatMeetingAttendanceStatus(
+  attendee.attendanceStatus
+)
+    }
+  </div>
+
+  <div>
+    <strong>Joined:</strong>
+    ${
+      attendee.joinedAt?.toDate
+        ? attendee.joinedAt
+            .toDate()
+            .toLocaleString()
+        : "—"
+    }
+  </div>
+
+  <div>
+    <strong>Left:</strong>
+    ${
+      attendee.leftAt?.toDate
+        ? attendee.leftAt
+            .toDate()
+            .toLocaleString()
+        : "—"
     }
   </div>
 
