@@ -7268,6 +7268,7 @@ renderMeetings(
   filteredMeetings,
   meetingOrganizerMap
 );
+await renderUpcomingMeeting();
 
 }
 
@@ -7466,6 +7467,253 @@ function renderMeetings(
 
       }
     ).join("");
+
+}
+
+async function renderUpcomingMeeting() {
+
+  const container =
+    document.getElementById(
+      "upcomingMeetingContent"
+    );
+
+  if (!container) {
+    return;
+  }
+
+  const now =
+    new Date();
+
+  const upcomingMeetings =
+    allMeetings
+      .map(meeting => {
+
+        const startDate =
+          meeting.startTime?.toDate
+            ? meeting.startTime.toDate()
+            : new Date(
+                meeting.startTime
+              );
+
+        return {
+          meeting,
+          startDate
+        };
+
+      })
+      .filter(item => {
+
+        return (
+          item.meeting.status === "scheduled" &&
+          !Number.isNaN(
+            item.startDate.getTime()
+          ) &&
+          item.startDate > now
+        );
+
+      })
+      .sort(
+        (a, b) =>
+          a.startDate - b.startDate
+      );
+
+  if (!upcomingMeetings.length) {
+
+    container.innerHTML = `
+      <p>
+        No upcoming meetings scheduled.
+      </p>
+    `;
+
+    return;
+
+  }
+
+  const {
+    meeting,
+    startDate
+  } =
+    upcomingMeetings[0];
+
+  const endDate =
+    meeting.endTime?.toDate
+      ? meeting.endTime.toDate()
+      : new Date(
+          meeting.endTime
+        );
+
+  const organizerName =
+    meetingOrganizerMap.get(
+      meeting.organizerId
+    ) ||
+    meeting.organizerId ||
+    "—";
+
+  const attendeesResult =
+    await getMeetingAttendees({
+      meetingId: meeting.id
+    });
+
+  const attendees =
+    attendeesResult?.success
+      ? attendeesResult.attendees || []
+      : [];
+
+  const dateText =
+    startDate.toLocaleDateString(
+      [],
+      {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }
+    );
+
+  const startText =
+    startDate.toLocaleTimeString(
+      [],
+      {
+        hour: "numeric",
+        minute: "2-digit"
+      }
+    );
+
+  const endText =
+    Number.isNaN(
+      endDate.getTime()
+    )
+      ? "—"
+      : endDate.toLocaleTimeString(
+          [],
+          {
+            hour: "numeric",
+            minute: "2-digit"
+          }
+        );
+
+  const attendeeHtml =
+    attendees.length
+      ? `
+        <ul>
+          ${attendees.map(
+            attendee => `
+              <li>
+                ${
+                  attendee.name ||
+                  attendee.displayName ||
+                  attendee.email ||
+                  "Unnamed attendee"
+                }
+              </li>
+            `
+          ).join("")}
+        </ul>
+      `
+      : `
+        <p>
+          No attendees listed.
+        </p>
+      `;
+
+  const joinButton =
+    meeting.meetLink
+      ? `
+        <a
+          href="${meeting.meetLink}"
+          target="_blank"
+          rel="noopener"
+          class="button"
+        >
+          Join Google Meet
+        </a>
+      `
+      : "";
+
+  container.innerHTML = `
+    <div class="meeting-upcoming-details">
+
+      <h3>
+        ${meeting.title || "Untitled Meeting"}
+      </h3>
+
+      <p>
+        <strong>Status:</strong>
+        ${meeting.status || "—"}
+      </p>
+
+      <p>
+        <strong>Meeting Type:</strong>
+        ${meeting.meetingType || "—"}
+      </p>
+
+      <p>
+        <strong>Date:</strong>
+        ${dateText}
+      </p>
+
+      <p>
+        <strong>Time:</strong>
+        ${startText} - ${endText}
+      </p>
+
+      <p>
+        <strong>Timezone:</strong>
+        ${meeting.timezone || "—"}
+      </p>
+
+      <p>
+        <strong>Organizer:</strong>
+        ${organizerName}
+      </p>
+
+      <p>
+        <strong>Location Type:</strong>
+        ${meeting.locationType || "—"}
+      </p>
+
+      <p>
+        <strong>Location:</strong>
+        ${meeting.location || "—"}
+      </p>
+
+      <div>
+        <strong>Description:</strong>
+
+        <p>
+          ${meeting.description || "No description provided."}
+        </p>
+      </div>
+
+      <div>
+        <strong>Attendees:</strong>
+
+        ${attendeeHtml}
+
+      </div>
+
+      <div
+        style="
+          display:flex;
+          gap:12px;
+          flex-wrap:wrap;
+          margin-top:16px;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="loadMeetingDetails('${meeting.id}')"
+        >
+          View Details
+        </button>
+
+        ${joinButton}
+
+      </div>
+
+    </div>
+  `;
 
 }
 

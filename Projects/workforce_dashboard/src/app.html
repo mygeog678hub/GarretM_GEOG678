@@ -3933,64 +3933,7 @@ Version 5.6 RC3
 
     </div>
 
-  </div>
-
-
-  <!-- =====================================================
-       Meeting Filters
-       ===================================================== -->
-
-  <div class="dashboard-card">
-
-    <h3>Meeting Status</h3>
-
-    <div class="meeting-status-filters">
-
-      <button
-        type="button"
-        class="meeting-status-filter active"
-        data-status="all">
-        All
-      </button>
-
-      <button
-        type="button"
-        class="meeting-status-filter"
-        data-status="draft">
-        Draft
-      </button>
-
-      <button
-        type="button"
-        class="meeting-status-filter"
-        data-status="scheduled">
-        Scheduled
-      </button>
-
-      <button
-        type="button"
-        class="meeting-status-filter"
-        data-status="in_progress">
-        In Progress
-      </button>
-
-      <button
-        type="button"
-        class="meeting-status-filter"
-        data-status="completed">
-        Completed
-      </button>
-
-      <button
-        type="button"
-        class="meeting-status-filter"
-        data-status="cancelled">
-        Cancelled
-      </button>
-
-    </div>
-
-  </div>
+  </div>  
 
     <!-- =====================================================
        Edit Meeting Form
@@ -4194,50 +4137,125 @@ Version 5.6 RC3
   </div>
 
 
-  <!-- =====================================================
-       Upcoming Meetings
+<!-- =====================================================
+     Upcoming Meeting
+     ===================================================== -->
+
+<div class="dashboard-card">
+
+  <h3>Upcoming Meeting</h3>
+
+  <div id="upcomingMeetingContent">
+
+    <p>
+      No upcoming meetings scheduled.
+    </p>
+
+  </div>
+
+</div>
+
+<!-- =====================================================
+       Meeting Filters
        ===================================================== -->
 
   <div class="dashboard-card">
 
-    <h3>Upcoming Meetings</h3>
+    <h3>Meeting Status</h3>
 
-    <div class="table-responsive">
+    <div class="meeting-status-filters">
 
-      <table class="data-table">
+      <button
+        type="button"
+        class="meeting-status-filter active"
+        data-status="all">
+        All
+      </button>
 
-        <thead>
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="draft">
+        Draft
+      </button>
 
-          <tr>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Meeting</th>
-            <th>Type</th>
-            <th>Organizer</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="scheduled">
+        Scheduled
+      </button>
 
-        </thead>
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="in_progress">
+        In Progress
+      </button>
 
-        <tbody id="meetingsTableBody">
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="completed">
+        Completed
+      </button>
 
-          <tr>
-
-            <td colspan="8">
-              No meetings to display.
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
+      <button
+        type="button"
+        class="meeting-status-filter"
+        data-status="cancelled">
+        Cancelled
+      </button>
 
     </div>
 
   </div>
+
+
+<!-- =====================================================
+     All Meetings
+     ===================================================== -->
+
+<div class="dashboard-card">
+
+  <h3>All Meetings</h3>
+
+  <div class="table-responsive">
+
+    <table class="data-table">
+
+      <thead>
+
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Meeting</th>
+          <th>Type</th>
+          <th>Organizer</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="meetingsTableBody">
+
+        <tr>
+
+          <td colspan="8">
+            No meetings to display.
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
 
 
   <!-- =====================================================
