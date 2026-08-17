@@ -140,6 +140,8 @@ import {
   getMyMeetingParticipation,
   getMeetingAttendeeUsers,
   respondToMeeting,
+  markAttendeeJoined,
+  markAttendeeLeft,
   addAttendee,
   updateAttendee,
   removeAttendee,
@@ -7686,19 +7688,20 @@ const participation =
         </p>
       `;
 
-  const joinButton =
-    meeting.meetLink
-      ? `
-        <a
-          href="${meeting.meetLink}"
-          target="_blank"
-          rel="noopener"
-          class="button"
-        >
-          Join Google Meet
-        </a>
-      `
-      : "";
+ const joinButton =
+  meeting.meetLink
+    ? `
+      <button
+        type="button"
+        class="button"
+        data-meeting-join="true"
+        data-meeting-id="${meeting.id}"
+        data-meeting-url="${meeting.meetLink}"
+      >
+        Join Google Meet
+      </button>
+    `
+    : "";
 
   container.innerHTML = `
     <div class="meeting-upcoming-details">
@@ -7789,6 +7792,27 @@ const participation =
 
   container.onclick = async function (event) {
 
+            const joinButton =
+      event.target.closest(
+        "[data-meeting-join]"
+      );
+
+    if (joinButton) {
+
+      await handleMeetingJoin(
+
+        joinButton.dataset.meetingId,
+
+        joinButton.dataset.meetingUrl,
+
+        joinButton
+
+      );
+
+      return;
+
+    }
+
     const button =
       event.target.closest(
         "[data-meeting-response]"
@@ -7839,6 +7863,53 @@ const participation =
    await renderUpcomingMeeting();
 
   };
+
+}
+
+async function handleMeetingJoin(
+  meetingId,
+  meetingUrl,
+  button
+) {
+
+  if (
+    !meetingId ||
+    !meetingUrl
+  ) {
+    return;
+  }
+
+  if (button) {
+    button.disabled = true;
+  }
+
+  const result =
+    await markAttendeeJoined({
+
+      meetingId
+
+    });
+
+  if (!result.success) {
+
+    alert(
+      result.message ||
+      "Unable to record meeting attendance."
+    );
+
+    if (button) {
+      button.disabled = false;
+    }
+
+    return;
+
+  }
+
+  window.open(
+    meetingUrl,
+    "_blank",
+    "noopener"
+  );
 
 }
 
@@ -7910,6 +7981,17 @@ const organizerMap =
     attendeesResult.success
       ? attendeesResult.attendees || []
       : [];
+
+        const participationResult =
+    await getMyMeetingParticipation({
+      meetingId
+    });
+
+  const participation =
+    participationResult?.success &&
+    participationResult.isAttendee
+      ? participationResult.participation
+      : null;
 
         // --------------------------------------------------
   // Meeting Lifecycle Actions
@@ -7988,7 +8070,7 @@ const organizerMap =
 
         break;
 
-      case "in_progress":
+            case "in_progress":
 
         actionsHtml = `
           <button
@@ -7998,6 +8080,21 @@ const organizerMap =
           >
             Complete Meeting
           </button>
+
+          ${
+            participation &&
+            participation.attendanceStatus === "attended"
+              ? `
+                <button
+                  type="button"
+                  data-meeting-action="leave"
+                  data-meeting-id="${meetingId}"
+                >
+                  Leave Meeting
+                </button>
+              `
+              : ""
+          }
         `;
 
         break;
@@ -8107,6 +8204,16 @@ const organizerMap =
 
       }
 
+            else if (action === "leave") {
+
+        result =
+          await markAttendeeLeft({
+            meetingId:
+              selectedMeetingId
+          });
+
+      }
+
       else {
         return;
       }
@@ -8207,21 +8314,30 @@ detailsContent.innerHTML = `
         </div>
       </div>
 
-      <div>
-        <strong>Google Meet</strong>
-        <div>
-          ${
-            meeting.meetLink
-              ? `<a
-                   href="${meeting.meetLink}"
-                   target="_blank"
-                   rel="noopener">
-                   Join Google Meet
-                 </a>`
-              : "Not scheduled"
-          }
-        </div>
-      </div>
+     <div>
+  <strong>Google Meet</strong>
+
+  <div>
+
+    ${
+      meeting.meetLink
+        ? `
+          <button
+            type="button"
+            class="button"
+            data-meeting-join="true"
+            data-meeting-id="${meeting.id}"
+            data-meeting-url="${meeting.meetLink}"
+          >
+            Join Google Meet
+          </button>
+        `
+        : "Not scheduled"
+    }
+
+  </div>
+
+</div>
 
     </div>
 
@@ -8482,6 +8598,29 @@ detailsContent.innerHTML = `
 
       </div>
   `;
+
+    detailsContent.onclick = async function (event) {
+
+    const joinButton =
+      event.target.closest(
+        "[data-meeting-join]"
+      );
+
+    if (!joinButton) {
+      return;
+    }
+
+    await handleMeetingJoin(
+
+      joinButton.dataset.meetingId,
+
+      joinButton.dataset.meetingUrl,
+
+      joinButton
+
+    );
+
+  };
 
   
 

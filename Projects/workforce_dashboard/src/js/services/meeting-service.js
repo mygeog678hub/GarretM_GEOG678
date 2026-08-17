@@ -3549,6 +3549,610 @@ export async function respondToMeeting({
 }
 
 /*********************************************************************
+ * Mark Attendee Joined
+ *********************************************************************/
+
+export async function markAttendeeJoined({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "in_progress"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendance can only be recorded for an in-progress meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Current User Attendee
+        // -------------------------
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeeQuery =
+            query(
+                attendeesRef,
+                where(
+                    "userId",
+                    "==",
+                    currentUserProfile.uid
+                )
+            );
+
+        const attendeeSnap =
+            await getDocs(
+                attendeeQuery
+            );
+
+        if (attendeeSnap.empty) {
+
+            return {
+                success: false,
+                message:
+                    "You are not an internal attendee of this meeting."
+            };
+
+        }
+
+        if (attendeeSnap.size > 1) {
+
+            return {
+                success: false,
+                message:
+                    "Multiple attendee records were found for this user."
+            };
+
+        }
+
+        const attendeeDoc =
+            attendeeSnap.docs[0];
+
+        const attendee =
+            attendeeDoc.data();
+
+        // -------------------------
+        // Attendee Type
+        // -------------------------
+
+        if (
+            attendee.attendeeType !==
+            "internal"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only internal attendees can record attendance."
+            };
+
+        }
+
+        // -------------------------
+        // Response Validation
+        // -------------------------
+
+        if (
+            attendee.responseStatus !==
+            "accepted"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You must accept the meeting before joining."
+            };
+
+        }
+
+        // -------------------------
+        // Attendance State
+        // -------------------------
+
+        if (
+            attendee.attendanceStatus ===
+            "attended"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendance has already been recorded."
+            };
+
+        }
+
+        // -------------------------
+        // Record Attendance
+        // -------------------------
+
+        await updateDoc(
+            attendeeDoc.ref,
+            {
+
+                attendanceStatus:
+                    "attended",
+
+                joinedAt:
+                    serverTimestamp()
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_ATTENDEE_JOINED",
+
+            `${userName} joined meeting "${meeting.title}".`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                attendeeId:
+                    attendeeDoc.id
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "markAttendeeJoined:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to record meeting attendance."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Mark Attendee Left
+ *********************************************************************/
+
+export async function markAttendeeLeft({
+
+    meetingId
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "in_progress" &&
+            meeting.status !== "completed"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendance cannot be completed in the current meeting state."
+            };
+
+        }
+
+        // -------------------------
+        // Current User Attendee
+        // -------------------------
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeeQuery =
+            query(
+                attendeesRef,
+                where(
+                    "userId",
+                    "==",
+                    currentUserProfile.uid
+                )
+            );
+
+        const attendeeSnap =
+            await getDocs(
+                attendeeQuery
+            );
+
+        if (attendeeSnap.empty) {
+
+            return {
+                success: false,
+                message:
+                    "You are not an internal attendee of this meeting."
+            };
+
+        }
+
+        if (attendeeSnap.size > 1) {
+
+            return {
+                success: false,
+                message:
+                    "Multiple attendee records were found for this user."
+            };
+
+        }
+
+        const attendeeDoc =
+            attendeeSnap.docs[0];
+
+        const attendee =
+            attendeeDoc.data();
+
+        // -------------------------
+        // Attendee Type
+        // -------------------------
+
+        if (
+            attendee.attendeeType !==
+            "internal"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only internal attendees can record attendance."
+            };
+
+        }
+
+        // -------------------------
+        // Attendance State
+        // -------------------------
+
+        if (
+            attendee.attendanceStatus !==
+            "attended"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendance has not been recorded for this attendee."
+            };
+
+        }
+
+        if (
+            attendee.leftAt
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Attendance has already been ended."
+            };
+
+        }
+
+        // -------------------------
+        // Record Departure
+        // -------------------------
+
+        await updateDoc(
+            attendeeDoc.ref,
+            {
+
+                attendanceStatus:
+                    "left",
+
+                leftAt:
+                    serverTimestamp()
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_ATTENDEE_LEFT",
+
+            `${userName} left meeting "${meeting.title}".`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                attendeeId:
+                    attendeeDoc.id
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "markAttendeeLeft:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to record meeting departure."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
  * Schedule Meeting
  *********************************************************************/
 
