@@ -8559,6 +8559,99 @@ detailsContent.innerHTML = `
         </div>
 
 
+                ${
+          attendeesResult.success && attendees.length
+            ? `
+              <div
+                class="meeting-attendance-summary"
+                style="
+                  margin-top:16px;
+                  padding:16px;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:12px;
+                "
+              >
+                <strong>Attendance Summary</strong>
+
+                <div
+                  style="
+                    display:flex;
+                    gap:20px;
+                    flex-wrap:wrap;
+                    margin-top:10px;
+                  "
+                >
+                  <div>
+                    <strong>${attendees.length}</strong>
+                    <div>Total</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.responseStatus === "accepted"
+                        ).length
+                      }
+                    </strong>
+                    <div>Accepted</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.responseStatus === "declined"
+                        ).length
+                      }
+                    </strong>
+                    <div>Declined</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.responseStatus === "pending"
+                        ).length
+                      }
+                    </strong>
+                    <div>Pending</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.attendanceStatus === "attended" ||
+                            attendee.attendanceStatus === "left"
+                        ).length
+                      }
+                    </strong>
+                    <div>Attended</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.attendanceStatus === "not_attended"
+                        ).length
+                      }
+                    </strong>
+                    <div>Not Attended</div>
+                  </div>
+                </div>
+              </div>
+            `
+            : ""
+        }
+
         <div
           id="meetingAttendeesContent"
           style="margin-top:16px;"
