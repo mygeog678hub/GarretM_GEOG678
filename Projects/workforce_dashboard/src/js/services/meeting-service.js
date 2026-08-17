@@ -2462,6 +2462,173 @@ export async function getMeetingAttendeeUsers() {
 }
 
 /*********************************************************************
+ * Get My Meeting Participation
+ *********************************************************************/
+
+export async function getMyMeetingParticipation({
+
+    meetingId
+
+}) {
+
+    try {
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeeQuery =
+            query(
+                attendeesRef,
+                where(
+                    "userId",
+                    "==",
+                    currentUserProfile.uid
+                )
+            );
+
+        const attendeeSnap =
+            await getDocs(
+                attendeeQuery
+            );
+
+        if (attendeeSnap.empty) {
+
+            return {
+                success: true,
+                isAttendee: false,
+                participation: null
+            };
+
+        }
+
+        if (attendeeSnap.size > 1) {
+
+            return {
+                success: false,
+                message:
+                    "Multiple attendee records were found for this user."
+            };
+
+        }
+
+        const attendeeDoc =
+            attendeeSnap.docs[0];
+
+        return {
+
+            success: true,
+
+            isAttendee: true,
+
+            participation: {
+
+                id:
+                    attendeeDoc.id,
+
+                ...attendeeDoc.data()
+
+            }
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "getMyMeetingParticipation:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to load meeting participation."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
  * Get Meeting Attendees
  *********************************************************************/
 
@@ -3085,6 +3252,295 @@ export async function updateAttendee({
 
             message:
                 "Unable to update meeting attendee."
+
+        };
+
+    }
+
+}
+
+/*********************************************************************
+ * Respond to Meeting
+ *********************************************************************/
+
+export async function respondToMeeting({
+
+    meetingId,
+    response
+
+}) {
+
+    try {
+
+        // -------------------------
+        // Identity
+        // -------------------------
+
+        const currentUserProfile =
+            await getCurrentUserProfile();
+
+        if (!currentUserProfile) {
+
+            return {
+                success: false,
+                message:
+                    "User is not authenticated."
+            };
+
+        }
+
+        // -------------------------
+        // Tenant
+        // -------------------------
+
+        if (!currentUserProfile.tenantId) {
+
+            return {
+                success: false,
+                message:
+                    "User tenant could not be determined."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting ID
+        // -------------------------
+
+        if (
+            typeof meetingId !== "string" ||
+            !meetingId.trim()
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting ID is required."
+            };
+
+        }
+
+        // -------------------------
+        // Response
+        // -------------------------
+
+        if (
+            response !== "accepted" &&
+            response !== "declined"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Invalid meeting response."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting
+        // -------------------------
+
+        const meetingRef =
+            doc(
+                db,
+                "meetings",
+                meetingId
+            );
+
+        const meetingSnap =
+            await getDoc(meetingRef);
+
+        if (!meetingSnap.exists()) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting not found."
+            };
+
+        }
+
+        const meeting =
+            meetingSnap.data();
+
+        // -------------------------
+        // Tenant Validation
+        // -------------------------
+
+        if (
+            meeting.tenantId !==
+            currentUserProfile.tenantId
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "You do not have access to this meeting."
+            };
+
+        }
+
+        // -------------------------
+        // Meeting State
+        // -------------------------
+
+        if (
+            meeting.status !== "scheduled" &&
+            meeting.status !== "in_progress"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Meeting responses cannot be changed in its current state."
+            };
+
+        }
+
+        // -------------------------
+        // Current User Attendee
+        // -------------------------
+
+        const attendeesRef =
+            collection(
+                db,
+                "meetings",
+                meetingId,
+                "attendees"
+            );
+
+        const attendeeQuery =
+            query(
+                attendeesRef,
+                where(
+                    "userId",
+                    "==",
+                    currentUserProfile.uid
+                )
+            );
+
+        const attendeeSnap =
+            await getDocs(
+                attendeeQuery
+            );
+
+        if (attendeeSnap.empty) {
+
+            return {
+                success: false,
+                message:
+                    "You are not an internal attendee of this meeting."
+            };
+
+        }
+
+        if (attendeeSnap.size > 1) {
+
+            return {
+                success: false,
+                message:
+                    "Multiple attendee records were found for this user."
+            };
+
+        }
+
+        const attendeeDoc =
+            attendeeSnap.docs[0];
+
+        const attendee =
+            attendeeDoc.data();
+
+        if (
+            attendee.attendeeType !==
+            "internal"
+        ) {
+
+            return {
+                success: false,
+                message:
+                    "Only internal attendees can respond through the meeting portal."
+            };
+
+        }
+
+        // -------------------------
+        // Update Response
+        // -------------------------
+
+        await updateDoc(
+            attendeeDoc.ref,
+            {
+
+                responseStatus:
+                    response,
+
+                respondedAt:
+                    serverTimestamp()
+
+            }
+        );
+
+        // -------------------------
+        // Activity Log
+        // -------------------------
+
+        const userName =
+            currentUserProfile.displayName ||
+            currentUserProfile.name ||
+            currentUserProfile.email ||
+            currentUserProfile.uid;
+
+        await logActivity(
+
+            null,
+
+            "MEETING_ATTENDEE_RESPONSE",
+
+            `${userName} ${response} meeting "${meeting.title}".`,
+
+            userName,
+
+            "meeting",
+
+            {
+
+                meetingId,
+
+                response,
+
+                attendeeId:
+                    attendeeDoc.id
+
+            }
+
+        );
+
+        // -------------------------
+        // Success
+        // -------------------------
+
+        return {
+
+            success: true,
+
+            response
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "respondToMeeting:",
+            error
+        );
+
+        return {
+
+            success: false,
+
+            message:
+                "Unable to update meeting response."
 
         };
 

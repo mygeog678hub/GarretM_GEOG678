@@ -137,7 +137,9 @@ import {
   getMeetings,
   getMeeting,
   getMeetingAttendees,
+  getMyMeetingParticipation,
   getMeetingAttendeeUsers,
+  respondToMeeting,
   addAttendee,
   updateAttendee,
   removeAttendee,
@@ -7559,6 +7561,74 @@ async function renderUpcomingMeeting() {
       ? attendeesResult.attendees || []
       : [];
 
+      const participationResult =
+  await getMyMeetingParticipation({
+    meetingId: meeting.id
+  });
+
+const participation =
+  participationResult?.success &&
+  participationResult.isAttendee
+    ? participationResult.participation
+    : null;
+
+      const participationHtml =
+    participation
+      ? `
+        <div
+          style="
+            margin-top:16px;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:6px;
+          "
+        >
+          <strong>Your Response:</strong>
+
+          <span>
+            ${
+              participation.responseStatus ||
+              "pending"
+            }
+          </span>
+
+          ${
+            meeting.status === "scheduled"
+              ? `
+                <div
+                  style="
+                    display:flex;
+                    gap:10px;
+                    margin-top:10px;
+                    flex-wrap:wrap;
+                  "
+                >
+
+                  <button
+                    type="button"
+                    data-meeting-response="accepted"
+                    data-meeting-id="${meeting.id}"
+                  >
+                    Accept
+                  </button>
+
+                  <button
+                    type="button"
+                    data-meeting-response="declined"
+                    data-meeting-id="${meeting.id}"
+                  >
+                    Decline
+                  </button>
+
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+      `
+      : "";
+
   const dateText =
     startDate.toLocaleDateString(
       [],
@@ -7685,10 +7755,12 @@ async function renderUpcomingMeeting() {
         </p>
       </div>
 
-      <div>
+            <div>
         <strong>Attendees:</strong>
 
         ${attendeeHtml}
+
+        ${participationHtml}
 
       </div>
 
@@ -7712,8 +7784,61 @@ async function renderUpcomingMeeting() {
 
       </div>
 
-    </div>
+    </div>    
   `;
+
+  container.onclick = async function (event) {
+
+    const button =
+      event.target.closest(
+        "[data-meeting-response]"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    const selectedMeetingId =
+      button.dataset.meetingId;
+
+    const response =
+      button.dataset.meetingResponse;
+
+    if (
+      !selectedMeetingId ||
+      !response
+    ) {
+      return;
+    }
+
+    button.disabled = true;
+
+    const result =
+      await respondToMeeting({
+
+        meetingId:
+          selectedMeetingId,
+
+        response
+
+      });
+
+    if (!result.success) {
+
+      alert(
+        result.message ||
+        "Unable to update meeting response."
+      );
+
+      button.disabled = false;
+
+      return;
+
+    }
+
+   await renderUpcomingMeeting();
+
+  };
 
 }
 
