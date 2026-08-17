@@ -8646,6 +8646,41 @@ detailsContent.innerHTML = `
                     </strong>
                     <div>Not Attended</div>
                   </div>
+
+                                    <div>
+                    <strong>
+                      ${
+                        attendees.filter(
+                          attendee =>
+                            attendee.attendanceStatus === "attended" ||
+                            attendee.attendanceStatus === "left"
+                        ).length
+                      }
+                    </strong>
+                    <div>Participated</div>
+                  </div>
+
+                  <div>
+                    <strong>
+                      ${
+                        attendees.length
+                          ? Math.round(
+                              (
+                                attendees.filter(
+                                  attendee =>
+                                    attendee.attendanceStatus ===
+                                      "attended" ||
+                                    attendee.attendanceStatus ===
+                                      "left"
+                                ).length /
+                                attendees.length
+                              ) * 100
+                            )
+                          : 0
+                      }%
+                    </strong>
+                    <div>Participation Rate</div>
+                  </div>
                 </div>
               </div>
             `
@@ -8724,6 +8759,34 @@ detailsContent.innerHTML = `
         ? attendee.leftAt
             .toDate()
             .toLocaleString()
+        : "—"
+    }
+  </div>
+
+    <div>
+    <strong>Duration:</strong>
+    ${
+      attendee.joinedAt?.toDate
+        ? attendee.leftAt?.toDate
+          ? (() => {
+              const durationMs =
+                attendee.leftAt.toDate().getTime() -
+                attendee.joinedAt.toDate().getTime();
+
+              const durationMinutes =
+                Math.max(0, Math.round(durationMs / 60000));
+
+              const hours =
+                Math.floor(durationMinutes / 60);
+
+              const minutes =
+                durationMinutes % 60;
+
+              return hours > 0
+                ? `${hours}h ${minutes}m`
+                : `${minutes}m`;
+            })()
+          : "In Progress"
         : "—"
     }
   </div>
