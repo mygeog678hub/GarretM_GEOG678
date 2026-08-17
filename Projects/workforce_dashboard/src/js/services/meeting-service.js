@@ -139,7 +139,7 @@ export async function createMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -504,7 +504,7 @@ export async function addAttendee({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -996,7 +996,7 @@ export async function removeAttendee({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -1286,7 +1286,7 @@ export async function updateMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -1794,7 +1794,7 @@ export async function deleteMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -2031,7 +2031,7 @@ export async function getMeetings() {
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -2168,7 +2168,7 @@ export async function getMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -2324,7 +2324,7 @@ export async function getMeetingAttendeeUsers() {
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -2495,7 +2495,7 @@ export async function getMeetingAttendees({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -2685,7 +2685,7 @@ export async function updateAttendee({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -3126,7 +3126,7 @@ export async function scheduleMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -3433,7 +3433,7 @@ export async function cancelMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -3709,7 +3709,7 @@ export async function startMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
@@ -3935,7 +3935,7 @@ export async function completeMeeting({
         // -------------------------
 
         if (
-            currentUserProfile.role !== "Admin" &&
+            currentUserProfile.role !== "Administrator" &&
             currentUserProfile.role !== "Supervisor"
         ) {
 
