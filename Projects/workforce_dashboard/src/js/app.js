@@ -6325,6 +6325,11 @@ function playCriticalAlert() {
 
 }
 
+let allMeetings = [];
+let meetingOrganizerMap = new Map();
+let currentMeetingStatusFilter = "all";
+let meetingStatusFiltersInitialized = false;
+
 window.showCompanySettingsPage =
   function () {
 
@@ -6754,7 +6759,7 @@ function showMeetingsPage() {
     "knowledgeCenterPage"
   ).style.display = "none";
 
-  loadMeetings();
+loadMeetings();
 
 }
 
@@ -7052,6 +7057,35 @@ location:
 
 }
 
+function cancelEditMeeting() {
+
+  const form =
+    document.getElementById(
+      "editMeetingForm"
+    );
+
+  const meetingId =
+    document.getElementById(
+      "editMeetingId"
+    )?.value;
+
+  if (form) {
+
+    form.style.display =
+      "none";
+
+  }
+
+  if (meetingId) {
+
+    loadMeetingDetails(
+      meetingId
+    );
+
+  }
+
+}
+
 function updateEditMeetingLocationVisibility() {
 
   const locationType =
@@ -7203,11 +7237,14 @@ async function loadMeetings() {
     return;
   }
 
-    const usersResult =
+  allMeetings =
+    result.meetings || [];
+
+  const usersResult =
     await getMeetingAttendeeUsers();
 
-  const organizerMap =
-    new Map(
+  meetingOrganizerMap =
+  new Map(
       (usersResult.users || []).map(
         user => [
           user.id,
@@ -7216,13 +7253,87 @@ async function loadMeetings() {
       )
     );
 
+const filteredMeetings =
+  currentMeetingStatusFilter === "all"
+    ? allMeetings
+    : allMeetings.filter(
+        meeting =>
+          meeting.status ===
+          currentMeetingStatusFilter
+      );
+
+      initializeMeetingStatusFilters();
+
+renderMeetings(
+  filteredMeetings,
+  meetingOrganizerMap
+);
+
+}
+
+function filterMeetingsByStatus(
+  status
+) {
+
+  currentMeetingStatusFilter =
+    status;
+
+  document
+    .querySelectorAll(
+      ".meeting-status-filter"
+    )
+    .forEach(button => {
+
+      button.classList.toggle(
+        "active",
+        button.dataset.status === status
+      );
+
+    });
+
+  const filteredMeetings =
+    status === "all"
+      ? allMeetings
+      : allMeetings.filter(
+          meeting =>
+            meeting.status === status
+        );
+
   renderMeetings(
-    result.meetings || [],
-    organizerMap
+    filteredMeetings,
+    meetingOrganizerMap
   );
 
 }
 
+function initializeMeetingStatusFilters() {
+
+  if (meetingStatusFiltersInitialized) {
+    return;
+  }
+
+  document
+    .querySelectorAll(
+      ".meeting-status-filter"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          filterMeetingsByStatus(
+            button.dataset.status
+          );
+
+        }
+      );
+
+    });
+
+  meetingStatusFiltersInitialized = true;
+
+}
 
 function renderMeetings(
   meetings,
@@ -21602,3 +21713,4 @@ window.showNewMeetingForm = showNewMeetingForm;
 window.cancelNewMeetingForm = cancelNewMeetingForm;
 window.createNewMeeting = createNewMeeting;
 window.saveEditedMeeting = saveEditedMeeting;
+window.cancelEditMeeting = cancelEditMeeting;
