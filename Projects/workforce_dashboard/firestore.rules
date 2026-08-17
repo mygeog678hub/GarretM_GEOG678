@@ -260,6 +260,102 @@ match /incidents/{incidentId} {
 
 }
 
+        // -------------------------
+    // Meetings
+    // -------------------------
+
+    match /meetings/{meetingId} {
+
+      // Same-tenant users may read meetings
+      allow read:
+        if signedIn()
+        && sameTenant();
+
+      // Administrators and Supervisors may create meetings
+      allow create:
+        if signedIn()
+        && sameTenantOnCreate()
+        && (isAdmin() || isSupervisor());
+
+      // Administrators and Supervisors may update meetings
+      allow update:
+        if signedIn()
+        && sameTenant()
+        && (isAdmin() || isSupervisor());
+
+      // Only Administrators may delete meetings
+      allow delete:
+        if signedIn()
+        && sameTenant()
+        && isAdmin();
+    }
+
+    // -------------------------
+    // Meeting Attendees
+    // -------------------------
+
+    match /meetings/{meetingId}/attendees/{attendeeId} {
+
+      // Administrators and Supervisors may read all attendees.
+      // An internal attendee may read their own record.
+      allow read:
+        if signedIn()
+        && get(
+          /databases/$(database)/documents/meetings/$(meetingId)
+        ).data.tenantId == tenantId()
+        && (
+          isAdmin() ||
+          isSupervisor() ||
+          (
+            resource.data.attendeeType == "internal" &&
+            resource.data.userId == request.auth.uid
+          )
+        );
+
+      // Administrators and Supervisors may add attendees.
+      allow create:
+        if signedIn()
+        && get(
+          /databases/$(database)/documents/meetings/$(meetingId)
+        ).data.tenantId == tenantId()
+        && (isAdmin() || isSupervisor());
+
+      // Administrators and Supervisors may update attendees.
+      //
+      // Internal attendees may update only their own
+      // participation fields.
+      allow update:
+        if signedIn()
+        && get(
+          /databases/$(database)/documents/meetings/$(meetingId)
+        ).data.tenantId == tenantId()
+        && (
+          isAdmin() ||
+          isSupervisor() ||
+          (
+            resource.data.attendeeType == "internal" &&
+            resource.data.userId == request.auth.uid &&
+            request.resource.data.attendeeType == "internal" &&
+            request.resource.data.userId == request.auth.uid &&
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly([
+                "responseStatus",
+                "respondedAt",
+                "attendanceStatus",
+                "joinedAt",
+                "leftAt"
+              ])
+          )
+        );
+
+      // Only Administrators may delete attendees.
+      allow delete:
+        if signedIn()
+        && get(
+          /databases/$(database)/documents/meetings/$(meetingId)
+        ).data.tenantId == tenantId()
+        && isAdmin();
+    }
     // -------------------------
     // Everything else (temporary)
     // -------------------------
