@@ -8332,6 +8332,89 @@ detailsContent.innerHTML = `
       </div>
 
       <div>
+        <strong>Actual Duration</strong>
+        <div>
+          ${
+            meeting.startedAt?.toDate
+              ? (() => {
+                  const start =
+                    meeting.startedAt.toDate();
+
+                  const end =
+                    meeting.completedAt?.toDate
+                      ? meeting.completedAt.toDate()
+                      : meeting.status === "in_progress"
+                        ? new Date()
+                        : null;
+
+                  if (!end) {
+                    return "—";
+                  }
+
+                  const durationMinutes =
+                    Math.max(
+                      0,
+                      Math.round(
+                        (end.getTime() -
+                          start.getTime()) /
+                          60000
+                      )
+                    );
+
+                  const hours =
+                    Math.floor(
+                      durationMinutes / 60
+                    );
+
+                  const minutes =
+                    durationMinutes % 60;
+
+                  return hours > 0
+                    ? `${hours}h ${minutes}m`
+                    : `${minutes}m`;
+                })()
+              : "—"
+          }
+        </div>
+      </div>
+
+      <div>
+        <strong>Scheduled</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.scheduledAt
+          )}
+        </div>
+      </div>
+
+      <div>
+        <strong>Started</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.startedAt
+          )}
+        </div>
+      </div>
+
+      <div>
+        <strong>Completed</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.completedAt
+          )}
+        </div>
+      </div>
+
+      <div>
+        <strong>Cancelled</strong>
+        <div>
+          ${formatMeetingDateTime(
+            meeting.cancelledAt
+          )}
+        </div>
+      </div>
+
+      <div>
         <strong>Timezone</strong>
         <div>
           ${meeting.timezone || "—"}
