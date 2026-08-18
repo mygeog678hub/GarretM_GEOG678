@@ -462,6 +462,158 @@ WorkForge Dashboard v5.6
 
 `,
 
+    meetingManagement: `
+
+<div class="knowledge-header">
+
+    <h1>📅 Meeting Management</h1>
+
+    <div class="knowledge-meta">
+
+        <span><strong>Audience:</strong> Administrators & Supervisors</span>
+
+        <span><strong>Category:</strong> Operations</span>
+
+        <span><strong>Updated:</strong> v5.6 RC5</span>
+
+    </div>
+
+    <div class="version-badge">
+        WorkForge Dashboard v5.6 • RC5
+    </div>
+
+</div>
+
+<p>
+The Meeting Management module provides a centralized workflow for
+creating, scheduling, managing, and completing organizational meetings.
+Meetings can be managed directly within WorkForge while integrating
+with connected Google Workspace services for calendar and meeting
+functionality.
+</p>
+
+<div class="knowledge-callout knowledge-info">
+
+<strong>Overview</strong>
+
+<p>
+Meeting Management allows supervisors and administrators to maintain
+meeting information, manage attendees, schedule meetings, and track
+meeting status throughout the meeting lifecycle.
+</p>
+
+</div>
+
+<h2>Core Features</h2>
+
+<ul>
+
+<li>Create and manage meetings</li>
+
+<li>Edit meeting information</li>
+
+<li>Manage meeting attendees</li>
+
+<li>Schedule meetings</li>
+
+<li>Integrate with Google Calendar</li>
+
+<li>Generate Google Meet meeting information</li>
+
+<li>Start scheduled meetings</li>
+
+<li>Cancel meetings</li>
+
+<li>Complete meetings</li>
+
+<li>Track meeting status</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-tip">
+
+<strong>Best Practice</strong>
+
+<p>
+Enter complete meeting information and confirm attendees before
+scheduling the meeting. Review the meeting details before starting
+or cancelling a scheduled meeting.
+</p>
+
+</div>
+
+<h2>Meeting Lifecycle</h2>
+
+<ol>
+
+<li>Create the meeting and enter the required meeting information.</li>
+
+<li>Add and manage meeting attendees.</li>
+
+<li>Review the meeting details.</li>
+
+<li>Schedule the meeting.</li>
+
+<li>Use the connected calendar and meeting information as appropriate.</li>
+
+<li>Start the meeting when it begins.</li>
+
+<li>Complete the meeting when the meeting has concluded.</li>
+
+</ol>
+
+<h2>Meeting Status</h2>
+
+<ul>
+
+<li><strong>Draft</strong> — Meeting information is being prepared.</li>
+
+<li><strong>Scheduled</strong> — The meeting has been scheduled and is ready to begin.</li>
+
+<li><strong>In Progress</strong> — The meeting has been started.</li>
+
+<li><strong>Completed</strong> — The meeting has concluded.</li>
+
+<li><strong>Cancelled</strong> — The scheduled meeting has been cancelled.</li>
+
+</ul>
+
+<div class="knowledge-callout knowledge-info">
+
+<strong>Google Workspace Integration</strong>
+
+<p>
+When Google Workspace is connected, WorkForge can use the connected
+Google services to support meeting scheduling and online meeting
+functionality. Meeting information should be reviewed in WorkForge
+before the meeting is started.
+</p>
+
+</div>
+
+<div class="knowledge-callout knowledge-warning">
+
+<strong>Important</strong>
+
+<p>
+Cancelling or completing a meeting changes its operational status.
+Verify the selected meeting before performing these actions.
+</p>
+
+</div>
+
+<hr>
+
+<p>
+
+<strong>Last Updated</strong><br>
+
+WorkForge Dashboard v5.6 • RC5
+
+</p>
+
+`,
+
 patrol: `
 
 <div class="knowledge-header">
