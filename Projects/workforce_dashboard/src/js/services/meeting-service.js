@@ -887,6 +887,111 @@ export async function addAttendee({
                 attendeeData
             );
 
+                    // -------------------------
+        // Google Calendar / Meet
+        // -------------------------
+
+        if (
+            meeting.status === "scheduled" &&
+            meeting.googleEventId
+        ) {
+
+            const functions =
+                getFunctions(app);
+
+            let googleResult;
+
+            if (
+                meeting.locationType === "physical"
+            ) {
+
+                const updateGoogleCalendarEvent =
+                    httpsCallable(
+                        functions,
+                        "updateGoogleCalendarEvent"
+                    );
+
+                googleResult =
+                    await updateGoogleCalendarEvent({
+
+                        meetingId,
+
+                        title:
+                            meeting.title,
+
+                        description:
+                            meeting.description || "",
+
+                        startTime:
+                            meeting.startTime,
+
+                        endTime:
+                            meeting.endTime,
+
+                        timezone:
+                            meeting.timezone,
+
+                        locationType:
+                            meeting.locationType,
+
+                        location:
+                            meeting.location || ""
+
+                    });
+
+            } else {
+
+                const updateGoogleMeeting =
+                    httpsCallable(
+                        functions,
+                        "updateGoogleMeeting"
+                    );
+
+                googleResult =
+                    await updateGoogleMeeting({
+
+                        meetingId,
+
+                        title:
+                            meeting.title,
+
+                        description:
+                            meeting.description || "",
+
+                        startTime:
+                            meeting.startTime,
+
+                        endTime:
+                            meeting.endTime,
+
+                        timezone:
+                            meeting.timezone,
+
+                        locationType:
+                            meeting.locationType,
+
+                        location:
+                            meeting.location || ""
+
+                    });
+
+            }
+
+            if (
+                !googleResult.data ||
+                !googleResult.data.success
+            ) {
+
+                console.warn(
+                    "Meeting attendee added locally, but Google synchronization failed:",
+                    googleResult.data?.message ||
+                        "Unknown Google synchronization error."
+                );
+
+            }
+
+        }
+
         // -------------------------
         // Activity Log
         // -------------------------
@@ -1168,6 +1273,8 @@ export async function removeAttendee({
         await deleteDoc(
             attendeeRef
         );
+        
+                
 
         // -------------------------
         // Activity Log

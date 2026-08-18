@@ -777,6 +777,25 @@ async function updateGoogleMeeting(
       );
 
   // -------------------------
+  // Meeting Time Conversion
+  // -------------------------
+
+  const startDate =
+      meeting.startTime.toDate();
+
+  const endDate =
+      meeting.endTime.toDate();
+
+  if (
+    Number.isNaN(startDate.getTime()) ||
+    Number.isNaN(endDate.getTime())
+  ) {
+    throw new Error(
+        "Meeting start or end time is invalid.",
+    );
+  }
+
+  // -------------------------
   // Google Calendar Event
   // -------------------------
 
@@ -792,9 +811,7 @@ async function updateGoogleMeeting(
     start: {
 
       dateTime:
-    new Date(
-        updatedMeeting.startTime,
-    ).toISOString(),
+    startDate.toISOString(),
 
       timeZone:
             updatedMeeting.timezone,
@@ -804,9 +821,7 @@ async function updateGoogleMeeting(
     end: {
 
       dateTime:
-    new Date(
-        updatedMeeting.endTime,
-    ).toISOString(),
+    endDate.toISOString(),
 
       timeZone:
             updatedMeeting.timezone,
