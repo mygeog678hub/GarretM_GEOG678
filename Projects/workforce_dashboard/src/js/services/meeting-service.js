@@ -4380,6 +4380,9 @@ await updateDoc(
 
         status:
             "scheduled",
+        
+        scheduledAt:
+            serverTimestamp(),
 
         updatedAt:
             serverTimestamp(),
@@ -4657,6 +4660,9 @@ if (
                 status:
                     "cancelled",
 
+                cancelledAt:
+                    serverTimestamp(),
+
                 updatedAt:
                     serverTimestamp(),
 
@@ -4883,6 +4889,9 @@ export async function startMeeting({
                 status:
                     "in_progress",
 
+                startedAt:
+                    serverTimestamp(),
+
                 updatedAt:
                     serverTimestamp(),
 
@@ -5108,6 +5117,9 @@ export async function completeMeeting({
 
                 status:
                     "completed",
+
+                completedAt:
+                    serverTimestamp(),
 
                 updatedAt:
                     serverTimestamp(),
