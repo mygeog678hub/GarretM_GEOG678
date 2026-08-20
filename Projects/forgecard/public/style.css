@@ -676,30 +676,6 @@ header {
   color: #64748b;
 }
 
- .fbc-patch,
-.fbc-badge {
-
-  width: 90px;
-
-  min-width: 90px;
-
-  max-width: 90px;
-
-  height: auto;
-
-  display: block;
-
-  flex-shrink: 0;
-
-}
-
-.fbc-headshot {
-
-  width: 100px;
-
-  height: 100px;
-
-}
 /* =========================================
    LOGIN PAGE
 ========================================= */
@@ -1065,10 +1041,10 @@ justify-content: center;
 ======================================== */
 
 /* =========================
-   FBC PCT3 THEME
+   24-7 SECURITY THEME
 ========================= */
 
-.fbc_pct3 {
+.theme-247{
 
   background:
     linear-gradient(
@@ -1090,47 +1066,6 @@ justify-content: center;
     0 0 30px rgba(0,0,0,.55);
 
   position: relative;
-
-}
-
-.fbc-headshot {
-
-  width: 140px;
-
-  height: 140px;
-
-  border-radius: 50%;
-
-  object-fit: cover;
-
-  border: 4px solid #c8a45b;
-
-  box-shadow:
-    0 0 18px rgba(200,164,91,.35);
-
-}
-
-.fbc-info {
-
-  text-align: center;
-
-}
-
-.fbc-info h3 {
-
-  font-size: 28px;
-
-  margin-bottom: 8px;
-
-  color: #e1c07a;
-
-}
-
-.fbc-info p {
-
-  margin: 4px 0;
-
-  color: #d6d6d6;
 
 }
 .theme-ocean {
@@ -1756,38 +1691,14 @@ justify-content: center;
     rgba(255,255,255,0.88);
 
 }
-
-.fbc-headshot {
-
-  width: 140px;
-
-  height: 140px;
-
-  border-radius: 50%;
-
-  object-fit: cover;
-
-  border: 4px solid #c8a45b;
-
-  box-shadow:
-    0 0 18px rgba(200,164,91,.35);
-
-}
-
-.fbc-info {
-
-  text-align: center;
-
-}
-
-.fbc_pct3 .card-info {
+.theme-247 .card-info {
 
   text-align: center;
 
   width: 100%;
 
 }
-.fbc_pct3 {
+.theme-247 {
 
   background:
     linear-gradient(
@@ -1806,25 +1717,30 @@ justify-content: center;
     #f5f5f5;
 
 }
-.fbc_pct3 .card-company {
+.theme-247 .card-company {
 
   color:
     #e1c07a;
 
 }
 
-.fbc_pct3 .card-username {
+.theme-247 .card-username {
 
   color:
     #bdbdbd;
 
 }
-.fbc_pct3 .card-avatar {
+.theme-247 .card-avatar {
 
   display: none;
 
 }
-.fbc-header {
+
+/* =========================
+   24-7 SECURITY HEADER
+========================= */
+
+.security-header {
 
   width: 100%;
 
@@ -1844,7 +1760,7 @@ justify-content: center;
 
 }
 
-.fbc-header img {
+.security-header img {
 
   display: block !important;
 
@@ -1853,7 +1769,53 @@ justify-content: center;
   opacity: 1 !important;
 
 }
-.fbc_pct3 #previewName {
+
+.security-patch {
+
+  width: 90px !important;
+
+  min-width: 90px !important;
+
+  max-width: 90px !important;
+
+  height: 90px !important;
+
+  min-height: 90px !important;
+
+  max-height: 90px !important;
+
+  object-fit: contain !important;
+
+  border-radius: 0 !important;
+
+  margin-bottom: 0 !important;
+
+  background: transparent !important;
+
+  flex-shrink: 0;
+
+}
+
+.security-headshot {
+
+  width: 140px;
+
+  height: 140px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  border: 4px solid #c8a45b;
+
+  box-shadow:
+
+    0 0 18px rgba(200,164,91,.35);
+
+  flex-shrink: 0;
+
+}
+.theme-247 #previewName {
 
   color: #e1c07a;
 
@@ -1863,84 +1825,15 @@ justify-content: center;
 
 }
 
-.fbc_pct3 #previewTitle {
+.theme-247 #previewTitle {
 
   color: #f5f5f5;
 
 }
 
-.fbc_pct3 #previewCompany {
+.theme-247 #previewCompany {
 
   color: #b8b8b8;
-
-}
-.fbc-headshot {
-
-  box-shadow:
-    0 0 22px rgba(200,164,91,.45);
-
-}
-.fbc-actions {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 12px;
-
-  margin-top: 24px;
-
-}
-
-.fbc-actions button {
-
-  background:
-    #171717;
-
-  border:
-    1px solid rgba(200,164,91,.35);
-
-  color:
-    #f5f5f5;
-
-  padding:
-    14px;
-
-  border-radius:
-    14px;
-
-  cursor:
-    pointer;
-
-  transition:
-    .25s ease;
-
-}
-
-.fbc-actions button:hover {
-
-  border-color:
-    #c8a45b;
-
-  transform:
-    translateY(-2px);
-
-}
-.fbc_pct3::before {
-
-  content: "";
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-  url("assets/flag-bg.png");
-
-  opacity: .05;
-
-  pointer-events: none;
 
 }
 .qr-placeholder {
@@ -1950,41 +1843,6 @@ justify-content: center;
 
   color:
     #e1c07a;
-
-}
-
-.fbc-actions button {
-
-  background:
-    #171717;
-
-  border:
-    1px solid rgba(200,164,91,.35);
-
-  color:
-    #f5f5f5;
-
-  padding:
-    14px;
-
-  border-radius:
-    14px;
-
-  cursor:
-    pointer;
-
-  transition:
-    .25s ease;
-
-}
-
-.fbc-actions button:hover {
-
-  border-color:
-    #c8a45b;
-
-  transform:
-    translateY(-2px);
 
 }
 .profile-nav {
@@ -2125,36 +1983,6 @@ justify-content: center;
 .qr-section img {
   border-radius: 10px;
 }
-.fbc-patch,
-.fbc-badge {
-
-  width: 90px !important;
-
-  height: 90px !important;
-
-  min-width: 90px !important;
-
-  max-width: 90px !important;
-
-  object-fit: contain !important;
-
-  border-radius: 0 !important;
-
-  background: transparent !important;
-
-  overflow: visible !important;
-
-  display: block !important;
-
-  visibility: visible !important;
-
-  opacity: 1 !important;
-
-  position: relative !important;
-
-  z-index: 99999 !important;
-
-}
 .profile-actions {
 
   display: flex;
@@ -2172,5 +2000,50 @@ justify-content: center;
 .profile-actions button {
 
   width: 220px;
+
+}
+.preview-socials {
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 18px;
+
+  margin-top: 18px;
+
+}
+
+.preview-social-link {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 38px;
+
+  height: 38px;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  text-decoration: none;
+
+  font-size: 18px;
+
+  transition: .2s ease;
+
+}
+
+.preview-social-link:hover {
+
+  transform: translateY(-2px);
+
+  opacity: .8;
 
 }

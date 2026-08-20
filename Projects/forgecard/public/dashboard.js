@@ -124,30 +124,32 @@ card.className =
     <div class="card-top">
 
   ${
-    data.theme === "fbc_pct3"
-
+  data.theme === "theme-247"
     ?
 
     `
 
-<div class="fbc-header">
+<div class="security-header">
 
   <img
-    class="fbc-patch"
-    src="/assets/pct3-patch.png"
+    class="security-patch"
+    src="assets/24-7-logo.png"
+    alt="24-7 Security patch"
   >
 
   <img
-    class="fbc-headshot"
+    class="security-headshot"
     src="${
       data.photo ||
-      "/assets/default-avatar.png"
+      "assets/default-avatar.png"
     }"
+    alt="Headshot"
   >
 
   <img
-    class="fbc-badge"
-    src="/assets/pct3-badge.png"
+    class="security-patch"
+    src="assets/24-7-logo.png"
+    alt="24-7 Security patch"
   >
 
 </div>
@@ -160,7 +162,7 @@ card.className =
 
     <img
       class="card-avatar"
-      src="${data.photo || '/assets/default-avatar.png'}"
+      src="${data.photo || 'assets/default-avatar.png'}"
     >
 
     `

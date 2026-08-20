@@ -27,6 +27,11 @@
 
   <link rel="stylesheet" href="style.css" />
 
+  <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
+
 </head>
 
 <body>
@@ -159,8 +164,8 @@
             Minimal Light
           </option>
 
-          <option value="fbc_pct3">
-            Fort Bend PCT3
+          <option value="theme-247">
+            24-7 Security
           </option>
 
         </select>
@@ -223,6 +228,8 @@
           (000) 000-0000
         </p>
 
+        <div id="previewSocials" class="preview-socials"></div>
+
         <div class="qr-placeholder">
           QR CODE
         </div>
@@ -277,70 +284,140 @@
             e.target.value || " ";
 
         });
-
+        
     });
 
-    /* =========================
-       PREVIEW HEADER
-    ========================== */
+    const socialFields = [
+  {
+    id: "facebook",
+    icon: "fab fa-facebook-f",
+    label: "Facebook"
+  },
+  {
+    id: "instagram",
+    icon: "fab fa-instagram",
+    label: "Instagram"
+  },
+  {
+    id: "linkedin",
+    icon: "fab fa-linkedin-in",
+    label: "LinkedIn"
+  },
+  {
+    id: "twitter",
+    icon: "fab fa-x-twitter",
+    label: "X"
+  },
+  {
+    id: "website",
+    icon: "fas fa-globe",
+    label: "Website"
+  }
+];
 
-    const previewTop =
-      document.getElementById(
-        "previewTop"
-      );
+function updateSocialPreview() {
 
+  const container =
+    document.getElementById("previewSocials");
+
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = "";
+
+  socialFields.forEach(social => {
+
+    const value =
+      document
+        .getElementById(social.id)
+        .value
+        .trim();
+
+    if (!value) {
+      return;
+    }
+
+    const link =
+      document.createElement("a");
+
+    link.href = value;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+
+    link.className =
+      "preview-social-link";
+
+    link.title =
+      social.label;
+
+    link.innerHTML =
+      `<i class="${social.icon}"></i>`;
+
+    container.appendChild(link);
+
+  });
+
+}
+
+socialFields.forEach(social => {
+
+  document
+    .getElementById(social.id)
+    .addEventListener(
+      "input",
+      updateSocialPreview
+    );
+
+});
+
+/* =========================
+   PREVIEW HEADER
+========================= */
+
+const previewTop =
+  document.getElementById(
+    "previewTop"
+  );
     function renderPreviewHeader(theme) {
 
-      if (theme === "fbc_pct3") {
+     if (theme === "theme-247") {
 
-        previewTop.innerHTML = `
+  previewTop.innerHTML = `
 
-          <div class="fbc-header">
+    <div class="security-header">
 
-            <img
-              class="fbc-patch"
-              src="/assets/pct3-patch.png"
-            >
+      <img
+        class="security-patch"
+        src="assets/24-7-logo.png"
+        alt="24-7 Security patch"
+      >
 
-            <img
-              class="fbc-headshot"
-              id="previewPhoto"
-              src="/assets/default-avatar.png"
-            >
+      <img
+        class="security-headshot"
+        id="previewPhoto"
+        src="assets/default-avatar.png"
+        alt="Headshot"
+      >
 
-            <img
-              class="fbc-badge"
-              src="/assets/pct3-badge.png"
-            >
+      <img
+        class="security-patch"
+        src="assets/24-7-logo.png"
+        alt="24-7 Security patch"
+      >
 
-          </div>
+    </div>
 
-          <div class="fbc-actions">
+  `;
 
-            <button>
-              Vacation Watch
-            </button>
-
-            <button>
-              Submit Tip
-            </button>
-
-            <button>
-              Contact Dispatch
-            </button>
-
-          </div>
-
-        `;
-
-      } else {
+} else {
 
         previewTop.innerHTML = `
 
           <img
             class="card-avatar"
             id="previewPhoto"
-            src="/assets/default-avatar.png"
+            src="assets/default-avatar.png"
           >
 
         `;

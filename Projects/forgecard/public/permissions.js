@@ -37,7 +37,7 @@ export function canCreateCard(
   }
 
   // Free
-  return totalCards < 1;
+  return totalCards < 2;
 
 }
 

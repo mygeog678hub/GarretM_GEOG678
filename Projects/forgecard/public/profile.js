@@ -213,33 +213,36 @@ END:VCARD`;
   <div class="business-card ${data.theme || 'theme-ocean'}">
 
   ${
-  data.theme === "fbc_pct3"
+  data.theme === "theme-247"
 
   ?
 
   `
 
-  <div class="fbc-header">
+  <div class="security-header">
 
-    <img
-      class="fbc-patch"
-      src="/assets/pct3-patch.png"
-    >
+  <img
+    class="security-patch"
+    src="assets/24-7-logo.png"
+    alt="24-7 Security patch"
+  >
 
-    <img
-      class="fbc-headshot"
-      src="${
-        data.photo ||
-        '/assets/default-avatar.png'
-      }"
-    >
+  <img
+    class="security-headshot"
+    src="${
+      data.photo ||
+      'assets/default-avatar.png'
+    }"
+    alt="Headshot"
+  >
 
-    <img
-      class="fbc-badge"
-      src="/assets/pct3-badge.png"
-    >
+  <img
+    class="security-patch"
+    src="assets/24-7-logo.png"
+    alt="24-7 Security patch"
+  >
 
-  </div>
+</div>
 
   `
 
@@ -349,37 +352,6 @@ END:VCARD`;
   </button>
 
 </div>
-
-${
-  data.theme === "fbc_pct3"
-
-  ?
-
-  `
-
-  <div class="fbc-actions">
-
-    <button>
-      Vacation Watch
-    </button>
-
-    <button>
-      Submit Tip
-    </button>
-
-    <button>
-      Contact Dispatch
-    </button>
-
-  </div>
-
-  `
-
-  :
-
-  ``
-
-}
 
 </div>
 
