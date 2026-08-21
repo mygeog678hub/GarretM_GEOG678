@@ -4,22 +4,10 @@
       "target": "main",
       "public": "public",
       "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "redirects": [
-        {
-          "source": "/pct3",
-          "destination": "https://publicsafety.getforgecard.com/",
-          "type": 301
-        },
-        {
-          "source": "/pct3/**",
-          "destination": "https://publicsafety.getforgecard.com/",
-          "type": 301
-        }
-      ]
+  "firebase.json",
+  "**/.*",
+  "**/node_modules/**"
+]
     }
     
   ],

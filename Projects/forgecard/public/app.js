@@ -40,10 +40,6 @@ onAuthStateChanged(auth, (user) => {
 
 });
 
-import {
-  canCreateCard
-} from "./permissions.js";
-
 const form = document.getElementById("cardForm");
 /* =========================
    CREATE CARD
@@ -114,46 +110,6 @@ if (!usernameSnapshot.empty) {
 
 const user = auth.currentUser;
 
-// Load user document
-const userRef = doc(
-  db,
-  "users",
-  user.uid
-);
-
-const userSnap =
-  await getDoc(userRef);
-
-const userData =
-  userSnap.data();
-
-// Count existing cards
-const cardsQuery = query(
-  collection(db, "cards"),
-  where("userId", "==", user.uid)
-);
-
-const cardsSnapshot =
-  await getDocs(cardsQuery);
-
-const totalCards =
-  cardsSnapshot.size;
-
-// Check permissions
-if (
-  !canCreateCard(
-    userData,
-    totalCards
-  )
-) {
-
-  alert(
-    "Free accounts can only create 1 card. Upgrade to Pro."
-  );
-
-  return;
-}
-
     const cardData = {
 
   userId: auth.currentUser.uid,
@@ -221,99 +177,3 @@ photo: photoURL,
   });
 
 }
-
-/* =========================
-   STRIPE CHECKOUT
-========================= */
-
-const pricingButtons =
-  document.querySelectorAll(
-    ".pricing-btn"
-  );
-
-const STRIPE_PRICES = {
-
-  pro:
-    "price_1TWiiJLLpp0pEqIbA3FexgpR",
-
-  teams:
-    "price_1TbBkVLLpp0pEqIbKJyrAKKy"
-
-};
-
-pricingButtons.forEach((button) => {
-
-  button.addEventListener(
-    "click",
-    async () => {
-
-      const selectedPlan =
-        button.dataset.plan;
-
-      const priceId =
-        STRIPE_PRICES[selectedPlan];
-
-      const user =
-        auth.currentUser;
-
-      if (!user) {
-
-        window.location.href =
-          "login.html";
-
-        return;
-      }
-
-      try {
-
-        const checkoutSessionRef =
-          await addDoc(
-            collection(
-              db,
-              "customers",
-              user.uid,
-              "checkout_sessions"
-            ),
-            {
-              price: priceId,
-
-              success_url:
-                window.location.origin,
-
-              cancel_url:
-                window.location.origin
-            }
-          );
-
-        onSnapshot(
-          checkoutSessionRef,
-          (snap) => {
-
-            const data =
-              snap.data();
-
-            if (data?.url) {
-
-              window.location.assign(
-                data.url
-              );
-
-            }
-
-          }
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        alert(
-          "Failed to start checkout."
-        );
-
-      }
-
-    }
-  );
-
-});

@@ -46,8 +46,7 @@ a {
 ====================================================== */
 
 .btn,
-button,
-.pricing-btn
+button
 {
   background: #3b82f6;
   color: white;
@@ -71,7 +70,6 @@ button,
 
 .btn:hover,
 button:hover,
-.pricing-btn:hover,
 .card-btn:hover {
   background: #2563eb;
 }
@@ -188,86 +186,6 @@ button:hover,
 
   box-shadow:
     0 10px 25px rgba(0,0,0,0.25);
-}
-
-/* ======================================================
-   PRICING
-====================================================== */
-
-.pricing {
-  padding: 80px 24px;
-
-  text-align: center;
-}
-
-.pricing-grid {
-  max-width: 1200px;
-
-  margin: 50px auto 0;
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(auto-fit, minmax(300px, 1fr));
-
-  gap: 28px;
-}
-
-.price-card {
-  position: relative;
-
-  background: #1e293b;
-
-  padding: 40px 30px;
-
-  border-radius: 24px;
-
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.price-card.featured {
-  border: 2px solid #3b82f6;
-}
-
-.popular-badge {
-  position: absolute;
-
-  top: -14px;
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  background: #3b82f6;
-
-  padding: 8px 16px;
-
-  border-radius: 999px;
-
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.price {
-  font-size: 3rem;
-  font-weight: bold;
-
-  margin: 20px 0;
-}
-
-.price span {
-  font-size: 1rem;
-}
-
-.price-card ul {
-  list-style: none;
-
-  margin: 30px 0;
-}
-
-.price-card li {
-  margin-bottom: 14px;
-
-  color: #cbd5e1;
 }
 
 /* ======================================================
@@ -985,16 +903,14 @@ justify-content: center;
 
   text-align: center;
 }
-.card,
-.price-card {
+.card {
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease,
     border-color 0.25s ease;
 }
 
-.card:hover,
-.price-card:hover {
+.card:hover {
   transform: translateY(-6px);
 
   box-shadow:
@@ -1622,45 +1538,6 @@ justify-content: center;
 
 }
 
-.teams-card {
-
-  position: relative;
-
-  border:
-    2px solid #c8a95b;
-
-  box-shadow:
-    0 20px 45px rgba(0,0,0,0.28);
-
-}
-
-.plan-badge {
-
-  position: absolute;
-
-  top: -14px;
-
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  background: #c8a95b;
-
-  color: #081018;
-
-  padding: 7px 16px;
-
-  border-radius: 999px;
-
-  font-size: 0.72rem;
-
-  font-weight: 700;
-
-  letter-spacing: 0.5px;
-
-  white-space: nowrap;
-
-}
 .account-status {
 
   margin: 40px 0;

@@ -16,9 +16,6 @@ import {
 console.log("dashboard.js loaded");
 
 import {
-  isPro
-} from "./permissions.js";
-import {
   canUseAnalytics
 } from "./permissions.js";
 
@@ -55,47 +52,6 @@ const userSnap =
 const userData =
   userSnap.data();
 
-const currentPlan =
-  userData?.subscription || "free";
-
-let cardLimit = 1;
-
-if (currentPlan === "pro") {
-
-  cardLimit = 10;
-
-}
-
-if (currentPlan === "teams") {
-
-  cardLimit = 25;
-
-}
-
-const currentPlanElement =
-  document.getElementById(
-    "currentPlan"
-  );
-
-const cardUsageElement =
-  document.getElementById(
-    "cardUsage"
-  );
-
-if (currentPlanElement) {
-
-  currentPlanElement.textContent =
-    currentPlan.charAt(0).toUpperCase() +
-    currentPlan.slice(1);
-
-}
-
-if (cardUsageElement) {
-
-  cardUsageElement.textContent =
-    `${snapshot.size} / ${cardLimit}`;
-
-}
     const cardCountElement =
   document.getElementById("cardCount");
 
@@ -484,83 +440,7 @@ function generateQR(cardId) {
       QRCode.CorrectLevel.H
   });
 }
-/* =========================
-   UPGRADE TO PRO
-========================= */
 
-const dashboardUpgradeBtn =
-  document.getElementById(
-    "dashboardUpgradeBtn"
-  );
-
-if (dashboardUpgradeBtn) {
-
-  dashboardUpgradeBtn.addEventListener(
-    "click",
-    async () => {
-
-      const user = auth.currentUser;
-
-      if (!user) {
-
-        window.location.href =
-          "login.html";
-
-        return;
-      }
-
-      try {
-
-        const checkoutSessionRef =
-          await addDoc(
-            collection(
-              db,
-              "customers",
-              user.uid,
-              "checkout_sessions"
-            ),
-            {
-              price:
-                "price_1TWiiJLLpp0pEqIbA3FexgpR",
-
-              success_url:
-                window.location.origin +
-                "/dashboard.html",
-
-              cancel_url:
-                window.location.origin +
-                "/dashboard.html"
-            }
-          );
-
-        onSnapshot(
-          checkoutSessionRef,
-          (snap) => {
-
-            const data = snap.data();
-
-            if (data?.url) {
-
-              window.location.assign(
-                data.url
-              );
-            }
-
-          }
-        );
-
-      } catch (error) {
-
-        console.error(error);
-
-        alert(
-          "Failed to start checkout."
-        );
-      }
-
-    }
-  );
-}
 /* =========================
    LOGOUT
 ========================= */
